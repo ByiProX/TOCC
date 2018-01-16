@@ -6,22 +6,23 @@ import sys
 import method_func
 
 def check(file, signal_index):
+    '''逻辑分析，输出判断'''
     all_line_num = method_func.get_all_signal_line_num(file)
-    if all_line_num == 0:
+    if all_line_num == 0:  # 空文件
         return 'No Datas in target file!'
 
     valid_signal_list = method_func.get_valid_signal(file)
     valid_line_num = len(valid_signal_list)
 
-    if signal_index > all_line_num:
+    if signal_index > all_line_num:  # 指定消息不存在
         return 'Cannot find ' + str(signal_index)
-    elif all_line_num >= signal_index >= valid_line_num:
+    elif all_line_num >= signal_index >= valid_line_num:  # 指定消息存在，无人机故障
         return 'Error: ' + str(signal_index)
-    elif signal_index == 0:
+    elif signal_index == 0:  # 边缘条件
         result = valid_signal_list[signal_index]['ID'] + ' ' + str(signal_index) + ' ' + \
                 ' '.join([str(i) for i in valid_signal_list[signal_index]['location']])
         return result
-    else:
+    else:  # 指定消息存在，无人机正常
         result = valid_signal_list[signal_index]['ID'] + ' ' + str(signal_index) + ' ' + \
                 ' '.join([str(i) for i in valid_signal_list[signal_index]['new_location']])
         return result

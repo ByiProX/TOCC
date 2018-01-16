@@ -10,11 +10,11 @@ class Test(unittest.TestCase):
     """对每一个方法函数进行单元测试"""
     def test_get_info(self):
         line0 = 'plane1 1 1 1\n'
-        self.assertTrue(isinstance(method_func.get_info(line0), dict))
+        self.assertTrue(isinstance(method_func.get_info(line0), dict))  # 类型判断
         self.assertEqual(method_func.get_info(line0), {
                                         'ID':'plane1',
                                         'location':[1, 1, 1],
-                                        })
+                                        })  # 返回值判断
         line1 = 'plane1 1 1 1 1 2 3\n'
         self.assertTrue(isinstance(method_func.get_info(line1), dict))
         self.assertEqual(method_func.get_info(line1), {
