@@ -8,14 +8,17 @@
 
 运行环境管理工具 virtualenv
 
-非必要使用 virtualenv，若该项目无法运行(一般python3下均可运行)，可以尝试使用virtualenv。使用方法为在该项目目录下，终端运行
+*非必要使用 virtualenv，若该项目无法运行(一般python3下均可运行)，可以尝试使用virtualenv。使用方法为在该项目目录下，终端运行*
 
 ```python3
-source venv/bin/activate # bash shell
+source venv/bin/activate # bash shell启动方法
 
-source venv/bin/activate.fish # fish shell
+source venv/bin/activate.fish # fish shell启动方法
+
+deactivate # 关闭方法
 
 ```
+
 
 ## 1.程序的运行方法如下：
 **终端定位到check.py所在的目录下并输入 *python3 check.py filename signal_index* ，比如：**
