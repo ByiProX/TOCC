@@ -16,6 +16,7 @@ $ python3 check.pu signal.txt 2
 **详细描述如下：**
 
 ** 在终端中分别执行以下命令：**
+
 ```python
 $ python3 check.py signal.txt 2
 
