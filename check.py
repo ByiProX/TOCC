@@ -29,17 +29,16 @@ def check(file, signal_index):
 
 
 if __name__ == '__main__':
-    # try:
-    #     print(check(sys.argv[1], int(sys.argv[2])))
-    # except FileNotFoundError:
-    #     print('No such a file, please input right filename')
-    # except IndexError:
-    #     print('''
-    #             ==========================================
-    #                  The right way to run the code is：
-    #               python3 check.py filename signal_index
-    #             ------------------------------------------
-    #             For example: python3 check.py signal.txt 2
-    #             ==========================================
-    #           ''')
-    print(check(sys.argv[1], int(sys.argv[2])))
+    try:
+        print(check(sys.argv[1], int(sys.argv[2])))
+    except FileNotFoundError:
+        print('No such a file, please input right filename')
+    except IndexError:
+        print('''
+                ==========================================
+                     The right way to run the code is：
+                  python3 check.py filename signal_index
+                ------------------------------------------
+                For example: python3 check.py signal.txt 2
+                ==========================================
+              ''')

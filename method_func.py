@@ -36,7 +36,7 @@ def get_valid_signal(file):
                 location = line_dict['location']
                 # print(location)
                 # print(former_location)
-                if former_location == location:
+                if former_location == location: # 判断前后两行位置是否一致
                     valid_signal_list.append(line_dict)
                 else:
                     break
