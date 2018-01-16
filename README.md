@@ -9,26 +9,24 @@
 ## 1.程序的运行方法如下：
 **终端定位到check.py所在的目录下并输入 *python3 check.py filename signal_index* ，比如：**
 ```python
-$ python3 check.pu signal.txt 2
+python3 check.pu signal.txt 2
 ```
 
 
-**详细描述如下：**
-
-** 在终端中分别执行以下命令：**
+**详细描述如下,在终端中分别执行以下命令：**
 
 ```python
-$ python3 check.py signal.txt 2
+python3 check.py signal.txt 2
 
-$ python3 check.py signal.txt 4
+python3 check.py signal.txt 4
 
-$ python3 check.py signal.txt 100
+python3 check.py signal.txt 100
 
-$ python3 check.py signal.txt 3
+python3 check.py signal.txt 3
 
-$ python3 check.py signal 2    # 非正常输入
+python3 check.py signal 2    # 非正常输入
 
-$ python3 check.py signal.txt  # 非正常输入
+python3 check.py signal.txt  # 非正常输入
 
 ```
 
