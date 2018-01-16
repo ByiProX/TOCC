@@ -40,7 +40,7 @@ python3 check.py signal.txt  # 非正常输入
 
 **终端定位到unit_test.py所在的目录下并输入：**
 ```python
-$ python3 unit_test.py
+python3 unit_test.py
 ```
 运行结果如下：
 
