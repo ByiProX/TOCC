@@ -25,7 +25,7 @@ deactivate # 关闭方法
 ## 1.程序的运行方法如下：
 **终端定位到check.py所在的目录下并输入 *python3 check.py filename signal_index* ，比如：**
 ```python
-python3 check.pu signal.txt 2
+python3 check.py signal.txt 2
 ```
 
 
@@ -61,7 +61,7 @@ python3 check.py signal.txt  # 非正常输入
 ```python
 python3 unit_test.py
 ```
-运行结果如下：
+以上代码对项目中所有的方法函数进行测试，运行结果如下：
 
 ![Screen Shot 2018-01-16 at 22.41.36.png](http://upload-images.jianshu.io/upload_images/2952111-d6a8538150835484.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
