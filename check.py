@@ -14,9 +14,9 @@ def check(file, signal_index):
     valid_signal_list = method_func.get_valid_signal(file)
     valid_line_num = len(valid_signal_list)
 
-    if signal_index > all_line_num:  # 指定消息不存在
+    if signal_index >= all_line_num:  # 指定消息不存在
         return 'Cannot find ' + str(signal_index)
-    elif all_line_num >= signal_index >= valid_line_num:  # 指定消息存在，无人机故障
+    elif all_line_num > signal_index >= valid_line_num:  # 指定消息存在，无人机故障
         return 'Error: ' + str(signal_index)
     elif signal_index == 0:  # 边缘条件
         result = valid_signal_list[signal_index]['ID'] + ' ' + str(signal_index) + ' ' + \
@@ -29,16 +29,17 @@ def check(file, signal_index):
 
 
 if __name__ == '__main__':
-    try:
-        print(check(sys.argv[1], int(sys.argv[2])))
-    except FileNotFoundError:
-        print('No such a file, please input right filename')
-    except IndexError:
-        print('''
-                ==========================================
-                     The right way to run the code is：
-                  python3 check.py filename signal_index
-                ------------------------------------------
-                For example: python3 check.py signal.txt 2
-                ==========================================
-              ''')
+    # try:
+    #     print(check(sys.argv[1], int(sys.argv[2])))
+    # except FileNotFoundError:
+    #     print('No such a file, please input right filename')
+    # except IndexError:
+    #     print('''
+    #             ==========================================
+    #                  The right way to run the code is：
+    #               python3 check.py filename signal_index
+    #             ------------------------------------------
+    #             For example: python3 check.py signal.txt 2
+    #             ==========================================
+    #           ''')
+    print(check(sys.argv[1], int(sys.argv[2])))

@@ -14,7 +14,7 @@ def get_info(line):
         info = dict(zip(('ID', 'location', 'offset', 'new_location'),
                          (id, location, offset, new_location)))
     else:
-        info = dict(zip(('ID', 'location'), (id, location)))
+        info = dict(zip(('ID', 'location', 'new_location'), (id, location, location)))
     return info
 
 
@@ -23,11 +23,23 @@ def get_valid_signal(file):
     valid_signal_list = []
     with open(file, 'r') as fo:
         line = fo.readline()
-        valid_signal_list.append(get_info(line))
+        if line and len(line.strip().split()) == 4: #判断首行格式是否正确
+            line_dict = get_info(line)
+            valid_signal_list.append(line_dict)
+        else:
+            return valid_signal_list
         while True:
             line = fo.readline()
-            if len(line.strip().split()) > 4:
-                valid_signal_list.append(get_info(line))
+            if line and len(line.strip().split()) == 7: # 判断每行格式是否正确
+                line_dict = get_info(line)
+                former_location = valid_signal_list[-1]['new_location']
+                location = line_dict['location']
+                # print(location)
+                # print(former_location)
+                if former_location == location:
+                    valid_signal_list.append(line_dict)
+                else:
+                    break
             else:
                 break
     return valid_signal_list
