@@ -31,6 +31,7 @@ def is_true_format(line):
     return False
 
 def is_integer(line_list):
+    '''列表元素是否为整形数字判断'''
     return reduce(lambda x, y: x and y, [i.strip('+-').isnumeric() for i in line_list])
 
 

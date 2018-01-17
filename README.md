@@ -6,7 +6,7 @@ https://github.com/ByiProX/ThoughtWorks2018SpringDEV
 ---
 本项目使用**Python3.6.4**完成
 
-使用到的工具包有 sys, unittest
+使用到的工具包有 sys, unittest, functools
 
 运行环境管理工具 virtualenv
 
@@ -61,7 +61,7 @@ python3 check.py signal.txt  # 非正常输入
 **单元测试内容包括**
 
 - 项目中所有方法函数的测试，包括返回值类型测试以及返回值的测试
-- 不同信号文件内容的测试，包括常规测试以及各种边缘测试。比如消息内容格式不符的测试、负整数测试、无人机前一条消息坐标计算值不匹配的测试等
+- 不同信号文件内容的测试，包括常规测试以及各种边缘测试。比如*内容格式不符的测试、正负整数测试、无人机前一条消息坐标计算值不匹配的测试*等
 
 具体测试案例文件位于 *./testcase/* 目录下
 
@@ -70,7 +70,7 @@ python3 check.py signal.txt  # 非正常输入
 python3 unit_test.py
 ```
 
-![Screen Shot 2018-01-17 at 17.28.47.png](http://upload-images.jianshu.io/upload_images/2952111-bf45462579b17e51.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![Screen Shot 2018-01-18 at 00.16.46.png](http://upload-images.jianshu.io/upload_images/2952111-829e0e129872c070.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 #### 经检验全部案例均通过测试
 

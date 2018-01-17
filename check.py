@@ -18,10 +18,6 @@ def check(file, signal_index):
         return 'Cannot find ' + str(signal_index)
     elif all_line_num > signal_index >= valid_line_num:  # 指定消息存在，无人机故障
         return 'Error: ' + str(signal_index)
-    elif signal_index == 0:  # 边缘条件
-        result = valid_signal_list[signal_index]['ID'] + ' ' + str(signal_index) + ' ' + \
-                ' '.join([str(i) for i in valid_signal_list[signal_index]['location']])
-        return result
     else:  # 指定消息存在，无人机正常
         result = valid_signal_list[signal_index]['ID'] + ' ' + str(signal_index) + ' ' + \
                 ' '.join([str(i) for i in valid_signal_list[signal_index]['new_location']])
