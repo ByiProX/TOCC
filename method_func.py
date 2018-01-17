@@ -2,6 +2,7 @@
 # coding = utf-8
 # edit by iProX
 # email: wangkx0105@outlook.com
+from functools import reduce
 
 def get_info(line):
     '''将每一行信息以字典的形式存储'''
@@ -22,12 +23,15 @@ def is_true_format(line):
     '''数据类型判断'''
     line_list = line.strip().split()
     if len(line_list) == 4:
-        if line_list[0].isalnum() and ''.join(line_list[1:]).isnumeric():
+        if line_list[0].isalnum() and is_integer(line_list[1:]):
             return True
     if len(line_list) == 7:
-        if line_list[0].isalnum() and ''.join(line_list[1:]).isnumeric():
+        if line_list[0].isalnum() and is_integer(line_list[1:]):
             return True
     return False
+
+def is_integer(line_list):
+    return reduce(lambda x, y: x and y, [i.strip('+-').isnumeric() for i in line_list])
 
 
 def get_valid_signal(file):
@@ -45,6 +49,7 @@ def get_valid_signal(file):
             line = fo.readline()
             if line and len(line.strip().split()) == 7 and is_true_format(line): # 判断每行格式是否正确
                 line_dict = get_info(line)
+                # print(line_dict)
                 former_location = valid_signal_list[-1]['new_location']
                 location = line_dict['location']
                 if former_location == location: # 判断前后两行位置是否一致
