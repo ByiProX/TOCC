@@ -24,6 +24,20 @@ class Test(unittest.TestCase):
                                         'offset':[1, 2, 3],
                                         'new_location':[2, 3, 4]
                                         })
+    def test_is_true_format(self):
+        line0 = 'plane1 1 1\n'
+        line1 = 'plane1 1 1 1 2 3\n'
+        line2 = 'plane1 ? 2 3 4 5 1\n'
+        line3 = 'plane1 w e 1 3 43 2\n'
+        line4 = 'plane1 2 4 1 3 43 2\n'
+        line5 = '? 2 4 1 3 43 2\n'
+
+        self.assertEqual(method_func.is_true_format(line0), False)
+        self.assertEqual(method_func.is_true_format(line1), False)
+        self.assertEqual(method_func.is_true_format(line2), False)
+        self.assertEqual(method_func.is_true_format(line3), False)
+        self.assertEqual(method_func.is_true_format(line4), True)
+        self.assertEqual(method_func.is_true_format(line5), False)
 
     def test_get_valid_signal(self):
         file = 'testcase/test_signal.txt'
@@ -56,7 +70,6 @@ class Test(unittest.TestCase):
         file0 = 'testcase/test_error_format0.txt'
         file1 = 'testcase/test_error_format1.txt'
 
-        # 边缘测试
         self.assertEqual(check(file0, 0), 'Error: 0')
         self.assertEqual(check(file0, 1), 'Error: 1')
         self.assertEqual(check(file0, 2), 'Error: 2')
@@ -64,13 +77,33 @@ class Test(unittest.TestCase):
         self.assertEqual(check(file0, 4), 'Error: 4')
         self.assertEqual(check(file0, 5), 'Cannot find 5')
         self.assertEqual(check(file0, 100), 'Cannot find 100')
-        # 常规测试
+
         self.assertEqual(check(file1, 0), 'plane1 0 1 1 1')
-        self.assertEqual(check(file1, 1), 'Error: 4')
-        self.assertEqual(check(file1, 2), 'Cannot find 100')
-        self.assertEqual(check(file1, 3), 'Error: 4')
-        self.assertEqual(check(file1, 4), 'Cannot find 100')
-        self.assertEqual(check(file1, 5), 'Error: 4')
+        self.assertEqual(check(file1, 1), 'plane1 1 2 3 4')
+        self.assertEqual(check(file1, 2), 'plane1 2 3 4 5')
+        self.assertEqual(check(file1, 3), 'Error: 3')
+        self.assertEqual(check(file1, 4), 'Error: 4')
+        self.assertEqual(check(file1, 5), 'Cannot find 5')
+        self.assertEqual(check(file1, 100), 'Cannot find 100')
+
+    def test_location(self):
+        file0 = 'testcase/test_error_location0.txt'
+        file1 = 'testcase/test_error_location1.txt'
+
+        self.assertEqual(check(file0, 0), 'plane1 0 1 1 1')
+        self.assertEqual(check(file0, 1), 'Error: 1')
+        self.assertEqual(check(file0, 2), 'Error: 2')
+        self.assertEqual(check(file0, 3), 'Error: 3')
+        self.assertEqual(check(file0, 4), 'Error: 4')
+        self.assertEqual(check(file0, 5), 'Cannot find 5')
+        self.assertEqual(check(file0, 100), 'Cannot find 100')
+
+        self.assertEqual(check(file1, 0), 'plane1 0 1 1 1')
+        self.assertEqual(check(file1, 1), 'plane1 1 2 3 4')
+        self.assertEqual(check(file1, 2), 'plane1 2 3 4 5')
+        self.assertEqual(check(file1, 3), 'Error: 3')
+        self.assertEqual(check(file1, 4), 'Error: 4')
+        self.assertEqual(check(file1, 5), 'Cannot find 5')
         self.assertEqual(check(file1, 100), 'Cannot find 100')
 
 
