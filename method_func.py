@@ -4,6 +4,7 @@
 # email: wangkx0105@outlook.com
 from functools import reduce
 
+
 def get_info(line):
     '''将每一行信息以字典的形式存储'''
     line_list = line.strip().split()
@@ -29,6 +30,7 @@ def is_true_format(line):
         if line_list[0].isalnum() and is_integer(line_list[1:]):
             return True
     return False
+
 
 def is_integer(line_list):
     '''列表元素是否为整形数字判断'''

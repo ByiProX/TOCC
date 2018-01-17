@@ -5,6 +5,7 @@
 import sys
 import method_func
 
+
 def check(file, signal_index):
     '''逻辑分析，输出判断'''
     all_line_num = method_func.get_all_signal_line_num(file)
@@ -28,8 +29,8 @@ if __name__ == '__main__':
     try:
         print(check(sys.argv[1], int(sys.argv[2])))
     except FileNotFoundError:
-        print('No such a file, please input right filename')
-    except IndexError:
+        print('No such a file, please input right file path.')
+    except (IndexError, ValueError):
         print('''
                 ==========================================
                      The right way to run the code is：
