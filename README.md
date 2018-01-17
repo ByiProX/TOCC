@@ -63,7 +63,8 @@ python3 unit_test.py
 ```
 以上代码对项目中所有的方法函数进行测试，运行结果如下：
 
-![Screen Shot 2018-01-16 at 22.41.36.png](http://upload-images.jianshu.io/upload_images/2952111-d6a8538150835484.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+![Screen Shot 2018-01-17 at 17.28.47.png](http://upload-images.jianshu.io/upload_images/2952111-bf45462579b17e51.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 #### 全部测试案例均通过测试
 
