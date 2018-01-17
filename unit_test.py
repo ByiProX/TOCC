@@ -26,21 +26,21 @@ class Test(unittest.TestCase):
                                         })
 
     def test_get_valid_signal(self):
-        file = 'test_signal.txt'
+        file = 'testcase/test_signal.txt'
         self.assertTrue(isinstance(method_func.get_valid_signal(file), list))
         self.assertEqual(method_func.get_valid_signal(file),
-                        [{'ID': 'plane1', 'location': [1, 1, 1], 'new_location':[1, 1, 1]},
+                        [{'ID': 'plane1', 'location': [1, 1, 1], 'new_location': [1, 1, 1]},
                          {'ID': 'plane1', 'location': [1, 1, 1], 'new_location': [2, 3, 4], 'offset': [1, 2, 3]},
                          {'ID': 'plane1', 'location': [2, 3, 4], 'new_location': [3, 4, 5], 'offset': [1, 1, 1]}])
 
     def test_get_all_signal_line_num(self):
-        file = 'test_signal.txt'
+        file = 'testcase/test_signal.txt'
         self.assertTrue(isinstance(method_func.get_all_signal_line_num(file), int))
         self.assertEqual(method_func.get_all_signal_line_num(file), 5)
 
     def test_check(self):
-        file0 = 'test_signal_no_data.txt'
-        file1 = 'test_signal.txt'
+        file0 = 'testcase/test_signal_no_data.txt'
+        file1 = 'testcase/test_signal.txt'
 
         # 边缘测试
         self.assertEqual(check(file0, 2), 'No Datas in target file!')
@@ -50,6 +50,27 @@ class Test(unittest.TestCase):
         # 常规测试
         self.assertEqual(check(file1, 2), 'plane1 2 3 4 5')
         self.assertEqual(check(file1, 4), 'Error: 4')
+        self.assertEqual(check(file1, 100), 'Cannot find 100')
+
+    def test_format(self):
+        file0 = 'testcase/test_error_format0.txt'
+        file1 = 'testcase/test_error_format1.txt'
+
+        # 边缘测试
+        self.assertEqual(check(file0, 0), 'Error: 0')
+        self.assertEqual(check(file0, 1), 'Error: 1')
+        self.assertEqual(check(file0, 2), 'Error: 2')
+        self.assertEqual(check(file0, 3), 'Error: 3')
+        self.assertEqual(check(file0, 4), 'Error: 4')
+        self.assertEqual(check(file0, 5), 'Cannot find 5')
+        self.assertEqual(check(file0, 100), 'Cannot find 100')
+        # 常规测试
+        self.assertEqual(check(file1, 0), 'plane1 0 1 1 1')
+        self.assertEqual(check(file1, 1), 'Error: 4')
+        self.assertEqual(check(file1, 2), 'Cannot find 100')
+        self.assertEqual(check(file1, 3), 'Error: 4')
+        self.assertEqual(check(file1, 4), 'Cannot find 100')
+        self.assertEqual(check(file1, 5), 'Error: 4')
         self.assertEqual(check(file1, 100), 'Cannot find 100')
 
 
