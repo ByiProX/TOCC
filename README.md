@@ -22,7 +22,7 @@ deactivate # 关闭方法
 ```
 
 
-## 1.程序的运行方法如下：
+## 1.程序的运行方法：
 **终端定位到check.py所在的目录下并输入 *python3 check.py filename signal_index* ，比如：**
 ```python
 python3 check.py signal.txt 2
@@ -55,17 +55,23 @@ python3 check.py signal.txt  # 非正常输入
 
 ---
 
-### 2.单元测试运行方法
+## 2.单元测试运行方法
 
-**终端定位到unit_test.py所在的目录下并输入：**
+
+**单元测试内容包括**
+
+- 项目中所有方法函数的测试，包括返回值类型测试以及返回值的测试
+- 不同信号文件内容的测试，包括常规测试以及各种边缘测试。比如消息内容格式不符的测试、无人机前一条消息坐标计算值不匹配的测试等
+
+具体测试案例文件位于 *./testcase/* 目录下
+
+**测试运行方法为：终端定位到unit_test.py所在的目录下并输入运行**
 ```python
 python3 unit_test.py
 ```
-以上代码对项目中所有的方法函数进行测试，运行结果如下：
-
 
 ![Screen Shot 2018-01-17 at 17.28.47.png](http://upload-images.jianshu.io/upload_images/2952111-bf45462579b17e51.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-#### 全部测试案例均通过测试
+#### 经检验全部案例均通过测试
 
 ---
