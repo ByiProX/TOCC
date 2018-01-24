@@ -1,0 +1,8 @@
+.idea/
+*.pyc
+venv/
+*.rdb
+start_app.sh
+.logs/
+logs/
+sandbox/
