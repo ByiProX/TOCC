@@ -8,7 +8,7 @@ from flask import request
 
 from config import db, ERR_INVALID_PARAMS, SUCCESS
 from core.wechat import WechatConn
-from models.wechat_bot import Wechat
+from models.user_bot import UserInfo
 from utils.u_response import make_response
 
 logger = logging.getLogger('main')
@@ -31,13 +31,13 @@ def verify_code():
     user_access_token = res_json.get('access_token')
 
     if open_id is None:
-        wechat_by_code = db.session.query(Wechat).filter(Wechat.code == code).first()
+        wechat_by_code = db.session.query(UserInfo).filter(UserInfo.code == code).first()
         if wechat_by_code is None:
             return make_response(ERR_INVALID_PARAMS)
         else:
             wechat = wechat_by_code
     else:
-        wechat = Wechat.get_user_info(open_id, user_access_token, code)
+        wechat = UserInfo.get_user_info(open_id, user_access_token, code)
 
     # Mark
     # 测试账号
@@ -45,7 +45,7 @@ def verify_code():
         if wechat.is_test:
             logger.info('is_test')
             logger.info('wechat_id: ' + str(wechat.id))
-            wechat_neilzwh = db.session.query(Wechat).filter(Wechat.id == 16).first()
+            wechat_neilzwh = db.session.query(UserInfo).filter(UserInfo.id == 16).first()
             wechat = wechat_neilzwh
         return make_response(SUCCESS, token=wechat.token)
 
@@ -53,7 +53,7 @@ def verify_code():
 
 
 def get_user_info(open_id, user_access_token, code):
-    wechat = db.session.query(Wechat).filter(Wechat.open_id == open_id).first()
+    wechat = db.session.query(UserInfo).filter(UserInfo.open_id == open_id).first()
     wechat_utils = WechatConn()
     res_json = wechat_utils.get_user_info(open_id=open_id, user_access_token=user_access_token)
 
@@ -71,7 +71,7 @@ def get_user_info(open_id, user_access_token, code):
         wechat_json['code'] = code
 
         if wechat is None:
-            wechat = Wechat().load_from_json(wechat_json).generate_create_time().generate_token()
+            wechat = UserInfo().load_from_json(wechat_json).generate_create_time().generate_token()
             # Mark
             # wechat.bot_id = 2
             db.session.add(wechat)

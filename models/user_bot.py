@@ -4,11 +4,13 @@ from config import db
 from utils.u_model_json_str import model_to_dict
 
 
-class Wechat(db.Model):
+class UserInfo(db.Model):
     """
     公众号的每一个人的信息
     """
     __tablename__ = 'wechat'
+    user_id = db.Column(db.BigInteger, primary_key = True, autoincrement = True)
+
 
     def to_json(self):
         res = model_to_dict(self, self.__class__)
@@ -28,11 +30,13 @@ class Wechat(db.Model):
         return res
 
 
-class Bot(db.Model):
+class BotInfo(db.Model):
     """
     机器人的信息（手机、板子）
     """
     __tablename__ = 'bot'
+    wechat_bot_id = db.Column(db.BigInteger, primary_key = True, autoincrement = True)
+
 
 
 class AccessToken(db.Model):
