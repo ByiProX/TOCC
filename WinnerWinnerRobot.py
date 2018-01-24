@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+__version__ = "0.0.1"
+
 import logging
 from config import app
 from flask import jsonify
