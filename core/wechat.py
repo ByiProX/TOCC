@@ -7,7 +7,7 @@ import json
 
 from config import db
 from config import APP_ID, APP_SECRET
-from models.wechat_bot import AccessToken
+from models.user_bot import AccessToken
 from utils.u_model_json_str import unicode_to_str
 
 logger = logging.getLogger('main')
@@ -15,7 +15,6 @@ logger = logging.getLogger('main')
 
 class WechatConn:
     def __init__(self):
-
         self.access_token = db.session.query(AccessToken).first()
 
     def wechat_get(self, url, **kwargs):

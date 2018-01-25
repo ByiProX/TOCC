@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import json
 
 from datetime import datetime
-from flask import request
 
 from config import db, ERR_INVALID_PARAMS, SUCCESS
 from core.wechat import WechatConn
@@ -16,10 +14,7 @@ logger = logging.getLogger('main')
 wechat_conn = WechatConn()
 
 
-def verify_code():
-    data_json = json.loads(request.data)
-    code = data_json.get('code')
-
+def verify_code(code):
     # if code == '111' or code == 111:
     #     return make_response(SUCCESS, token = 'O9URN0WKBHMB92K1ADBEIFTBJEJM')  # 磊
     # elif code == '222' or code == 222:
@@ -37,19 +32,18 @@ def verify_code():
         else:
             wechat = wechat_by_code
     else:
-        wechat = get_user_info(open_id, user_access_token, code)
+        wechat = get_user_info(open_id, user_access_token)
 
-    # Mark
-    # 测试账号
     if wechat:
         return make_response(SUCCESS, token=wechat.token)
 
     return make_response(ERR_INVALID_PARAMS)
 
 
-def get_user_info(open_id, user_access_token, code):
+def get_user_info(open_id, user_access_token):
     wechat = db.session.query(UserInfo).filter(UserInfo.open_id == open_id).first()
     if wechat is None:
+        # TODO 新微信号，需要注册，分配机器人的内容
         wechat = UserInfo()
         wechat.create_time = datetime.now()
         db.session.add(wechat)

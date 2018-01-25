@@ -26,13 +26,19 @@ class Config:
 
 class ProductionConfig(Config):
     ABS_PATH = './assets'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI') or \
-                              'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/cia'
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/WinnerWinnerRobot'
+
+
+class TestConfig(Config):
+    ABS_PATH = './assets'
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/TestWinnerWinnerRobot'
 
 
 config_map = {
     'production': ProductionConfig,
-
+    'test': TestConfig
 }
 
 config_name = 'production'
