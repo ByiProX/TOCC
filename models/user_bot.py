@@ -11,6 +11,17 @@ class UserInfo(db.Model):
     __tablename__ = 'wechat'
     user_id = db.Column(db.BigInteger, primary_key = True, autoincrement = True)
 
+    open_id = db.Column(db.String(64), index = True)  # 28 chars
+    union_id = db.Column(db.String(64), index = True)  # 28 chars
+    nick_name = db.Column(db.String(64), index = True)
+    avatar_url = db.Column(db.String(512))
+    sex = db.Column(db.Integer, index = True)
+    province = db.Column(db.String(64), index = True)
+    city = db.Column(db.String(64), index = True)
+    country = db.Column(db.String(64), index = True)
+    code = db.Column(db.String(256), index = True)
+    create_time = db.Column(db.DateTime, index = True)
+    last_login_time = db.Column(db.DateTime, index = True)
 
     def to_json(self):
         res = model_to_dict(self, self.__class__)

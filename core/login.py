@@ -37,16 +37,11 @@ def verify_code():
         else:
             wechat = wechat_by_code
     else:
-        wechat = UserInfo.get_user_info(open_id, user_access_token, code)
+        wechat = get_user_info(open_id, user_access_token, code)
 
     # Mark
     # 测试账号
     if wechat:
-        if wechat.is_test:
-            logger.info('is_test')
-            logger.info('wechat_id: ' + str(wechat.id))
-            wechat_neilzwh = db.session.query(UserInfo).filter(UserInfo.id == 16).first()
-            wechat = wechat_neilzwh
         return make_response(SUCCESS, token=wechat.token)
 
     return make_response(ERR_INVALID_PARAMS)
@@ -54,27 +49,25 @@ def verify_code():
 
 def get_user_info(open_id, user_access_token, code):
     wechat = db.session.query(UserInfo).filter(UserInfo.open_id == open_id).first()
+    if wechat is None:
+        wechat = UserInfo()
+        wechat.create_time = datetime.now()
+        db.session.add(wechat)
+
     wechat_utils = WechatConn()
     res_json = wechat_utils.get_user_info(open_id=open_id, user_access_token=user_access_token)
 
     if res_json.get('openid'):
-        wechat_json = dict()
-        wechat_json['open_id'] = res_json.get('openid')
-        wechat_json['nick_name'] = res_json.get('nickname')
-        wechat_json['sex'] = res_json.get('sex')
-        wechat_json['province'] = res_json.get('province')
-        wechat_json['city'] = res_json.get('city')
-        wechat_json['country'] = res_json.get('country')
-        wechat_json['avatar_url'] = res_json.get('headimgurl')
-        wechat_json['unionid'] = res_json.get('unionid')
-        wechat_json['last_login_time'] = datetime.now()
-        wechat_json['code'] = code
+        wechat.open_id = res_json.get('openid')
+        wechat.nick_name = res_json.get('nick_name')
+        wechat.sex = res_json.get('sex')
+        wechat.province = res_json.get('province')
+        wechat.city = res_json.get('city')
+        wechat.country = res_json.get('country')
+        wechat.avatar_url = res_json.get('avatar_url')
+        wechat.union_id = res_json.get('unionid')
+        wechat.code = res_json.get('code')
+        wechat.last_login_time = datetime.now()
 
-        if wechat is None:
-            wechat = UserInfo().load_from_json(wechat_json).generate_create_time().generate_token()
-            # Mark
-            # wechat.bot_id = 2
-            db.session.add(wechat)
-        else:
-            wechat.load_from_json(wechat_json)
-        db.session.commit()
+    db.session.commit()
+    return wechat
