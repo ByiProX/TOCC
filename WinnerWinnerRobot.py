@@ -4,14 +4,15 @@ __version__ = "0.0.1"
 
 import logging
 from config import app
-from flask import jsonify
 
 from utils import u_log
+
+from api import login
 
 
 @app.route('/hello')
 def hello():
-    return jsonify("hello")
+    return "hello"
     # return make_response(SUCCESS, str = "hello")
 
 

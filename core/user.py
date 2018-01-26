@@ -35,9 +35,9 @@ class UserLogin:
         从微信处得到open_id，然后通过open得到token
         """
         self._get_open_id_and_user_access_token()
-        whether_is_new, self.now_user_info = self._check_is_new_user()
 
         if self.open_id is not None:
+            whether_is_new, self.now_user_info = self._check_is_new_user()
             if whether_is_new is True:
                 self._add_new_user()
                 return SUCCESS, self.user_info_up_to_date.token
@@ -45,7 +45,9 @@ class UserLogin:
                 self._update_user()
                 return SUCCESS, self.user_info_up_to_date.token
         else:
-            if whether_is_new is False:
+            # TODO 此时没有open_id,需要用code读取
+            self.now_user_info = db.session.query(UserInfo).filter(UserInfo.open_id == self.open_id).first()
+            if self.now_user_info:
                 if str(datetime.now()) < self.now_user_info.token_expired_time:
                     return SUCCESS, self.now_user_info.token
                 else:

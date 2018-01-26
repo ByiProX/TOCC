@@ -7,7 +7,7 @@ class UserInfo(db.Model):
     """
     公众号的每一个人的信息
     """
-    __tablename__ = 'wechat'
+    __tablename__ = 'user_info'
     user_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
 
     # 微信给的公众号唯一主键
@@ -42,7 +42,7 @@ class BotInfo(db.Model):
     """
     机器人的信息
     """
-    __tablename__ = 'bot'
+    __tablename__ = 'bot_info'
     wechat_bot_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     wechat_bot_name = db.Column(db.String(128), index=True, nullable=False)
 
