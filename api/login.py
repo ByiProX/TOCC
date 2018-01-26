@@ -3,8 +3,9 @@ import json
 
 from flask import request
 
-from config import app
-from core.login import verify_code
+from config import app, SUCCESS
+from core.user import UserLogin
+from utils.u_response import make_response
 
 
 @app.route('/verify_code', methods=['POST'])
@@ -16,4 +17,20 @@ def app_verify_code():
     data_json = json.loads(request.data)
     code = data_json.get('code')
 
-    return verify_code(code)
+    user_login = UserLogin(code)
+    status, token = user_login.get_user_token()
+
+    if status == SUCCESS:
+        return make_response(status, token=token)
+    else:
+        return make_response(status)
+
+
+@app.route('/set_rebot_nickname', methods=['POST'])
+def set_rebot_nickname():
+    """
+
+    :return:
+    """
+    # TODO verified_token
+    pass

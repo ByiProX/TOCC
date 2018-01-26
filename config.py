@@ -52,8 +52,20 @@ db = SQLAlchemy(app, session_options={"autoflush": False})
 APP_ID = 'wxbe0f84cc2b873c72'
 APP_SECRET = 'd6063862625c0a79719bc6167503f35e'
 
+# 错误代码
 ERROR_CODE = dict()
+# 正常
 SUCCESS = 'success'
-ERROR_CODE[SUCCESS] = {'stats_code': 0}
+ERROR_CODE[SUCCESS] = {'status_code': 0}
+# 参数不合法
 ERR_INVALID_PARAMS = 'err_invalid_params'
-ERROR_CODE[ERR_INVALID_PARAMS] = {'discription': '参数不合法', 'stats_code': -1}
+ERROR_CODE[ERR_INVALID_PARAMS] = {'discription': '参数不合法', 'status_code': -1}
+# 用户token过期
+ERR_USER_TOKEN_EXPIRED = 'err_user_token_expired'
+ERROR_CODE[ERR_USER_TOKEN_EXPIRED] = {'discription': '用户token已过期', 'status_code': -2}
+# 用户登录失败，没有得到有效token
+ERR_USER_LOGIN_FAILED = 'err_user_login_failed'
+ERROR_CODE[ERR_USER_LOGIN_FAILED] = {'discription': '用户登录失败，没有得到token', 'status_code': -3}
+
+# 用户的token过期时间（单位为日）
+TOKEN_EXPIRED_THRESHOLD = 365

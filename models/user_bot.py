@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from config import db
-from utils.u_model_json_str import model_to_dict
 
 
 class UserInfo(db.Model):
@@ -12,7 +11,7 @@ class UserInfo(db.Model):
     user_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
 
     # 微信给的公众号唯一主键
-    open_id = db.Column(db.String(64), index=True)  # 28 chars
+    open_id = db.Column(db.String(64), index=True, unique=True)  # 28 chars
 
     # 公众号与小程序的共同主键
     union_id = db.Column(db.String(64), index=True)  # 28 chars
@@ -29,6 +28,9 @@ class UserInfo(db.Model):
     create_time = db.Column(db.DateTime, index=True)
     last_login_time = db.Column(db.DateTime, index=True)
 
+    token = db.Column(db.String(256), index=True)
+    token_expired_time = db.Column(db.DateTime, index=True)
+
     # 用户的常用设置
     func_send_qun_messages = db.Column(db.Boolean, index=True, nullable=False)
     func_qun_sign = db.Column(db.Boolean, index=True, nullable=False)
@@ -38,7 +40,7 @@ class UserInfo(db.Model):
 
 class BotInfo(db.Model):
     """
-    机器人的信息（手机、板子）
+    机器人的信息
     """
     __tablename__ = 'bot'
     wechat_bot_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
@@ -46,6 +48,9 @@ class BotInfo(db.Model):
 
 
 class AccessToken(db.Model):
+    """
+    存整个公众号的access_token
+    """
     __tablename = 'access_token'
     token = db.Column(db.String(128), primary_key=True)
     expired_time = db.Column(db.DateTime)
