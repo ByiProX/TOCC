@@ -17,7 +17,10 @@ class UserInfo(db.Model):
     union_id = db.Column(db.String(64), index=True)  # 28 chars
 
     nick_name = db.Column(db.String(64), index=True, nullable=False)
+
+    # 0为女性 1为男性
     sex = db.Column(db.SmallInteger, index=True, nullable=False)
+
     province = db.Column(db.String(64), index=True, nullable=False)
     city = db.Column(db.String(64), index=True, nullable=False)
     country = db.Column(db.String(64), index=True, nullable=False)

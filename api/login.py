@@ -29,11 +29,9 @@ def app_verify_code():
 @app.route('/set_rebot_nickname', methods=['POST'])
 def set_rebot_nickname():
     """
-
-    :return:
+    用于设置rebot名字
     """
-    # TODO verified_token
-    token = request.json.get('token')
-    status = UserLogin.verify_token(token)
+    status = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
+

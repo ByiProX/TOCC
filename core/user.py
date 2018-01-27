@@ -127,10 +127,17 @@ class UserLogin:
         else:
             pass
 
-    def _generate_user_token(self):
+    def _generate_user_token(self, open_id=None, datetime_now=None):
+        if open_id and datetime_now:
+            self.open_id = open_id
+            datetime_now = datetime_now
+        else:
+            datetime_now = datetime.now()
+
         if self.open_id is None:
             raise ValueError("没有正确的open_id")
-        pre_str = self.open_id.upper() + str(datetime.now()) + "stvrhu"
+
+        pre_str = self.open_id.upper() + str(datetime_now) + "stvrhu"
         m2 = hashlib.md5()
         m2.update(pre_str)
         token = m2.hexdigest()
