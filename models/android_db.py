@@ -9,7 +9,7 @@ logger = logging.getLogger("main")
 
 class AChatroom(db.Model):
     __bind_key__ = 'android_db'
-    __tablename = 'a_chatroom'
+    __tablename__ = 'a_chatroom'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     chatroomname = db.Column(db.String(32), index=True, unique=True, nullable=False)
     addtime = db.Column(db.BigInteger, index=True, nullable=False, default=0)
