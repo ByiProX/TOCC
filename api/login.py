@@ -33,4 +33,7 @@ def set_rebot_nickname():
     :return:
     """
     # TODO verified_token
-    pass
+    token = request.json.get('token')
+    status = UserLogin.verify_token(token)
+    if status != SUCCESS:
+        return make_response(status)

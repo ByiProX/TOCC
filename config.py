@@ -41,7 +41,7 @@ config_map = {
     'test': TestConfig
 }
 
-config_name = 'production'
+config_name = 'test'
 
 app = Flask(__name__)
 app.config.from_object(config_map[config_name])
@@ -66,6 +66,9 @@ ERROR_CODE[ERR_USER_TOKEN_EXPIRED] = {'discription': '用户token已过期', 'st
 # 用户登录失败，没有得到有效token
 ERR_USER_LOGIN_FAILED = 'err_user_login_failed'
 ERROR_CODE[ERR_USER_LOGIN_FAILED] = {'discription': '用户登录失败，没有得到token', 'status_code': -3}
+# 无效的token
+ERR_USER_TOKEN = 'err_user_token'
+ERROR_CODE[ERR_USER_TOKEN] = {'discription': '无效的token', 'status_code': -4}
 
 # 用户的token过期时间（单位为日）
 TOKEN_EXPIRED_THRESHOLD = 365

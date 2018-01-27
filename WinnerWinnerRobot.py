@@ -3,7 +3,7 @@
 __version__ = "0.0.1"
 
 import logging
-from config import app
+from config import app, db
 
 from utils import u_log
 
