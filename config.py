@@ -28,25 +28,34 @@ class ProductionConfig(Config):
     ABS_PATH = './assets'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/WinnerWinnerRobot'
+    SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/cia'}
+
+
+class DevelopmentConfig(Config):
+    ABS_PATH = './assets'
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/DevWinnerWinnerRobot'
+    SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/cia'}
 
 
 class TestConfig(Config):
     ABS_PATH = './assets'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/TestWinnerWinnerRobot'
+    SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/cia'}
 
 
 config_map = {
     'production': ProductionConfig,
-    'test': TestConfig
+    'dev': DevelopmentConfig,
+    'test': TestConfig,
 }
 
-config_name = 'test'
+config_name = 'dev'
 
 app = Flask(__name__)
 app.config.from_object(config_map[config_name])
 config = config_map[config_name]
-
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
 APP_ID = 'wxbe0f84cc2b873c72'
