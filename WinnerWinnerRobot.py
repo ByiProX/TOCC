@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-
-__version__ = "0.0.2"
-
 import logging
 from config import app
 
 from utils import u_log
+
+__version__ = "0.0.2"
 
 
 @app.route('/hello')

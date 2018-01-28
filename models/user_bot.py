@@ -3,6 +3,28 @@
 from config import db
 
 
+class OrganizationInfo(db.Model):
+    """
+    记录一个公司或组织的信息
+    """
+    __tablename__ = 'organization_info'
+    organization_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    organization_name = db.Column(db.String(32), index=True, nullable=False)
+
+
+class OrganizationUserRelate(db.Model):
+    """
+    用于标记一个组织中有哪些用户
+    """
+    __tablename__ = 'organization_user_relate'
+    rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    organization_id = db.Column(db.BigInteger, index=True, nullable=False)
+    user_id = db.Column(db.BigInteger, index=True, nullable=False)
+    is_org_admin = db.Column(db.Boolean, index=True, nullable=False)
+
+    db.UniqueConstraint(organization_id, user_id, name='ix_organization_user_relate_two_id')
+
+
 class UserInfo(db.Model):
     """
     公众号的每一个人的信息
@@ -42,11 +64,23 @@ class UserInfo(db.Model):
     func_welcome_message = db.Column(db.Boolean, index=True, nullable=False)
 
 
-class BotInfo(db.Model):
+class UserBotRelate(db.Model):
+    """
+    用于联结用户和机器人账号，可能是多对多关系
+    """
+    __tablename__ = 'user_bot_relate'
+    rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.BigInteger, index=True, nullable=False)
+    wechat_bot_id = db.Column(db.BigInteger, index=True, nullable=False)
+
+    db.UniqueConstraint(user_id, wechat_bot_id, name='ix_user_bot_relate_user_id_wechat_two_id')
+
+
+class WechatBotInfo(db.Model):
     """
     机器人的信息
     """
-    __tablename__ = 'bot_info'
+    __tablename__ = 'wechat_bot_info'
     wechat_bot_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     wechat_bot_name = db.Column(db.String(128), index=True, nullable=False)
 
