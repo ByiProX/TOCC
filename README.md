@@ -7,7 +7,7 @@ api/login,
 
 core/user,
 
-core/wechat,
+core/wechat,core/qun_manage,
 
 utils/u_response,
 utils/u_model_json_str,
@@ -23,4 +23,3 @@ models/android_db,
 config
 
 core/send_task,
-core/qun_manage,

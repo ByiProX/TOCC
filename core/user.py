@@ -42,7 +42,7 @@ class UserLogin:
             # 如果这个code和上次code一样
             if self.now_user_info:
                 if datetime.now() < self.now_user_info.token_expired_time:
-                    return SUCCESS, self.now_user_info.token
+                    return SUCCESS, self.now_user_info
                 else:
                     return ERR_USER_TOKEN_EXPIRED, None
             # 如果这个code在库中查不到
@@ -67,7 +67,7 @@ class UserLogin:
 
                     db.session.merge(self.user_info_up_to_date)
                     db.session.commit()
-                    return SUCCESS, self.user_info_up_to_date.token
+                    return SUCCESS, self.user_info_up_to_date
                 else:
                     self.user_info_up_to_date.code = self.code
                     self.user_info_up_to_date.create_time = datetime.now()
@@ -84,14 +84,14 @@ class UserLogin:
 
                     db.session.add(self.user_info_up_to_date)
                     db.session.commit()
-                    return SUCCESS, self.user_info_up_to_date.token
+                    return SUCCESS, self.user_info_up_to_date
 
             # 因为各种原因没有拿到用户信息
             else:
                 self.now_user_info = db.session.query(UserInfo).filter(UserInfo.open_id == self.open_id).first()
                 if self.now_user_info:
                     if datetime.now() < self.now_user_info.token_expired_time:
-                        return SUCCESS, self.now_user_info.token
+                        return SUCCESS, self.now_user_info
                     else:
                         return ERR_USER_TOKEN_EXPIRED, None
                 else:

@@ -18,10 +18,10 @@ def app_verify_code():
     code = data_json.get('code')
 
     user_login = UserLogin(code)
-    status, token = user_login.get_user_token()
+    status, user_info = user_login.get_user_token()
 
     if status == SUCCESS:
-        return make_response(status, token=token)
+        return make_response(status, token=user_info.token)
     else:
         return make_response(status)
 
@@ -34,4 +34,3 @@ def set_rebot_nickname():
     status = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
-
