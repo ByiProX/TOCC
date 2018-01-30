@@ -26,6 +26,13 @@ def app_verify_code():
         return make_response(status)
 
 
+def get_user_basic_info():
+    """
+    读取用户管理界面的所有的信息
+    """
+    pass
+
+
 @app.route('/set_rebot_nickname', methods=['POST'])
 def set_rebot_nickname():
     """
@@ -42,8 +49,8 @@ def set_rebot_nickname():
     return make_response(status)
 
 
-@app.route("/provide_bot_qr_code", methods=["POST"])
-def provide_bot_qr_code():
+@app.route("/get_bot_qr_code", methods=["POST"])
+def get_bot_qr_code():
     """
     提供前端一个二维码
     :return:
