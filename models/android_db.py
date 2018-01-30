@@ -7,8 +7,33 @@ from config import db
 logger = logging.getLogger("main")
 
 
+class ABot(db.Model):
+    __tablename__ = 'a_bot'
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    username = db.Column(db.String(32), index=True, unique=True, nullable=False)
+    nickname = db.Column(db.String(64), index=True, nullable=False, default="")
+    quan_pin = db.Column(db.String(256), index=True, nullable=False, default="")
+    py_initial = db.Column(db.String(64), index=True, nullable=False, default="")
+    alias = db.Column(db.String(128), index=True, nullable=False, default="")
+    chatroom_flag = db.Column(db.Boolean, index=True, nullable=False, default=0)
+    verify_flag = db.Column(db.Boolean, index=True, nullable=False, default=0)
+    contact_label_ids = db.Column(db.String(256), index=True, nullable=False, default="")
+    type = db.Column(db.Integer, index=True, nullable=False)
+    show_head = db.Column(db.BigInteger)
+    lvbuff = db.Column(db.BLOB)
+
+    imgflag = db.Column(db.Integer)
+    img_lastupdatetime = db.Column(db.BigInteger, index=True, nullable=False, default=0)
+    avatar_url1 = db.Column(db.String(1024))
+    avatar_url2 = db.Column(db.String(1024))
+    reserved3 = db.Column(db.Boolean)
+    reserved4 = db.Column(db.Integer)
+
+    create_time = db.Column(db.DateTime, index=True, nullable=False)
+    update_time = db.Column(db.DateTime, index=True, nullable=False)
+
+
 class AChatroom(db.Model):
-    __bind_key__ = 'android_db'
     __tablename__ = 'a_chatroom'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     chatroomname = db.Column(db.String(32), index=True, unique=True, nullable=False)
@@ -37,7 +62,6 @@ class AChatroom(db.Model):
 
 
 class AChatroomR(db.Model):
-    __bind_key__ = 'android_db'
     __tablename__ = 'a_chatroom_r'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     chatroomname = db.Column(db.String(32), index=True, nullable=False)
@@ -50,7 +74,6 @@ class AChatroomR(db.Model):
 
 
 class AChatroomOwner(db.Model):
-    __bind_key__ = 'android_db'
     __tablename__ = 'a_chatroom_owner'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     chatroom_id = db.Column(db.BigInteger, index=True, nullable=True)
@@ -74,7 +97,6 @@ class AChatroomOwner(db.Model):
 
 
 class AContact(db.Model):
-    __bind_key__ = 'android_db'
     __tablename__ = 'a_contact'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     username = db.Column(db.String(32), index=True, unique=True, nullable=False)
@@ -101,7 +123,6 @@ class AContact(db.Model):
 
 
 class AFriend(db.Model):
-    __bind_key__ = 'android_db'
     __tablename__ = 'a_friend'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     from_username = db.Column(db.String(32), index=True, nullable=False)
@@ -117,7 +138,6 @@ class AFriend(db.Model):
 
 
 class AMember(db.Model):
-    __bind_key__ = 'android_db'
     __tablename__ = 'a_member'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     chatroom_id = db.Column(db.BigInteger, index=True, unique=True, nullable=False)

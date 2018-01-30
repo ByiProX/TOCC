@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from config import db
+from utils.u_model_json_str import model_to_dict
 
 
 class UserInfo(db.Model):
@@ -11,14 +12,13 @@ class UserInfo(db.Model):
     user_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
 
     # 微信给的公众号唯一主键
-    open_id = db.Column(db.String(64), index=True, unique=True, nullable=False)  # 28 chars
+    open_id = db.Column(db.String(64), index=True, unique=True, nullable=False)
 
     # 公众号与小程序的共同主键
-    union_id = db.Column(db.String(64), index=True)  # 28 chars
-
+    union_id = db.Column(db.String(64), index=True)
     nick_name = db.Column(db.String(64), index=True, nullable=False)
 
-    # 0为女性 1为男性
+    # 0为未知 1为男性 2为女性
     sex = db.Column(db.SmallInteger, index=True, nullable=False)
 
     province = db.Column(db.String(64), index=True, nullable=False)
@@ -35,6 +35,26 @@ class UserInfo(db.Model):
     token = db.Column(db.String(256), index=True, nullable=False)
     token_expired_time = db.Column(db.DateTime, index=True, nullable=False)
 
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        res.pop('open_id')
+        res.pop('union_id')
+        res.pop('code')
+        res.pop('token_expired_time')
+        return res
+
+
+class UserPermission(db.Model):
+    """
+    记录每个用户每个功能的最高权限
+    """
+    __tablename__ = 'user_permission'
+    user_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    max_bot_number = db.Column(db.Integer, index=True, nullable=True)
+    max_group_number = db.Column(db.Integer, index=True, nullable=True)
+    max_qun_number = db.Column(db.Integer, index=True, nullable=True)
+    # ！不使用
+
 
 class UserBotRelateInfo(db.Model):
     """
@@ -42,22 +62,38 @@ class UserBotRelateInfo(db.Model):
     之后如果有多对多的关系时，每个群里绑定的是哪个机器人是用user_bot_id进行同步
     """
     __tablename__ = 'user_bot_relate_info'
-    user_bot_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    user_bot_rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     user_id = db.Column(db.BigInteger, index=True, nullable=False)
-    wechat_bot_id = db.Column(db.BigInteger, index=True, nullable=False)
-    wechat_bot_seq = db.Column(db.Integer, index=True, nullable=False)
+    bot_id = db.Column(db.BigInteger, index=True, nullable=False)
+    wechat_bot_seq = db.Column(db.Integer, index=True, nullable=True)
 
-    db.UniqueConstraint(user_id, wechat_bot_id, name='ix_user_bot_relate_user_id_wechat_two_id')
+    # 用户设置的机器人昵称
+    chatbot_default_nickname = db.Column(db.String(32), index=True, nullable=True)
+
+    preset_time = db.Column(db.DateTime, index=True, nullable=False)
+    set_time = db.Column(db.DateTime, index=True, nullable=False)
+    is_setted = db.Column(db.Boolean, index=True, nullable=False)
+    is_being_used = db.Column(db.Boolean, index=True, nullable=False)
+
+    db.UniqueConstraint(user_id, bot_id, name='ix_user_bot_relate_user_id_wechat_two_id')
+
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        return res
 
 
-class WechatBotInfo(db.Model):
+class BotInfo(db.Model):
     """
-    机器人的信息
+    bot的状态以及和真实bot的联查
     """
-    # 这里可能有一个状态问题，就是bot的资源用光了
-    __tablename__ = 'wechat_bot_info'
-    wechat_bot_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-    wechat_bot_name = db.Column(db.String(128), index=True, nullable=False)
+    bot_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    # 安卓端返回的唯一id
+    username = db.Column(db.String(32), index=True, nullable=True)
+
+    create_bot_time = db.Column(db.DateTime, index=True, nullable=False)
+    is_alive = db.Column(db.Boolean, index=True, nullable=False)
+    alive_detect_time = db.Column(db.DateTime, index=True, nullable=False)
+    qr_code = db.Column(db.String(256), nullable=True)
 
 
 class AccessToken(db.Model):

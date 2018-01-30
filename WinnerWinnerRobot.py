@@ -5,6 +5,12 @@ from config import app
 
 from utils import u_log
 
+import models
+import api
+
+models.import_str = ""
+api.api_str = ""
+
 __version__ = "0.0.2"
 
 
@@ -15,6 +21,15 @@ def hello():
 
 
 u_log.verify_logs_folder_exist()
+
+
+def initial_all():
+    from maintenance import create_all_databases, initial_some_user_info, initial_some_bot_info
+    create_all_databases()
+    initial_some_user_info()
+    initial_some_bot_info()
+    exit()
+
 
 logger = logging.getLogger('main')
 

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os
+from platform import platform
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -51,7 +53,50 @@ config_map = {
     'test': TestConfig,
 }
 
-config_name = 'dev'
+print("---------------------------")
+print("-*       进入设置模式      *-")
+print("---------------------------")
+
+now_platform = str(platform())
+if now_platform == "Linux-2.6.18-412.el5-x86_64-with-redhat-5.11-Final":
+    res = raw_input("系统版本与235服务器相同，是否使用生产环境(y/n)? ")
+    if res == "y" or res == 'Y' or res == 'yes' or res == 'YES' or res == 'Yes':
+        config_name = 'production'
+    else:
+        print("目前使用平台:" + platform())
+        print("1 production")
+        print("2 dev")
+        print("3 test")
+        res = raw_input("请选择数据库版本，回车为dev版本(1/2/3)？")
+        if res == "1":
+            print("已选择production环境")
+            config_name = 'production'
+        elif res == "2" or res == "":
+            print("已选择dev环境")
+            config_name = 'dev'
+        elif res == "3":
+            print("已选择test环境")
+            config_name = 'test'
+        else:
+            raise ValueError("没有设置环境参数")
+else:
+    print("目前使用平台:" + platform())
+    print("1 production")
+    print("2 dev")
+    print("3 test")
+    res = raw_input("请选择数据库版本，回车为dev版本(1/2/3)？")
+    if res == "1":
+        print("该平台版本非服务器版本，请在服务器上运行或更新服务器版本")
+        config_name = 'dev'
+        exit()
+    elif res == "2" or res == "":
+        print("已选择dev环境")
+        config_name = 'dev'
+    elif res == "3":
+        print("已选择test环境")
+        config_name = 'test'
+    else:
+        raise ValueError("没有设置环境参数")
 
 app = Flask(__name__)
 app.config.from_object(config_map[config_name])
@@ -78,6 +123,25 @@ ERROR_CODE[ERR_USER_LOGIN_FAILED] = {'discription': '用户登录失败，没有
 # 无效的token
 ERR_USER_TOKEN = 'err_user_token'
 ERROR_CODE[ERR_USER_TOKEN] = {'discription': '无效的token', 'status_code': -4}
+# 操作内容与用户身份不符
+ERR_WRONG_USER_ITEM = 'err_wrong_user_item'
+ERROR_CODE[ERR_WRONG_USER_ITEM] = {'discription': '操作内容与用户身份不符', 'status_code': -5}
+# 操作内容不存在或错误
+ERR_WRONG_ITEM = 'err_wrong_item'
+ERROR_CODE[ERR_WRONG_ITEM] = {'discription': '操作内容不存在或错误', 'status_code': -6}
+# 设置参数错误
+ERR_PARAM_SET = 'err_param_set'
+ERROR_CODE[ERR_PARAM_SET] = {'discription': '设置参数错误', 'status_code': -7}
+# 设置完成bot超过用户最大上限
+ERR_MAXIMUM_BOT = 'err_maximum_bot'
+ERROR_CODE[ERR_MAXIMUM_BOT] = {'discription': '设置完成bot超过用户最大上限', 'status_code': -8}
+# 目前没有可用机器人
+ERR_NO_ALIVE_BOT = 'err_no_alive_bot'
+ERROR_CODE[ERR_NO_ALIVE_BOT] = {'discription': '目前没有可用机器人', 'status_code': -9}
+
+# 建立默认分组时已有默认分组
+WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
+ERROR_CODE[WARN_HAS_DEFAULT_QUN] = {'discription': '建立默认分组时已有默认分组', 'status_code': 1}
 
 # 用户的token过期时间（单位为日）
 TOKEN_EXPIRED_THRESHOLD = 365

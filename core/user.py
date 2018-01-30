@@ -4,14 +4,14 @@ import logging
 import hashlib
 
 from datetime import datetime, timedelta
+from sqlalchemy import func
 
-from config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, ERR_USER_TOKEN
+from config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
+    ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT
 from core.wechat import WechatConn
-from models.user_bot import UserInfo
+from models.user_bot import UserInfo, UserBotRelateInfo, BotInfo
 
 logger = logging.getLogger('main')
-
-wechat_conn = WechatConn()
 
 
 class UserLogin:
@@ -21,6 +21,7 @@ class UserLogin:
         self.user_access_token = ""
         self.now_user_info = None
         self.user_info_up_to_date = None
+        self.wechat_conn = WechatConn()
 
         self._get_open_id_and_user_access_token()
 
@@ -28,7 +29,7 @@ class UserLogin:
         """
         根据前端微信返回的code，去wechat的api处调用open_id
         """
-        res_json = wechat_conn.get_open_id_by_code(code=self.code)
+        res_json = self.wechat_conn.get_open_id_by_code(code=self.code)
         self.open_id = res_json.get('openid')
         self.user_access_token = res_json.get('access_token')
 
@@ -103,14 +104,14 @@ class UserLogin:
         if user_info:
 
             if datetime.now() < user_info.token_expired_time:
-                return SUCCESS
+                return SUCCESS, user_info
             else:
-                return ERR_USER_TOKEN_EXPIRED
+                return ERR_USER_TOKEN_EXPIRED, None
         else:
-            return ERR_USER_TOKEN
+            return ERR_USER_TOKEN, None
 
     def _get_user_info_from_wechat(self):
-        res_json = wechat_conn.get_user_info(open_id=self.open_id, user_access_token=self.user_access_token)
+        res_json = self.wechat_conn.get_user_info(open_id=self.open_id, user_access_token=self.user_access_token)
 
         if res_json.get('openid'):
             self.user_info_up_to_date = UserInfo()
@@ -142,3 +143,60 @@ class UserLogin:
         m2.update(pre_str)
         token = m2.hexdigest()
         return token
+
+
+def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
+    ubr_info_list = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id).all()
+    if len(ubr_info_list) > 1:
+        raise ValueError("已经有多于一个机器人，不可以再预设置机器人")
+    elif len(ubr_info_list) == 1:
+        if ubr_info_list[0].is_setted:
+            return ERR_MAXIMUM_BOT, None
+        else:
+            ubr_info = ubr_info_list[0]
+    else:
+        ubr_info = UserBotRelateInfo()
+
+    ubr_info.user_id = user_info.user_id
+
+    bot_info = _get_a_balanced_bot()
+    if not bot_info:
+        return ERR_NO_ALIVE_BOT, None
+
+    ubr_info.bot_id = bot_info.bot_id
+
+    ubr_info.chatbot_default_nickname = chatbot_default_nickname
+    ubr_info.preset_time = datetime.now()
+    ubr_info.set_time = 0
+    ubr_info.is_setted = False
+    ubr_info.is_being_used = False
+
+    db.session.add(ubr_info)
+    db.session.commit()
+
+    return SUCCESS, ubr_info
+
+
+def _get_a_balanced_bot():
+    """
+    得到一个平衡过数量的bot
+    :return:
+    """
+
+    bot_info_list = db.session.query(BotInfo).all()
+    bot_used_dict = dict()
+    for bot_info in bot_info_list:
+        bot_used_dict.setdefault(bot_info.bot_id, 0)
+        ugc = db.session.query(func.count(UserBotRelateInfo.user_id)).filter(
+            UserBotRelateInfo.bot_id == bot_info.bot_id, UserBotRelateInfo.is_being_used == 1).first()
+        if ugc:
+            bot_used_dict[bot_info.bot_id] = int(ugc[0])
+
+    ugls = sorted(bot_used_dict.items(), key=lambda d: d[1])
+    if ugls:
+        for eug in ugls:
+            bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == eug[0], BotInfo.is_alive == 1).first()
+            if bot_info:
+                return bot_info
+
+    return None

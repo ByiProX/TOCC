@@ -1,60 +1,85 @@
 # -*- coding: utf-8 -*-
 
 from config import db
+from utils.u_model_json_str import model_to_dict
 
 
-# 整体结构需要重做，一方面一个群只能在一个组里面，另一方面，所有的属性和权限要精确到群而不是精确到组
-# class GroupInfo(db.Model):
-#     """
-#     存储用户的分组
-#     """
-#     __tablename__ = "group_info"
-#     group_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-#
-#     # 组名称，如果不设置则有默认，不能为空
-#     group_name = db.Column(db.String(16), index=True, nullable=False)
-#
-#
-# class GroupUserRelateInfo(db.Model):
-#     """
-#     存储每个组与每个用户的关系，同时代表着每个用户对每个组的总权限，各个功能控制权限等等
-#     """
-#     __tablename__ = "group_user_relate_info"
-#     group_user_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-#     group_id = db.Column(db.BigInteger, index=True, nullable=False)
-#     user_id = db.Column(db.BigInteger, index=True, nullable=False)
-#     is_default_group = db.Column(db.Boolean, index=True, nullable=False)
-#
-#     # 用于标志这个组谁是最大权限（初始情况下代表这个群是谁建立的）
-#     is_admin = db.Column(db.Boolean, index=True, nullable=False)
-#
-#     # 用于标志这个组中这个人是否有看的权限（有看这个组的权限不一定有看这个组的其他权限，只是说能看到这个组）
-#     is_viewer = db.Column(db.Boolean, index=True, nullable=False)
-#
-#     # 标志这个人是否可以看到这个组中所有的设置
-#     view_send_qun_messages = db.Column(db.Boolean, index=True, nullable=False)
-#     view_qun_sign = db.Column(db.Boolean, index=True, nullable=False)
-#     view_auto_reply = db.Column(db.Boolean, index=True, nullable=False)
-#     view_welcome_message = db.Column(db.Boolean, index=True, nullable=False)
-#
-#     # 标志这个人是否可以使用这些功能（使用这些功能不一定代表能看到之前的设置）
-#     func_send_qun_messages = db.Column(db.Boolean, index=True, nullable=False)
-#     func_qun_sign = db.Column(db.Boolean, index=True, nullable=False)
-#     func_auto_reply = db.Column(db.Boolean, index=True, nullable=False)
-#     func_welcome_message = db.Column(db.Boolean, index=True, nullable=False)
-#
-#     db.UniqueConstraint(group_id, user_id, name='ix_group_user_relate_info_two_id')
-#
-#
-# class GroupQunRelateInfo(db.Model):
-#     """
-#     存储每个组中有哪些群
-#     目前改为了一个群只能被分配到一个分组中
-#     """
-#     __tablename__ = "group_qun_relate_info"
-#     group_qun_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-#     group_id = db.Column(db.BigInteger, index=True, nullable=False)
-#     chatroomname = db.Column(db.String(32), index=True, unique=True, nullable=False)
-#     is_deleted = db.Column(db.Boolean, index=True, nullable=False)
-#
-#     # db.UniqueConstraint(group_id, chatroomname, name='ix_group_qun_relate_info_two_id')
+class GroupInfo(db.Model):
+    """
+    一个User可以有多个Group，一个Group只可以给一个人
+    """
+    __tablename__ = "group_name"
+    group_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    group_nickname = db.Column(db.String(32), index=True, nullable=False)
+
+    user_id = db.Column(db.BigInteger, index=True, nullable=False)
+    user_group_seq = db.Column(db.Integer, index=True, nullable=True)
+
+    create_time = db.Column(db.DateTime, index=True, nullable=False)
+
+    # 是否是未分群组
+    is_default = db.Column(db.Boolean, index=True, nullable=False)
+
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        return res
+
+
+class UserQunRelateInfo(db.Model):
+    """
+    每个人看到的群都是一个新群，所以整个项目的群id应该为这个表的自增项
+    """
+    __tablename__ = 'user_qun_relate_info'
+    uqun_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.BigInteger, index=True, nullable=False)
+    chatroomname = db.Column(db.String(32), index=True, nullable=False)
+
+    # 该群属于哪个组
+    group_id = db.Column(db.BigInteger, index=True, nullable=False)
+
+    # 群中的机器人的昵称，如果为空则用用户默认机器人名称
+    chatbot_nickname = db.Column(db.String(32), index=True, nullable=True)
+
+    # 群先后顺序排名预留
+    user_qun_seq = db.Column(db.Integer, index=True, nullable=False)
+    create_time = db.Column(db.DateTime, index=True, nullable=False)
+
+    # 当群被删除时，标记该群
+    is_deleted = db.Column(db.Boolean, index=True, nullable=False)
+
+    db.UniqueConstraint(user_id, chatroomname, name='ix_user_qun_relate_info_two_id')
+
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        res.pop("chatroomname")
+        return res
+
+
+class UserQunBotRealteInfo(db.Model):
+    """
+    每个uqun中每个用户有哪些bot，这些bot的状态是否没有问题
+    """
+    rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    user_bot_rid = db.Column(db.BigInteger, index=True, nullable=False)
+    is_error = db.Column(db.SmallInteger, index=True, nullable=False)
+
+
+class CollaboratorUserRelateInfo(db.Model):
+    """
+    记录协作者对于每一个群的权限
+    """
+    rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    collaborator_user_id = db.Column(db.BigInteger, index=True, nullable=False)
+    admin_user_id = db.Column(db.BigInteger, index=True, nullable=False)
+
+    # 标志这个人是否可以看到这个组中所有的设置
+    view_send_qun_messages = db.Column(db.Boolean, index=True, nullable=False)
+    view_qun_sign = db.Column(db.Boolean, index=True, nullable=False)
+    view_auto_reply = db.Column(db.Boolean, index=True, nullable=False)
+    view_welcome_message = db.Column(db.Boolean, index=True, nullable=False)
+
+    # 标志这个人是否可以使用这些功能（使用这些功能不一定代表能看到之前的设置）
+    func_send_qun_messages = db.Column(db.Boolean, index=True, nullable=False)
+    func_qun_sign = db.Column(db.Boolean, index=True, nullable=False)
+    func_auto_reply = db.Column(db.Boolean, index=True, nullable=False)
+    func_welcome_message = db.Column(db.Boolean, index=True, nullable=False)
