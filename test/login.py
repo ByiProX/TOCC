@@ -238,7 +238,7 @@ class SetDefaultGroupTestCase(unittest.TestCase):
         db.session.commit()
 
     def test_set_default_group(self):
-        status = set_default_group(self.user_info)
+        set_default_group(self.user_info)
         group_list = db.session.query(GroupInfo).filter(GroupInfo.user_id == self.user_info.user_id).all()
         self.assertEqual(len(group_list), 1)
 
