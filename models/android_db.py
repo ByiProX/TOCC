@@ -44,6 +44,7 @@ class AChatroom(db.Model):
     roomflag = db.Column(db.SmallInteger, index=True, nullable=False, default=0)
     roomowner = db.Column(db.String(32), index=True, nullable=False, default="")
     roomdata = db.Column(db.BLOB)
+    member_count = db.Column(db.Integer, index=True, nullable=False)
     is_show_name = db.Column(db.Boolean, index=True, nullable=False, default=1)
     self_display_name = db.Column(db.String(64), index=True, nullable=False, default="")
     style = db.Column(db.Integer, index=True, nullable=False, default=0)
