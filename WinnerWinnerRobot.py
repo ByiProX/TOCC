@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from config import app
+from config import app, main_api
 
 from utils import u_log
 
 import models
 import api
+
+app.register_blueprint(main_api, url_prefix='/api')
 
 models.import_str = ""
 api.api_str = ""

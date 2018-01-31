@@ -31,6 +31,7 @@ def add_wechat_bot_info(b_info=None):
         ubr_info = UserBotRelateInfo()
     db.session.commit()
 
+
 # 测试使用
 def initial_some_user_info():
     user_info_1 = UserInfo()
@@ -50,6 +51,11 @@ def initial_some_user_info():
     user_info_1.token = 'test_token_123'
     user_info_1.token_expired_time = datetime.now() + timedelta(days=5)
 
+    user_info_1.func_send_qun_messages = False
+    user_info_1.func_qun_sign = False
+    user_info_1.func_auto_reply = False
+    user_info_1.func_welcome_message = False
+
     user_info_2 = UserInfo()
     user_info_2.open_id = "test_open_id_2"
     user_info_2.union_id = "test_union_id_2"
@@ -67,9 +73,15 @@ def initial_some_user_info():
     user_info_2.token = 'test_token_345'
     user_info_2.token_expired_time = datetime.now() + timedelta(days=5)
 
+    user_info_2.func_send_qun_messages = False
+    user_info_2.func_qun_sign = False
+    user_info_2.func_auto_reply = False
+    user_info_2.func_welcome_message = False
+
     db.session.add(user_info_1)
     db.session.add(user_info_2)
     db.session.commit()
+
 
 def initial_some_bot_info():
     bot_info_1 = BotInfo()
@@ -89,7 +101,6 @@ def initial_some_bot_info():
     bot_info_3.create_bot_time = datetime.now()
     bot_info_3.is_alive = False
     bot_info_3.alive_detect_time = datetime.now()
-
 
     db.session.add(bot_info_1)
     db.session.add(bot_info_2)

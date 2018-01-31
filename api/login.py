@@ -3,12 +3,12 @@ import json
 
 from flask import request
 
-from config import app, SUCCESS
-from core.user import UserLogin, add_a_pre_relate_user_bot_info
+from config import SUCCESS, main_api
+from core.user import UserLogin, add_a_pre_relate_user_bot_info, cal_user_basic_page_info, get_bot_qr_code
 from utils.u_response import make_response
 
 
-@app.route('/verify_code', methods=['POST'])
+@main_api.route('/verify_code', methods=['POST'])
 def app_verify_code():
     """
     用于验证
@@ -26,15 +26,24 @@ def app_verify_code():
         return make_response(status)
 
 
-def get_user_basic_info():
+def app_get_user_basic_info():
     """
     读取用户管理界面的所有的信息
     """
-    pass
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    status, res = cal_user_basic_page_info(user_info)
+
+    if status == SUCCESS:
+        return make_response(status, res=res)
+    else:
+        return make_response(status)
 
 
-@app.route('/set_rebot_nickname', methods=['POST'])
-def set_rebot_nickname():
+@main_api.route('/set_rebot_nickname', methods=['POST'])
+def app_set_rebot_nickname():
     """
     用于设置rebot名字
     """
@@ -49,19 +58,28 @@ def set_rebot_nickname():
     return make_response(status)
 
 
-@app.route("/get_bot_qr_code", methods=["POST"])
-def get_bot_qr_code():
+@main_api.route("/get_bot_qr_code", methods=["POST"])
+def app_get_bot_qr_code():
     """
     提供前端一个二维码
     :return:
     """
-    # 这里是前端来一个请求，然后返回后端一个图片
-    # 可能需要根据bot情况进行负载均衡
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    status, res = get_bot_qr_code(user_info)
+
+    if status != SUCCESS:
+        return make_response(status)
+    else:
+        return make_response(status, res=res)
+
     pass
 
 
-@app.route("/binded_wechat_bot", methods=["POST"])
-def binded_wechat_bot():
+@main_api.route("/binded_wechat_bot", methods=["POST"])
+def app_binded_wechat_bot():
     """
     当捆绑bot成功时，我应该得到的消息
     :return:

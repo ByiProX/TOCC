@@ -7,8 +7,10 @@ from datetime import datetime, timedelta
 from sqlalchemy import func
 
 from config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
-    ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT
+    ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM
 from core.wechat import WechatConn
+from models.android_db import AMember
+from models.qun_friend import UserQunRelateInfo
 from models.user_bot import UserInfo, UserBotRelateInfo, BotInfo
 
 logger = logging.getLogger('main')
@@ -175,6 +177,54 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
     db.session.commit()
 
     return SUCCESS, ubr_info
+
+
+def cal_user_basic_page_info(user_info):
+    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
+                                                          UserBotRelateInfo.is_being_used == 1).first()
+
+    if ubr_info:
+        uqr_info_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == user_info.user_id,
+                                                                   UserQunRelateInfo.is_deleted == 0).all()
+        qun_count = len(uqr_info_list)
+        if not uqr_info_list:
+            # 目前没有控制的群，不需要下一步统计
+            member_count = 0
+            pass
+        else:
+            member_count = db.session.query(func.count(AMember.username)).filter(
+                AMember.chatroomname.in_(uqr_info_list)).first()
+
+        res = dict()
+        res.setdefault("bot_info", {})
+        res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
+        res['bot_info'].setdefault('qun_count', qun_count)
+        res['bot_info'].setdefault('cover_member_count', member_count)
+        res.setdefault("user_func", {})
+        res['user_func'].setdefault('func_send_qun_messages', ubr_info.func_send_qun_messages)
+        res['user_func'].setdefault('func_qun_sign', ubr_info.func_qun_sign)
+        res['user_func'].setdefault('func_auto_reply', ubr_info.func_auto_reply)
+        res['user_func'].setdefault('func_welcome_message', ubr_info.func_welcome_message)
+        return SUCCESS, res
+
+    # 用户目前没有机器人
+    else:
+        return INFO_NO_USED_BOT, None
+
+
+def get_bot_qr_code(user_info):
+    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
+                                                          UserBotRelateInfo.is_being_used == 1).first()
+
+    if not ubr_info:
+        return INFO_NO_USED_BOT, None
+
+    bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
+
+    if not bot_info:
+        return ERR_WRONG_ITEM, None
+
+    return SUCCESS, bot_info.qr_code
 
 
 def _get_a_balanced_bot():

@@ -139,9 +139,8 @@ class AFriend(db.Model):
 
 class AMember(db.Model):
     __tablename__ = 'a_member'
-    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-    chatroom_id = db.Column(db.BigInteger, index=True, unique=True, nullable=False)
-    contact_id = db.Column(db.BigInteger, index=True, unique=True, nullable=False)
+    chatroomname = db.Column(db.String(32), primary_key=True, autoincrement=True)
+    username = db.Column(db.String(32), index=True, unique=True, nullable=False)
     displayname = db.Column(db.String(64), index=True, nullable=False, default="")
 
     create_time = db.Column(db.DateTime, index=True, nullable=False)

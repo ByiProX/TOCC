@@ -35,6 +35,11 @@ class UserInfo(db.Model):
     token = db.Column(db.String(256), index=True, nullable=False)
     token_expired_time = db.Column(db.DateTime, index=True, nullable=False)
 
+    func_send_qun_messages = db.Column(db.Boolean, index=True, nullable=False)
+    func_qun_sign = db.Column(db.Boolean, index=True, nullable=False)
+    func_auto_reply = db.Column(db.Boolean, index=True, nullable=False)
+    func_welcome_message = db.Column(db.Boolean, index=True, nullable=False)
+
     def to_json(self):
         res = model_to_dict(self, self.__class__)
         res.pop('open_id')

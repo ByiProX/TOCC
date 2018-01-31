@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-from platform import platform
 
-from flask import Flask
+from flask import Flask, Blueprint
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -53,58 +52,62 @@ config_map = {
     'test': TestConfig,
 }
 
-print("---------------------------")
-print("-*       进入设置模式      *-")
-print("---------------------------")
-
-now_platform = str(platform())
-if now_platform == "Linux-2.6.18-412.el5-x86_64-with-redhat-5.11-Final":
-    res = raw_input("系统版本与235服务器相同，是否使用生产环境(y/n)? ")
-    if res == "y" or res == 'Y' or res == 'yes' or res == 'YES' or res == 'Yes':
-        config_name = 'production'
-    else:
-        print("目前使用平台:" + platform())
-        print("1 production")
-        print("2 dev")
-        print("3 test")
-        res = raw_input("请选择数据库版本，回车为dev版本(1/2/3)？")
-        if res == "1":
-            print("已选择production环境")
-            config_name = 'production'
-        elif res == "2" or res == "":
-            print("已选择dev环境")
-            config_name = 'dev'
-        elif res == "3":
-            print("已选择test环境")
-            config_name = 'test'
-        else:
-            raise ValueError("没有设置环境参数")
-else:
-    print("目前使用平台:" + platform())
-    print("1 production")
-    print("2 dev")
-    print("3 test")
-    res = raw_input("请选择数据库版本，回车为dev版本(1/2/3)？")
-    if res == "1":
-        print("该平台版本非服务器版本，请在服务器上运行或更新服务器版本")
-        config_name = 'dev'
-        exit()
-    elif res == "2" or res == "":
-        print("已选择dev环境")
-        config_name = 'dev'
-    elif res == "3":
-        print("已选择test环境")
-        config_name = 'test'
-    else:
-        raise ValueError("没有设置环境参数")
+# print("---------------------------")
+# print("-*       进入设置模式      *-")
+# print("---------------------------")
+#
+# now_platform = str(platform())
+# if now_platform == "Linux-2.6.18-412.el5-x86_64-with-redhat-5.11-Final":
+#     res = raw_input("系统版本与235服务器相同，是否使用生产环境(y/n)? ")
+#     if res == "y" or res == 'Y' or res == 'yes' or res == 'YES' or res == 'Yes':
+#         config_name = 'production'
+#     else:
+#         print("目前使用平台:" + platform())
+#         print("1 production")
+#         print("2 dev")
+#         print("3 test")
+#         res = raw_input("请选择数据库版本，回车为dev版本(1/2/3)？")
+#         if res == "1":
+#             print("已选择production环境")
+#             config_name = 'production'
+#         elif res == "2" or res == "":
+#             print("已选择dev环境")
+#             config_name = 'dev'
+#         elif res == "3":
+#             print("已选择test环境")
+#             config_name = 'test'
+#         else:
+#             raise ValueError("没有设置环境参数")
+# else:
+#     print("目前使用平台:" + platform())
+#     print("1 production")
+#     print("2 dev")
+#     print("3 test")
+#     res = raw_input("请选择数据库版本，回车为dev版本(1/2/3)？")
+#     if res == "1":
+#         print("该平台版本非服务器版本，请在服务器上运行或更新服务器版本")
+#         config_name = 'dev'
+#         exit()
+#     elif res == "2" or res == "":
+#         print("已选择dev环境")
+#         config_name = 'dev'
+#     elif res == "3":
+#         print("已选择test环境")
+#         config_name = 'test'
+#     else:
+#         raise ValueError("没有设置环境参数")
+print("使用dev库")
+config_name = 'dev'
 
 app = Flask(__name__)
 app.config.from_object(config_map[config_name])
 config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
-APP_ID = 'wxbe0f84cc2b873c72'
-APP_SECRET = 'd6063862625c0a79719bc6167503f35e'
+APP_ID = 'wxc8b40fcec9626528'
+APP_SECRET = '6e63c26d856f7ecb1779f24ab2fc08f4'
+
+main_api = Blueprint('api', __name__)
 
 # 错误代码
 ERROR_CODE = dict()
@@ -142,6 +145,10 @@ ERROR_CODE[ERR_NO_ALIVE_BOT] = {'discription': '目前没有可用机器人', 's
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
 ERROR_CODE[WARN_HAS_DEFAULT_QUN] = {'discription': '建立默认分组时已有默认分组', 'status_code': 1}
+
+# 该用户目前无正在使用中的bot
+INFO_NO_USED_BOT = 'info_no_used_bot'
+ERROR_CODE[INFO_NO_USED_BOT] = {'discription': '该用户目前无正在使用中的bot', 'status_code': 20001}
 
 # 用户的token过期时间（单位为日）
 TOKEN_EXPIRED_THRESHOLD = 365
