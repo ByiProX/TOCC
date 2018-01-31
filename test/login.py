@@ -6,7 +6,9 @@ import json
 from datetime import datetime, timedelta
 
 from config import db
+from core.qun_manage import set_default_group
 from models.android_db import ABot
+from models.qun_friend import GroupInfo
 from models.user_bot import UserInfo, BotInfo, UserBotRelateInfo
 
 
@@ -218,6 +220,36 @@ class UserBasicInfoAllInfoTestCase(unittest.TestCase):
 
 class GetBalancedBotTestCase(unittest.TestCase):
     pass
+
+
+class SetDefaultGroupTestCase(unittest.TestCase):
+    def setUp(self):
+        import WinnerWinnerRobot
+
+        WinnerWinnerRobot.app.config["TESTING"] = True
+        self.app = WinnerWinnerRobot.app.test_client()
+
+        self.benchmark_token = 'g98jnrg3t9w'
+
+        self.user_info = get_a_default_test_user_info()
+        self.user_info.token = self.benchmark_token
+
+        db.session.add(self.user_info)
+        db.session.commit()
+
+    def test_set_default_group(self):
+        status = set_default_group(self.user_info)
+        group_list = db.session.query(GroupInfo).filter(GroupInfo.user_id == self.user_info.user_id).all()
+        self.assertEqual(len(group_list), 1)
+
+        self.group_info = group_list[0]
+        self.assertTrue(self.group_info.is_default)
+        self.assertEqual(self.group_info.group_nickname, u'未分组')
+
+    def tearDown(self):
+        db.session.delete(self.group_info)
+        db.session.delete(self.user_info)
+        db.session.commit()
 
 
 def get_a_default_test_user_info():
