@@ -139,9 +139,31 @@ class AFriend(db.Model):
 
 class AMember(db.Model):
     __tablename__ = 'a_member'
-    chatroomname = db.Column(db.String(32), primary_key=True, autoincrement=True)
-    username = db.Column(db.String(32), index=True, unique=True, nullable=False)
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    chatroomname = db.Column(db.String(32), index=True, nullable=True)
+    username = db.Column(db.String(32), index=True, nullable=False)
     displayname = db.Column(db.String(64), index=True, nullable=False, default="")
 
     create_time = db.Column(db.DateTime, index=True, nullable=False)
     update_time = db.Column(db.DateTime, index=True, nullable=False)
+
+    db.UniqueConstraint(chatroomname, username, name='ix_a_member_name')
+
+
+class AMessage(db.Model):
+    __tablename__ = 'a_message'
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    wechat_msg_id = db.Column(db.String(64), index = True, nullable = False)
+    username = db.Column(db.String(32), index = True, nullable = False)
+
+    type = db.Column(db.Integer, index = True, nullable = False)
+    status = db.Column(db.Integer, index = True, nullable = False)
+    is_send = db.Column(db.Boolean, index = True, nullable = False)
+    talker = db.Column(db.String(32), index = True, nullable = False)
+    content = db.Column(db.BLOB)
+    img_path = db.Column(db.String(256))
+    lvbuffer = db.Column(db.BLOB)
+
+    create_time = db.Column(db.DateTime, index = True, nullable = False)
+
+    db.UniqueConstraint(wechat_msg_id, username, name='ix_a_message_id')
