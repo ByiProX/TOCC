@@ -229,10 +229,10 @@ def cal_user_basic_page_info(user_info):
     else:
         res = dict()
         res.setdefault("user_func", {})
-        res['user_func'].setdefault('func_send_messages', ubr_info.func_send_qun_messages)
-        res['user_func'].setdefault('func_sign', ubr_info.func_qun_sign)
-        res['user_func'].setdefault('func_reply', ubr_info.func_auto_reply)
-        res['user_func'].setdefault('func_welcome', ubr_info.func_welcome_message)
+        res['user_func'].setdefault('func_send_messages', False)
+        res['user_func'].setdefault('func_sign', False)
+        res['user_func'].setdefault('func_reply', False)
+        res['user_func'].setdefault('func_welcome', False)
         return INFO_NO_USED_BOT, res
 
 
