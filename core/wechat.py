@@ -4,12 +4,15 @@ import logging
 import requests
 from datetime import datetime
 import json
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from config import db
 from config import APP_ID, APP_SECRET
 from models.user_bot import AccessToken
 from utils.u_model_json_str import unicode_to_str
 
+# 禁用安全请求警告
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 logger = logging.getLogger('main')
 
 
