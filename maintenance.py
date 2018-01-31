@@ -5,8 +5,7 @@ from datetime import datetime, timedelta
 
 import models
 import api
-from config import db
-from core.user import UserLogin
+from config import db, config_name
 from models.user_bot import UserBotRelateInfo, UserInfo, BotInfo
 
 models.import_str = ""
@@ -16,6 +15,8 @@ logger = logging.getLogger('main')
 
 
 def create_all_databases():
+    if config_name == 'production':
+        raise EnvironmentError("生产环境无法初始化库")
     db.drop_all()
     db.create_all()
 
@@ -28,7 +29,7 @@ def add_wechat_bot_info(b_info=None):
     if b_info and isinstance(b_info, UserBotRelateInfo):
         db.session.add(b_info)
     else:
-        ubr_info = UserBotRelateInfo()
+        raise NotImplementedError
     db.session.commit()
 
 

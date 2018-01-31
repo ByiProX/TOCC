@@ -4,7 +4,7 @@ import json
 from flask import request
 
 from config import SUCCESS, main_api
-from core.user import UserLogin, add_a_pre_relate_user_bot_info, cal_user_basic_page_info, get_bot_qr_code
+from core.user import UserLogin, add_a_pre_relate_user_bot_info, cal_user_basic_page_info, get_bot_qr_code, set_bot_name
 from utils.u_response import make_response
 
 
@@ -21,11 +21,12 @@ def app_verify_code():
     status, user_info = user_login.get_user_token()
 
     if status == SUCCESS:
-        return make_response(status, user_info=user_info.to_json())
+        return make_response(status, user_info=user_info.to_dict())
     else:
         return make_response(status)
 
 
+@main_api.route('/get_user_basic_info', methods=['POST'])
 def app_get_user_basic_info():
     """
     读取用户管理界面的所有的信息
@@ -42,11 +43,11 @@ def app_get_user_basic_info():
         return make_response(status)
 
 
-@main_api.route('/set_rebot_nickname', methods=['POST'])
-def app_set_rebot_nickname():
+@main_api.route('/initial_robot_nickname', methods=['POST'])
+def app_initial_robot_nickname():
     """
-    用于设置rebot名字
-    """
+        用于设置robot名字,并返回二维码
+        """
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -54,6 +55,31 @@ def app_set_rebot_nickname():
     bot_nickname = request.json.get('bot_nickname')
 
     status, ubr_info = add_a_pre_relate_user_bot_info(user_info, bot_nickname)
+
+    if status != SUCCESS:
+        return make_response(status)
+
+    status, res = get_bot_qr_code(user_info)
+    if status != SUCCESS:
+        return make_response(status)
+    else:
+        return make_response(status, res=res)
+
+
+@main_api.route('/set_robot_nickname', methods=['POST'])
+def app_set_robot_nickname():
+    """
+    用于设置rebot名字
+    """
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    bot_id = request.json.get('bot_id')
+
+    bot_nickname = request.json.get('bot_nickname')
+
+    status, ubr_info = set_bot_name(bot_id, bot_nickname, user_info)
 
     return make_response(status)
 
@@ -74,8 +100,6 @@ def app_get_bot_qr_code():
         return make_response(status)
     else:
         return make_response(status, res=res)
-
-    pass
 
 
 @main_api.route("/binded_wechat_bot", methods=["POST"])
