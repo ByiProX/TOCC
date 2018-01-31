@@ -38,10 +38,11 @@ def app_get_user_basic_info():
     status, res = cal_user_basic_page_info(user_info)
 
     if status == SUCCESS:
-        return make_response(status, bot_info=res['bot_info'], user_func=res['user_func'])
+        return make_response(status, bot_info=res['bot_info'], user_func=res['user_func'], total_info=res['total_info'])
     # 目前INFO均返回为SUCCESS
     elif status == INFO_NO_USED_BOT:
-        return make_response(SUCCESS, bot_info=res['bot_info'], user_func=res['user_func'])
+        return make_response(SUCCESS, bot_info=res['bot_info'], user_func=res['user_func'],
+                             total_info=res['total_info'])
     else:
         return make_response(status)
 

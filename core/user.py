@@ -9,7 +9,7 @@ from sqlalchemy import func
 from config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
     ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM
 from core.wechat import WechatConn
-from models.android_db import AContact
+from models.android_db import AContact, ABot
 from models.qun_friend import UserQunRelateInfo
 from models.user_bot import UserInfo, UserBotRelateInfo, BotInfo
 
@@ -216,11 +216,19 @@ def cal_user_basic_page_info(user_info):
         res.setdefault("bot_info", {})
         res['bot_info'].setdefault('bot_id', ubr_info.bot_id)
         res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
-        res['bot_info'].setdefault('qun_count', qun_count)
-        res['bot_info'].setdefault('cover_member_count', member_count)
-
         bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
+        if not bot_info:
+            return ERR_WRONG_ITEM, None
         res['bot_info'].setdefault('bot_status', bot_info.is_alive)
+        a_bot = db.session.query(ABot).filter(ABot.username == bot_info.username).first()
+        if not a_bot:
+            return ERR_WRONG_ITEM, None
+        res['bot_info'].setdefault('bot_avatar', a_bot.avatar_url2)
+        res['bot_info'].setdefault('bot_qr_code', bot_info.qr_code)
+
+        res.setdefault("total_info", {})
+        res['total_info'].setdefault('qun_count', qun_count)
+        res['total_info'].setdefault('cover_member_count', member_count)
 
         res.setdefault("user_func", {})
         res['user_func'].setdefault('func_send_messages', ubr_info.func_send_qun_messages)
@@ -233,6 +241,9 @@ def cal_user_basic_page_info(user_info):
     else:
         res = dict()
         res.setdefault("bot_info", None)
+        res.setdefault("total_info", {})
+        res['total_info'].setdefault('qun_count', 0)
+        res['total_info'].setdefault('cover_member_count', 0)
         res.setdefault("user_func", {})
         res['user_func'].setdefault('func_send_messages', False)
         res['user_func'].setdefault('func_sign', False)
@@ -243,10 +254,10 @@ def cal_user_basic_page_info(user_info):
 
 def get_bot_qr_code(user_info):
     ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
-                                                          UserBotRelateInfo.is_being_used == 1).first()
+                                                          UserBotRelateInfo.is_setted == 0).first()
 
     if not ubr_info:
-        return INFO_NO_USED_BOT, None
+        return ERR_WRONG_USER_ITEM, None
 
     bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
 
