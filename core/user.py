@@ -9,7 +9,7 @@ from sqlalchemy import func
 from config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
     ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM
 from core.wechat import WechatConn
-from models.android_db import AMember
+from models.android_db import AContact
 from models.qun_friend import UserQunRelateInfo
 from models.user_bot import UserInfo, UserBotRelateInfo, BotInfo
 
@@ -209,8 +209,8 @@ def cal_user_basic_page_info(user_info):
             for uqr_info in uqr_info_list:
                 chatroomname_list.append(uqr_info.chatroomname)
 
-            member_count = db.session.query(func.count(AMember.username)).filter(
-                AMember.chatroomname.in_(chatroomname_list)).first()
+            member_count = db.session.query(func.sum(AContact.member_count)).filter(
+                AContact.username.in_(chatroomname_list)).first()
 
         res = dict()
         res.setdefault("bot_info", {})

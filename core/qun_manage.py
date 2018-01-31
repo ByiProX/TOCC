@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from copy import deepcopy
 from datetime import datetime
 
 from config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM
+from models.android_db import AContact
 from models.qun_friend import GroupInfo, UserQunRelateInfo
 from models.user_bot import UserInfo
 
@@ -58,18 +60,39 @@ def get_group_list(user_info):
     for group_info in group_list:
         temp_dict = dict()
         temp_group_id = group_info.group_id
-        temp_dict.setdefault("group_id",temp_group_id)
-        temp_dict.setdefault("group_nickname",group_info.group_nickname)
-        temp_dict.setdefault("chatroom_list",[])
+        temp_dict.setdefault("group_id", temp_group_id)
+        temp_dict.setdefault("group_nickname", group_info.group_nickname)
+        temp_dict.setdefault("chatroom_list", [])
 
         uqr_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.group_id == temp_group_id,
                                                               UserQunRelateInfo.is_deleted == 0).all()
         for uqr_info in uqr_list:
-            temp_dict['chatroom_list']
-    raise NotImplementedError
+            temp_chatroom_dict = dict()
+            a_contact = db.session.query(AContact).filter(AContact.username == uqr_info.chatroomname).first()
+            if not a_contact:
+                return ERR_WRONG_ITEM, None
+
+            temp_chatroom_dict.setdefault("chatroom_id", uqr_info.uqun_id)
+
+            temp_chatroom_dict.setdefault("chatroom_nickname", a_contact.nickname)
+
+            temp_chatroom_dict.setdefault("chatroom_member_count", a_contact.member_count)
+
+            if uqr_info.is_deleted is True:
+                temp_chatroom_dict.setdefault("chatroom_status", -1)
+            else:
+                temp_chatroom_dict.setdefault("chatroom_status", 0)
+
+            temp_chatroom_dict.setdefault("chatroom_avatar", a_contact.avatar_url2)
+
+            temp_dict['chatroom_list'].append(deepcopy(temp_chatroom_dict))
+
+        res.append(deepcopy(temp_dict))
+
+    return SUCCESS, res
 
     # group_list是一个数组，里面是一个一个的对象group_id,group_nickname,group_chatroom_list,
-    # chatroom_list,里面是一个一个对象(chatroom_id,chatroom_nickname,chatroom_member_count,chatroom_status)
+    # chatroom_list,里面是一个一个对象(,)
 
 
 def rename_a_group(group_rename, group_id, user_id):
