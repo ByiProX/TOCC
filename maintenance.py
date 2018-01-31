@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import models
 import api
 from config import db, config_name
+from core.qun_manage import set_default_group
 from models.user_bot import UserBotRelateInfo, UserInfo, BotInfo
 
 models.import_str = ""
@@ -45,7 +46,7 @@ def initial_some_user_info():
     user_info_1.country = '中国'
     user_info_1.avatar_url = 'http:'
 
-    user_info_1.code = "sfvgkjvsgrkn"
+    user_info_1.code = "111"
     user_info_1.create_time = datetime.now()
 
     user_info_1.last_login_time = datetime.now()
@@ -67,7 +68,7 @@ def initial_some_user_info():
     user_info_2.country = '中国'
     user_info_2.avatar_url = 'http:'
 
-    user_info_2.code = "sfhsfbh"
+    user_info_2.code = "222"
     user_info_2.create_time = datetime.now()
 
     user_info_2.last_login_time = datetime.now()
@@ -106,4 +107,22 @@ def initial_some_bot_info():
     db.session.add(bot_info_1)
     db.session.add(bot_info_2)
     db.session.add(bot_info_3)
+    db.session.commit()
+
+
+def initial_user_bot_binded():
+    ubr_info = UserBotRelateInfo()
+    user_info = db.session.query(UserInfo).filter(UserInfo.code == "222").first()
+    bot_info = db.session.query(BotInfo).filter(BotInfo.username == "test_android_username_2").first()
+    ubr_info.user_id = user_info.user_id
+    ubr_info.bot_id = bot_info.bot_id
+    ubr_info.chatbot_default_nickname = "测试绑定机器人"
+    ubr_info.preset_time = datetime.now()
+    ubr_info.set_time = datetime.now()
+    ubr_info.is_setted = True
+    ubr_info.is_being_used = True
+
+    set_default_group(user_info)
+
+    db.session.add(ubr_info)
     db.session.commit()
