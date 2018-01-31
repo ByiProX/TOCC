@@ -47,6 +47,31 @@ def create_new_group(group_name, token=None, user_id=None, user_info=None):
     return SUCCESS
 
 
+def get_group_list(user_info):
+    group_list = db.session.query(GroupInfo).filter(GroupInfo.user_id == user_info.user_id).order_by(
+        GroupInfo.create_time).all()
+
+    if not group_list:
+        return ERR_WRONG_ITEM, None
+
+    res = []
+    for group_info in group_list:
+        temp_dict = dict()
+        temp_group_id = group_info.group_id
+        temp_dict.setdefault("group_id",temp_group_id)
+        temp_dict.setdefault("group_nickname",group_info.group_nickname)
+        temp_dict.setdefault("chatroom_list",[])
+
+        uqr_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.group_id == temp_group_id,
+                                                              UserQunRelateInfo.is_deleted == 0).all()
+        for uqr_info in uqr_list:
+            temp_dict['chatroom_list']
+    raise NotImplementedError
+
+    # group_list是一个数组，里面是一个一个的对象group_id,group_nickname,group_chatroom_list,
+    # chatroom_list,里面是一个一个对象(chatroom_id,chatroom_nickname,chatroom_member_count,chatroom_status)
+
+
 def rename_a_group(group_rename, group_id, user_id):
     group_info = db.session.query(GroupInfo.group_id == group_id).first()
     if not group_info:

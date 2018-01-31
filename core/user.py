@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import func
 
 from config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
-    ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM
+    ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM
 from core.wechat import WechatConn
 from models.android_db import AMember
 from models.qun_friend import UserQunRelateInfo
@@ -147,6 +147,19 @@ class UserLogin:
         return token
 
 
+def set_bot_name(bot_id, bot_nickname, user_info):
+    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.bot_id == bot_id,
+                                                          UserBotRelateInfo.user_id == user_info.user_id,
+                                                          UserBotRelateInfo.is_setted == 1).first()
+
+    if not ubr_info:
+        return ERR_WRONG_USER_ITEM
+
+    ubr_info.chatbot_default_nickname = bot_nickname
+    db.session.commit()
+    return SUCCESS
+
+
 def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
     ubr_info_list = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id).all()
     if len(ubr_info_list) > 1:
@@ -192,24 +205,35 @@ def cal_user_basic_page_info(user_info):
             member_count = 0
             pass
         else:
+            chatroomname_list = []
+            for uqr_info in uqr_info_list:
+                chatroomname_list.append(uqr_info.chatroomname)
+
             member_count = db.session.query(func.count(AMember.username)).filter(
-                AMember.chatroomname.in_(uqr_info_list)).first()
+                AMember.chatroomname.in_(chatroomname_list)).first()
 
         res = dict()
         res.setdefault("bot_info", {})
+        res['bot_info'].setdefault('bot_id', ubr_info.bot_id)
         res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
         res['bot_info'].setdefault('qun_count', qun_count)
         res['bot_info'].setdefault('cover_member_count', member_count)
         res.setdefault("user_func", {})
-        res['user_func'].setdefault('func_send_qun_messages', ubr_info.func_send_qun_messages)
-        res['user_func'].setdefault('func_qun_sign', ubr_info.func_qun_sign)
-        res['user_func'].setdefault('func_auto_reply', ubr_info.func_auto_reply)
-        res['user_func'].setdefault('func_welcome_message', ubr_info.func_welcome_message)
+        res['user_func'].setdefault('func_send_messages', ubr_info.func_send_qun_messages)
+        res['user_func'].setdefault('func_sign', ubr_info.func_qun_sign)
+        res['user_func'].setdefault('func_reply', ubr_info.func_auto_reply)
+        res['user_func'].setdefault('func_welcome', ubr_info.func_welcome_message)
         return SUCCESS, res
 
     # 用户目前没有机器人
     else:
-        return INFO_NO_USED_BOT, None
+        res = dict()
+        res.setdefault("user_func", {})
+        res['user_func'].setdefault('func_send_messages', ubr_info.func_send_qun_messages)
+        res['user_func'].setdefault('func_sign', ubr_info.func_qun_sign)
+        res['user_func'].setdefault('func_reply', ubr_info.func_auto_reply)
+        res['user_func'].setdefault('func_welcome', ubr_info.func_welcome_message)
+        return INFO_NO_USED_BOT, res
 
 
 def get_bot_qr_code(user_info):
