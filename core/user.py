@@ -194,7 +194,7 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
 
 def cal_user_basic_page_info(user_info):
     ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
-                                                          UserBotRelateInfo.is_being_used == 1).first()
+                                                          UserBotRelateInfo.is_setted == 0).first()
 
     if ubr_info:
         uqr_info_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == user_info.user_id,
@@ -231,10 +231,10 @@ def cal_user_basic_page_info(user_info):
         res['total_info'].setdefault('cover_member_count', member_count)
 
         res.setdefault("user_func", {})
-        res['user_func'].setdefault('func_send_messages', ubr_info.func_send_qun_messages)
-        res['user_func'].setdefault('func_sign', ubr_info.func_qun_sign)
-        res['user_func'].setdefault('func_reply', ubr_info.func_auto_reply)
-        res['user_func'].setdefault('func_welcome', ubr_info.func_welcome_message)
+        res['user_func'].setdefault('func_send_messages', user_info.func_send_qun_messages)
+        res['user_func'].setdefault('func_sign', user_info.func_qun_sign)
+        res['user_func'].setdefault('func_reply', user_info.func_auto_reply)
+        res['user_func'].setdefault('func_welcome', user_info.func_welcome_message)
         return SUCCESS, res
 
     # 用户目前没有机器人
