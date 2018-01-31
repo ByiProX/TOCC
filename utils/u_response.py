@@ -8,7 +8,7 @@ def make_response(*args, **kwargs):
     status = args[0]
 
     # a default json
-    response_body = jsonify({'err_code': ERROR_CODE[status], 'content': kwargs})
+    response_body = jsonify({'err_code': ERROR_CODE[status['status_code']], 'content': kwargs})
 
     # if status == LOGIN_SUCCESS_STATUS:
     #     token = args[2]
