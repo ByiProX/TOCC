@@ -8,7 +8,7 @@ class GroupInfo(db.Model):
     """
     一个User可以有多个Group，一个Group只可以给一个人
     """
-    __tablename__ = "group_name"
+    __tablename__ = "group_info"
     group_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     group_nickname = db.Column(db.String(32), index=True, nullable=False)
 
