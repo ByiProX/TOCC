@@ -35,4 +35,4 @@ logger = logging.getLogger('main')
 
 if __name__ == '__main__':
     logger.debug("开始程序")
-    app.run(host='0.0.0.0', port=4998, debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=5500, debug=True, use_reloader=False)
