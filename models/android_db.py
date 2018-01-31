@@ -154,7 +154,7 @@ class AMember(db.Model):
 class AMessage(db.Model):
     __tablename__ = 'a_message'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-    wechat_msg_id = db.Column(db.String(64), index = True, nullable = False)
+    msg_svr_id = db.Column(db.String(64), index = True, nullable = False)
     username = db.Column(db.String(32), index = True, nullable = False)
 
     type = db.Column(db.Integer, index = True, nullable = False)
@@ -164,7 +164,8 @@ class AMessage(db.Model):
     content = db.Column(db.BLOB)
     img_path = db.Column(db.String(256))
     lvbuffer = db.Column(db.BLOB)
+    reserved = db.Column(db.BLOB)
 
     create_time = db.Column(db.DateTime, index = True, nullable = False)
 
-    db.UniqueConstraint(wechat_msg_id, username, name='ix_a_message_id')
+    db.UniqueConstraint(msg_svr_id, username, name='ix_a_message_id')
