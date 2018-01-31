@@ -228,6 +228,7 @@ def cal_user_basic_page_info(user_info):
     # 用户目前没有机器人
     else:
         res = dict()
+        res.setdefault("bot_info", None)
         res.setdefault("user_func", {})
         res['user_func'].setdefault('func_send_messages', False)
         res['user_func'].setdefault('func_sign', False)
