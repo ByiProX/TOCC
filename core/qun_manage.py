@@ -91,9 +91,6 @@ def get_group_list(user_info):
 
     return SUCCESS, res
 
-    # group_list是一个数组，里面是一个一个的对象group_id,group_nickname,group_chatroom_list,
-    # chatroom_list,里面是一个一个对象(,)
-
 
 def rename_a_group(group_rename, group_id, user_id):
     group_info = db.session.query(GroupInfo.group_id == group_id).first()
