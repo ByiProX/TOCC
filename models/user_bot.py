@@ -40,7 +40,7 @@ class UserInfo(db.Model):
     func_auto_reply = db.Column(db.Boolean, index=True, nullable=False)
     func_welcome_message = db.Column(db.Boolean, index=True, nullable=False)
 
-    def to_json(self):
+    def to_dict(self):
         res = model_to_dict(self, self.__class__)
         res.pop('open_id')
         res.pop('union_id')
@@ -82,7 +82,7 @@ class UserBotRelateInfo(db.Model):
 
     db.UniqueConstraint(user_id, bot_id, name='ix_user_bot_relate_user_id_wechat_two_id')
 
-    def to_json(self):
+    def to_dict(self):
         res = model_to_dict(self, self.__class__)
         return res
 
@@ -99,6 +99,11 @@ class BotInfo(db.Model):
     is_alive = db.Column(db.Boolean, index=True, nullable=False)
     alive_detect_time = db.Column(db.DateTime, index=True, nullable=False)
     qr_code = db.Column(db.String(256), nullable=True)
+
+    def to_dict(self):
+        res = model_to_dict(self, self.__class__)
+        res.pop('username')
+        return res
 
 
 class AccessToken(db.Model):

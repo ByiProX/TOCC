@@ -20,7 +20,7 @@ class GroupInfo(db.Model):
     # 是否是未分群组
     is_default = db.Column(db.Boolean, index=True, nullable=False)
 
-    def to_json(self):
+    def to_dict(self):
         res = model_to_dict(self, self.__class__)
         return res
 
@@ -49,7 +49,7 @@ class UserQunRelateInfo(db.Model):
 
     db.UniqueConstraint(user_id, chatroomname, name='ix_user_qun_relate_info_two_id')
 
-    def to_json(self):
+    def to_dict(self):
         res = model_to_dict(self, self.__class__)
         res.pop("chatroomname")
         return res
