@@ -218,6 +218,10 @@ def cal_user_basic_page_info(user_info):
         res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
         res['bot_info'].setdefault('qun_count', qun_count)
         res['bot_info'].setdefault('cover_member_count', member_count)
+
+        bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
+        res['bot_info'].setdefault('bot_status', bot_info.is_alive)
+
         res.setdefault("user_func", {})
         res['user_func'].setdefault('func_send_messages', ubr_info.func_send_qun_messages)
         res['user_func'].setdefault('func_sign', ubr_info.func_qun_sign)
