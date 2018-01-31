@@ -116,6 +116,7 @@ def app_binded_wechat_bot():
     # 然后我这边确认，这个人是否已经在咱们的系统里面，如果在咱们的系统里面
     # 然后我把这个机器人绑上
     # ubr_info中的is_setted需要设置为true
+    #  set_default_group
     pass
 
 # 进群只能通过Message，
