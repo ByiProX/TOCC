@@ -3,7 +3,7 @@ import json
 
 from flask import request
 
-from config import SUCCESS, main_api
+from config import SUCCESS, main_api, INFO_NO_USED_BOT
 from core.user import UserLogin, add_a_pre_relate_user_bot_info, cal_user_basic_page_info, get_bot_qr_code, set_bot_name
 from utils.u_response import make_response
 
@@ -17,9 +17,11 @@ def app_verify_code():
     data_json = json.loads(request.data)
     code = data_json.get('code')
 
+
+
     user_login = UserLogin(code)
     status, user_info = user_login.get_user_token()
-
+    #TODO 这里有bug
     if status == SUCCESS:
         return make_response(status, user_info=user_info.to_dict())
     else:
@@ -39,6 +41,9 @@ def app_get_user_basic_info():
 
     if status == SUCCESS:
         return make_response(status, res=res)
+    # 目前INFO均返回为SUCCESS
+    elif status ==  INFO_NO_USED_BOT:
+        return make_response(SUCCESS, res=res)
     else:
         return make_response(status)
 
@@ -60,10 +65,13 @@ def app_initial_robot_nickname():
         return make_response(status)
 
     status, res = get_bot_qr_code(user_info)
-    if status != SUCCESS:
-        return make_response(status)
-    else:
+    if status == SUCCESS:
         return make_response(status, res=res)
+    # 目前INFO均返回为SUCCESS
+    elif status == INFO_NO_USED_BOT:
+        return make_response(SUCCESS, res=res)
+    else:
+        return make_response(status)
 
 
 @main_api.route('/set_robot_nickname', methods=['POST'])
@@ -96,10 +104,13 @@ def app_get_bot_qr_code():
 
     status, res = get_bot_qr_code(user_info)
 
-    if status != SUCCESS:
-        return make_response(status)
-    else:
+    if status == SUCCESS:
         return make_response(status, res=res)
+    # 目前INFO均返回为SUCCESS
+    elif status == INFO_NO_USED_BOT:
+        return make_response(SUCCESS, res=res)
+    else:
+        return make_response(status)
 
 
 @main_api.route("/binded_wechat_bot", methods=["POST"])
