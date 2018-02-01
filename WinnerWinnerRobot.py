@@ -5,7 +5,7 @@ from configs.config import app, main_api
 from maintenance import initial_a_bot
 
 from utils import u_log
-
+from maintenance import create_all_databases, initial_some_user_info, initial_some_bot_info, initial_user_bot_binded
 import models
 import api
 import configs
@@ -29,7 +29,6 @@ u_log.verify_logs_folder_exist()
 
 
 def initial_all():
-    from maintenance import create_all_databases, initial_some_user_info, initial_some_bot_info, initial_user_bot_binded
     create_all_databases()
     initial_some_user_info()
     initial_some_bot_info()
