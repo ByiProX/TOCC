@@ -109,6 +109,9 @@ APP_SECRET = '6e63c26d856f7ecb1779f24ab2fc08f4'
 
 main_api = Blueprint('api', __name__)
 
+# 生成所有任务的循环所需要用的时间
+PRODUCTION_CIRCLE_INTERVAL = 1
+
 # 错误代码
 ERROR_CODE = dict()
 # 正常
