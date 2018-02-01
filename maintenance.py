@@ -119,8 +119,8 @@ def initial_user_bot_binded():
     ubr_info.chatbot_default_nickname = "测试绑定机器人"
     ubr_info.preset_time = datetime.now()
     ubr_info.set_time = datetime.now()
-    ubr_info.is_setted = True
-    ubr_info.is_being_used = True
+    ubr_info.is_setted = False
+    ubr_info.is_being_used = False
 
     set_default_group(user_info)
 
