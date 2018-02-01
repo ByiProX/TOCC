@@ -142,7 +142,6 @@ class AMessage(db.Model):
     talker = db.Column(db.String(32), index = True, nullable = False)
     content = db.Column(db.BLOB)
     img_path = db.Column(db.String(256))
-    lvbuffer = db.Column(db.BLOB)
     reserved = db.Column(db.BLOB)
 
     create_time = db.Column(db.DateTime, index = True, nullable = False)
