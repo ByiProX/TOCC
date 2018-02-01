@@ -8,6 +8,7 @@ from datetime import datetime
 from sqlalchemy import desc
 
 from config import PRODUCTION_CIRCLE_INTERVAL, db
+from core.message_core import analysis_and_save_a_message
 from core.qun_manage import check_whether_message_is_add_qun
 from core.user import check_whether_message_is_add_friend
 from models.android_db import AMessage
@@ -55,13 +56,14 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
                 order_by(AMessage.id).all()
 
             if len(message_list) != 0:
+                for i, a_message in enumerate(message_list):
+                    message_analysis = analysis_and_save_a_message(a_message)
+                    check_whether_message_is_add_friend()
 
-                check_whether_message_is_add_friend()
+                    # 检查信息是否为加了一个群
+                    check_whether_message_is_add_qun()
 
-                # 检查信息是否为加了一个群
-                check_whether_message_is_add_qun()
-
-                # 处理完毕后将新情况存入
+                    # 处理完毕后将新情况存入
 
                 self.last_a_message_id = message_list[-1].id
                 self.last_a_message_create_time = message_list[-1].create_time
