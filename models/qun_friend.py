@@ -8,7 +8,7 @@ class GroupInfo(db.Model):
     """
     一个User可以有多个Group，一个Group只可以给一个人
     """
-    __tablename__ = "group_name"
+    __tablename__ = "group_info"
     group_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     group_nickname = db.Column(db.String(32), index=True, nullable=False)
 
@@ -59,6 +59,7 @@ class UserQunBotRealteInfo(db.Model):
     """
     每个uqun中每个用户有哪些bot，这些bot的状态是否没有问题
     """
+    __tablename__ = 'user_qun_bot_relate_info'
     rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     user_bot_rid = db.Column(db.BigInteger, index=True, nullable=False)
     is_error = db.Column(db.SmallInteger, index=True, nullable=False)
@@ -68,6 +69,7 @@ class CollaboratorUserRelateInfo(db.Model):
     """
     记录协作者对于每一个群的权限
     """
+    __tablename__ = 'collaborator_user_relate_info'
     rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     collaborator_user_id = db.Column(db.BigInteger, index=True, nullable=False)
     admin_user_id = db.Column(db.BigInteger, index=True, nullable=False)

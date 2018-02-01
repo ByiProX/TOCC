@@ -17,11 +17,9 @@ def app_verify_code():
     data_json = json.loads(request.data)
     code = data_json.get('code')
 
-
-
     user_login = UserLogin(code)
     status, user_info = user_login.get_user_token()
-    #TODO 这里有bug
+    # TODO 这里有bug
     if status == SUCCESS:
         return make_response(status, user_info=user_info.to_dict())
     else:
@@ -40,10 +38,11 @@ def app_get_user_basic_info():
     status, res = cal_user_basic_page_info(user_info)
 
     if status == SUCCESS:
-        return make_response(status, res=res)
+        return make_response(status, bot_info=res['bot_info'], user_func=res['user_func'], total_info=res['total_info'])
     # 目前INFO均返回为SUCCESS
-    elif status ==  INFO_NO_USED_BOT:
-        return make_response(SUCCESS, res=res)
+    elif status == INFO_NO_USED_BOT:
+        return make_response(SUCCESS, bot_info=res['bot_info'], user_func=res['user_func'],
+                             total_info=res['total_info'])
     else:
         return make_response(status)
 
@@ -66,10 +65,7 @@ def app_initial_robot_nickname():
 
     status, res = get_bot_qr_code(user_info)
     if status == SUCCESS:
-        return make_response(status, res=res)
-    # 目前INFO均返回为SUCCESS
-    elif status == INFO_NO_USED_BOT:
-        return make_response(SUCCESS, res=res)
+        return make_response(status, qr_code=res)
     else:
         return make_response(status)
 
@@ -105,10 +101,7 @@ def app_get_bot_qr_code():
     status, res = get_bot_qr_code(user_info)
 
     if status == SUCCESS:
-        return make_response(status, res=res)
-    # 目前INFO均返回为SUCCESS
-    elif status == INFO_NO_USED_BOT:
-        return make_response(SUCCESS, res=res)
+        return make_response(status, qr_code=res)
     else:
         return make_response(status)
 
@@ -119,9 +112,6 @@ def app_binded_wechat_bot():
     当捆绑bot成功时，我应该得到的消息
     :return:
     """
-    # 在Contact里面监测新的好友的昵称是否在里面（如果重合报错）
-    # 然后我这边确认，这个人是否已经在咱们的系统里面，如果在咱们的系统里面
-    # 然后我把这个机器人绑上
     pass
 
 # 进群只能通过Message，

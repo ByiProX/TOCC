@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import base64
 import logging
 import hashlib
 
@@ -7,9 +7,11 @@ from datetime import datetime, timedelta
 from sqlalchemy import func
 
 from config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
-    ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM
+    ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM, \
+    ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE
+from core.qun_manage import set_default_group
 from core.wechat import WechatConn
-from models.android_db import AMember
+from models.android_db import AContact, ABot
 from models.qun_friend import UserQunRelateInfo
 from models.user_bot import UserInfo, UserBotRelateInfo, BotInfo
 
@@ -126,6 +128,8 @@ class UserLogin:
             self.user_info_up_to_date.country = res_json.get('country')
             self.user_info_up_to_date.avatar_url = res_json.get('avatar_url')
 
+            self.user_info_up_to_date.username = ""
+
         # 获取wechat端信息失败
         else:
             pass
@@ -193,8 +197,7 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
 
 
 def cal_user_basic_page_info(user_info):
-    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
-                                                          UserBotRelateInfo.is_being_used == 1).first()
+    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id).first()
 
     if ubr_info:
         uqr_info_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == user_info.user_id,
@@ -209,26 +212,44 @@ def cal_user_basic_page_info(user_info):
             for uqr_info in uqr_info_list:
                 chatroomname_list.append(uqr_info.chatroomname)
 
-            member_count = db.session.query(func.count(AMember.username)).filter(
-                AMember.chatroomname.in_(chatroomname_list)).first()
+            member_count = db.session.query(func.sum(AContact.member_count)).filter(
+                AContact.username.in_(chatroomname_list)).first()
 
         res = dict()
         res.setdefault("bot_info", {})
         res['bot_info'].setdefault('bot_id', ubr_info.bot_id)
         res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
-        res['bot_info'].setdefault('qun_count', qun_count)
-        res['bot_info'].setdefault('cover_member_count', member_count)
+        bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
+        if not bot_info:
+            return ERR_WRONG_ITEM, None
+        res['bot_info'].setdefault('bot_status', bot_info.is_alive)
+        a_bot = db.session.query(ABot).filter(ABot.username == bot_info.username).first()
+        if not a_bot:
+            return ERR_WRONG_ITEM, None
+        res['bot_info'].setdefault('bot_avatar', a_bot.avatar_url2)
+
+        username = a_bot.username
+        img_str = _get_qr_code_base64_str(username)
+        res['bot_info'].setdefault('bot_qr_code', img_str)
+
+        res.setdefault("total_info", {})
+        res['total_info'].setdefault('qun_count', qun_count)
+        res['total_info'].setdefault('cover_member_count', member_count)
+
         res.setdefault("user_func", {})
-        res['user_func'].setdefault('func_send_messages', ubr_info.func_send_qun_messages)
-        res['user_func'].setdefault('func_sign', ubr_info.func_qun_sign)
-        res['user_func'].setdefault('func_reply', ubr_info.func_auto_reply)
-        res['user_func'].setdefault('func_welcome', ubr_info.func_welcome_message)
+        res['user_func'].setdefault('func_send_messages', user_info.func_send_qun_messages)
+        res['user_func'].setdefault('func_sign', user_info.func_qun_sign)
+        res['user_func'].setdefault('func_reply', user_info.func_auto_reply)
+        res['user_func'].setdefault('func_welcome', user_info.func_welcome_message)
         return SUCCESS, res
 
     # 用户目前没有机器人
     else:
         res = dict()
         res.setdefault("bot_info", None)
+        res.setdefault("total_info", {})
+        res['total_info'].setdefault('qun_count', 0)
+        res['total_info'].setdefault('cover_member_count', 0)
         res.setdefault("user_func", {})
         res['user_func'].setdefault('func_send_messages', False)
         res['user_func'].setdefault('func_sign', False)
@@ -239,17 +260,71 @@ def cal_user_basic_page_info(user_info):
 
 def get_bot_qr_code(user_info):
     ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
-                                                          UserBotRelateInfo.is_being_used == 1).first()
+                                                          UserBotRelateInfo.is_setted == 0).first()
 
     if not ubr_info:
-        return INFO_NO_USED_BOT, None
+        return ERR_WRONG_USER_ITEM, None
 
     bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
 
     if not bot_info:
         return ERR_WRONG_ITEM, None
 
-    return SUCCESS, bot_info.qr_code
+    username = bot_info.username
+    img_str = _get_qr_code_base64_str(username)
+
+    if not img_str:
+        return ERR_NO_BOT_QR_CODE, None
+
+    return SUCCESS, img_str
+
+
+def check_whether_message_is_add_friend():
+    """
+    根据一条Message，返回是否为加bot为好友
+    :return:
+    """
+    # TODO 问一下昶这个部分昶的代码什么逻辑
+
+
+def _bind_bot_success(user_nickname, user_username, bot_info):
+    """
+    确认将一个bot绑入一个user之中
+    :return:
+    """
+    # TODO 需要知道到底是哪个机器人的好友，filter里面还缺少一个bot的条件
+    a_contact_list = db.session.query(AContact).filter(AContact.nickname == user_nickname).all()
+    if len(a_contact_list) > 1:
+        return ERR_HAVE_SAME_PEOPLE
+    elif len(a_contact_list) == 0:
+        return ERR_WRONG_ITEM
+
+    user_info_list = db.session.query(UserInfo).filter(UserInfo.nick_name == a_contact_list[0].nickname).all()
+    if len(user_info_list) > 1:
+        return ERR_HAVE_SAME_PEOPLE
+    elif len(a_contact_list) == 0:
+        return ERR_WRONG_ITEM
+
+    user_info_list_2 = db.session.query(UserInfo).filter(UserInfo.username == user_username).all()
+    if user_info_list_2:
+        return ERR_HAVE_SAME_PEOPLE
+
+    user_info = user_info_list[0]
+    user_info.username = user_username
+    db.session.merge(user_info)
+    db.session.commit()
+
+    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
+                                                          UserBotRelateInfo.bot_id == bot_info.bot_id).first()
+
+    ubr_info.is_setted = True
+    ubr_info.is_being_used = True
+    db.session.merge(ubr_info)
+    db.session.commit()
+
+    set_default_group(user_info)
+
+    return SUCCESS
 
 
 def _get_a_balanced_bot():
@@ -275,3 +350,14 @@ def _get_a_balanced_bot():
                 return bot_info
 
     return None
+
+
+def _get_qr_code_base64_str(username):
+    try:
+        f = open("static/bot_qr_code/" + str(username) + ".jpg", 'r')
+    except IOError:
+        logger.warning("无该username(%s)的qr_code." % str(username))
+        return None
+    img_str = base64.b64encode(f.read())
+    f.close()
+    return img_str

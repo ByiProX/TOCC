@@ -109,6 +109,9 @@ APP_SECRET = '6e63c26d856f7ecb1779f24ab2fc08f4'
 
 main_api = Blueprint('api', __name__)
 
+# 生成所有任务的循环所需要用的时间
+PRODUCTION_CIRCLE_INTERVAL = 1
+
 # 错误代码
 ERROR_CODE = dict()
 # 正常
@@ -141,6 +144,12 @@ ERROR_CODE[ERR_MAXIMUM_BOT] = {'discription': '设置完成bot超过用户最大
 # 目前没有可用机器人
 ERR_NO_ALIVE_BOT = 'err_no_alive_bot'
 ERROR_CODE[ERR_NO_ALIVE_BOT] = {'discription': '目前没有可用机器人', 'status_code': -9}
+# 无法获得该bot的二维码
+ERR_NO_BOT_QR_CODE = 'err_no_bot_qr_code'
+ERROR_CODE[ERR_NO_BOT_QR_CODE] = {'discription': '无法获得该bot的二维码', 'status_code': -10}
+# 找到多名符合名称的人，无法确定是谁加了bot好友
+ERR_HAVE_SAME_PEOPLE = 'err_have_same_people'
+ERROR_CODE[ERR_HAVE_SAME_PEOPLE] = {'discription': '找到多名符合名称的人，无法确定是谁加了bot好友', 'status_code': -10}
 
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
