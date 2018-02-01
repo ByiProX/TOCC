@@ -13,6 +13,7 @@ def app_verify_code():
     """
     用于验证
     code: 微信传入的code
+    {"code":"111"}
     """
     data_json = json.loads(request.data)
     code = data_json.get('code')
@@ -30,6 +31,7 @@ def app_verify_code():
 def app_get_user_basic_info():
     """
     读取用户管理界面的所有的信息
+    {"token":"test_token_123"}
     """
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
@@ -50,8 +52,9 @@ def app_get_user_basic_info():
 @main_api.route('/initial_robot_nickname', methods=['POST'])
 def app_initial_robot_nickname():
     """
-        用于设置robot名字,并返回二维码
-        """
+    用于设置robot名字,并返回二维码
+    {"token":"test_token_123","bot_nickname":"测试呀测试"}
+    """
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
