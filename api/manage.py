@@ -2,7 +2,7 @@
 from flask import request
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api, ERR_UNKNOWN_ERROR
-from core.qun_manage import create_new_group, get_group_list, rename_a_group
+from core.qun_manage import create_new_group, get_group_list, rename_a_group, delete_a_group
 from core.user import UserLogin
 from utils.u_response import make_response
 
@@ -64,7 +64,27 @@ def app_rename_a_group():
     if status == SUCCESS:
         return make_response(SUCCESS)
     else:
-        return make_response(ERR_UNKNOWN_ERROR)
+        return make_response(status)
+
+
+@main_api.route('/delete_a_group', methods=['POST'])
+def app_delete_a_group():
+    """
+    删除一个分组
+    :return:
+    """
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    group_id = request.json.get('group_id')
+
+    status = delete_a_group(group_id, user_info.user_id)
+
+    if status == SUCCESS:
+        return make_response(SUCCESS)
+    else:
+        return make_response(status)
 
 
 def app_transfor_qun_into_group():

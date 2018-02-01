@@ -3,8 +3,10 @@ import logging
 
 from copy import deepcopy
 from datetime import datetime
+from sqlalchemy import desc
 
-from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM
+from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
+    ERR_RENAME_OR_DELETE_DEFAULT_GROUP
 from models.android_db import AContact
 from models.qun_friend import GroupInfo, UserQunRelateInfo
 from models.user_bot import UserInfo
@@ -51,7 +53,7 @@ def create_new_group(group_name, token=None, user_id=None, user_info=None):
 
 def get_group_list(user_info):
     group_list = db.session.query(GroupInfo).filter(GroupInfo.user_id == user_info.user_id).order_by(
-        GroupInfo.create_time).all()
+        desc(GroupInfo.create_time)).all()
 
     if not group_list:
         return ERR_WRONG_ITEM, None
@@ -93,26 +95,30 @@ def get_group_list(user_info):
 
 
 def rename_a_group(group_rename, group_id, user_id):
-    group_info = db.session.query(GroupInfo.group_id == group_id).first()
+    group_info = db.session.query(GroupInfo).filter(GroupInfo.group_id == group_id).first()
     if not group_info:
         return ERR_WRONG_ITEM
     if group_info.user_id != user_id:
         return ERR_WRONG_USER_ITEM
+    if group_info.is_default is True:
+        return ERR_RENAME_OR_DELETE_DEFAULT_GROUP
     group_info.group_nickname = group_rename
     db.session.commit()
     return SUCCESS
 
 
 def delete_a_group(group_id, user_id):
-    group_info = db.session.query(GroupInfo.group_id == group_id).first()
+    group_info = db.session.query(GroupInfo).filter(GroupInfo.group_id == group_id).first()
     if not group_info:
-        raise ERR_WRONG_ITEM
+        return ERR_WRONG_ITEM
     if group_info.user_id != user_id:
         return ERR_WRONG_USER_ITEM
-    if not group_info.is_owner:
-        return ERR_WRONG_USER_ITEM
+    if group_info.is_default is True:
+        return ERR_RENAME_OR_DELETE_DEFAULT_GROUP
 
-    user_default_group_info = db.session.query(GroupInfo.user_id == user_id, GroupInfo.is_default == 1).first()
+    user_default_group_info = db.session.query(GroupInfo).filter(GroupInfo.user_id == user_id,
+                                                                 GroupInfo.is_default == 1).first()
+
     if not user_default_group_info:
         return ERR_WRONG_ITEM
     user_default_group_id = user_default_group_info.group_id
@@ -148,12 +154,12 @@ def transfor_qun_into_a_group(group_id, uqun_id, user_id):
 
     return SUCCESS
 
+
 def check_whether_message_is_add_qun():
     """
     根据一条Message，返回是否为加群，如果是，则完成加群动作
     :return:
     """
-
 
 
 def _create_new_group(user_id, group_name, is_default_group=False):

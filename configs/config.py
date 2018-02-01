@@ -164,6 +164,9 @@ ERROR_CODE[ERR_HAVE_SAME_PEOPLE] = {'discription': '找到多名符合名称的�
 # 遇到未知或不可能错误
 ERR_UNKNOWN_ERROR = 'err_unknown_error'
 ERROR_CODE[ERR_UNKNOWN_ERROR] = {'discription': '遇到未知或不可能错误', 'status_code': -11}
+# 未分组不能进行重命名或删除
+ERR_RENAME_OR_DELETE_DEFAULT_GROUP = 'err_rename_or_delete_default_group'
+ERROR_CODE[ERR_RENAME_OR_DELETE_DEFAULT_GROUP] = {'discription': '未分组不能进行重命名或删除', 'status_code': -12}
 
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
