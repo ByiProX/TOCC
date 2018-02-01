@@ -47,7 +47,7 @@ class ConsumptionStatistic(db.Model):
     """
     每次扫描的情况记录在这里
     """
-    __tablename__ = 'Consumption_statistic'
+    __tablename__ = 'consumption_statistic'
     sid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     ct_count = db.Column(db.Integer, index=True, nullable=False)
 
