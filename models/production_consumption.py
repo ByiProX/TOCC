@@ -28,3 +28,15 @@ class ConsumptionTask(db.Model):
 
     message_received_time = db.Column(db.DateTime, index=True, nullable=False)
     task_create_time = db.Column(db.DateTime, index=True, nullable=False)
+
+
+class ProductionStatistic(db.Model):
+    """
+    每次扫描的情况记录在这里
+    """
+    __tablename__ = 'production_statistic'
+    sid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    last_a_message_id = db.Column(db.BigInteger, index=True, nullable=False)
+    last_a_message_create_time = db.Column(db.DateTime, index=True, nullable=False)
+
+    create_time = db.Column(db.DateTime, index=True, nullable=False)
