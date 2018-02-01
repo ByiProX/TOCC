@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+# 开启gevent
+from gevent import monkey, sleep
+
+monkey.patch_all()
+
 import logging
 
 from configs.config import app, main_api
