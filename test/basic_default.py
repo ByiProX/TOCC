@@ -10,6 +10,7 @@ def get_a_default_test_user_info():
     user_info_1 = UserInfo()
     user_info_1.open_id = "test_open_id_1_afksb"
     user_info_1.union_id = "test_union_id_1_afksb"
+    user_info_1.username = ''
     user_info_1.nick_name = "测试账号_afksb"
     user_info_1.sex = 1
     user_info_1.province = '北京'

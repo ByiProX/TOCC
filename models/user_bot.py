@@ -16,6 +16,10 @@ class UserInfo(db.Model):
 
     # 公众号与小程序的共同主键
     union_id = db.Column(db.String(64), index=True)
+
+    # 根据nick_name找到的username，可能是错的
+    username = db.Column(db.String(64), index=True, nullable=False)
+
     nick_name = db.Column(db.String(64), index=True, nullable=False)
 
     # 0为未知 1为男性 2为女性

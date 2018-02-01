@@ -40,6 +40,7 @@ def initial_some_user_info():
     user_info_1 = UserInfo()
     user_info_1.open_id = "test_open_id_1"
     user_info_1.union_id = "test_union_id_1"
+    user_info_1.username = ''
     user_info_1.nick_name = "测试账号"
     user_info_1.sex = 1
     user_info_1.province = '北京'
@@ -62,6 +63,7 @@ def initial_some_user_info():
     user_info_2 = UserInfo()
     user_info_2.open_id = "test_open_id_2"
     user_info_2.union_id = "test_union_id_2"
+    user_info_2.username = ''
     user_info_2.nick_name = "测试账号2"
     user_info_2.sex = 1
     user_info_2.province = '天津'
