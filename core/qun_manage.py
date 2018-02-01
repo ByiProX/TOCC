@@ -148,6 +148,13 @@ def transfor_qun_into_a_group(group_id, uqun_id, user_id):
 
     return SUCCESS
 
+def check_whether_message_is_add_qun():
+    """
+    根据一条Message，返回是否为加群，如果是，则完成加群动作
+    :return:
+    """
+
+
 
 def _create_new_group(user_id, group_name, is_default_group=False):
     group_info = GroupInfo()

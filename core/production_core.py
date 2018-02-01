@@ -6,6 +6,8 @@ import threading
 
 from datetime import datetime
 from config import PRODUCTION_CIRCLE_INTERVAL
+from core.qun_manage import check_whether_message_is_add_qun
+from core.user import check_whether_message_is_add_friend
 
 
 class ProductionThread(threading.Thread):  # 继承父类threading.Thread
@@ -22,10 +24,14 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
         while self.go_work:
             circle_start_time = time.time()
             # 这里先读Message，如果没读到，就什么都不做，等时间
-            # 如果读到了，那就先判断是否是入群和加群信息，如果是，走入群和加群逻辑
             # 如果还不是，那么就需要去库中读筛选逻辑
             # 读完筛选逻辑后，把Message处理一下，形成任务，存入任务表
             # 循环结束
+            # 检查信息是否为加bot为好友逻辑
+            check_whether_message_is_add_friend()
+
+            # 检查信息是否为加了一个群
+            check_whether_message_is_add_qun()
 
             circle_now_time = time.time()
 
