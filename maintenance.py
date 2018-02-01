@@ -7,6 +7,7 @@ import models
 import api
 from config import db, config_name
 from core.qun_manage import set_default_group
+from models.android_db import ABot
 from models.user_bot import UserBotRelateInfo, UserInfo, BotInfo
 
 models.import_str = ""
@@ -125,4 +126,16 @@ def initial_user_bot_binded():
     set_default_group(user_info)
 
     db.session.add(ubr_info)
+    db.session.commit()
+
+
+def initial_a_bot():
+    a_bot = ABot()
+    a_bot.username = 'test_android_username_2'
+    a_bot.nickname = '测试小智'
+    a_bot.type = -1
+    a_bot.create_time = datetime.now()
+    a_bot.update_time = datetime.now()
+
+    db.session.add(a_bot)
     db.session.commit()

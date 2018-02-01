@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-
+import base64
 import logging
+
+import cStringIO
+
 from config import app, main_api
+from maintenance import initial_a_bot
 
 from utils import u_log
 
@@ -31,6 +35,7 @@ def initial_all():
     initial_some_user_info()
     initial_some_bot_info()
     initial_user_bot_binded()
+    initial_a_bot()
     exit()
 
 
