@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import base64
 import logging
-
-import cStringIO
 
 from config import app, main_api
 from maintenance import initial_a_bot
