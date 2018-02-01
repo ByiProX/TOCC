@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from datetime import datetime
 
-from config import db
+from configs.config import db
 
 logger = logging.getLogger("main")
 

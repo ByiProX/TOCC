@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 import models
 import api
-from config import db, config_name
+from configs.config import db, config_name
 from core.qun_manage import set_default_group
 from models.android_db import ABot
 from models.user_bot import UserBotRelateInfo, UserInfo, BotInfo

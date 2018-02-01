@@ -6,8 +6,8 @@ from datetime import datetime
 import json
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-from config import db
-from config import APP_ID, APP_SECRET
+from configs.config import db
+from configs.config import APP_ID, APP_SECRET
 from models.user_bot import AccessToken
 from utils.u_model_json_str import unicode_to_str
 

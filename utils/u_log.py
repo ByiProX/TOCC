@@ -14,5 +14,5 @@ def verify_logs_folder_exist():
         os.mkdir('./logs')
     else:
         pass
-    logging.config.fileConfig('./logging.conf')
+    logging.config.fileConfig('./configs/logging.conf')
     logger.debug('logs目录检查完毕 - OK')

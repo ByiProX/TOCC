@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from config import db
+from configs.config import db
 
 
 class UserSignSetting(db.Model):

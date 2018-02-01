@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from config import db
+from configs.config import db
 from utils.u_model_json_str import model_to_dict
 
 

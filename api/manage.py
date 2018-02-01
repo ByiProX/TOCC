@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from flask import request
 
-from config import SUCCESS, ERR_PARAM_SET, main_api
-from core.qun_manage import create_new_group
+from configs.config import SUCCESS, ERR_PARAM_SET, main_api
+from core.qun_manage import create_new_group, get_group_list
 from core.user import UserLogin
 from utils.u_response import make_response
 
@@ -38,9 +38,16 @@ def app_get_group_list():
     if status != SUCCESS:
         return make_response(status)
 
-#TODO get_group_list 得到一个对象
-# group_list是一个数组，里面是一个一个的对象group_id,group_nickname,group_chatroom_list,
-# chatroom_list,里面是一个一个对象(chatroom_id,chatroom_nickname,chatroom_member_count,chatroom_status)
+    status, res = get_group_list(user_info)
+
+    if status == SUCCESS:
+        return make_response(status, group_list=res)
+    else:
+        return make_response(status)
+
+
+
+
 
 # transfer_chatroom,chatroom_id，target_group_id，回来给你一个success
 

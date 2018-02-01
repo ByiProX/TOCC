@@ -7,7 +7,7 @@ import threading
 from datetime import datetime
 from sqlalchemy import desc
 
-from config import PRODUCTION_CIRCLE_INTERVAL, db
+from configs.config import PRODUCTION_CIRCLE_INTERVAL, db
 from core.message_core import analysis_and_save_a_message
 from core.qun_manage import check_whether_message_is_add_qun
 from core.user import check_whether_message_is_add_friend

@@ -96,8 +96,19 @@ config_map = {
 #         config_name = 'test'
 #     else:
 #         raise ValueError("没有设置环境参数")
-print("使用dev库")
-config_name = 'dev'
+config_name_s = 'd'
+
+if config_name_s == 'p':
+    print("注意！线上环境！使用production库")
+    config_name = 'production'
+elif config_name_s == 'd':
+    print("使用dev库")
+    config_name = 'dev'
+elif config_name_s == 't':
+    print("使用test库")
+    config_name = 'test'
+else:
+    raise ValueError
 
 app = Flask(__name__)
 app.config.from_object(config_map[config_name])

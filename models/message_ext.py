@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # TODO ihxxjxkb
-from config import db
+from configs.config import db
 
 
 class MessageAnalysis(db.Model):

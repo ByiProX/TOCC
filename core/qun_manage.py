@@ -4,7 +4,7 @@ import logging
 from copy import deepcopy
 from datetime import datetime
 
-from config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM
+from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM
 from models.android_db import AContact
 from models.qun_friend import GroupInfo, UserQunRelateInfo
 from models.user_bot import UserInfo

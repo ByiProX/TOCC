@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from config import app, main_api
+from configs.config import app, main_api
 from maintenance import initial_a_bot
 
 from utils import u_log
 
 import models
 import api
+import configs
 
 app.register_blueprint(main_api, url_prefix='/api')
 
 models.import_str = ""
 api.api_str = ""
+configs.config_str = ""
 
 __version__ = "0.0.2"
 

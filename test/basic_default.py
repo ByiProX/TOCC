@@ -1,9 +1,20 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
-from models.android_db import ABot
+from configs.config import config_name, config_map
+from models.android_db import ABot, AContact
 from models.qun_friend import GroupInfo, UserQunRelateInfo, UserQunBotRealteInfo
 from models.user_bot import UserInfo, BotInfo
+
+
+def create_a_new_app():
+    app = Flask(__name__)
+    app.config.from_object(config_map[config_name])
+    db = SQLAlchemy(app, session_options={"autoflush": False})
+
+    return db
 
 
 def get_a_default_test_user_info():
@@ -79,6 +90,19 @@ def get_a_default_test_uqbr_info(user_bot_id):
     uqbr_info.is_error = False
 
     return uqbr_info
+
+
+def get_a_default_test_a_contact():
+    a_contact = AContact()
+    a_contact.username = 'test_user_username'
+    a_contact.nickname = '测试账号_afksb'
+    a_contact.type = -999
+    a_contact.avatar_url2 = 'http:'
+    a_contact.create_time = datetime.now()
+    a_contact.update_time = datetime.now()
+    a_contact.member_count = 0
+
+    return a_contact
 
 
 def get_a_default_cur_info():

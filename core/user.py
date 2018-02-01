@@ -6,12 +6,12 @@ import hashlib
 from datetime import datetime, timedelta
 from sqlalchemy import func
 
-from config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
+from configs.config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
     ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM, \
     ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE
 from core.qun_manage import set_default_group
 from core.wechat import WechatConn
-from models.android_db import AContact, ABot
+from models.android_db import AContact, ABot, AFriend
 from models.qun_friend import UserQunRelateInfo
 from models.user_bot import UserInfo, UserBotRelateInfo, BotInfo
 
@@ -284,7 +284,7 @@ def check_whether_message_is_add_friend():
     根据一条Message，返回是否为加bot为好友
     :return:
     """
-    # TODO 问一下昶这个部分昶的代码什么逻辑
+    # TODO-zc 问一下昶这个部分昶的代码什么逻辑
 
 
 def _bind_bot_success(user_nickname, user_username, bot_info):
@@ -293,16 +293,17 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     :return:
     """
     # TODO 需要知道到底是哪个机器人的好友，filter里面还缺少一个bot的条件
-    a_contact_list = db.session.query(AContact).filter(AContact.nickname == user_nickname).all()
-    if len(a_contact_list) > 1:
+    a_friend_list = db.session.query(AFriend).filter(AFriend.from_username == bot_info.username,
+                                                     AFriend.to_username == user_username).all()
+    if len(a_friend_list) > 1:
         return ERR_HAVE_SAME_PEOPLE
-    elif len(a_contact_list) == 0:
+    elif len(a_friend_list) == 0:
         return ERR_WRONG_ITEM
 
-    user_info_list = db.session.query(UserInfo).filter(UserInfo.nick_name == a_contact_list[0].nickname).all()
+    user_info_list = db.session.query(UserInfo).filter(UserInfo.nick_name == user_nickname).all()
     if len(user_info_list) > 1:
         return ERR_HAVE_SAME_PEOPLE
-    elif len(a_contact_list) == 0:
+    elif len(user_info_list) == 0:
         return ERR_WRONG_ITEM
 
     user_info_list_2 = db.session.query(UserInfo).filter(UserInfo.username == user_username).all()

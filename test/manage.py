@@ -3,7 +3,7 @@
 import unittest
 import json
 
-from config import db
+from configs.config import db
 from core.qun_manage import set_default_group
 from models.qun_friend import GroupInfo
 from models.user_bot import UserInfo
@@ -44,7 +44,3 @@ class AddAGroupTestCase(unittest.TestCase):
             db.session.delete(group_info)
         db.session.delete(self.user_info)
         db.session.commit()
-
-
-class GetGroupListAllInfoTestCase(unittest.TestCase):
-    pass

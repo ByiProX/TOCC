@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import jsonify
 
-from config import ERROR_CODE
+from configs.config import ERROR_CODE
 
 
 def make_response(*args, **kwargs):
