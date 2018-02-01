@@ -2,6 +2,8 @@
 import logging
 
 from configs.config import app, main_api
+from core.consumption_core import consumption_thread
+from core.production_core import production_thread
 from maintenance import initial_a_bot
 
 from utils import u_log
@@ -38,6 +40,8 @@ def initial_all():
 
 
 logger = logging.getLogger('main')
+production_thread.start()
+consumption_thread.start()
 
 if __name__ == '__main__':
     logger.debug("开始程序")

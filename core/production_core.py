@@ -4,7 +4,7 @@
 import time
 import threading
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import desc
 
 from configs.config import PRODUCTION_CIRCLE_INTERVAL, db
@@ -36,12 +36,13 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
             self.last_a_message_create_time = pro_stat.last_a_message_create_time
         # 从来没有转起来过的时候的处理方法
         else:
-            first_a_message = db.session.query(AMessage).order_by(AMessage).first()
+            first_a_message = db.session.query(AMessage).order_by(AMessage.id).first()
             if first_a_message:
                 self.last_a_message_id = first_a_message.id
                 self.last_a_message_create_time = first_a_message.create_time
             else:
-                raise EnvironmentError("无初始数据")
+                self.last_a_message_id = 0
+                self.last_a_message_create_time = datetime.now() - timedelta(days=365 * 10)
         while self.go_work:
             circle_start_time = time.time()
             # 这里先读Message，如果没读到，就什么都不做，等时间
@@ -51,8 +52,7 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
             # 检查信息是否为加bot为好友逻辑
 
             message_list = db.session.query(AMessage). \
-                filter(AMessage.id > self.last_a_message_id,
-                       AMessage.create_time > self.last_a_message_create_time). \
+                filter(AMessage.id > self.last_a_message_id). \
                 order_by(AMessage.id).all()
 
             if len(message_list) != 0:
@@ -90,8 +90,5 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
     def stop(self):
         self.go_work = False
 
-# 加机器人，扫Message，找昶子
 
-# 扫Message，进群解析，找昶子
-
-# 扫Message，再看
+production_thread = ProductionThread(thread_id='pcwiyQgeoilnoBkS')

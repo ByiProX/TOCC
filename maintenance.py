@@ -17,9 +17,9 @@ logger = logging.getLogger('main')
 
 
 def create_all_databases():
-    if config_name == 'production':
-        raise EnvironmentError("生产环境无法初始化库")
-    db.drop_all()
+    # if config_name == 'production':
+    #     raise EnvironmentError("生产环境无法初始化库")
+    # db.drop_all()
     db.create_all()
 
 
