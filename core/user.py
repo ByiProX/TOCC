@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import base64
 import logging
 import hashlib
 
@@ -7,7 +7,8 @@ from datetime import datetime, timedelta
 from sqlalchemy import func
 
 from config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
-    ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM
+    ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM, \
+    ERR_NO_BOT_QR_CODE
 from core.wechat import WechatConn
 from models.android_db import AContact, ABot
 from models.qun_friend import UserQunRelateInfo
@@ -224,7 +225,10 @@ def cal_user_basic_page_info(user_info):
         if not a_bot:
             return ERR_WRONG_ITEM, None
         res['bot_info'].setdefault('bot_avatar', a_bot.avatar_url2)
-        res['bot_info'].setdefault('bot_qr_code', bot_info.qr_code)
+
+        username = a_bot.username
+        img_str = _get_qr_code_base64_str(username)
+        res['bot_info'].setdefault('bot_qr_code', img_str)
 
         res.setdefault("total_info", {})
         res['total_info'].setdefault('qun_count', qun_count)
@@ -264,7 +268,13 @@ def get_bot_qr_code(user_info):
     if not bot_info:
         return ERR_WRONG_ITEM, None
 
-    return SUCCESS, bot_info.qr_code
+    username = bot_info.username
+    img_str = _get_qr_code_base64_str(username)
+
+    if not img_str:
+        return ERR_NO_BOT_QR_CODE, None
+
+    return SUCCESS, img_str
 
 
 def _get_a_balanced_bot():
@@ -290,3 +300,14 @@ def _get_a_balanced_bot():
                 return bot_info
 
     return None
+
+
+def _get_qr_code_base64_str(username):
+    try:
+        f = open("static/bot_qr_code/" + str(username) + ".jpg", 'r')
+    except IOError:
+        logger.warning("无该username(%s)的qr_code." % str(username))
+        return None
+    img_str = base64.b64encode(f.read())
+    f.close()
+    return img_str
