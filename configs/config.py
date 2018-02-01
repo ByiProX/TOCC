@@ -161,6 +161,9 @@ ERROR_CODE[ERR_NO_BOT_QR_CODE] = {'discription': '无法获得该bot的二维码
 # 找到多名符合名称的人，无法确定是谁加了bot好友
 ERR_HAVE_SAME_PEOPLE = 'err_have_same_people'
 ERROR_CODE[ERR_HAVE_SAME_PEOPLE] = {'discription': '找到多名符合名称的人，无法确定是谁加了bot好友', 'status_code': -10}
+# 遇到未知或不可能错误
+ERR_UNKNOWN_ERROR = 'err_unknown_error'
+ERROR_CODE[ERR_UNKNOWN_ERROR] = {'discription': '遇到未知或不可能错误', 'status_code': -11}
 
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'

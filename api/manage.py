@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from flask import request
 
-from configs.config import SUCCESS, ERR_PARAM_SET, main_api
-from core.qun_manage import create_new_group, get_group_list
+from configs.config import SUCCESS, ERR_PARAM_SET, main_api, ERR_UNKNOWN_ERROR
+from core.qun_manage import create_new_group, get_group_list, rename_a_group
 from core.user import UserLogin
 from utils.u_response import make_response
 
@@ -46,9 +46,34 @@ def app_get_group_list():
         return make_response(status)
 
 
+@main_api.route('/rename_a_group', methods=['POST'])
+def app_rename_a_group():
+    """
+    将一个已有分组改名
+    :return:
+    """
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    new_group_name = request.json.get('new_group_name')
+    group_id = request.json.get('group_id')
+
+    status = rename_a_group(new_group_name, group_id, user_info.user_id)
+
+    if status == SUCCESS:
+        return make_response(SUCCESS)
+    else:
+        return make_response(ERR_UNKNOWN_ERROR)
 
 
+def app_transfor_qun_into_group():
+    """
+    将一个群从一个群里面移动到另一个群里面
+    :return:
+    """
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
 
-# transfer_chatroom,chatroom_id，target_group_id，回来给你一个success
-
-# TODO remove
+    raise NotImplementedError
