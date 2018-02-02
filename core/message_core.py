@@ -24,7 +24,7 @@ def analysis_and_save_a_message(a_message):
     talker = msg_ext.talker
 
     # is_to_friend
-    if msg_ext.username.find(u'@chatroom') == -1:
+    if msg_ext.username.find(u'@chatroom') != -1:
         is_to_friend = False
     else:
         is_to_friend = True
