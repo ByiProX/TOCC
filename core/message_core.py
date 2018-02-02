@@ -24,7 +24,7 @@ def analysis_and_save_a_message(a_message):
     talker = msg_ext.talker
 
     # is_to_friend
-    if msg_ext.username.find(u'@chatroom'):
+    if msg_ext.username.find(u'@chatroom') == -1:
         is_to_friend = False
     else:
         is_to_friend = True
@@ -39,7 +39,7 @@ def analysis_and_save_a_message(a_message):
             # Mark: 收到的群消息没有 ':\n'，需要查错
             logger.info(u"ERR: chatroom msg received doesn't have ':\\n', msg_id: " + unicode(msg_ext.msg_id))
             raise ValueError(u"ERR: chatroom msg received doesn't have ':\\n', msg_id: " + unicode(msg_ext.msg_id))
-        content_part = content.split(u':\n')[0]
+        content_part = content.split(u':\n')
         real_talker = content_part[0]
         real_content = content_part[1]
 
