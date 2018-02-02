@@ -14,6 +14,7 @@ from core.wechat import WechatConn
 from models.android_db import AContact, ABot, AFriend
 from models.qun_friend import UserQunRelateInfo
 from models.user_bot import UserInfo, UserBotRelateInfo, BotInfo
+from utils.u_str_unicode import str_to_unicode
 
 logger = logging.getLogger('main')
 
@@ -279,12 +280,24 @@ def get_bot_qr_code(user_info):
     return SUCCESS, img_str
 
 
-def check_whether_message_is_add_friend():
+def check_whether_message_is_add_friend(message_analysis):
     """
     根据一条Message，返回是否为加bot为好友
     :return:
     """
-    # TODO-zc 问一下昶这个部分昶的代码什么逻辑
+    is_add_friend = False
+    msg_type = message_analysis.type
+    content = str_to_unicode(message_analysis.content)
+
+    if msg_type in (1, 10000) and content.find(u'现在可以开始聊天了') != -1:
+        # add friend
+        is_add_friend = True
+        user_username = message_analysis.real_talker
+        a_contact = db.session.query(AContact).filter(AContact.username == user_username).first()
+        bot_info = db.session.query(BotInfo).filter(BotInfo.username == message_analysis.username).first()
+        _bind_bot_success(a_contact.nickname, user_username, bot_info)
+
+    return is_add_friend
 
 
 def _bind_bot_success(user_nickname, user_username, bot_info):

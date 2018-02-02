@@ -6,10 +6,11 @@ from datetime import datetime
 from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
-    ERR_RENAME_OR_DELETE_DEFAULT_GROUP
+    ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS
 from models.android_db import AContact
 from models.qun_friend import GroupInfo, UserQunRelateInfo
 from models.user_bot import UserInfo
+from utils.u_str_unicode import str_to_unicode
 
 logger = logging.getLogger('main')
 
@@ -155,11 +156,27 @@ def transfor_qun_into_a_group(group_id, uqun_id, user_id):
     return SUCCESS
 
 
-def check_whether_message_is_add_qun():
+def check_whether_message_is_add_qun(message_analysis):
     """
     根据一条Message，返回是否为加群，如果是，则完成加群动作
     :return:
     """
+    is_add_qun = False
+    msg_type = message_analysis.type
+    content = str_to_unicode(message_analysis.content)
+
+    if msg_type == MSG_TYPE_SYS and content.find(u'邀请你') != -1:
+        is_add_qun = True
+
+    return is_add_qun
+
+
+def check_is_removed(message_analysis):
+    """
+    根据一条Message，返回是否为被移除群聊，如果是，则完成相关动作
+    :return:
+    """
+    # content.find(u'移除群聊') != -1:
 
 
 def _create_new_group(user_id, group_name, is_default_group=False):

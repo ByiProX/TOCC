@@ -9,7 +9,7 @@ from sqlalchemy import desc
 
 from configs.config import PRODUCTION_CIRCLE_INTERVAL, db
 from core.message_core import analysis_and_save_a_message
-from core.qun_manage import check_whether_message_is_add_qun
+from core.qun_manage import check_whether_message_is_add_qun, check_is_removed
 from core.user import check_whether_message_is_add_friend
 from models.android_db import AMessage
 from models.production_consumption import ProductionStatistic
@@ -56,12 +56,26 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
                 order_by(AMessage.id).all()
 
             if len(message_list) != 0:
+                message_analysis_list = list()
                 for i, a_message in enumerate(message_list):
                     message_analysis = analysis_and_save_a_message(a_message)
-                    check_whether_message_is_add_friend()
+                    if not message_analysis:
+                        # TODO logger
+                        continue
+                    message_analysis_list.append(message_analysis)
+
+                    # is_add_friend
+                    is_add_friend = check_whether_message_is_add_friend(message_analysis)
+                    if is_add_friend:
+                        continue
 
                     # 检查信息是否为加了一个群
-                    check_whether_message_is_add_qun()
+                    is_add_qun = check_whether_message_is_add_qun(message_analysis)
+                    if is_add_qun:
+                        continue
+
+                    # is_removed
+                    is_removed = check_is_removed(message_analysis)
 
                     # 处理完毕后将新情况存入
 
@@ -71,6 +85,9 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
                 pass
 
             # 更新循环情况
+            for i, message_analysis in enumerate(message_analysis_list):
+                db.session.add(message_analysis)
+
             new_pro_stat = ProductionStatistic()
             new_pro_stat.last_a_message_id = self.last_a_message_id
             new_pro_stat.last_a_message_create_time = self.last_a_message_create_time
