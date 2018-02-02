@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from configs.config import config_name, config_map
 from models.android_db import ABot, AContact
-from models.qun_friend import GroupInfo, UserQunRelateInfo, UserQunBotRealteInfo
+from models.qun_friend import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
 from models.user_bot import UserInfo, BotInfo
 
 
@@ -85,7 +85,7 @@ def get_a_default_test_uqr_info(user_id, group_id):
 
 
 def get_a_default_test_uqbr_info(user_bot_id):
-    uqbr_info = UserQunBotRealteInfo()
+    uqbr_info = UserQunBotRelateInfo()
     uqbr_info.user_bot_rid = user_bot_id
     uqbr_info.is_error = False
 

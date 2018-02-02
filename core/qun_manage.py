@@ -179,6 +179,48 @@ def check_is_removed(message_analysis):
     # content.find(u'移除群聊') != -1:
 
 
+def _bind_qun_success(chatroomname, user_id, bot_id):
+    """
+    当确认message为加群时，将群加入到系统中
+    :return:
+    """
+    uqr_info = UserQunRelateInfo()
+    uqr_info.user_id = user_id
+    uqr_info.chatroomname = chatroomname
+
+    group_info_list = db.session.query(GroupInfo).filter(GroupInfo.user_id == user_id, GroupInfo.is_default == 1).all()
+    if len(group_info_list) > 1:
+        return ERR_WRONG_ITEM
+    elif len(group_info_list) == 0:
+        return ERR_WRONG_ITEM
+    else:
+        group_info = group_info_list[0]
+
+    uqr_info.group_id = group_info.group_id
+    uqr_info.create_time = datetime.now()
+    uqr_info.is_deleted = False
+
+    db.session.add(uqr_info)
+    db.session.commit()
+
+    ubr_info_list = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_id,
+                                                               UserBotRelateInfo.bot_id == bot_id).all()
+    if len(ubr_info_list) > 1:
+        return ERR_WRONG_ITEM
+    elif len(ubr_info_list) == 0:
+        return ERR_WRONG_ITEM
+    else:
+        ubr_info = ubr_info_list[0]
+
+    uqbr_info = UserQunBotRelateInfo()
+    uqbr_info.uqun_id = uqr_info.uqun_id
+    uqbr_info.user_bot_rid = ubr_info.user_bot_rid
+    uqbr_info.is_error = False
+
+    db.session.add(uqbr_info)
+    db.session.commit()
+
+
 def _create_new_group(user_id, group_name, is_default_group=False):
     group_info = GroupInfo()
     group_info.group_nickname = group_name
