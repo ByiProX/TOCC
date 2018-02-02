@@ -3,6 +3,7 @@
 # IDE问题，import time无报错
 import time
 import threading
+import logging
 
 from datetime import datetime, timedelta
 from sqlalchemy import desc
@@ -14,8 +15,10 @@ from core.user import check_whether_message_is_add_friend
 from models.android_db import AMessage
 from models.production_consumption import ProductionStatistic
 
+logger = logging.getLogger('main')
 
-class ProductionThread(threading.Thread):  # 继承父类threading.Thread
+
+class ProductionThread(threading.Thread):
     def __init__(self, thread_id):
         threading.Thread.__init__(self)
         self.thread_id = thread_id
@@ -25,8 +28,8 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
         self.last_a_message_id = None
         self.last_a_message_create_time = None
 
-    def run(self):  # 把要执行的代码写到run函数里面 线程在创建后会直接运行run函数
-        print("Start thread id: %s." % str(self.thread_id))
+    def run(self):
+        logger.info("Start thread id: %s." % str(self.thread_id))
         self.run_start_time = datetime.now()
 
         # 从这里要去库中读取上次循环的结果
@@ -45,12 +48,6 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
                 self.last_a_message_create_time = datetime.now() - timedelta(days=365 * 10)
         while self.go_work:
             circle_start_time = time.time()
-            # 这里先读Message，如果没读到，就什么都不做，等时间
-            # 如果还不是，那么就需要去库中读筛选逻辑
-            # 读完筛选逻辑后，把Message处理一下，形成任务，存入任务表
-            # 循环结束
-            # 检查信息是否为加bot为好友逻辑
-
             message_list = db.session.query(AMessage). \
                 filter(AMessage.id > self.last_a_message_id). \
                 order_by(AMessage.id).all()
@@ -60,7 +57,6 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
                 for i, a_message in enumerate(message_list):
                     message_analysis = analysis_and_save_a_message(a_message)
                     if not message_analysis:
-                        # TODO logger
                         continue
                     message_analysis_list.append(message_analysis)
 
@@ -101,10 +97,11 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
                 time.sleep(time_to_rest)
             else:
                 pass
-        print("End thread id: %s." % str(self.thread_id))
+        logger.info("End thread id: %s." % str(self.thread_id))
         self.run_end_time = datetime.now()
 
     def stop(self):
+        logger.info("停止进程")
         self.go_work = False
 
 
