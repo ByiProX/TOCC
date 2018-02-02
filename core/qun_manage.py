@@ -179,7 +179,15 @@ def check_is_removed(message_analysis):
     根据一条Message，返回是否为被移除群聊，如果是，则完成相关动作
     :return:
     """
-    # content.find(u'移除群聊') != -1:
+    is_removed = False
+    msg_type = message_analysis.type
+    content = str_to_unicode(message_analysis.content)
+    if msg_type == MSG_TYPE_SYS and content.find(u'移除群聊') != -1:
+        is_removed = True
+
+        pass
+
+    return is_removed
 
 
 def _bind_qun_success(chatroomname, user_id, bot_id):
