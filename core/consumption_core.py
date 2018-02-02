@@ -3,6 +3,7 @@
 # IDE问题，import time无报错
 import time
 import threading
+import logging
 
 from datetime import datetime
 from sqlalchemy import desc
@@ -15,6 +16,8 @@ from core.user import check_whether_message_is_add_friend
 from models.android_db import AMessage
 from models.production_consumption import ProductionStatistic, ConsumptionTask, ConsumptionStatistic
 
+logger = logging.getLogger('main')
+
 
 class ConsumptionThread(threading.Thread):
     def __init__(self, thread_id):
@@ -25,7 +28,7 @@ class ConsumptionThread(threading.Thread):
         self.run_end_time = None
 
     def run(self):
-        print("Start thread id: %s." % str(self.thread_id))
+        logger.info("Start thread id: %s." % str(self.thread_id))
         self.run_start_time = datetime.now()
 
         while self.go_work:
@@ -48,10 +51,11 @@ class ConsumptionThread(threading.Thread):
                 time.sleep(time_to_rest)
             else:
                 pass
-        print("End thread id: %s." % str(self.thread_id))
+        logger.info("End thread id: %s." % str(self.thread_id))
         self.run_end_time = datetime.now()
 
     def stop(self):
+        logger.info("停止进程")
         self.go_work = False
 
 
