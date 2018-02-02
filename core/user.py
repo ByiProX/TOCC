@@ -8,7 +8,7 @@ from sqlalchemy import func
 
 from configs.config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
     ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM, \
-    ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE
+    ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE, MSG_TYPE_TXT, MSG_TYPE_SYS
 from core.qun_manage import set_default_group
 from core.wechat import WechatConn
 from models.android_db import AContact, ABot, AFriend
@@ -289,7 +289,7 @@ def check_whether_message_is_add_friend(message_analysis):
     msg_type = message_analysis.type
     content = str_to_unicode(message_analysis.content)
 
-    if msg_type in (1, 10000) and content.find(u'现在可以开始聊天了') != -1:
+    if msg_type in (MSG_TYPE_TXT, MSG_TYPE_SYS) and content.find(u'现在可以开始聊天了') != -1:
         # add friend
         is_add_friend = True
         user_username = message_analysis.real_talker

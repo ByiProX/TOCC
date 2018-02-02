@@ -55,8 +55,8 @@ class ProductionThread(threading.Thread):  # 继承父类threading.Thread
                 filter(AMessage.id > self.last_a_message_id). \
                 order_by(AMessage.id).all()
 
+            message_analysis_list = list()
             if len(message_list) != 0:
-                message_analysis_list = list()
                 for i, a_message in enumerate(message_list):
                     message_analysis = analysis_and_save_a_message(a_message)
                     if not message_analysis:

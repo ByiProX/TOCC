@@ -167,6 +167,8 @@ def check_whether_message_is_add_qun(message_analysis):
 
     if msg_type == MSG_TYPE_SYS and content.find(u'邀请你') != -1:
         is_add_qun = True
+        bot_username = message_analysis.username
+        user_nickname = content.split(u'邀请')[0][1:-1]
         _bind_qun_success(message_analysis.talker, user_nickname, bot_username)
 
     return is_add_qun
