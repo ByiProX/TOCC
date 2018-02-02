@@ -55,14 +55,18 @@ class UserQunRelateInfo(db.Model):
         return res
 
 
-class UserQunBotRealteInfo(db.Model):
+class UserQunBotRelateInfo(db.Model):
     """
     每个uqun中每个用户有哪些bot，这些bot的状态是否没有问题
     """
     __tablename__ = 'user_qun_bot_relate_info'
     rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    uqun_id = db.Column(db.BigInteger, index=True, nullable=False)
     user_bot_rid = db.Column(db.BigInteger, index=True, nullable=False)
     is_error = db.Column(db.SmallInteger, index=True, nullable=False)
+
+    db.UniqueConstraint(uqun_id, user_bot_rid, name='ix_user_qun_bot_relate_info_two_id')
+
 
 
 class CollaboratorUserRelateInfo(db.Model):
