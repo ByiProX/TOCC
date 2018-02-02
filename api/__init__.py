@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import login
-import manage
-import while_true_maintenance
-import websocket
+import login_api
+import manage_api
+import while_true_maintenance_api
+import websocket_api
 
 api_str = ""
