@@ -305,7 +305,6 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     确认将一个bot绑入一个user之中
     :return:
     """
-    # TODO 需要知道到底是哪个机器人的好友，filter里面还缺少一个bot的条件
     a_friend_list = db.session.query(AFriend).filter(AFriend.from_username == bot_info.username,
                                                      AFriend.to_username == user_username).all()
     if len(a_friend_list) > 1:
