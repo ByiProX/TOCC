@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import request
 
-from configs.config import SUCCESS, ERR_PARAM_SET, main_api, ERR_UNKNOWN_ERROR
+from configs.config import SUCCESS, ERR_PARAM_SET, main_api
 from core.qun_manage import create_new_group, get_group_list, rename_a_group, delete_a_group
 from core.user import UserLogin
 from utils.u_response import make_response
@@ -22,9 +22,12 @@ def app_add_a_group():
     if not new_group_name:
         return make_response(ERR_PARAM_SET)
 
-    status = create_new_group(group_name=new_group_name, user_id=user_info.user_id)
+    status, group = create_new_group(group_name=new_group_name, user_id=user_info.user_id)
 
-    return make_response(status)
+    if status == SUCCESS:
+        return make_response(status, group=group)
+    else:
+        return make_response(status)
 
 
 @main_api.route('/get_group_list', methods=['POST'])

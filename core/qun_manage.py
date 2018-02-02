@@ -48,8 +48,15 @@ def create_new_group(group_name, token=None, user_id=None, user_info=None):
             if user_info:
                 user_id = user_info.user_id
 
-    _create_new_group(user_id, group_name)
-    return SUCCESS
+    group_info = _create_new_group(user_id, group_name)
+
+    temp_dict = dict()
+    temp_dict.setdefault("group_id", group_info.group_id)
+    temp_dict.setdefault("group_nickname", group_info.group_nickname)
+    temp_dict.setdefault("is_default", group_info.is_default)
+    temp_dict.setdefault("chatroom_list", [])
+
+    return SUCCESS, temp_dict
 
 
 def get_group_list(user_info):
@@ -65,28 +72,32 @@ def get_group_list(user_info):
         temp_group_id = group_info.group_id
         temp_dict.setdefault("group_id", temp_group_id)
         temp_dict.setdefault("group_nickname", group_info.group_nickname)
+        temp_dict.setdefault("is_default", group_info.is_default)
         temp_dict.setdefault("chatroom_list", [])
 
         uqr_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.group_id == temp_group_id,
                                                               UserQunRelateInfo.is_deleted == 0).all()
         for uqr_info in uqr_list:
             temp_chatroom_dict = dict()
-            a_contact = db.session.query(AContact).filter(AContact.username == uqr_info.chatroomname).first()
-            if not a_contact:
-                return ERR_WRONG_ITEM, None
 
             temp_chatroom_dict.setdefault("chatroom_id", uqr_info.uqun_id)
 
-            temp_chatroom_dict.setdefault("chatroom_nickname", a_contact.nickname)
-
-            temp_chatroom_dict.setdefault("chatroom_member_count", a_contact.member_count)
-
-            if uqr_info.is_deleted is True:
-                temp_chatroom_dict.setdefault("chatroom_status", -1)
+            a_contact = db.session.query(AContact).filter(AContact.username == uqr_info.chatroomname).first()
+            if not a_contact:
+                logger.warning("群信息不在AContact中，uqr_info.chatroomname: %s" % str(uqr_info.chatroomname))
+                temp_chatroom_dict.setdefault("chatroom_nickname", 0)
+                temp_chatroom_dict.setdefault("chatroom_member_count", 0)
+                temp_chatroom_dict.setdefault("chatroom_avatar", "")
+                temp_chatroom_dict.setdefault("chatroom_status", -2)
             else:
-                temp_chatroom_dict.setdefault("chatroom_status", 0)
+                temp_chatroom_dict.setdefault("chatroom_nickname", a_contact.nickname)
+                temp_chatroom_dict.setdefault("chatroom_member_count", a_contact.member_count)
+                temp_chatroom_dict.setdefault("chatroom_avatar", a_contact.avatar_url2)
 
-            temp_chatroom_dict.setdefault("chatroom_avatar", a_contact.avatar_url2)
+                if uqr_info.is_deleted is True:
+                    temp_chatroom_dict.setdefault("chatroom_status", -1)
+                else:
+                    temp_chatroom_dict.setdefault("chatroom_status", 0)
 
             temp_dict['chatroom_list'].append(deepcopy(temp_chatroom_dict))
 
@@ -255,3 +266,5 @@ def _create_new_group(user_id, group_name, is_default_group=False):
     group_info.is_default = is_default_group
     db.session.add(group_info)
     db.session.commit()
+
+    return group_info
