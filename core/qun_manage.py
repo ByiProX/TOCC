@@ -8,8 +8,8 @@ from sqlalchemy import desc
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS
 from models.android_db import AContact
-from models.qun_friend import GroupInfo, UserQunRelateInfo
-from models.user_bot import UserInfo
+from models.qun_friend import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
+from models.user_bot import UserInfo, UserBotRelateInfo
 from utils.u_str_unicode import str_to_unicode
 
 logger = logging.getLogger('main')
@@ -167,6 +167,7 @@ def check_whether_message_is_add_qun(message_analysis):
 
     if msg_type == MSG_TYPE_SYS and content.find(u'邀请你') != -1:
         is_add_qun = True
+        _bind_qun_success(message_analysis.talker, user_nickname, bot_username)
 
     return is_add_qun
 
