@@ -65,6 +65,7 @@ def get_group_list(user_info):
         temp_group_id = group_info.group_id
         temp_dict.setdefault("group_id", temp_group_id)
         temp_dict.setdefault("group_nickname", group_info.group_nickname)
+        temp_dict.setdefault("is_default", group_info.is_default)
         temp_dict.setdefault("chatroom_list", [])
 
         uqr_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.group_id == temp_group_id,
