@@ -4,9 +4,9 @@ import unittest
 import json
 
 from configs.config import db
-from core.qun_manage import set_default_group
-from models.qun_friend import GroupInfo
-from models.user_bot import UserInfo
+from core.qun_manage_core import set_default_group
+from models.qun_friend_models import GroupInfo
+from models.user_bot_models import UserInfo
 from test.basic_default import get_a_default_test_user_info
 
 

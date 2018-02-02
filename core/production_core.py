@@ -10,10 +10,10 @@ from sqlalchemy import desc
 
 from configs.config import PRODUCTION_CIRCLE_INTERVAL, db
 from core.message_core import analysis_and_save_a_message
-from core.qun_manage import check_whether_message_is_add_qun, check_is_removed
-from core.user import check_whether_message_is_add_friend
-from models.android_db import AMessage
-from models.production_consumption import ProductionStatistic
+from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
+from core.user_core import check_whether_message_is_add_friend
+from models.android_db_models import AMessage
+from models.production_consumption_models import ProductionStatistic
 
 logger = logging.getLogger('main')
 

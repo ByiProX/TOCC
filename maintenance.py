@@ -6,9 +6,9 @@ from datetime import datetime, timedelta
 import models
 import api
 from configs.config import db, config_name
-from core.qun_manage import set_default_group
-from models.android_db import ABot
-from models.user_bot import UserBotRelateInfo, UserInfo, BotInfo
+from core.qun_manage_core import set_default_group
+from models.android_db_models import ABot
+from models.user_bot_models import UserBotRelateInfo, UserInfo, BotInfo
 
 models.import_str = ""
 api.api_str = ""

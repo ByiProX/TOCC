@@ -8,7 +8,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from configs.config import db
 from configs.config import APP_ID, APP_SECRET
-from models.user_bot import AccessToken
+from models.user_bot_models import AccessToken
 from utils.u_model_json_str import unicode_to_str
 
 # 禁用安全请求警告

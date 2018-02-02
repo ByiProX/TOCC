@@ -2,8 +2,8 @@
 from flask import request
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api
-from core.qun_manage import create_new_group, get_group_list, rename_a_group, delete_a_group
-from core.user import UserLogin
+from core.qun_manage_core import create_new_group, get_group_list, rename_a_group, delete_a_group
+from core.user_core import UserLogin
 from utils.u_response import make_response
 
 

@@ -3,18 +3,18 @@
 import unittest
 import json
 
-from core.qun_manage import set_default_group
-from core.user import _bind_bot_success
-from models.android_db import ABot
-from models.qun_friend import GroupInfo
-from models.user_bot import UserBotRelateInfo, UserInfo
+from core.qun_manage_core import set_default_group
+from core.user_core import _bind_bot_success
+from models.android_db_models import ABot
+from models.qun_friend_models import GroupInfo
+from models.user_bot_models import UserBotRelateInfo, UserInfo
 from test.basic_default import get_a_default_test_user_info, get_a_default_test_bot_info, get_a_default_test_a_bot, \
     get_a_default_test_a_contact, create_a_new_app
 
 
 class CoreLoginTestCase(unittest.TestCase):
     def setUp(self):
-        from core.user import UserLogin
+        from core.user_core import UserLogin
         self.user_login = UserLogin(code='test')
 
     def test_generate_user_token(self):

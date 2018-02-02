@@ -4,9 +4,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 from configs.config import config_name, config_map
-from models.android_db import ABot, AContact
-from models.qun_friend import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
-from models.user_bot import UserInfo, BotInfo
+from models.android_db_models import ABot, AContact
+from models.qun_friend_models import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
+from models.user_bot_models import UserInfo, BotInfo
 
 
 def create_a_new_app():

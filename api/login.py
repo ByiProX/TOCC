@@ -4,7 +4,7 @@ import json
 from flask import request
 
 from configs.config import SUCCESS, main_api, INFO_NO_USED_BOT
-from core.user import UserLogin, add_a_pre_relate_user_bot_info, cal_user_basic_page_info, get_bot_qr_code, set_bot_name
+from core.user_core import UserLogin, add_a_pre_relate_user_bot_info, cal_user_basic_page_info, get_bot_qr_code, set_bot_name
 from utils.u_response import make_response
 
 

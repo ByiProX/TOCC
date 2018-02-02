@@ -9,11 +9,11 @@ from sqlalchemy import func
 from configs.config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
     ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM, \
     ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE, MSG_TYPE_TXT, MSG_TYPE_SYS
-from core.qun_manage import set_default_group
-from core.wechat import WechatConn
-from models.android_db import AContact, ABot, AFriend
-from models.qun_friend import UserQunRelateInfo
-from models.user_bot import UserInfo, UserBotRelateInfo, BotInfo
+from core.qun_manage_core import set_default_group
+from core.wechat_core import WechatConn
+from models.android_db_models import AContact, ABot, AFriend
+from models.qun_friend_models import UserQunRelateInfo
+from models.user_bot_models import UserInfo, UserBotRelateInfo, BotInfo
 from utils.u_str_unicode import str_to_unicode
 
 logger = logging.getLogger('main')

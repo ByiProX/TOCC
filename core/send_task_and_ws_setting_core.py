@@ -4,7 +4,7 @@
 ws的建立、释放、检测
 以及将任务发送给各个安卓
 """
-from models.production_consumption import ConsumptionTask
+from models.production_consumption_models import ConsumptionTask
 
 
 def send_task_to_ws(c_task):

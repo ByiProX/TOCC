@@ -7,9 +7,9 @@ from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE
-from models.android_db import AContact
-from models.qun_friend import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
-from models.user_bot import UserInfo, UserBotRelateInfo, BotInfo
+from models.android_db_models import AContact
+from models.qun_friend_models import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
+from models.user_bot_models import UserInfo, UserBotRelateInfo, BotInfo
 from utils.u_str_unicode import str_to_unicode
 
 logger = logging.getLogger('main')

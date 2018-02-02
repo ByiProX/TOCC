@@ -9,11 +9,11 @@ import json
 
 from datetime import datetime
 
-from core.qun_manage import set_default_group
-from core.user import _bind_bot_success, _get_qr_code_base64_str
-from models.android_db import ABot, AFriend
-from models.qun_friend import GroupInfo
-from models.user_bot import UserBotRelateInfo, UserInfo, BotInfo
+from core.qun_manage_core import set_default_group
+from core.user_core import _bind_bot_success, _get_qr_code_base64_str
+from models.android_db_models import ABot, AFriend
+from models.qun_friend_models import GroupInfo
+from models.user_bot_models import UserBotRelateInfo, UserInfo, BotInfo
 from test.basic_default import get_a_default_test_user_info, get_a_default_test_bot_info, get_a_default_test_a_bot, \
     get_a_default_test_a_contact, create_a_new_app
 
@@ -24,7 +24,7 @@ class TestGenerateUserTokenTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        from core.user import UserLogin
+        from core.user_core import UserLogin
         self.user_login = UserLogin(code='test')
 
     def test_generate_user_token(self):

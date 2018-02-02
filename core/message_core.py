@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from models.android_db import AMessage
-from models.message_ext import MessageAnalysis
+from models.android_db_models import AMessage
+from models.message_ext_models import MessageAnalysis
 from utils.u_str_unicode import str_to_unicode, unicode_to_str
 
 import logging
