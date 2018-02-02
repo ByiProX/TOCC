@@ -48,8 +48,15 @@ def create_new_group(group_name, token=None, user_id=None, user_info=None):
             if user_info:
                 user_id = user_info.user_id
 
-    _create_new_group(user_id, group_name)
-    return SUCCESS
+    group_info = _create_new_group(user_id, group_name)
+
+    temp_dict = dict()
+    temp_dict.setdefault("group_id", group_info.group_id)
+    temp_dict.setdefault("group_nickname", group_info.group_nickname)
+    temp_dict.setdefault("is_default", group_info.is_default)
+    temp_dict.setdefault("chatroom_list", [])
+
+    return SUCCESS, temp_dict
 
 
 def get_group_list(user_info):
@@ -256,3 +263,5 @@ def _create_new_group(user_id, group_name, is_default_group=False):
     group_info.is_default = is_default_group
     db.session.add(group_info)
     db.session.commit()
+
+    return group_info
