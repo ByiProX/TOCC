@@ -41,7 +41,7 @@ class UserQunRelateInfo(db.Model):
     chatbot_nickname = db.Column(db.String(32), index=True, nullable=True)
 
     # 群先后顺序排名预留
-    user_qun_seq = db.Column(db.Integer, index=True, nullable=False)
+    user_qun_seq = db.Column(db.Integer, index=True, nullable=True)
     create_time = db.Column(db.DateTime, index=True, nullable=False)
 
     # 当群被删除时，标记该群
