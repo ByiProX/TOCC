@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# TODO ihxxjxkb
 from configs.config import db
 
 
