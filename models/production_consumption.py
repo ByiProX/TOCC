@@ -76,3 +76,4 @@ class ConsumptionTaskStream(db.Model):
     task_create_time = db.Column(db.DateTime, index=True, nullable=False)
 
     send_to_ws_time = db.Column(db.DateTime, index=True, nullable=False)
+    task_status = db.Column(db.DateTime, index=True, nullable=True)
