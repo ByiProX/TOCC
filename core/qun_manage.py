@@ -6,10 +6,10 @@ from datetime import datetime
 from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
-    ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS
+    ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE
 from models.android_db import AContact
 from models.qun_friend import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
-from models.user_bot import UserInfo, UserBotRelateInfo
+from models.user_bot import UserInfo, UserBotRelateInfo, BotInfo
 from utils.u_str_unicode import str_to_unicode
 
 logger = logging.getLogger('main')
@@ -190,11 +190,26 @@ def check_is_removed(message_analysis):
     return is_removed
 
 
-def _bind_qun_success(chatroomname, user_id, bot_id):
+def _bind_qun_success(chatroomname, user_nickname, bot_username):
     """
     当确认message为加群时，将群加入到系统中
     :return:
     """
+    user_info_list = db.session.query(UserInfo).filter(UserInfo.nick_name == user_nickname).all()
+    if len(user_info_list) > 1:
+        return ERR_HAVE_SAME_PEOPLE
+    elif len(user_info_list) == 0:
+        return ERR_WRONG_ITEM
+
+    user_info = user_info_list[0]
+    user_id = user_info.user_id
+
+    bot_info = db.session.query(BotInfo).filter(BotInfo.username == bot_username).first()
+    if not bot_info:
+        return ERR_WRONG_ITEM
+
+    bot_id = bot_info.bot_id
+
     uqr_info = UserQunRelateInfo()
     uqr_info.user_id = user_id
     uqr_info.chatroomname = chatroomname
