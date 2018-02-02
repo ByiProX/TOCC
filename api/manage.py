@@ -25,7 +25,7 @@ def app_add_a_group():
     status, group = create_new_group(group_name=new_group_name, user_id=user_info.user_id)
 
     if status == SUCCESS:
-        return make_response(status, group)
+        return make_response(status, group=group)
     else:
         return make_response(status)
 
