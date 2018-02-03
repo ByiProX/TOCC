@@ -2,7 +2,8 @@
 from flask import request
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api, ERR_SET_LENGTH_WRONG, ERR_INVALID_PARAMS
-from core.qun_manage_core import create_new_group, get_group_list, rename_a_group, delete_a_group
+from core.qun_manage_core import create_new_group, get_group_list, rename_a_group, delete_a_group, \
+    transfer_qun_into_a_group
 from core.user_core import UserLogin
 from utils.u_response import make_response
 
@@ -103,13 +104,27 @@ def app_delete_a_group():
         return make_response(status)
 
 
+@main_api.route('/transfor_chatroom_into_group', methods=['POST'])
 def app_transfor_qun_into_group():
     """
-    将一个群从一个群里面移动到另一个群里面
+    将一个群从一个组里面移动到另一个群里面
     :return:
     """
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
 
-    raise NotImplementedError
+    uqun_id = request.json.get('chatroom_id')
+    if not uqun_id:
+        return make_response(ERR_INVALID_PARAMS)
+
+    new_group_id = request.json.get('new_group_id')
+    if not new_group_id:
+        return make_response(ERR_INVALID_PARAMS)
+
+    status = transfer_qun_into_a_group(new_group_id, uqun_id, user_info.user_id)
+
+    if status == SUCCESS:
+        return make_response(SUCCESS)
+    else:
+        return make_response(status)

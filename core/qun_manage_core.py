@@ -157,7 +157,7 @@ def delete_a_group(group_id, user_id):
     return SUCCESS
 
 
-def transfor_qun_into_a_group(group_id, uqun_id, user_id):
+def transfer_qun_into_a_group(group_id, uqun_id, user_id):
     qun_info = db.session.query(UserQunRelateInfo.uqun_id == uqun_id).first()
     if not qun_info:
         logger.error("无法找到该群. uqun_id: %s. user_id: %s." % (uqun_id, user_id))

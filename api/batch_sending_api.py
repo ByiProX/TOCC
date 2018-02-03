@@ -12,6 +12,46 @@ def app_get_batch_sending_task():
     """
     得到主界面所需的所有信息
     :return:
+    传入的格式
+    {
+      "sending_task_id": 1,
+      "task_covering_chatroom_count": 12,
+      "task_covering_people_count": 1321,
+      "chatroom_list": [
+        {
+          "chatroom_id": 2,
+          "chatroom_nickname": "一个小群",
+          "chatroom_member_count": 145,
+          "chatroom_avatar": "",
+          "chatroom_status": 0
+        },
+        {
+          "chatroom_id": 5,
+          "chatroom_nickname": "另一个小群",
+          "chatroom_member_count": 213,
+          "chatroom_avatar": "",
+          "chatroom_status": 0
+        }
+      ],
+      "message_list": [
+        {
+          "material_id": 1,
+          "task_send_type": 1,
+          "task_send_content": {
+            "text": "这是一段发送的文字。这段文字不能太长，但是预计可以在500字以内"
+          }
+        },
+        {
+          "material_id": 1,
+          "task_send_type": 2,
+          "task_send_content": {
+            "title": "一个美丽的图片或者什么的",
+            "description": "一张图片的描述",
+            "url": "http:"
+          }
+        }
+      ]
+    }
     """
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
