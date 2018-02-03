@@ -8,7 +8,7 @@ from sqlalchemy import func
 
 from configs.config import db, SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
     ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM, \
-    ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE, MSG_TYPE_TXT, MSG_TYPE_SYS
+    ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE, MSG_TYPE_TXT, MSG_TYPE_SYS, ERR_INVALID_PARAMS
 from core.qun_manage_core import set_default_group
 from core.wechat_core import WechatConn
 from models.android_db_models import AContact, ABot, AFriend
@@ -116,6 +116,8 @@ class UserLogin:
 
     @staticmethod
     def verify_token(token):
+        if not token:
+            return ERR_INVALID_PARAMS
         user_info = db.session.query(UserInfo).filter(UserInfo.token == token).first()
         if user_info:
             if datetime.now() < user_info.token_expired_time:

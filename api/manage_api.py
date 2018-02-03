@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import request
 
-from configs.config import SUCCESS, ERR_PARAM_SET, main_api, ERR_SET_LENGTH_WRONG
+from configs.config import SUCCESS, ERR_PARAM_SET, main_api, ERR_SET_LENGTH_WRONG, ERR_INVALID_PARAMS
 from core.qun_manage_core import create_new_group, get_group_list, rename_a_group, delete_a_group
 from core.user_core import UserLogin
 from utils.u_response import make_response
@@ -18,6 +18,8 @@ def app_add_a_group():
         return make_response(status)
 
     new_group_name = request.json.get('new_group_name')
+    if not new_group_name:
+        return make_response(ERR_INVALID_PARAMS)
     if len(new_group_name) < 1 or len(new_group_name) > 16:
         return make_response(ERR_SET_LENGTH_WRONG)
 
@@ -62,9 +64,14 @@ def app_rename_a_group():
         return make_response(status)
 
     new_group_name = request.json.get('new_group_name')
+    if not new_group_name:
+        return make_response(ERR_INVALID_PARAMS)
     if len(new_group_name) < 1 or len(new_group_name) > 16:
         return make_response(ERR_SET_LENGTH_WRONG)
+
     group_id = request.json.get('group_id')
+    if not group_id:
+        return make_response(ERR_INVALID_PARAMS)
 
     status = rename_a_group(new_group_name, group_id, user_info.user_id)
 
@@ -85,6 +92,8 @@ def app_delete_a_group():
         return make_response(status)
 
     group_id = request.json.get('group_id')
+    if not group_id:
+        return make_response(ERR_INVALID_PARAMS)
 
     status = delete_a_group(group_id, user_info.user_id)
 

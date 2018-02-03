@@ -3,7 +3,7 @@ import json
 
 from flask import request
 
-from configs.config import SUCCESS, main_api, INFO_NO_USED_BOT, ERR_SET_LENGTH_WRONG
+from configs.config import SUCCESS, main_api, INFO_NO_USED_BOT, ERR_SET_LENGTH_WRONG, ERR_INVALID_PARAMS
 from core.user_core import UserLogin, add_a_pre_relate_user_bot_info, cal_user_basic_page_info, get_bot_qr_code, \
     set_bot_name
 from utils.u_response import make_response
@@ -18,6 +18,8 @@ def app_verify_code():
     """
     data_json = json.loads(request.data)
     code = data_json.get('code')
+    if not code:
+        return make_response(ERR_INVALID_PARAMS)
 
     user_login = UserLogin(code)
     status, user_info = user_login.get_user_token()
@@ -61,6 +63,8 @@ def app_initial_robot_nickname():
         return make_response(status)
 
     bot_nickname = request.json.get('bot_nickname')
+    if not bot_nickname:
+        return make_response(ERR_INVALID_PARAMS)
     if len(bot_nickname) < 1 or len(bot_nickname) > 16:
         return make_response(ERR_SET_LENGTH_WRONG)
 
@@ -86,8 +90,12 @@ def app_set_robot_nickname():
         return make_response(status)
 
     bot_id = request.json.get('bot_id')
+    if not bot_id:
+        return make_response(ERR_INVALID_PARAMS)
 
     bot_nickname = request.json.get('bot_nickname')
+    if not bot_nickname:
+        return make_response(ERR_INVALID_PARAMS)
     if len(bot_nickname) < 1 or len(bot_nickname) > 16:
         return make_response(ERR_SET_LENGTH_WRONG)
 
