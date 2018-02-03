@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import request
 
-from configs.config import SUCCESS, ERR_PARAM_SET, main_api
+from configs.config import SUCCESS, ERR_PARAM_SET, main_api, ERR_SET_LENGTH_WRONG
 from core.qun_manage_core import create_new_group, get_group_list, rename_a_group, delete_a_group
 from core.user_core import UserLogin
 from utils.u_response import make_response
@@ -18,6 +18,8 @@ def app_add_a_group():
         return make_response(status)
 
     new_group_name = request.json.get('new_group_name')
+    if len(new_group_name) < 1 or len(new_group_name) > 16:
+        return make_response(ERR_SET_LENGTH_WRONG)
 
     if not new_group_name:
         return make_response(ERR_PARAM_SET)
@@ -60,6 +62,8 @@ def app_rename_a_group():
         return make_response(status)
 
     new_group_name = request.json.get('new_group_name')
+    if len(new_group_name) < 1 or len(new_group_name) > 16:
+        return make_response(ERR_SET_LENGTH_WRONG)
     group_id = request.json.get('group_id')
 
     status = rename_a_group(new_group_name, group_id, user_info.user_id)
