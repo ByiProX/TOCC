@@ -37,6 +37,10 @@ class ConsumptionThread(threading.Thread):
             ct_list = db.session.query(ConsumptionTask).all()
 
             for i, each_task in enumerate(ct_list):
+                if each_task.task_type == 1:
+                    pass
+                else:
+                    logger.warning("目前不进行处理")
                 send_task_to_ws(each_task)
 
             new_con_stat = ConsumptionStatistic()
