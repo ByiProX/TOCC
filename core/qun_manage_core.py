@@ -158,7 +158,7 @@ def delete_a_group(group_id, user_id):
 
 
 def transfer_qun_into_a_group(group_id, uqun_id, user_id):
-    qun_info = db.session.query(UserQunRelateInfo.uqun_id == uqun_id).first()
+    qun_info = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.uqun_id == uqun_id).first()
     if not qun_info:
         logger.error(u"无法找到该群. uqun_id: %s. user_id: %s." % (uqun_id, user_id))
         return ERR_WRONG_ITEM
@@ -166,7 +166,7 @@ def transfer_qun_into_a_group(group_id, uqun_id, user_id):
         logger.error(u"用户与群属于不同用户. uqun_id: %s. user_id: %s." % (uqun_id, user_id))
         return ERR_WRONG_USER_ITEM
 
-    group_info = db.session.query(GroupInfo.group_id == group_id).first()
+    group_info = db.session.query(GroupInfo).filter(GroupInfo.group_id == group_id).first()
     if not group_info:
         logger.error(u"无法找到该分组. group_id: %s." % group_id)
         raise ERR_WRONG_ITEM
