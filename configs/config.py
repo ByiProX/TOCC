@@ -197,4 +197,4 @@ MSG_TYPE_VIDEO = 62
 MSG_TYPE_SHARE = 49
 MSG_TYPE_SYS = 10000
 
-ws_map = dict()
+WS_MAP = dict()

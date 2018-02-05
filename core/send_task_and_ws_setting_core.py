@@ -4,12 +4,22 @@
 ws的建立、释放、检测
 以及将任务发送给各个安卓
 """
+import json
+
+from configs.config import WS_MAP
 from models.production_consumption_models import ConsumptionTask
 
 
 def send_task_content_to_ws(bot_username, target_username, task_send_type, content):
-    # TODO-zc 123
-    pass
+    # TODO-zc WebsocketModel
+    ws = WS_MAP[bot_username]
+    text_json = dict()
+    text_json['username'] = target_username
+    text_json['content'] = content
+    text_json['type'] = task_send_type
+    text = json.dumps(text_json)
+    print 'text', text
+    ws.send(text)
     # """
     # 将文字发给ws
     # {

@@ -4,7 +4,7 @@ import json
 from flask import request
 from flask_uwsgi_websocket import GeventWebSocket
 
-from configs.config import app, ws_map
+from configs.config import app, WS_MAP
 
 websocket = GeventWebSocket(app)
 
@@ -13,7 +13,7 @@ websocket = GeventWebSocket(app)
 def echo(ws):
     with app.request_context(ws.environ), app.app_context():
         username = request.args.get('username')
-        ws_map[username] = ws
+        WS_MAP[username] = ws
         print 'username', username
         while True:
             msg = ws.receive()
