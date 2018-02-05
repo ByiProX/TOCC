@@ -236,6 +236,10 @@ def cal_user_basic_page_info(user_info):
 
             member_count = db.session.query(func.sum(AContact.member_count)).filter(
                 AContact.username.in_(chatroomname_list)).first()
+            if member_count is None:
+                member_count = 0
+            else:
+                member_count = int(member_count)
 
         res = dict()
         res.setdefault("bot_info", {})
