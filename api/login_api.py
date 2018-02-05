@@ -3,7 +3,7 @@ import json
 
 from flask import request
 
-from configs.config import SUCCESS, main_api, INFO_NO_USED_BOT, ERR_SET_LENGTH_WRONG, ERR_INVALID_PARAMS
+from configs.config import SUCCESS, main_api, INFO_NO_USED_BOT, ERR_SET_LENGTH_WRONG, ERR_INVALID_PARAMS, ERR_PARAM_SET
 from core.user_core import UserLogin, add_a_pre_relate_user_bot_info, cal_user_basic_page_info, get_bot_qr_code, \
     set_bot_name
 from utils.u_response import make_response
@@ -16,6 +16,8 @@ def app_verify_code():
     code: 微信传入的code
     {"code":"111"}
     """
+    if not request.data:
+        return make_response(ERR_PARAM_SET)
     data_json = json.loads(request.data)
     code = data_json.get('code')
     if not code:
