@@ -11,7 +11,7 @@ from sqlalchemy import desc
 from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, CONSUMPTION_CIRCLE_INTERVAL
 from core.message_core import analysis_and_save_a_message
 from core.qun_manage_core import check_whether_message_is_add_qun
-from core.send_task_and_ws_setting_core import send_task_to_ws, send_task_content_to_ws
+from core.send_task_and_ws_setting_core import send_task_content_to_ws
 from core.user_core import check_whether_message_is_add_friend
 from models.android_db_models import AMessage
 from models.production_consumption_models import ProductionStatistic, ConsumptionTask, ConsumptionStatistic, \
