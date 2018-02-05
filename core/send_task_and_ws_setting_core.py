@@ -7,23 +7,7 @@ ws的建立、释放、检测
 from models.production_consumption_models import ConsumptionTask
 
 
-def send_task_to_ws(c_task):
-    """
-    把任务发送给各个安卓端
-    :return:
-    """
-
-    # 注明类型，开写后可删除
-    if isinstance(c_task, ConsumptionTask):
-        pass
-    # 确定需要发送以后，内容为以下这样
-
-    _send_to_ws(bot_username=c_task.bot_username, target_username=c_task.chatroomname,
-                task_send_type=c_task.task_send_type, content=c_task.task_send_content)
-    pass
-
-
-def _send_to_ws(bot_username, target_username, task_send_type, content):
+def send_task_content_to_ws(bot_username, target_username, task_send_type, content):
     # TODO-zc 123
     pass
     # """
