@@ -173,7 +173,7 @@ ERR_CIRCLE_STATUS_WRONG = 'err_circle_status_wrong'
 ERROR_CODE[ERR_RENAME_OR_DELETE_DEFAULT_GROUP] = {'discription': '循环状态不对，无法改变', 'status_code': -13}
 # 设置内容的长度不符
 ERR_SET_LENGTH_WRONG = 'err_set_length_wrong'
-ERROR_CODE[ERR_SET_LENGTH_WRONG] = {'discription': '循环状态不对，无法改变', 'status_code': -14}
+ERROR_CODE[ERR_SET_LENGTH_WRONG] = {'discription': '设置内容的长度不符', 'status_code': -14}
 
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
