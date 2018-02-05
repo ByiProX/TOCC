@@ -21,6 +21,7 @@ class ConsumptionTask(db.Model):
 
     # 1为群发消息；2为自动回复；3为回复签到；4为入群回复
     task_type = db.Column(db.Integer, index=True, nullable=False)
+    task_relevant_id = db.Column(db.BigInteger, index=True, nullable=False)
 
     # 发送内容的类型；1为文字；2为公众号；3为链接；4为文件；5为小程序
     task_send_type = db.Column(db.Integer, index=True, nullable=False)
@@ -66,6 +67,7 @@ class ConsumptionTaskStream(db.Model):
 
     # 1为群发消息；2为自动回复；3为回复签到；4为入群回复
     task_type = db.Column(db.Integer, index=True, nullable=False)
+    task_relevant_id = db.Column(db.BigInteger, index=True, nullable=False)
 
     # 发送内容的类型，
     task_send_type = db.Column(db.Integer, index=True, nullable=False)
