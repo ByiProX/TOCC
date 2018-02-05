@@ -17,6 +17,9 @@ def app_get_batch_sending_task():
       "sending_task_id": 1,
       "task_covering_chatroom_count": 12,
       "task_covering_people_count": 1321,
+      "task_sended_count": 1,
+      "task_sended_failed_count": 3,
+      "task_create_time": ,
       "chatroom_list": [
         {
           "chatroom_id": 2,

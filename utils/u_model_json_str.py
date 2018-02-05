@@ -38,10 +38,10 @@ def model_to_dict(inst, cls):
 
 
 def verify_json():
-    logger.info("")
-    logger.info("FromIP : " + request.remote_addr)
-    logger.info("BaseUrl: " + request.base_url)
-    logger.info("JsonArg: " + json.dumps(request.json))
+    logger.info(u"")
+    logger.info(u"FromIP : " + request.remote_addr)
+    logger.info(u"BaseUrl: " + request.base_url)
+    logger.info(u"JsonArg: " + json.dumps(request.json))
     if request.json is None:
         abort(400)
         # return make_response(ERR_NONE_JSON)
@@ -49,7 +49,7 @@ def verify_json():
 
 def unicode_to_str(text):
     if isinstance(text, unicode):
-        logger.info('from str ot unicode')
+        logger.info(u'from str ot unicode')
         text = text.encode('utf-8')
     return text
 

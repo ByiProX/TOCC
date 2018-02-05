@@ -28,10 +28,10 @@ class WechatConn:
 
     @staticmethod
     def _wechat_requst(method, url, **kwargs):
-        logger.info('url: ' + str(url))
+        logger.info(u'url: ' + url)
         kwargs['verify'] = False
         res = requests.request(method=method, url=url, **kwargs)
-        logger.info('res: ' + str(res.content))
+        logger.info(u'res: ' + res.content)
         return res
 
     # 获取基础 access_token

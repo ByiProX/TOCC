@@ -28,7 +28,7 @@ class ConsumptionThread(threading.Thread):
         self.run_end_time = None
 
     def run(self):
-        logger.info("Start thread id: %s." % str(self.thread_id))
+        logger.info(u"Start thread id: %s." % str(self.thread_id))
         self.run_start_time = datetime.now()
 
         while self.go_work:
@@ -51,11 +51,11 @@ class ConsumptionThread(threading.Thread):
                 time.sleep(time_to_rest)
             else:
                 pass
-        logger.info("End thread id: %s." % str(self.thread_id))
+        logger.info(u"End thread id: %s." % str(self.thread_id))
         self.run_end_time = datetime.now()
 
     def stop(self):
-        logger.info("停止进程")
+        logger.info(u"停止进程")
         self.go_work = False
 
 

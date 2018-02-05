@@ -29,7 +29,7 @@ class ProductionThread(threading.Thread):
         self.last_a_message_create_time = None
 
     def run(self):
-        logger.info("Start thread id: %s." % str(self.thread_id))
+        logger.info(u"Start thread id: %s." % str(self.thread_id))
         self.run_start_time = datetime.now()
 
         # 从这里要去库中读取上次循环的结果
@@ -97,11 +97,11 @@ class ProductionThread(threading.Thread):
                 time.sleep(time_to_rest)
             else:
                 pass
-        logger.info("End thread id: %s." % str(self.thread_id))
+        logger.info(u"End thread id: %s." % str(self.thread_id))
         self.run_end_time = datetime.now()
 
     def stop(self):
-        logger.info("停止进程")
+        logger.info(u"停止进程")
         self.go_work = False
 
 

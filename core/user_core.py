@@ -51,13 +51,13 @@ class UserLogin:
                     return SUCCESS, self.now_user_info
                 else:
                     logger.error(
-                        str(ERR_USER_TOKEN_EXPIRED) +
-                        "code微信不认可，库中有code，但token已经过期. code: %s" % str(self.code))
+                        ERR_USER_TOKEN_EXPIRED +
+                        u"code微信不认可，库中有code，但token已经过期. code: %s" % self.code)
                     return ERR_USER_TOKEN_EXPIRED, None
             # 如果这个code在库中查不到
             else:
-                logger.error(str(ERR_USER_LOGIN_FAILED) +
-                             "code微信不认可，库中无该code. code: %s" % str(self.code))
+                logger.error(ERR_USER_LOGIN_FAILED +
+                             u"code微信不认可，库中无该code. code: %s" % self.code)
                 return ERR_USER_LOGIN_FAILED, None
         else:
             self._get_user_info_from_wechat()
@@ -70,13 +70,13 @@ class UserLogin:
                     self.user_info_up_to_date.last_login_time = datetime.now()
 
                     if datetime.now() < self.now_user_info.token_expired_time:
-                        logger.info("老用户登录，token未过期. user_id: %s" % self.now_user_info.user_id)
+                        logger.info(u"老用户登录，token未过期. user_id: %s" % self.now_user_info.user_id)
                         pass
                     else:
                         self.user_info_up_to_date.token = self._generate_user_token()
                         self.user_info_up_to_date.token_expired_time = datetime.now() + timedelta(
                             days=TOKEN_EXPIRED_THRESHOLD)
-                        logger.info("老用户登录，token更新. user_id: %s" % self.now_user_info.user_id)
+                        logger.info(u"老用户登录，token更新. user_id: %s" % self.now_user_info.user_id)
 
                     db.session.merge(self.user_info_up_to_date)
                     db.session.commit()
@@ -97,7 +97,7 @@ class UserLogin:
 
                     db.session.add(self.user_info_up_to_date)
                     db.session.commit()
-                    logger.info("新用户登录. user_id: %s" % self.user_info_up_to_date.user_id)
+                    logger.info(u"新用户登录. user_id: %s" % self.user_info_up_to_date.user_id)
                     return SUCCESS, self.user_info_up_to_date
 
             # 因为各种原因没有拿到用户信息
@@ -105,13 +105,13 @@ class UserLogin:
                 self.now_user_info = db.session.query(UserInfo).filter(UserInfo.open_id == self.open_id).first()
                 if self.now_user_info:
                     if datetime.now() < self.now_user_info.token_expired_time:
-                        logger.warning("老用户登录，微信不认可open_id. user_id: %s" % self.now_user_info.user_id)
+                        logger.warning(u"老用户登录，微信不认可open_id. user_id: %s" % self.now_user_info.user_id)
                         return SUCCESS, self.now_user_info
                     else:
-                        logger.warning("老用户登录，token过期. user_id: %s" % self.now_user_info.user_id)
+                        logger.warning(u"老用户登录，token过期. user_id: %s" % self.now_user_info.user_id)
                         return ERR_USER_TOKEN_EXPIRED, None
                 else:
-                    logger.error("微信不认可open_id，未知用户. code: %s" % self.code)
+                    logger.error(u"微信不认可open_id，未知用户. code: %s" % self.code)
                     return ERR_USER_LOGIN_FAILED, None
 
     @staticmethod
@@ -121,14 +121,14 @@ class UserLogin:
         user_info = db.session.query(UserInfo).filter(UserInfo.token == token).first()
         if user_info:
             if datetime.now() < user_info.token_expired_time:
-                logger.debug("用户token有效")
+                logger.debug(u"用户token有效")
                 return SUCCESS, user_info
             else:
                 logger.error(
-                    "用户token过期. user_id: %s. 过期时间: %s" % (user_info.user_id, str(user_info.token_expired_time)))
+                    u"用户token过期. user_id: %s. 过期时间: %s" % (user_info.user_id, str(user_info.token_expired_time)))
                 return ERR_USER_TOKEN_EXPIRED, None
         else:
-            logger.error("无效用户token. token: %s" % token)
+            logger.error(u"无效用户token. token: %s" % token)
             return ERR_USER_TOKEN, None
 
     def _get_user_info_from_wechat(self):
@@ -174,22 +174,22 @@ def set_bot_name(bot_id, bot_nickname, user_info):
                                                           UserBotRelateInfo.is_setted == 1).first()
 
     if not ubr_info:
-        logger.error("未找到已开启的user与bot关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_id))
+        logger.error(u"未找到已开启的user与bot关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_id))
         return ERR_WRONG_USER_ITEM
 
     ubr_info.chatbot_default_nickname = bot_nickname
     db.session.commit()
-    logger.info("已更新全局bot名称. bot_id: %s. bot_nickname: %s" % (bot_id, bot_nickname))
+    logger.info(u"已更新全局bot名称. bot_id: %s. bot_nickname: %s" % (bot_id, bot_nickname))
     return SUCCESS
 
 
 def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
     ubr_info_list = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id).all()
     if len(ubr_info_list) > 1:
-        raise ValueError("已经有多于一个机器人，不可以再预设置机器人")
+        raise ValueError(u"已经有多于一个机器人，不可以再预设置机器人")
     elif len(ubr_info_list) == 1:
         if ubr_info_list[0].is_setted:
-            logger.error("已经有设置完成的bot. user_id: %s." % user_info.user_id)
+            logger.error(u"已经有设置完成的bot. user_id: %s." % user_info.user_id)
             return ERR_MAXIMUM_BOT, None
         else:
             ubr_info = ubr_info_list[0]
@@ -200,7 +200,7 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
 
     bot_info = _get_a_balanced_bot()
     if not bot_info:
-        logger.error("未取得可用bot. user_id: %s" % user_info.user_id)
+        logger.error(u"未取得可用bot. user_id: %s" % user_info.user_id)
         return ERR_NO_ALIVE_BOT, None
 
     ubr_info.bot_id = bot_info.bot_id
@@ -213,7 +213,7 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
 
     db.session.add(ubr_info)
     db.session.commit()
-    logger.info("初始化user与bot关系成功. user_id: %s. bot_id: %s." % (user_info.user_id, bot_info.bot_id))
+    logger.info(u"初始化user与bot关系成功. user_id: %s. bot_id: %s." % (user_info.user_id, bot_info.bot_id))
     return SUCCESS, ubr_info
 
 
@@ -226,7 +226,7 @@ def cal_user_basic_page_info(user_info):
         qun_count = len(uqr_info_list)
         if not uqr_info_list:
             # 目前没有控制的群，不需要下一步统计
-            logger.debug("无绑定群. user_id: %s." % user_info.user_id)
+            logger.debug(u"无绑定群. user_id: %s." % user_info.user_id)
             member_count = 0
             pass
         else:
@@ -243,12 +243,12 @@ def cal_user_basic_page_info(user_info):
         res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
         bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
         if not bot_info:
-            logger.error("bot信息出错. bot_id: %s" % ubr_info.bot_id)
+            logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
             return ERR_WRONG_ITEM, None
         res['bot_info'].setdefault('bot_status', bot_info.is_alive)
         a_bot = db.session.query(ABot).filter(ABot.username == bot_info.username).first()
         if not a_bot:
-            logger.error("bot信息出错. bot_id: %s" % ubr_info.bot_id)
+            logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
             return ERR_WRONG_ITEM, None
         res['bot_info'].setdefault('bot_avatar', a_bot.avatar_url2)
 
@@ -265,7 +265,7 @@ def cal_user_basic_page_info(user_info):
         res['user_func'].setdefault('func_sign', user_info.func_qun_sign)
         res['user_func'].setdefault('func_reply', user_info.func_auto_reply)
         res['user_func'].setdefault('func_welcome', user_info.func_welcome_message)
-        logger.info("返回有机器人时群组列表. user_id: %s." % user_info.user_id)
+        logger.info(u"返回有机器人时群组列表. user_id: %s." % user_info.user_id)
         return SUCCESS, res
 
     # 用户目前没有机器人
@@ -280,7 +280,7 @@ def cal_user_basic_page_info(user_info):
         res['user_func'].setdefault('func_sign', False)
         res['user_func'].setdefault('func_reply', False)
         res['user_func'].setdefault('func_welcome', False)
-        logger.info("返回无机器人时群组列表. user_id: %s." % user_info.user_id)
+        logger.info(u"返回无机器人时群组列表. user_id: %s." % user_info.user_id)
         return INFO_NO_USED_BOT, res
 
 
@@ -288,23 +288,23 @@ def get_bot_qr_code(user_info):
     ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id).first()
 
     if not ubr_info:
-        logger.error("无预建立的群关系. user_id: %s." % user_info.user_id)
+        logger.error(u"无预建立的群关系. user_id: %s." % user_info.user_id)
         return ERR_WRONG_USER_ITEM, None
 
     bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
 
     if not bot_info:
-        logger.error("bot信息出错. bot_id: %s" % ubr_info.bot_id)
+        logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
         return ERR_WRONG_ITEM, None
 
     username = bot_info.username
     img_str = _get_qr_code_base64_str(username)
 
     if not img_str:
-        logger.error("static中无bot的QR信息. bot_id: %s. bot_username: %s." % (ubr_info.bot_id, username))
+        logger.error(u"static中无bot的QR信息. bot_id: %s. bot_username: %s." % (ubr_info.bot_id, username))
         return ERR_NO_BOT_QR_CODE, None
 
-    logger.info("返回QR码. bot_id: %s." % ubr_info.bot_id)
+    logger.info(u"返回QR码. bot_id: %s." % ubr_info.bot_id)
     return SUCCESS, img_str
 
 
@@ -323,7 +323,7 @@ def check_whether_message_is_add_friend(message_analysis):
         user_username = message_analysis.real_talker
         a_contact = db.session.query(AContact).filter(AContact.username == user_username).first()
         bot_info = db.session.query(BotInfo).filter(BotInfo.username == message_analysis.username).first()
-        logger.info("发现加bot好友用户. username: %s." % user_username)
+        logger.info(u"发现加bot好友用户. username: %s." % user_username)
         _bind_bot_success(a_contact.nickname, user_username, bot_info)
     return is_add_friend
 
@@ -336,27 +336,27 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     a_friend_list = db.session.query(AFriend).filter(AFriend.from_username == bot_info.username,
                                                      AFriend.to_username == user_username).all()
     if len(a_friend_list) > 1:
-        logger.error("根据username无法确定其身份. bot_username: %s. user_username: %s" %
+        logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
         return ERR_HAVE_SAME_PEOPLE
     elif len(a_friend_list) == 0:
-        logger.error("好友信息出错. bot_username: %s. user_username: %s" %
+        logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
         return ERR_WRONG_ITEM
 
     user_info_list = db.session.query(UserInfo).filter(UserInfo.nick_name == user_nickname).all()
     if len(user_info_list) > 1:
-        logger.error("根据username无法确定其身份. bot_username: %s. user_username: %s" %
+        logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
         return ERR_HAVE_SAME_PEOPLE
     elif len(user_info_list) == 0:
-        logger.error("配对user信息出错. bot_username: %s. user_username: %s" %
+        logger.error(u"配对user信息出错. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
         return ERR_WRONG_ITEM
 
     user_info_list_2 = db.session.query(UserInfo).filter(UserInfo.username == user_username).all()
     if user_info_list_2:
-        logger.error("以绑定username与user关系. bot_username: %s. user_username: %s" %
+        logger.error(u"以绑定username与user关系. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
         return ERR_HAVE_SAME_PEOPLE
 
@@ -364,7 +364,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     user_info.username = user_username
     db.session.merge(user_info)
     db.session.commit()
-    logger.debug("以绑定user与username关系. user_id: %s. username: %s." % (user_info.user_id, user_username))
+    logger.debug(u"以绑定user与username关系. user_id: %s. username: %s." % (user_info.user_id, user_username))
 
     ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
                                                           UserBotRelateInfo.bot_id == bot_info.bot_id).first()
@@ -375,7 +375,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     db.session.commit()
 
     set_default_group(user_info)
-    logger.info("已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_info.bot_id))
+    logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_info.bot_id))
     return SUCCESS
 
 
@@ -408,7 +408,7 @@ def _get_qr_code_base64_str(username):
     try:
         f = open("static/bot_qr_code/" + str(username) + ".jpg", 'r')
     except IOError:
-        logger.warning("无该username(%s)的qr_code." % str(username))
+        logger.warning(u"无该username(%s)的qr_code." % str(username))
         return None
     img_str = base64.b64encode(f.read())
     f.close()
