@@ -239,7 +239,8 @@ def cal_user_basic_page_info(user_info):
             if member_count is None:
                 member_count = 0
             else:
-                member_count = int(member_count)
+
+                member_count = int(member_count[0])
 
         res = dict()
         res.setdefault("bot_info", {})
