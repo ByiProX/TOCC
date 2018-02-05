@@ -104,7 +104,7 @@ def app_delete_a_group():
         return make_response(status)
 
 
-@main_api.route('/transfor_chatroom_into_group', methods=['POST'])
+@main_api.route('/transfer_chatroom_into_group', methods=['POST'])
 def app_transfor_qun_into_group():
     """
     将一个群从一个组里面移动到另一个群里面
