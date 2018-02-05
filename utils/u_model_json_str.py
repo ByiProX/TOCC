@@ -49,7 +49,6 @@ def verify_json():
 
 def unicode_to_str(text):
     if isinstance(text, unicode):
-        logger.info(u'from str ot unicode')
         text = text.encode('utf-8')
     return text
 
