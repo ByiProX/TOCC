@@ -42,9 +42,9 @@ class AddAGroupTestCase(unittest.TestCase):
         c = json.loads(r.content)['content']
         group_id = c['group']['group_id']
 
-        #FIXME 不知道为什么读不到正确的结果
-        gi2 = test_db.session.query(GroupInfo).filter(GroupInfo.group_id == group_id).first()
-        self.assertEqual(now_count, len(gi2))
+        test_db.session.commit()
+        gi2 = test_db.session.query(GroupInfo).filter(GroupInfo.user_id == sample.user_id).all()
+        self.assertEqual(now_count + 1, len(gi2))
 
         gi3 = test_db.session.query(GroupInfo).filter(GroupInfo.group_nickname == "普通的测试名字",
                                                       GroupInfo.user_id == sample.user_id).first()
