@@ -62,7 +62,7 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
         filter(ConsumptionTaskStream.task_type == 1,
                ConsumptionTaskStream.task_relevant_id == bs_task_info.sending_task_id).all()
     # FIXME-zwf 这里的格式还需要调整
-    res.setdefault("task_sended_count", temp_tsc)
+    res.setdefault("task_sended_count", temp_tsc[0][0])
 
     # TODO-zwf 想办法把失败的读出来
     res.setdefault("task_sended_failed_count", 0)
@@ -86,7 +86,7 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
     # 生成material信息
     res.setdefault("message_list", [])
     bs_task_material_list = db.session.query(BatchSendingTaskMaterialRelate).filter(
-        BatchSendingTaskMaterialRelate).order_by(
+        BatchSendingTaskMaterialRelate.sending_task_id == sending_task_id).order_by(
         BatchSendingTaskMaterialRelate.send_seq).all()
     if not bs_task_material_list:
         return ERR_WRONG_ITEM
@@ -99,7 +99,7 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
         temp_material_dict.setdefault("material_id", um_lib.material_id)
         temp_material_dict.setdefault("task_send_type", um_lib.task_send_type)
         temp_material_dict.setdefault("task_send_content", {})
-        temp_content = um_lib.task_send_content
+        temp_content = json.loads(um_lib.task_send_content)
         if um_lib.task_send_type == 1:
             text = temp_content.get("text")
             if text is None:

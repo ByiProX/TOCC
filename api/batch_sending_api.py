@@ -3,7 +3,7 @@
 from flask import request
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api
-from core.batch_sending_core import create_a_sending_task
+from core.batch_sending_core import create_a_sending_task, get_task_detail
 from core.user_core import UserLogin
 from utils.u_response import make_response
 
@@ -78,7 +78,11 @@ def app_get_task_detail():
     if not sending_task_id:
         return make_response(ERR_PARAM_SET)
 
-    raise NotImplementedError
+    status, res = get_task_detail(sending_task_id)
+    if status == SUCCESS:
+        return make_response(SUCCESS, task_info=res)
+    else:
+        return make_response(status)
 
 
 def app_get_task_fail_detail():
