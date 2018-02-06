@@ -71,7 +71,7 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
     # 生成群信息
     res.setdefault("chatroom_list", [])
     bs_task_target_list = db.session.query(BatchSendingTaskTargetRelate).filter(
-        BatchSendingTaskTargetRelate.uqun_id).all()
+        BatchSendingTaskTargetRelate.sending_task_id == bs_task_info.sending_task_id).all()
     if not bs_task_target_list:
         return ERR_WRONG_ITEM, None
     uqun_id_list = []
