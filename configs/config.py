@@ -186,6 +186,9 @@ ERROR_CODE[INFO_NO_USED_BOT] = {'discription': '该用户目前无正在使用�
 # 用户的token过期时间（单位为日）
 TOKEN_EXPIRED_THRESHOLD = 365
 
+# consumption类型
+CONSUMPTION_TASK_TYPE = {"batch_sending_task": 1}
+
 MSG_TYPE_UNKNOWN = -1  # 未知类型
 MSG_TYPE_TXT = 1
 MSG_TYPE_PIC = 3
