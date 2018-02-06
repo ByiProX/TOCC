@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 # IDE问题，import time无报错
+import json
+
 import time
 import threading
 import logging
@@ -39,8 +41,9 @@ class ConsumptionThread(threading.Thread):
 
             for i, each_task in enumerate(ct_list):
                 if each_task.task_type == 1:
+                    task_send_content = json.loads(each_task.task_send_content)
                     sending_task = SendingTask(each_task.task_id, each_task.bot_username, each_task.chatroomname,
-                                               each_task.task_send_type, each_task.task_send_content['text'])
+                                               each_task.task_send_type, task_send_content['text'])
                     sending_task.start()
                 else:
                     logger.warning("目前不进行处理")
