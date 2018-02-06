@@ -7,19 +7,25 @@ ws的建立、释放、检测
 import json
 
 from configs.config import WS_MAP
+import logging
 from models.production_consumption_models import ConsumptionTask
+
+logger = logging.getLogger('main')
 
 
 def send_task_content_to_ws(bot_username, target_username, task_send_type, content):
     # TODO-zc WebsocketModel
-    ws = WS_MAP[bot_username]
-    text_json = dict()
-    text_json['username'] = target_username
-    text_json['content'] = content
-    text_json['type'] = task_send_type
-    text = json.dumps(text_json)
-    print 'text', text
-    ws.send(text)
+    ws = WS_MAP.get(bot_username)
+    if ws:
+        text_json = dict()
+        text_json['username'] = target_username
+        text_json['content'] = content
+        text_json['type'] = task_send_type
+        text = json.dumps(text_json)
+        print 'text', text
+        ws.send(text)
+    else:
+        logger.error(u"websocket error, username: " + bot_username)
     # """
     # 将文字发给ws
     # {
