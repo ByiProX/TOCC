@@ -33,7 +33,7 @@ def get_batch_sending_task(user_info):
         if status == SUCCESS:
             result.append(deepcopy(task_detail_res))
         else:
-            pass
+            logger.error(u"部分任务无法读取. sending_task_id: %s." % bs_task_info.sending_task_id)
 
     return SUCCESS, result
 
@@ -72,7 +72,7 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
     bs_task_target_list = db.session.query(BatchSendingTaskTargetRelate).filter(
         BatchSendingTaskTargetRelate.uqun_id).all()
     if not bs_task_target_list:
-        return ERR_WRONG_ITEM
+        return ERR_WRONG_ITEM, None
     uqun_id_list = []
     for bs_task_target in bs_task_target_list:
         uqun_id_list.append(bs_task_target.uqun_id)
@@ -86,10 +86,10 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
     # 生成material信息
     res.setdefault("message_list", [])
     bs_task_material_list = db.session.query(BatchSendingTaskMaterialRelate).filter(
-        BatchSendingTaskMaterialRelate.sending_task_id == sending_task_id).order_by(
+        BatchSendingTaskMaterialRelate.sending_task_id == bs_task_info.sending_task_id).order_by(
         BatchSendingTaskMaterialRelate.send_seq).all()
     if not bs_task_material_list:
-        return ERR_WRONG_ITEM
+        return ERR_WRONG_ITEM, None
     material_id_list = []
     for bs_task_material_relate in bs_task_material_list:
         material_id_list.append(bs_task_material_relate.material_id)
