@@ -26,5 +26,22 @@ class CreateASendingTaskTestCase(unittest.TestCase):
         r = requests.post("http://127.0.0.1:5500/api/create_a_sending_task", json=json_data)
         print(r.content)
 
+class GetTaskInfoTestCase(unittest.TestCase):
+    def test_main_pro(self):
+        json_data = {
+            "token": "test_token_123",
+            "sending_task_id": 1
+        }
+        r = requests.post("http://127.0.0.1:5500/api/get_task_detail", json=json_data)
+        print(r.content)
+
+class GetBatchSendingTaskTestCase(unittest.TestCase):
+    def test_main_pro(self):
+        json_data = {
+            "token": "test_token_123"
+        }
+        r = requests.post("http://127.0.0.1:5500/api/get_batch_sending_task", json=json_data)
+        print(r.content)
+
 if __name__ == "__main__":
     unittest.main()
