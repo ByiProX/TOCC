@@ -97,7 +97,7 @@ def app_get_task_fail_detail():
     raise NotImplementedError
 
 
-@main_api.route('/get_batch_sending_task', methods=['POST'])
+@main_api.route('/create_a_sending_task', methods=['POST'])
 def app_create_a_sending_task():
     """
     创建一个任务

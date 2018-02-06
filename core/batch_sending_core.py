@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 from copy import deepcopy
 import logging
 
@@ -135,7 +136,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     bs_task_info.task_covering_qun_count = 0
     bs_task_info.task_covering_people_count = 0
     bs_task_info.task_status = 1
-    bs_task_info.task_status_content = {"等待开始"}
+    bs_task_info.task_status_content = "等待开始"
     bs_task_info.task_create_time = now_time
     db.session.add(bs_task_info)
     db.session.commit()
@@ -179,7 +180,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
             if not text:
                 logger.error("没有读取到文字")
                 continue
-            um_lib.task_send_content = {"text": text}
+            um_lib.task_send_content = json.dumps({"text": text})
         else:
             logger.warning("目前只允许1类任务")
             continue
@@ -249,7 +250,7 @@ def _add_task_to_consumption_task(uqr_info, um_lib, bs_task_info):
     bot_id = None
     for user_bot_rid in user_bot_rid_list:
         ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_bot_rid == user_bot_rid).all()
-        bot_id = ubr_info.bot_id
+        bot_id = ubr_info[0].bot_id
         if bot_id:
             break
 
