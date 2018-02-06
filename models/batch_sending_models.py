@@ -15,6 +15,7 @@ class BatchSendingTaskInfo(db.Model):
     task_covering_people_count = db.Column(db.Integer, index=True, nullable=False)
 
     # 显示的任务状态；状态码未确定
+    # 创建任务时为1
     task_status = db.Column(db.Integer, index=True, nullable=False)
     task_status_content = db.Column(db.String(2048), index=True, nullable=False)
 

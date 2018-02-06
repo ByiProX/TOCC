@@ -3,6 +3,7 @@
 from flask import request
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api
+from core.batch_sending_core import create_a_sending_task
 from core.user_core import UserLogin
 from utils.u_response import make_response
 
@@ -106,11 +107,16 @@ def app_create_a_sending_task():
     if status != SUCCESS:
         return make_response(status)
 
-    target_list = request.json.get('chatroom_list')
-    if not target_list:
+    chatroom_list = request.json.get('chatroom_list')
+    if not chatroom_list:
         return make_response(ERR_PARAM_SET)
-    material_list = request.json.get('message_list')
-    if not material_list:
+    message_list = request.json.get('message_list')
+    if not message_list:
         return make_response(ERR_PARAM_SET)
 
-    raise NotImplementedError
+    status = create_a_sending_task(user_info, chatroom_list, message_list)
+
+    if status == SUCCESS:
+        return make_response(SUCCESS)
+    else:
+        return make_response(status)
