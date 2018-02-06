@@ -15,6 +15,7 @@ from models.material_library_models import UserMaterialLibrary
 from models.production_consumption_models import ConsumptionTaskStream, ConsumptionTask
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
 from models.user_bot_models import UserBotRelateInfo, BotInfo
+from utils.u_time import datetime_to_timestamp_utc_8
 
 logger = logging.getLogger('main')
 
@@ -56,7 +57,7 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
     res.setdefault("sending_task_id", sending_task_id)
     res.setdefault("task_covering_chatroom_count", bs_task_info.task_covering_qun_count)
     res.setdefault("task_covering_people_count", bs_task_info.task_covering_people_count)
-    res.setdefault("task_create_time", bs_task_info.task_create_time)
+    res.setdefault("task_create_time", datetime_to_timestamp_utc_8(bs_task_info.task_create_time))
 
     temp_tsc = db.session.query(func.count(ConsumptionTaskStream.task_id)). \
         filter(ConsumptionTaskStream.task_type == 1,
@@ -98,7 +99,6 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
         um_lib = db.session.query(UserMaterialLibrary).filter(UserMaterialLibrary.material_id == material_id).first()
         temp_material_dict.setdefault("material_id", um_lib.material_id)
         temp_material_dict.setdefault("task_send_type", um_lib.task_send_type)
-        temp_material_dict.setdefault("task_send_content", {})
         temp_content = json.loads(um_lib.task_send_content)
         if um_lib.task_send_type == 1:
             text = temp_content.get("text")
@@ -107,9 +107,9 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
                 text = ""
             else:
                 pass
-            temp_material_dict['task_send_content'].setdefault("text", text)
+            temp_material_dict.setdefault("text", text)
         else:
-            logger.critical("NotImplementedError: 暂不考虑其他类型.")
+            logger.critical(u"NotImplementedError: 暂不考虑其他类型.")
             raise NotImplementedError
         res["message_list"].append(deepcopy(temp_material_dict))
 
