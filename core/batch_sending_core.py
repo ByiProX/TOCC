@@ -4,7 +4,7 @@ from copy import deepcopy
 import logging
 
 from datetime import datetime
-from sqlalchemy import func
+from sqlalchemy import func, desc
 
 from configs.config import db, ERR_WRONG_ITEM, SUCCESS, ERR_WRONG_USER_ITEM, CONSUMPTION_TASK_TYPE
 from core.qun_manage_core import get_a_chatroom_dict_by_uqun_id
@@ -27,7 +27,8 @@ def get_batch_sending_task(user_info):
     :return:
     """
     bs_task_info_list = db.session.query(BatchSendingTaskInfo).filter(
-        BatchSendingTaskInfo.user_id == user_info.user_id).all()
+        BatchSendingTaskInfo.user_id == user_info.user_id).order_by(
+        desc(BatchSendingTaskInfo.task_create_time)).all()
     result = []
     for bs_task_info in bs_task_info_list:
         status, task_detail_res = get_task_detail(bs_task_info=bs_task_info)
