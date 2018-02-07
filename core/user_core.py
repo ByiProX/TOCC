@@ -252,7 +252,11 @@ def cal_user_basic_page_info(user_info):
         if not bot_info:
             logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
             return ERR_WRONG_ITEM, None
-        res['bot_info'].setdefault('bot_status', bot_info.is_alive)
+        if bot_info.is_alive is True:
+            bot_status = 0
+        else:
+            bot_status = -1
+        res['bot_info'].setdefault('bot_status', bot_status)
         a_bot = db.session.query(ABot).filter(ABot.username == bot_info.username).first()
         if not a_bot:
             logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
