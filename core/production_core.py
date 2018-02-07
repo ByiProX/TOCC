@@ -13,6 +13,7 @@ from core.matching_rule_core import get_gm_rule_dict, match_message_by_rule
 from core.message_core import analysis_and_save_a_message
 from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core.user_core import check_whether_message_is_add_friend
+from core.welcome_message_core import check_whether_message_is_friend_into_qun
 from models.android_db_models import AMessage
 from models.matching_rule_models import GlobalMatchingRule
 from models.production_consumption_models import ProductionStatistic
@@ -83,6 +84,9 @@ class ProductionThread(threading.Thread):
 
                     # is_removed
                     is_removed = check_is_removed(message_analysis)
+
+                    # 检测是否是别人的进群提示
+                    is_friend_into_qun = check_whether_message_is_friend_into_qun(message_analysis)
 
                     # 根据规则和内容进行匹配，并生成任务
                     match_message_by_rule(gm_rule_dict, message_analysis)
