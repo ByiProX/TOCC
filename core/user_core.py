@@ -66,21 +66,21 @@ class UserLogin:
                 self.now_user_info = db.session.query(UserInfo).filter(UserInfo.open_id == self.open_id).first()
                 # 意味着之前有，现在也有
                 if self.now_user_info:
-                    self.user_info_up_to_date.code = self.code
-                    self.user_info_up_to_date.last_login_time = datetime.now()
+                    self.now_user_info.code = self.code
+                    self.now_user_info.last_login_time = datetime.now()
 
                     if datetime.now() < self.now_user_info.token_expired_time:
                         logger.info(u"老用户登录，token未过期. user_id: %s" % self.now_user_info.user_id)
                         pass
                     else:
-                        self.user_info_up_to_date.token = self._generate_user_token()
-                        self.user_info_up_to_date.token_expired_time = datetime.now() + timedelta(
+                        self.now_user_info.token = self._generate_user_token()
+                        self.now_user_info.token_expired_time = datetime.now() + timedelta(
                             days=TOKEN_EXPIRED_THRESHOLD)
                         logger.info(u"老用户登录，token更新. user_id: %s" % self.now_user_info.user_id)
 
-                    db.session.merge(self.user_info_up_to_date)
+                    db.session.merge(self.now_user_info)
                     db.session.commit()
-                    return SUCCESS, self.user_info_up_to_date
+                    return SUCCESS, self.now_user_info
                 else:
                     self.user_info_up_to_date.code = self.code
                     self.user_info_up_to_date.create_time = datetime.now()
@@ -322,7 +322,8 @@ def check_whether_message_is_add_friend(message_analysis):
     msg_type = message_analysis.type
     content = str_to_unicode(message_analysis.content)
 
-    if (msg_type in (MSG_TYPE_TXT, MSG_TYPE_SYS) and content.find(u'现在可以开始聊天了') != -1) or (msg_type is MSG_TYPE_SYS and content.find(u'以上是打招呼的内容') != -1):
+    if (msg_type in (MSG_TYPE_TXT, MSG_TYPE_SYS) and content.find(u'现在可以开始聊天了') != -1) or (
+            msg_type is MSG_TYPE_SYS and content.find(u'以上是打招呼的内容') != -1):
         # add friend
         is_add_friend = True
         user_username = message_analysis.real_talker
