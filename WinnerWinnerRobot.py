@@ -34,7 +34,6 @@ def hello():
 
 u_log.verify_logs_folder_exist()
 
-
 def initial_all():
     create_all_databases()
     initial_some_user_info()
