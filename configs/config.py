@@ -187,7 +187,10 @@ ERROR_CODE[INFO_NO_USED_BOT] = {'discription': '该用户目前无正在使用�
 TOKEN_EXPIRED_THRESHOLD = 365
 
 # consumption类型
-CONSUMPTION_TASK_TYPE = {"batch_sending_task": 1}
+CONSUMPTION_TASK_TYPE = {"batch_sending_task": 1, "auto_reply": 2, "daily_bonus": 3, "welcome_message": 4}
+
+# 全局匹配规则更新标记，每次更新规则库需将锁打开
+GLOBAL_MATCHING_RULES_UPDATE_FLAG = True
 
 MSG_TYPE_UNKNOWN = -1  # 未知类型
 MSG_TYPE_TXT = 1
