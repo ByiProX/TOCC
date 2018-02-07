@@ -218,7 +218,9 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
 
 
 def cal_user_basic_page_info(user_info):
-    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id).first()
+    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
+                                                          UserBotRelateInfo.is_setted == 1,
+                                                          UserBotRelateInfo.is_being_used == 1).first()
 
     if ubr_info:
         uqr_info_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == user_info.user_id,
