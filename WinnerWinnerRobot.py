@@ -23,7 +23,7 @@ models.import_str = ""
 api.api_str = ""
 configs.config_str = ""
 
-__version__ = "0.0.2"
+__version__ = "0.0.4a1"
 
 
 @app.route('/hello')
