@@ -6,3 +6,10 @@ def check_whether_message_is_friend_into_qun(message_analysis):
     :param message_analysis:
     :return:
     """
+
+
+def _is_friend_into_qun():
+    """
+
+    :return:
+    """
