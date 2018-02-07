@@ -63,7 +63,7 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
     temp_tsc = db.session.query(func.count(ConsumptionTaskStream.chatroomname)). \
         filter(ConsumptionTaskStream.task_type == 1,
                ConsumptionTaskStream.task_relevant_id == bs_task_info.sending_task_id).all()
-    # FIXME-zwf 这里的格式还需要调整
+
     res.setdefault("task_sended_count", temp_tsc[0][0])
 
     # TODO-zwf 想办法把失败的读出来
