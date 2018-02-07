@@ -31,8 +31,6 @@ class WechatConn:
         logger.info(u'url: ' + url)
         kwargs['verify'] = False
         res = requests.request(method=method, url=url, **kwargs)
-        print(res.content)
-        print(str(res.content))
         logger.info('res: ' + str(res.content))
         return res
 
