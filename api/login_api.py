@@ -101,7 +101,7 @@ def app_set_robot_nickname():
     if len(bot_nickname) < 1 or len(bot_nickname) > 16:
         return make_response(ERR_SET_LENGTH_WRONG)
 
-    status, ubr_info = set_bot_name(bot_id, bot_nickname, user_info)
+    status = set_bot_name(bot_id, bot_nickname, user_info)
 
     return make_response(status)
 
