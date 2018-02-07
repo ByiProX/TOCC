@@ -27,7 +27,7 @@ def set_default_group(user_info):
     """
     if isinstance(user_info, UserInfo):
         pass
-    cur = db.session.query(GroupInfo).filter(GroupInfo.user_id == UserInfo.user_id,
+    cur = db.session.query(GroupInfo).filter(GroupInfo.user_id == user_info.user_id,
                                              GroupInfo.is_default == 1).first()
     # 如果已经有了默认群，则不去建立默认群
     if cur:
@@ -44,7 +44,7 @@ def create_new_group(group_name, token=None, user_id=None, user_info=None):
         pass
     else:
         if token:
-            user_info = db.session.query(UserInfo.token == UserInfo.token).first()
+            user_info = db.session.query(UserInfo.token == user_info.token).first()
             user_id = user_info.user_id
         else:
             if user_info:
