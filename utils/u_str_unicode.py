@@ -7,7 +7,6 @@ logger = logging.getLogger('main')
 
 def str_to_unicode(txt):
     if isinstance(txt, str):
-        logger.info(u'from str to unicode')
         txt = txt.decode(u'utf-8')
     elif isinstance(txt, unicode):
         pass
@@ -18,7 +17,6 @@ def str_to_unicode(txt):
 
 def unicode_to_str(txt):
     if isinstance(txt, unicode):
-        logger.info(u'from unicode to str')
         txt = txt.encode(u'utf-8')
     elif isinstance(txt, str):
         pass

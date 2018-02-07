@@ -361,7 +361,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
 
     user_info_list_2 = db.session.query(UserInfo).filter(UserInfo.username == user_username).all()
     if user_info_list_2:
-        logger.error(u"以绑定username与user关系. bot_username: %s. user_username: %s" %
+        logger.error(u"已绑定username与user关系. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
         return ERR_HAVE_SAME_PEOPLE
 
@@ -369,7 +369,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     user_info.username = user_username
     db.session.merge(user_info)
     db.session.commit()
-    logger.debug(u"以绑定user与username关系. user_id: %s. username: %s." % (user_info.user_id, user_username))
+    logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.user_id, user_username))
 
     ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
                                                           UserBotRelateInfo.bot_id == bot_info.bot_id).first()

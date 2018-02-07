@@ -195,9 +195,10 @@ def check_is_removed(message_analysis):
     content = str_to_unicode(message_analysis.content)
     if msg_type == MSG_TYPE_SYS and content.find(u'移除群聊') != -1:
         is_removed = True
+        logger.error("NotImplementedError：发现被移出群聊，不进行任何操作")
 
         pass
-    logger.error(u"NotImplementedError")
+    # logger.error(u"NotImplementedError")
     return is_removed
 
 
