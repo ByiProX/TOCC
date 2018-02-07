@@ -322,7 +322,7 @@ def check_whether_message_is_add_friend(message_analysis):
     msg_type = message_analysis.type
     content = str_to_unicode(message_analysis.content)
 
-    if msg_type in (MSG_TYPE_TXT, MSG_TYPE_SYS) and content.find(u'现在可以开始聊天了') != -1:
+    if (msg_type in (MSG_TYPE_TXT, MSG_TYPE_SYS) and content.find(u'现在可以开始聊天了') != -1) or (msg_type is MSG_TYPE_SYS and content.find(u'以上是打招呼的内容') != -1):
         # add friend
         is_add_friend = True
         user_username = message_analysis.real_talker
