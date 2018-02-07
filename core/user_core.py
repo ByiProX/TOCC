@@ -138,7 +138,7 @@ class UserLogin:
             self.user_info_up_to_date = UserInfo()
             self.user_info_up_to_date.open_id = res_json.get('openid')
             self.user_info_up_to_date.union_id = res_json.get('unionid')
-            self.user_info_up_to_date.nick_name = res_json.get('nick_name')
+            self.user_info_up_to_date.nick_name = res_json.get('nickname')
             self.user_info_up_to_date.sex = res_json.get('sex')
             self.user_info_up_to_date.province = res_json.get('province')
             self.user_info_up_to_date.city = res_json.get('city')
