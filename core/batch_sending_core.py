@@ -60,7 +60,7 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
     res.setdefault("task_covering_people_count", bs_task_info.task_covering_people_count)
     res.setdefault("task_create_time", datetime_to_timestamp_utc_8(bs_task_info.task_create_time))
 
-    temp_tsc = db.session.query(func.count(ConsumptionTaskStream.task_id)). \
+    temp_tsc = db.session.query(func.count(ConsumptionTaskStream.chatroomname)). \
         filter(ConsumptionTaskStream.task_type == 1,
                ConsumptionTaskStream.task_relevant_id == bs_task_info.sending_task_id).all()
     # FIXME-zwf 这里的格式还需要调整
