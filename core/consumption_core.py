@@ -2,12 +2,13 @@
 
 # IDE问题，import time无报错
 import json
+import random
 
 import time
 import threading
 import logging
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import desc
 
 from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, CONSUMPTION_CIRCLE_INTERVAL
@@ -20,6 +21,8 @@ from models.production_consumption_models import ProductionStatistic, Consumptio
     ConsumptionTaskStream
 
 logger = logging.getLogger('main')
+
+SEND_FREQUENCY_LIMITATION_DICT = dict()
 
 
 class ConsumptionThread(threading.Thread):
@@ -97,8 +100,35 @@ class SendingTask(threading.Thread):
 
     def run(self):
         logger.info(u"发送数据线程: %s." % str(self.thread_id))
+        global SEND_FREQUENCY_LIMITATION_DICT
+        SEND_FREQUENCY_LIMITATION_DICT.setdefault(self.bot_username, [])
+
+        while True:
+            status = self.check_whether_can_send()
+            if status is True:
+                break
+            else:
+                time.sleep(random.random()+0.4)
+
         send_task_content_to_ws(self.bot_username, self.target_username, self.task_send_type, self.content)
         logger.info(u"发送完成！: %s." % str(self.thread_id))
+
+    def check_whether_can_send(self):
+        global SEND_FREQUENCY_LIMITATION_DICT
+        now_datetime = datetime.now()
+        if not SEND_FREQUENCY_LIMITATION_DICT[self.bot_username]:
+            return True
+        if SEND_FREQUENCY_LIMITATION_DICT[self.bot_username][-1] < now_datetime - timedelta(microseconds=200):
+            return False
+        for each_iter in range(len(SEND_FREQUENCY_LIMITATION_DICT[self.bot_username]) - 1, -1, -1):
+            if SEND_FREQUENCY_LIMITATION_DICT[self.bot_username][each_iter] < now_datetime - timedelta(seconds=5):
+                SEND_FREQUENCY_LIMITATION_DICT[self.bot_username].pop(each_iter)
+            else:
+                pass
+        if len(SEND_FREQUENCY_LIMITATION_DICT[self.bot_username]) < 5:
+            return True
+        else:
+            return False
 
 
 consumption_thread = ConsumptionThread(thread_id='zBh8cb6VK11w6F1l')
