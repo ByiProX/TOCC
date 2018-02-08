@@ -20,15 +20,16 @@ from utils.u_time import datetime_to_timestamp_utc_8
 logger = logging.getLogger('main')
 
 
-def get_batch_sending_task(user_info):
+def get_batch_sending_task(user_info, task_per_page, page_number):
     """
     根据一个人，把所有的这个人可见的群发任务都出来
     :param user_info:
     :return:
     """
     bs_task_info_list = db.session.query(BatchSendingTaskInfo).filter(
-        BatchSendingTaskInfo.user_id == user_info.user_id).order_by(
-        desc(BatchSendingTaskInfo.task_create_time)).all()
+        BatchSendingTaskInfo.user_id == user_info.user_id,
+        BatchSendingTaskInfo.is_deleted == 0).order_by(
+        desc(BatchSendingTaskInfo.task_create_time)).limit(task_per_page).offset(task_per_page * page_number).all()
     result = []
     for bs_task_info in bs_task_info_list:
         status, task_detail_res = get_task_detail(bs_task_info=bs_task_info)

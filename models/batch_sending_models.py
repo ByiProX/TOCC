@@ -19,6 +19,8 @@ class BatchSendingTaskInfo(db.Model):
     task_status = db.Column(db.Integer, index=True, nullable=False)
     task_status_content = db.Column(db.String(2048), index=True, nullable=False)
 
+    is_deleted = db.Column(db.Boolean, index=True, nullable=False)
+
     task_create_time = db.Column(db.DateTime, index=True, nullable=False)
 
 
