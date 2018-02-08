@@ -139,6 +139,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     bs_task_info.task_covering_people_count = 0
     bs_task_info.task_status = 1
     bs_task_info.task_status_content = "等待开始"
+    bs_task_info.is_deleted = False
     bs_task_info.task_create_time = now_time
     db.session.add(bs_task_info)
     db.session.commit()
