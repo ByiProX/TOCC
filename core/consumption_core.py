@@ -108,7 +108,7 @@ class SendingTask(threading.Thread):
             if status is True:
                 break
             else:
-                time.sleep(random.random()+0.4)
+                time.sleep(random.random() + 0.4)
 
         send_task_content_to_ws(self.bot_username, self.target_username, self.task_send_type, self.content)
         logger.info(u"发送完成！: %s." % str(self.thread_id))
@@ -129,6 +129,3 @@ class SendingTask(threading.Thread):
             return True
         else:
             return False
-
-
-consumption_thread = ConsumptionThread(thread_id='zBh8cb6VK11w6F1l')
