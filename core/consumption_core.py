@@ -8,17 +8,13 @@ import time
 import threading
 import logging
 
-from datetime import datetime, timedelta
-from sqlalchemy import desc
+from datetime import datetime
 
-from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, CONSUMPTION_CIRCLE_INTERVAL
-from core.message_core import analysis_and_save_a_message
-from core.qun_manage_core import check_whether_message_is_add_qun
+from configs.config import db, CONSUMPTION_CIRCLE_INTERVAL
 from core.send_task_and_ws_setting_core import send_task_content_to_ws
-from core.user_core import check_whether_message_is_add_friend
-from models.android_db_models import AMessage
-from models.production_consumption_models import ProductionStatistic, ConsumptionTask, ConsumptionStatistic, \
+from models.production_consumption_models import ConsumptionTask, ConsumptionStatistic, \
     ConsumptionTaskStream
+from models.user_bot_models import BotInfo
 
 logger = logging.getLogger('main')
 
@@ -33,6 +29,11 @@ class ConsumptionThread(threading.Thread):
         self.run_start_time = None
         self.run_end_time = None
 
+        self.bot_username = self.thread_id[15:]
+        bot_info = db.session.query(BotInfo).filter(BotInfo.username == self.bot_username).first()
+        if not bot_info:
+            raise ValueError("没有该bot，无法启动")
+
     def run(self):
         logger.info(u"Start thread id: %s." % str(self.thread_id))
         self.run_start_time = datetime.now()
@@ -40,14 +41,15 @@ class ConsumptionThread(threading.Thread):
         while self.go_work:
             circle_start_time = time.time()
 
-            ct_list = db.session.query(ConsumptionTask).all()
+            ct_list = db.session.query(ConsumptionTask).filter(ConsumptionTask.bot_username == self.bot_username). \
+                order_by(ConsumptionTask.task_id).all()
 
             for i, each_task in enumerate(ct_list):
                 if each_task.task_type == 1:
                     task_send_content = json.loads(each_task.task_send_content)
-                    sending_task = SendingTask(each_task.task_id, each_task.bot_username, each_task.chatroomname,
-                                               each_task.task_send_type, task_send_content['text'])
-                    sending_task.start()
+                    send_task_content_to_ws(each_task.bot_username, each_task.chatroomname,
+                                            each_task.task_send_type, task_send_content['text'])
+                    time.sleep(random.random() + 0.6)
                 else:
                     logger.warning("目前不进行处理")
 
@@ -87,45 +89,45 @@ class ConsumptionThread(threading.Thread):
         logger.info(u"停止进程")
         self.go_work = False
 
-
-class SendingTask(threading.Thread):
-    def __init__(self, thread_id, bot_username, target_username, task_send_type, content):
-        threading.Thread.__init__(self)
-        self.thread_id = thread_id
-
-        self.bot_username = bot_username
-        self.target_username = target_username
-        self.task_send_type = task_send_type
-        self.content = content
-
-    def run(self):
-        logger.info(u"发送数据线程: %s." % str(self.thread_id))
-        global SEND_FREQUENCY_LIMITATION_DICT
-        SEND_FREQUENCY_LIMITATION_DICT.setdefault(self.bot_username, [])
-
-        while True:
-            status = self.check_whether_can_send()
-            if status is True:
-                break
-            else:
-                time.sleep(random.random() + 0.4)
-
-        send_task_content_to_ws(self.bot_username, self.target_username, self.task_send_type, self.content)
-        logger.info(u"发送完成！: %s." % str(self.thread_id))
-
-    def check_whether_can_send(self):
-        global SEND_FREQUENCY_LIMITATION_DICT
-        now_datetime = datetime.now()
-        if not SEND_FREQUENCY_LIMITATION_DICT[self.bot_username]:
-            return True
-        if SEND_FREQUENCY_LIMITATION_DICT[self.bot_username][-1] < now_datetime - timedelta(microseconds=200):
-            return False
-        for each_iter in range(len(SEND_FREQUENCY_LIMITATION_DICT[self.bot_username]) - 1, -1, -1):
-            if SEND_FREQUENCY_LIMITATION_DICT[self.bot_username][each_iter] < now_datetime - timedelta(seconds=5):
-                SEND_FREQUENCY_LIMITATION_DICT[self.bot_username].pop(each_iter)
-            else:
-                pass
-        if len(SEND_FREQUENCY_LIMITATION_DICT[self.bot_username]) < 5:
-            return True
-        else:
-            return False
+#
+# class SendingTask(threading.Thread):
+#     def __init__(self, thread_id, bot_username, target_username, task_send_type, content):
+#         threading.Thread.__init__(self)
+#         self.thread_id = thread_id
+#
+#         self.bot_username = bot_username
+#         self.target_username = target_username
+#         self.task_send_type = task_send_type
+#         self.content = content
+#
+#     def run(self):
+#         logger.info(u"发送数据线程: %s." % str(self.thread_id))
+#         global SEND_FREQUENCY_LIMITATION_DICT
+#         SEND_FREQUENCY_LIMITATION_DICT.setdefault(self.bot_username, [])
+#
+#         while True:
+#             status = self.check_whether_can_send()
+#             if status is True:
+#                 break
+#             else:
+#                 time.sleep(random.random() + 0.4)
+#
+#         send_task_content_to_ws(self.bot_username, self.target_username, self.task_send_type, self.content)
+#         logger.info(u"发送完成！: %s." % str(self.thread_id))
+#
+#     def check_whether_can_send(self):
+#         global SEND_FREQUENCY_LIMITATION_DICT
+#         now_datetime = datetime.now()
+#         if not SEND_FREQUENCY_LIMITATION_DICT[self.bot_username]:
+#             return True
+#         if SEND_FREQUENCY_LIMITATION_DICT[self.bot_username][-1] < now_datetime - timedelta(microseconds=200):
+#             return False
+#         for each_iter in range(len(SEND_FREQUENCY_LIMITATION_DICT[self.bot_username]) - 1, -1, -1):
+#             if SEND_FREQUENCY_LIMITATION_DICT[self.bot_username][each_iter] < now_datetime - timedelta(seconds=5):
+#                 SEND_FREQUENCY_LIMITATION_DICT[self.bot_username].pop(each_iter)
+#             else:
+#                 pass
+#         if len(SEND_FREQUENCY_LIMITATION_DICT[self.bot_username]) < 5:
+#             return True
+#         else:
+#             return False
