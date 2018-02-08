@@ -25,7 +25,7 @@ def app_get_batch_sending_task():
     if not task_per_page:
         logger.warning("没有收到page_size，设置为10")
         task_per_page = 10
-    if not page_number:
+    if page_number is None:
         logger.warning("没有收到page_number，设置为0")
         page_number = 0
 
