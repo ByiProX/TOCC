@@ -3,22 +3,57 @@
 from configs.config import db
 
 
-class UserAutoReplyRule(db.Model):
+class AutoReplySetting(db.Model):
     """
-    每个用户的自动回复的规则
+    存储所有的规则
     """
-    pass
+    __tablename__ = "auto_reply_setting"
+    setting_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+
+    user_id = db.Column(db.BigInteger, index=True, nullable=False)
+
+    task_covering_qun_count = db.Column(db.Integer, index=True, nullable=False)
+    task_covering_people_count = db.Column(db.Integer, index=True, nullable=False)
+
+    is_take_effect = db.Column(db.Boolean, index=True, nullable=False)
+
+    setting_create_time = db.Column(db.DateTime, index=True, nullable=False)
 
 
-class CommonAutoReplyRule(db.Model):
+class AutoReplyKeywordRelateInfo(db.Model):
     """
-    全局的自动回复的规则
+    每个任务的keyword
     """
-    pass
+    __tablename__ = "auto_reply_keyword_relate_Info"
+    keyword_rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+
+    setting_id = db.Column(db.BigInteger, index=True, nullable=False)
+    keyword = db.Column(db.String(32), index=True, nullable=False)
+
+    # True则必须完全相等
+    is_full_match = db.Column(db.Boolean, index=True, nullable=False)
 
 
-class AutoReplyStream(db.Model):
+class AutoReplyMaterialRelate(db.Model):
     """
-    所有识别到的reply的任务流
+    每个设置发的物料
     """
-    pass
+    __tablename__ = "auto_reply_material_relate"
+
+    rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    setting_id = db.Column(db.BigInteger, index=True, nullable=False)
+
+    material_id = db.Column(db.BigInteger, index=True, nullable=False)
+    send_seq = db.Column(db.Integer, index=True, nullable=False)
+
+
+class AutoReplyTargetRelate(db.Model):
+    """
+    每个设置发送的群
+    """
+    __tablename__ = "auto_reply_target_relate"
+    rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    setting_id = db.Column(db.BigInteger, index=True, nullable=False)
+
+    uqun_id = db.Column(db.BigInteger, index=True, nullable=False)
+    send_seq = db.Column(db.Integer, index=True, nullable=False)
