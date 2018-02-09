@@ -117,7 +117,7 @@ class UserLogin:
     @staticmethod
     def verify_token(token):
         if not token:
-            return ERR_INVALID_PARAMS
+            return ERR_INVALID_PARAMS, None
         user_info = db.session.query(UserInfo).filter(UserInfo.token == token).first()
         if user_info:
             if datetime.now() < user_info.token_expired_time:
