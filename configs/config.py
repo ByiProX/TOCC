@@ -174,6 +174,9 @@ ERROR_CODE[ERR_RENAME_OR_DELETE_DEFAULT_GROUP] = {'discription': '循环状态�
 # 设置内容的长度不符
 ERR_SET_LENGTH_WRONG = 'err_set_length_wrong'
 ERROR_CODE[ERR_SET_LENGTH_WRONG] = {'discription': '设置内容的长度不符', 'status_code': -14}
+# 功能未开启，无法使用
+ERR_WRONG_FUNC_STATUS = 'err_wrong_func_status'
+ERROR_CODE[ERR_WRONG_FUNC_STATUS] = {'discription': '功能未开启，无法使用', 'status_code': -15}
 
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
@@ -190,7 +193,8 @@ TOKEN_EXPIRED_THRESHOLD = 365
 CONSUMPTION_TASK_TYPE = {"batch_sending_task": 1, "auto_reply": 2, "daily_bonus": 3, "welcome_message": 4}
 
 # 全局匹配规则更新标记，每次更新规则库需将锁打开
-GLOBAL_MATCHING_RULES_UPDATE_FLAG = True
+GLOBAL_MATCHING_RULES_UPDATE_FLAG = dict()
+GLOBAL_MATCHING_RULES_UPDATE_FLAG.setdefault("global_matching_rules_update_flag", True)
 
 MSG_TYPE_UNKNOWN = -1  # 未知类型
 MSG_TYPE_TXT = 1

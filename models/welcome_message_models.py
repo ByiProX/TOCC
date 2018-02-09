@@ -43,3 +43,4 @@ class WelcomeMessageTargetRelate(db.Model):
     setting_id = db.Column(db.BigInteger, index=True, nullable=False)
 
     uqun_id = db.Column(db.BigInteger, index=True, nullable=False)
+    send_seq = db.Column(db.Integer, index=True, nullable=False)
