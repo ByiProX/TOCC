@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import json
 from copy import deepcopy
 import logging
 
@@ -7,6 +6,8 @@ from datetime import datetime
 from sqlalchemy import func, desc
 
 from configs.config import db, ERR_WRONG_ITEM, SUCCESS, ERR_WRONG_USER_ITEM, CONSUMPTION_TASK_TYPE
+from core.material_library_core import generate_material_into_frontend_by_material_id, \
+    analysis_frontend_material_and_put_into_mysql
 from core.qun_manage_core import get_a_chatroom_dict_by_uqun_id
 from models.android_db_models import AContact
 from models.batch_sending_models import BatchSendingTaskInfo, BatchSendingTaskTargetRelate, \
@@ -96,22 +97,7 @@ def get_task_detail(sending_task_id=None, bs_task_info=None):
     for bs_task_material_relate in bs_task_material_list:
         material_id_list.append(bs_task_material_relate.material_id)
     for material_id in material_id_list:
-        temp_material_dict = dict()
-        um_lib = db.session.query(UserMaterialLibrary).filter(UserMaterialLibrary.material_id == material_id).first()
-        temp_material_dict.setdefault("material_id", um_lib.material_id)
-        temp_material_dict.setdefault("task_send_type", um_lib.task_send_type)
-        temp_content = json.loads(um_lib.task_send_content)
-        if um_lib.task_send_type == 1:
-            text = temp_content.get("text")
-            if text is None:
-                logger.warning(u"解析material中content失败. material_id: %s." % material_id)
-                text = ""
-            else:
-                pass
-            temp_material_dict.setdefault("text", text)
-        else:
-            logger.critical(u"NotImplementedError: 暂不考虑其他类型.")
-            raise NotImplementedError
+        temp_material_dict = generate_material_into_frontend_by_material_id(material_id)
         res["message_list"].append(deepcopy(temp_material_dict))
 
     return SUCCESS, res
@@ -172,24 +158,12 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     # 处理message，入库material
     valid_material_list = []
     for i, message_info in enumerate(message_list):
-        um_lib = UserMaterialLibrary()
-        um_lib.user_id = user_info.user_id
-        send_type = message_info.get("send_type")
-        if send_type == 1:
-            um_lib.task_send_type = send_type
-            text = message_info.get("text")
-            if not text:
-                logger.error("没有读取到文字")
-                continue
-            um_lib.task_send_content = json.dumps({"text": text})
-        else:
-            logger.warning("目前只允许1类任务")
+        message_return, um_lib = analysis_frontend_material_and_put_into_mysql(user_info.user_id, message_info,
+                                                                               now_time)
+        if message_return == SUCCESS:
+            pass
+        elif message_return == ERR_WRONG_ITEM:
             continue
-        um_lib.used_count = 1
-        um_lib.create_time = now_time
-        um_lib.last_used_time = now_time
-        db.session.add(um_lib)
-        db.session.commit()
 
         material_id = um_lib.material_id
         bs_task_material = BatchSendingTaskMaterialRelate()

@@ -31,7 +31,6 @@ class ProductionThread(threading.Thread):
         self.last_a_message_create_time = None
 
     def run(self):
-        global GLOBAL_MATCHING_RULES_UPDATE_FLAG
         logger.info(u"Start thread id: %s." % str(self.thread_id))
         self.run_start_time = datetime.now()
 
@@ -51,7 +50,7 @@ class ProductionThread(threading.Thread):
                 self.last_a_message_create_time = datetime.now() - timedelta(days=365 * 10)
 
         gm_rule_dict = get_gm_rule_dict()
-        GLOBAL_MATCHING_RULES_UPDATE_FLAG = False
+        GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"] = False
         while self.go_work:
             circle_start_time = time.time()
             message_list = db.session.query(AMessage). \
@@ -59,9 +58,9 @@ class ProductionThread(threading.Thread):
                 order_by(AMessage.id).all()
 
             # 每次循环时，如果全局锁发生变更，则重新读取规则
-            if GLOBAL_MATCHING_RULES_UPDATE_FLAG:
+            if GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"]:
                 gm_rule_dict = get_gm_rule_dict()
-                GLOBAL_MATCHING_RULES_UPDATE_FLAG = False
+                GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"] = False
 
             message_analysis_list = list()
             if len(message_list) != 0:

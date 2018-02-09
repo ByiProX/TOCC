@@ -3,11 +3,11 @@
 from configs.config import db
 
 
-class AutoReplySetting(db.Model):
+class AutoReplySettingInfo(db.Model):
     """
     存储所有的规则
     """
-    __tablename__ = "auto_reply_setting"
+    __tablename__ = "auto_reply_setting_info"
     setting_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
 
     user_id = db.Column(db.BigInteger, index=True, nullable=False)
@@ -16,6 +16,8 @@ class AutoReplySetting(db.Model):
     task_covering_people_count = db.Column(db.Integer, index=True, nullable=False)
 
     is_take_effect = db.Column(db.Boolean, index=True, nullable=False)
+    is_deleted = db.Column(db.Boolean, index=True, nullable=False)
+
 
     setting_create_time = db.Column(db.DateTime, index=True, nullable=False)
 
@@ -32,6 +34,7 @@ class AutoReplyKeywordRelateInfo(db.Model):
 
     # True则必须完全相等
     is_full_match = db.Column(db.Boolean, index=True, nullable=False)
+    send_seq = db.Column(db.Integer, index=True, nullable=False)
 
 
 class AutoReplyMaterialRelate(db.Model):
@@ -56,4 +59,3 @@ class AutoReplyTargetRelate(db.Model):
     setting_id = db.Column(db.BigInteger, index=True, nullable=False)
 
     uqun_id = db.Column(db.BigInteger, index=True, nullable=False)
-    send_seq = db.Column(db.Integer, index=True, nullable=False)
