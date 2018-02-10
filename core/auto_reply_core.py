@@ -5,7 +5,8 @@ from copy import deepcopy
 from datetime import datetime
 
 from configs.config import db, ERR_WRONG_USER_ITEM, SUCCESS, GLOBAL_MATCHING_RULES_UPDATE_FLAG, ERR_WRONG_FUNC_STATUS, \
-    ERR_WRONG_ITEM
+    ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE
+from core.consumption_core import add_task_to_consumption_task
 from core.material_library_core import generate_material_into_frontend_by_material_id, \
     analysis_frontend_material_and_put_into_mysql
 from core.qun_manage_core import get_a_chatroom_dict_by_uqun_id
@@ -13,6 +14,7 @@ from models.android_db_models import AContact
 from models.auto_reply_models import AutoReplySettingInfo, AutoReplyTargetRelate, AutoReplyMaterialRelate, \
     AutoReplyKeywordRelateInfo
 from models.matching_rule_models import GlobalMatchingRule
+from models.material_library_models import UserMaterialLibrary
 from models.qun_friend_models import UserQunRelateInfo
 from models.user_bot_models import UserInfo
 from utils.u_time import datetime_to_timestamp_utc_8
@@ -299,6 +301,54 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
     return SUCCESS
 
 
+def activate_rule_and_add_task_to_consumption_task(ar_setting_id):
+    ar_setting_info = db.session.query(AutoReplySettingInfo).filter(
+        AutoReplySettingInfo.setting_id == ar_setting_id).first()
+    if not ar_setting_info:
+        return ERR_WRONG_ITEM
+
+    ar_setting_target_list = db.session.query(AutoReplyTargetRelate).filter(
+        AutoReplyTargetRelate.setting_id == ar_setting_id).all()
+    valid_chatroom_list = []
+    for ar_setting_target in ar_setting_target_list:
+        uqr_info = db.session.query(UserQunRelateInfo). \
+            filter(UserQunRelateInfo.user_id == ar_setting_info.user_id,
+                   UserQunRelateInfo.uqun_id == ar_setting_target.uqun_id).first()
+        if not uqr_info:
+            logger.error("没有属于该用户的该群")
+            return ERR_WRONG_USER_ITEM
+
+        a_contact = db.session.query(AContact).filter(AContact.username == uqr_info.chatroomname).first()
+
+        if not a_contact:
+            logger.error("安卓库中没有该群")
+            return ERR_WRONG_USER_ITEM
+
+        valid_chatroom_list.append(uqr_info)
+
+    ar_setting_material_list = db.session.query(AutoReplyMaterialRelate).filter(
+        AutoReplyMaterialRelate.setting_id == ar_setting_id).all()
+    valid_material_list = []
+    for ar_setting_material in ar_setting_material_list:
+        um_lib = db.session.query(UserMaterialLibrary).filter(
+            UserMaterialLibrary.material_id == ar_setting_material.material_id).first()
+        if not um_lib:
+            logger.error("素材库中没有该群")
+            return ERR_WRONG_USER_ITEM
+        valid_material_list.append(um_lib)
+
+    for uqr_info_iter in valid_chatroom_list:
+        for um_lib_iter in valid_material_list:
+            _add_task_to_consumption_task(uqr_info_iter, um_lib_iter, ar_setting_info)
+    return SUCCESS
+
+
+def _add_task_to_consumption_task(uqr_info, um_lib, ar_setting_info):
+    status = add_task_to_consumption_task(uqr_info, um_lib, ar_setting_info.user_id,
+                                          CONSUMPTION_TASK_TYPE["auto_reply"], ar_setting_info.setting_id)
+    return status
+
+
 def _add_rule_to_matching_rule(uqr_info, ar_setting_keyword_r_info, ar_setting_info):
     """
     将任务放入globalmatchingrule
@@ -319,7 +369,7 @@ def _add_rule_to_matching_rule(uqr_info, ar_setting_keyword_r_info, ar_setting_i
     gm_rule.chatroomname = uqr_info.chatroomname
     gm_rule.match_word = ar_setting_keyword_r_info.keyword
 
-    gm_rule.task_type = 2
+    gm_rule.task_type = CONSUMPTION_TASK_TYPE["auto_reply"]
     gm_rule.task_relevant_id = ar_setting_info.setting_id
 
     now_time = datetime.now()
