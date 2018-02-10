@@ -11,7 +11,6 @@ from utils.u_response import make_response
 
 logger = logging.getLogger('main')
 
-
 @main_api.route('/create_a_auto_reply_setting', methods=['POST'])
 def app_create_a_auto_reply_setting():
     """

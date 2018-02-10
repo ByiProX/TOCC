@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
+import threading
 
+import time
 from flask import request
 from flask_uwsgi_websocket import GeventWebSocket
 
@@ -15,6 +17,13 @@ def echo(ws):
     with app.request_context(ws.environ), app.app_context():
         username = request.args.get('username')
         WS_MAP[username] = ws
+
+        threading_list = threading.enumerate()
+        for t in threading_list:
+            if t.name == (u'bot_consumption' + username):
+                t.stop()
+                time.sleep(2)
+                break
         consumption_thread = ConsumptionThread(thread_id=(u'bot_consumption' + username))
         consumption_thread.start()
         print 'username', username
