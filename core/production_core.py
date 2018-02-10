@@ -71,6 +71,10 @@ class ProductionThread(threading.Thread):
                         continue
                     message_analysis_list.append(message_analysis)
 
+                    print(message_analysis.content)
+                    print(message_analysis.real_content)
+                    print(message_analysis.real_talker)
+
                     # 这个机器人说的话
                     # TODO 当有两个机器人的时候，这里不仅要判断是否是自己说的，还是要判断是否是其他机器人说的
                     if message_analysis.is_send == 1:

@@ -54,9 +54,6 @@ def match_message_by_rule(gm_rule_dict, message_analysis):
     # 处理自动回复信息
     status_flag = False
     for matching_rule in gm_rule_dict[message_chatroomname][CONSUMPTION_TASK_TYPE['auto_reply']]:
-        print(matching_rule.is_exact_match)
-        print(message_text)
-        print(matching_rule.match_word)
         if matching_rule.is_exact_match and message_text == matching_rule.match_word:
             logger.info(u"匹配到关键词. chatroomname: %s. task_type: %s. task_relevant_id: %s." % (
                 message_chatroomname, matching_rule.task_type, matching_rule.task_relevant_id))
