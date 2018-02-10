@@ -6,6 +6,7 @@ from datetime import datetime
 from sqlalchemy import func, desc
 
 from configs.config import db, ERR_WRONG_ITEM, SUCCESS, ERR_WRONG_USER_ITEM, CONSUMPTION_TASK_TYPE
+from core.consumption_core import add_task_to_consumption_task
 from core.material_library_core import generate_material_into_frontend_by_material_id, \
     analysis_frontend_material_and_put_into_mysql
 from core.qun_manage_core import get_a_chatroom_dict_by_uqun_id
@@ -194,53 +195,6 @@ def _add_task_to_consumption_task(uqr_info, um_lib, bs_task_info):
     将任务放入consumption_task
     :return:
     """
-    if not isinstance(uqr_info, UserQunRelateInfo):
-        raise TypeError
-    if not isinstance(um_lib, UserMaterialLibrary):
-        raise TypeError
-    if not isinstance(bs_task_info, BatchSendingTaskInfo):
-        raise TypeError
-
-    c_task = ConsumptionTask()
-    c_task.qun_owner_user_id = uqr_info.user_id
-    c_task.task_initiate_user_id = bs_task_info.user_id
-    c_task.chatroomname = uqr_info.chatroomname
-    c_task.task_type = CONSUMPTION_TASK_TYPE["batch_sending_task"]
-    c_task.task_relevant_id = bs_task_info.sending_task_id
-
-    c_task.task_send_type = um_lib.task_send_type
-    c_task.task_send_content = um_lib.task_send_content
-
-    # 目前一个人只能有一个机器人，所以此处不进行机器人选择；未来会涉及机器人选择问题
-    uqbr_info_list = db.session.query(UserQunBotRelateInfo).filter(
-        UserQunBotRelateInfo.uqun_id == uqr_info.uqun_id).all()
-    if not uqbr_info_list:
-        logger.error(u"没有找到群与机器人绑定关系. qun_id: %s." % uqr_info.uqun_id)
-        return ERR_WRONG_USER_ITEM
-    user_bot_rid_list = []
-    for uqbr_info in uqbr_info_list:
-        if uqbr_info.is_error is True:
-            continue
-        else:
-            user_bot_rid_list.append(uqbr_info.user_bot_rid)
-    # 目前只要读取到一个bot_id就好
-    bot_id = None
-    for user_bot_rid in user_bot_rid_list:
-        ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_bot_rid == user_bot_rid).all()
-        bot_id = ubr_info[0].bot_id
-        if bot_id:
-            break
-
-    bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == bot_id).first()
-    if not bot_info:
-        logger.error(u"没有找到bot相关信息. bot_id: %s." % bot_id)
-        return ERR_WRONG_ITEM
-
-    c_task.bot_username = bot_info.username
-    now_time = datetime.now()
-    c_task.message_received_time = now_time
-    c_task.task_create_time = now_time
-
-    db.session.add(c_task)
-    db.session.commit()
-    return SUCCESS
+    status = add_task_to_consumption_task(uqr_info, um_lib, bs_task_info.user_id,
+                                          CONSUMPTION_TASK_TYPE["batch_sending_task"], bs_task_info.sending_task_id)
+    return status
