@@ -6,6 +6,7 @@ from sqlalchemy import desc
 from configs.config import db, CONSUMPTION_TASK_TYPE, SUCCESS
 from core.auto_reply_core import activate_rule_and_add_task_to_consumption_task
 from models.matching_rule_models import GlobalMatchingRule, MatchingRuleInMemory
+from utils.u_str_unicode import str_to_unicode
 
 logger = logging.getLogger('main')
 
@@ -45,7 +46,7 @@ def match_message_by_rule(gm_rule_dict, message_analysis):
     # 如果有，则依次进行匹配，一旦一个分类匹配到，立即停止该匹配，插入任务
 
     message_chatroomname = message_analysis.talker
-    message_text = message_analysis.real_content
+    message_text = str_to_unicode(message_analysis.real_content)
 
     if message_chatroomname not in gm_rule_dict:
         return False
@@ -53,6 +54,9 @@ def match_message_by_rule(gm_rule_dict, message_analysis):
     # 处理自动回复信息
     status_flag = False
     for matching_rule in gm_rule_dict[message_chatroomname][CONSUMPTION_TASK_TYPE['auto_reply']]:
+        print(matching_rule.is_exact_match)
+        print(message_text)
+        print(matching_rule.match_word)
         if matching_rule.is_exact_match and message_text == matching_rule.match_word:
             logger.info(u"匹配到关键词. chatroomname: %s. task_type: %s. task_relevant_id: %s." % (
                 message_chatroomname, matching_rule.task_type, matching_rule.task_relevant_id))
