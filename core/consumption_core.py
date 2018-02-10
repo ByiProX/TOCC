@@ -114,21 +114,19 @@ def add_task_to_consumption_task(uqr_info, um_lib, user_id, task_type, task_rele
     if c_task.task_send_type == 1:
         send_content = json.loads(um_lib.task_send_content)
         text = send_content.get("text")
-        res_text = ""
+        res_text = u""
         for message_said_username in message_said_username_list:
             a_contact = db.session.query(AContact).filter(AContact.username == message_said_username).first()
             if not a_contact:
-                logger.error("无法找到该人名称")
-                nickname = ""
+                logger.error(u"无法找到该人名称")
+                nickname = u""
             else:
                 nickname = str_to_unicode(a_contact.nickname)
             res_text += u"@" + nickname + u" "
-        c_task.task_send_content = res_text + um_lib.task_send_content
+        c_task.task_send_content = json.dumps({"text": (res_text + text)})
     else:
         logger.error("目前无法发送其他类型")
         return ERR_WRONG_ITEM
-
-    c_task.task_send_content = um_lib.task_send_content
 
     # 目前一个人只能有一个机器人，所以此处不进行机器人选择；未来会涉及机器人选择问题
     uqbr_info_list = db.session.query(UserQunBotRelateInfo).filter(
