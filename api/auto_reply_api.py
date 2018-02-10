@@ -30,6 +30,9 @@ def app_create_a_auto_reply_setting():
     keyword_list = request.json.get('keyword_list')
     if not keyword_list:
         return make_response(ERR_PARAM_SET)
+    # setting_id = request.json.get('setting_id')
+    # if not setting_id:
+    #     return make_response(ERR_PARAM_SET)
 
     status = create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list)
     if status == SUCCESS:
