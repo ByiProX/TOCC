@@ -8,7 +8,7 @@ import logging
 from datetime import datetime, timedelta
 from sqlalchemy import desc
 
-from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, GLOBAL_MATCHING_RULES_UPDATE_FLAG
+from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, GLOBAL_MATCHING_RULES_UPDATE_FLAG, MSG_TYPE_TXT, MSG_TYPE_SYS
 from core.matching_rule_core import get_gm_rule_dict, match_message_by_rule
 from core.message_core import analysis_and_save_a_message
 from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
@@ -71,9 +71,11 @@ class ProductionThread(threading.Thread):
                         continue
                     message_analysis_list.append(message_analysis)
 
-                    print(message_analysis.content)
-                    print(message_analysis.real_content)
-                    print(message_analysis.real_talker)
+                    # 判断这个机器人说的话是否是文字或系统消息
+                    if message_analysis.type == MSG_TYPE_TXT or message_analysis.type == MSG_TYPE_SYS:
+                        pass
+                    else:
+                        continue
 
                     # 这个机器人说的话
                     # TODO 当有两个机器人的时候，这里不仅要判断是否是自己说的，还是要判断是否是其他机器人说的
