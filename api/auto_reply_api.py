@@ -3,10 +3,9 @@
 import logging
 from flask import request
 
-from configs.config import SUCCESS, ERR_PARAM_SET, main_api, ERR_WRONG_FUNC_STATUS
+from configs.config import SUCCESS, ERR_PARAM_SET, main_api
 from core.auto_reply_core import create_a_auto_reply_setting, switch_func_auto_reply, delete_a_auto_reply_setting, \
     get_auto_reply_setting
-from core.batch_sending_core import create_a_sending_task, get_task_detail, get_batch_sending_task
 from core.user_core import UserLogin
 from utils.u_response import make_response
 
@@ -22,9 +21,6 @@ def app_create_a_auto_reply_setting():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
-
-    if not user_info.func_auto_reply:
-        return make_response(ERR_WRONG_FUNC_STATUS)
 
     chatroom_list = request.json.get('chatroom_list')
     if not chatroom_list:
@@ -66,12 +62,10 @@ def app_get_auto_reply_setting():
     if status != SUCCESS:
         return make_response(status)
 
-    if not user_info.func_auto_reply:
-        return make_response(ERR_WRONG_FUNC_STATUS)
-
     status, res = get_auto_reply_setting(user_info)
+
     if status == SUCCESS:
-        return make_response(SUCCESS, setting_info=res)
+        return make_response(SUCCESS, setting_info=res, func_auto_reply=user_info.func_auto_reply)
     else:
         return make_response(status)
 
@@ -85,9 +79,6 @@ def app_delete_a_auto_reply_setting():
     setting_id = request.json.get('setting_id')
     if not setting_id:
         return make_response(ERR_PARAM_SET)
-
-    if not user_info.func_auto_reply:
-        return ERR_WRONG_FUNC_STATUS
 
     status = delete_a_auto_reply_setting(user_info, setting_id)
     if status == SUCCESS:
