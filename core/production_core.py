@@ -71,6 +71,11 @@ class ProductionThread(threading.Thread):
                         continue
                     message_analysis_list.append(message_analysis)
 
+                    # 这个机器人说的话
+                    # TODO 当有两个机器人的时候，这里不仅要判断是否是自己说的，还是要判断是否是其他机器人说的
+                    if message_analysis.is_send == 1:
+                        continue
+
                     # is_add_friend
                     is_add_friend = check_whether_message_is_add_friend(message_analysis)
                     if is_add_friend:
@@ -88,7 +93,11 @@ class ProductionThread(threading.Thread):
                     is_friend_into_qun = check_whether_message_is_friend_into_qun(message_analysis)
 
                     # 根据规则和内容进行匹配，并生成任务
-                    match_message_by_rule(gm_rule_dict, message_analysis)
+                    rule_status = match_message_by_rule(gm_rule_dict, message_analysis)
+                    if rule_status is True or rule_status is False:
+                        continue
+                    else:
+                        continue
 
                     # 处理完毕后将新情况存入
 
@@ -100,7 +109,6 @@ class ProductionThread(threading.Thread):
                     db.session.add(message_analysis)
             else:
                 pass
-
 
             new_pro_stat = ProductionStatistic()
             new_pro_stat.last_a_message_id = self.last_a_message_id

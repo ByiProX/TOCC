@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from sqlalchemy import desc
 
-from configs.config import db
+from configs.config import db, CONSUMPTION_TASK_TYPE, SUCCESS
+from core.auto_reply_core import activate_rule_and_add_task_to_consumption_task
 from models.matching_rule_models import GlobalMatchingRule, MatchingRuleInMemory
+
+logger = logging.getLogger('main')
 
 
 def get_gm_rule_dict():
@@ -16,7 +21,7 @@ def get_gm_rule_dict():
     gm_rule_dict = {}
     for gm_rule in gm_rule_list:
         gm_rule_dict.setdefault(gm_rule.chatroomname, {})
-        gm_rule_dict[gm_rule.chatroomname].setdefault(gm_rule.task_type)
+        gm_rule_dict[gm_rule.chatroomname].setdefault(gm_rule.task_type, [])
 
         gm_rule_dict[gm_rule.chatroomname][gm_rule.task_type]. \
             append(MatchingRuleInMemory(mid=gm_rule.mid,
@@ -39,9 +44,33 @@ def match_message_by_rule(gm_rule_dict, message_analysis):
     # 如果没有则返回，没什么操作，同样的方法验证gm_rule_dict
     # 如果有，则依次进行匹配，一旦一个分类匹配到，立即停止该匹配，插入任务
 
-def _add_task_to_consumption_task():
-    """
-    确认生成任务后，调用该函数进行任务生成
-    :return:
-    """
-    # 因为前端设置和调用均没有确定，所以暂时无法写这部分
+    message_chatroomname = message_analysis.talker
+    message_text = message_analysis.real_content
+
+    if message_chatroomname not in gm_rule_dict:
+        return False
+
+    # 处理自动回复信息
+    status_flag = False
+    for matching_rule in gm_rule_dict[message_chatroomname][CONSUMPTION_TASK_TYPE['auto_reply']]:
+        if matching_rule.is_exact_match and message_text == matching_rule.match_word:
+            logger.info(u"匹配到关键词. chatroomname: %s. task_type: %s. task_relevant_id: %s." % (
+                message_chatroomname, matching_rule.task_type, matching_rule.task_relevant_id))
+            logger.info(u"匹配到关键词. match_word: %s. message_text: %s." % (matching_rule.match_word, message_text))
+            status_flag = activate_rule_and_add_task_to_consumption_task(matching_rule.task_relevant_id)
+            break
+        elif not matching_rule.is_exact_match and matching_rule.match_word in message_text:
+            logger.info(u"匹配到关键词. chatroomname: %s. task_type: %s. task_relevant_id: %s." % (
+                message_chatroomname, matching_rule.task_type, matching_rule.task_relevant_id))
+            logger.info(u"匹配到关键词. match_word: %s. message_text: %s." % (matching_rule.match_word, message_text))
+            status_flag = activate_rule_and_add_task_to_consumption_task(matching_rule.task_relevant_id)
+            break
+        else:
+            pass
+
+    if status_flag is False:
+        return False
+    if status_flag == SUCCESS:
+        return True
+    else:
+        return status_flag
