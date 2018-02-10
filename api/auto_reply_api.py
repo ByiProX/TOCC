@@ -67,7 +67,7 @@ def app_get_auto_reply_setting():
         return make_response(status)
 
     if not user_info.func_auto_reply:
-        return ERR_WRONG_FUNC_STATUS
+        return make_response(ERR_WRONG_FUNC_STATUS)
 
     status, res = get_auto_reply_setting(user_info)
     if status == SUCCESS:
