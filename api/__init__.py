@@ -7,5 +7,6 @@ import websocket_api
 import batch_sending_api
 import material_api
 import auto_reply_api
+import welcome_message_api
 
 api_str = ""

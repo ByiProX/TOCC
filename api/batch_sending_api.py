@@ -10,6 +10,7 @@ from utils.u_response import make_response
 
 logger = logging.getLogger('main')
 
+
 @main_api.route('/get_batch_sending_task', methods=['POST'])
 def app_get_batch_sending_task():
     """
@@ -29,11 +30,10 @@ def app_get_batch_sending_task():
         logger.warning("没有收到page_number，设置为0")
         page_number = 0
 
-    status, res = get_batch_sending_task(user_info, task_per_page,page_number)
     if not user_info.func_send_qun_messages:
         return make_response(ERR_WRONG_FUNC_STATUS)
 
-    status, res = get_batch_sending_task(user_info)
+    status, res = get_batch_sending_task(user_info, task_per_page, page_number)
     if status == SUCCESS:
         return make_response(SUCCESS, task_info=res)
     else:
