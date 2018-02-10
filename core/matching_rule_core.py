@@ -63,6 +63,7 @@ def match_message_by_rule(gm_rule_dict, message_analysis):
                 message_chatroomname, matching_rule.task_type, matching_rule.task_relevant_id))
             logger.info(u"匹配到关键词. match_word: %s. message_text: %s." % (matching_rule.match_word, message_text))
             status_flag = activate_rule_and_add_task_to_consumption_task(matching_rule.task_relevant_id,
+                                                                         message_chatroomname,
                                                                          message_said_username)
             break
         elif not matching_rule.is_exact_match and matching_rule.match_word in message_text:
@@ -70,6 +71,7 @@ def match_message_by_rule(gm_rule_dict, message_analysis):
                 message_chatroomname, matching_rule.task_type, matching_rule.task_relevant_id))
             logger.info(u"匹配到关键词. match_word: %s. message_text: %s." % (matching_rule.match_word, message_text))
             status_flag = activate_rule_and_add_task_to_consumption_task(matching_rule.task_relevant_id,
+                                                                         message_chatroomname,
                                                                          message_said_username)
             break
         else:

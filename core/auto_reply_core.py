@@ -301,30 +301,23 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
     return SUCCESS
 
 
-def activate_rule_and_add_task_to_consumption_task(ar_setting_id, message_said_username):
+def activate_rule_and_add_task_to_consumption_task(ar_setting_id, message_chatroomname, message_said_username):
     ar_setting_info = db.session.query(AutoReplySettingInfo).filter(
         AutoReplySettingInfo.setting_id == ar_setting_id).first()
     if not ar_setting_info:
         return ERR_WRONG_ITEM
 
-    ar_setting_target_list = db.session.query(AutoReplyTargetRelate).filter(
-        AutoReplyTargetRelate.setting_id == ar_setting_id).all()
     valid_chatroom_list = []
-    for ar_setting_target in ar_setting_target_list:
-        uqr_info = db.session.query(UserQunRelateInfo). \
-            filter(UserQunRelateInfo.user_id == ar_setting_info.user_id,
-                   UserQunRelateInfo.uqun_id == ar_setting_target.uqun_id).first()
-        if not uqr_info:
-            logger.error("没有属于该用户的该群")
-            return ERR_WRONG_USER_ITEM
-
-        a_contact = db.session.query(AContact).filter(AContact.username == uqr_info.chatroomname).first()
-
-        if not a_contact:
-            logger.error("安卓库中没有该群")
-            return ERR_WRONG_USER_ITEM
-
-        valid_chatroom_list.append(uqr_info)
+    uqr_info = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == ar_setting_info.user_id,
+                                                          UserQunRelateInfo.chatroomname == message_chatroomname).first()
+    if not uqr_info:
+        logger.error("没有属于该用户的该群")
+        return ERR_WRONG_USER_ITEM
+    a_contact = db.session.query(AContact).filter(AContact.username == uqr_info.chatroomname).first()
+    if not a_contact:
+        logger.error("安卓库中没有该群")
+        return ERR_WRONG_USER_ITEM
+    valid_chatroom_list.append(uqr_info)
 
     ar_setting_material_list = db.session.query(AutoReplyMaterialRelate).filter(
         AutoReplyMaterialRelate.setting_id == ar_setting_id).all()
