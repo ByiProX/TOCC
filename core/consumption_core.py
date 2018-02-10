@@ -47,7 +47,7 @@ class ConsumptionThread(threading.Thread):
                 order_by(ConsumptionTask.task_id).all()
 
             for i, each_task in enumerate(ct_list):
-                if each_task.task_type == 1:
+                if each_task.task_type in [1, 2]:
                     task_send_content = json.loads(each_task.task_send_content)
                     send_task_content_to_ws(each_task.bot_username, each_task.chatroomname,
                                             each_task.task_send_type, task_send_content['text'])
@@ -91,7 +91,8 @@ class ConsumptionThread(threading.Thread):
         logger.info(u"停止进程")
         self.go_work = False
 
-def add_task_to_consumption_task(uqr_info, um_lib,user_id,task_type,task_relevant_id):
+
+def add_task_to_consumption_task(uqr_info, um_lib, user_id, task_type, task_relevant_id):
     if not isinstance(uqr_info, UserQunRelateInfo):
         raise TypeError
     if not isinstance(um_lib, UserMaterialLibrary):
