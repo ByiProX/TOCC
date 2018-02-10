@@ -7,7 +7,7 @@ from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE
-from models.android_db_models import AContact
+from models.android_db_models import AContact, AChatroom
 from models.qun_friend_models import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
 from models.user_bot_models import UserInfo, UserBotRelateInfo, BotInfo
 from utils.u_str_unicode import str_to_unicode
@@ -290,7 +290,15 @@ def get_a_chatroom_dict_by_uqun_id(uqr_info=None, uqun_id=None):
         temp_chatroom_dict.setdefault("chatroom_avatar", "")
         temp_chatroom_dict.setdefault("chatroom_status", -2)
     else:
-        temp_chatroom_dict.setdefault("chatroom_nickname", a_contact.nickname)
+        if a_contact.nickname is None or a_contact.nickname == "":
+            a_chatroom = db.session.query(AChatroom).filter(AChatroom.chatroomname == uqr_info.chatroomname).first()
+            displayname = str_to_unicode(a_chatroom.displayname)
+            if len(displayname) > 16:
+                displayname = displayname[0:16]
+            temp_chatroom_dict.setdefault("chatroom_nickname", displayname)
+        else:
+            temp_chatroom_dict.setdefault("chatroom_nickname", a_contact.nickname)
+
         temp_chatroom_dict.setdefault("chatroom_member_count", a_contact.member_count)
         temp_chatroom_dict.setdefault("chatroom_avatar", a_contact.avatar_url2)
 

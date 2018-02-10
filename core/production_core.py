@@ -8,11 +8,14 @@ import logging
 from datetime import datetime, timedelta
 from sqlalchemy import desc
 
-from configs.config import PRODUCTION_CIRCLE_INTERVAL, db
+from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, GLOBAL_MATCHING_RULES_UPDATE_FLAG
+from core.matching_rule_core import get_gm_rule_dict, match_message_by_rule
 from core.message_core import analysis_and_save_a_message
 from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core.user_core import check_whether_message_is_add_friend
+from core.welcome_message_core import check_whether_message_is_friend_into_qun
 from models.android_db_models import AMessage
+from models.matching_rule_models import GlobalMatchingRule
 from models.production_consumption_models import ProductionStatistic
 
 logger = logging.getLogger('main')
@@ -46,11 +49,19 @@ class ProductionThread(threading.Thread):
             else:
                 self.last_a_message_id = 0
                 self.last_a_message_create_time = datetime.now() - timedelta(days=365 * 10)
+
+        gm_rule_dict = get_gm_rule_dict()
+        GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"] = False
         while self.go_work:
             circle_start_time = time.time()
             message_list = db.session.query(AMessage). \
                 filter(AMessage.id > self.last_a_message_id). \
                 order_by(AMessage.id).all()
+
+            # 每次循环时，如果全局锁发生变更，则重新读取规则
+            if GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"]:
+                gm_rule_dict = get_gm_rule_dict()
+                GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"] = False
 
             if len(message_list) != 0:
                 message_analysis_list = list()
@@ -72,6 +83,12 @@ class ProductionThread(threading.Thread):
 
                     # is_removed
                     is_removed = check_is_removed(message_analysis)
+
+                    # 检测是否是别人的进群提示
+                    is_friend_into_qun = check_whether_message_is_friend_into_qun(message_analysis)
+
+                    # 根据规则和内容进行匹配，并生成任务
+                    match_message_by_rule(gm_rule_dict, message_analysis)
 
                     # 处理完毕后将新情况存入
 

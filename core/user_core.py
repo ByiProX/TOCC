@@ -117,7 +117,7 @@ class UserLogin:
     @staticmethod
     def verify_token(token):
         if not token:
-            return ERR_INVALID_PARAMS
+            return ERR_INVALID_PARAMS, None
         user_info = db.session.query(UserInfo).filter(UserInfo.token == token).first()
         if user_info:
             if datetime.now() < user_info.token_expired_time:
@@ -374,6 +374,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
 
     user_info = user_info_list[0]
     user_info.username = user_username
+    user_info.func_send_qun_messages = True
     db.session.merge(user_info)
     db.session.commit()
     logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.user_id, user_username))
