@@ -301,7 +301,7 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
     return SUCCESS
 
 
-def activate_rule_and_add_task_to_consumption_task(ar_setting_id):
+def activate_rule_and_add_task_to_consumption_task(ar_setting_id, message_said_username):
     ar_setting_info = db.session.query(AutoReplySettingInfo).filter(
         AutoReplySettingInfo.setting_id == ar_setting_id).first()
     if not ar_setting_info:
@@ -339,13 +339,14 @@ def activate_rule_and_add_task_to_consumption_task(ar_setting_id):
 
     for uqr_info_iter in valid_chatroom_list:
         for um_lib_iter in valid_material_list:
-            _add_task_to_consumption_task(uqr_info_iter, um_lib_iter, ar_setting_info)
+            _add_task_to_consumption_task(uqr_info_iter, um_lib_iter, ar_setting_info, message_said_username)
     return SUCCESS
 
 
-def _add_task_to_consumption_task(uqr_info, um_lib, ar_setting_info):
+def _add_task_to_consumption_task(uqr_info, um_lib, ar_setting_info, message_said_username):
     status = add_task_to_consumption_task(uqr_info, um_lib, ar_setting_info.user_id,
-                                          CONSUMPTION_TASK_TYPE["auto_reply"], ar_setting_info.setting_id)
+                                          CONSUMPTION_TASK_TYPE["auto_reply"], ar_setting_info.setting_id,
+                                          [message_said_username])
     return status
 
 

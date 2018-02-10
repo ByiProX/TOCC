@@ -47,6 +47,10 @@ def match_message_by_rule(gm_rule_dict, message_analysis):
 
     message_chatroomname = message_analysis.talker
     message_text = str_to_unicode(message_analysis.real_content)
+    message_said_username = message_analysis.real_talker
+
+    if not message_said_username:
+        raise ValueError("没有message_said_username")
 
     if message_chatroomname not in gm_rule_dict:
         return False
@@ -58,13 +62,15 @@ def match_message_by_rule(gm_rule_dict, message_analysis):
             logger.info(u"匹配到关键词. chatroomname: %s. task_type: %s. task_relevant_id: %s." % (
                 message_chatroomname, matching_rule.task_type, matching_rule.task_relevant_id))
             logger.info(u"匹配到关键词. match_word: %s. message_text: %s." % (matching_rule.match_word, message_text))
-            status_flag = activate_rule_and_add_task_to_consumption_task(matching_rule.task_relevant_id)
+            status_flag = activate_rule_and_add_task_to_consumption_task(matching_rule.task_relevant_id,
+                                                                         message_said_username)
             break
         elif not matching_rule.is_exact_match and matching_rule.match_word in message_text:
             logger.info(u"匹配到关键词. chatroomname: %s. task_type: %s. task_relevant_id: %s." % (
                 message_chatroomname, matching_rule.task_type, matching_rule.task_relevant_id))
             logger.info(u"匹配到关键词. match_word: %s. message_text: %s." % (matching_rule.match_word, message_text))
-            status_flag = activate_rule_and_add_task_to_consumption_task(matching_rule.task_relevant_id)
+            status_flag = activate_rule_and_add_task_to_consumption_task(matching_rule.task_relevant_id,
+                                                                         message_said_username)
             break
         else:
             pass

@@ -12,11 +12,13 @@ from datetime import datetime
 
 from configs.config import db, CONSUMPTION_CIRCLE_INTERVAL, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, SUCCESS
 from core.send_task_and_ws_setting_core import send_task_content_to_ws
+from models.android_db_models import AContact
 from models.material_library_models import UserMaterialLibrary
 from models.production_consumption_models import ConsumptionTask, ConsumptionStatistic, \
     ConsumptionTaskStream
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
-from models.user_bot_models import BotInfo, UserBotRelateInfo
+from models.user_bot_models import BotInfo, UserBotRelateInfo, UserInfo
+from utils.u_str_unicode import str_to_unicode
 
 logger = logging.getLogger('main')
 
@@ -92,7 +94,8 @@ class ConsumptionThread(threading.Thread):
         self.go_work = False
 
 
-def add_task_to_consumption_task(uqr_info, um_lib, user_id, task_type, task_relevant_id):
+def add_task_to_consumption_task(uqr_info, um_lib, user_id, task_type, task_relevant_id,
+                                 message_said_username_list=None):
     if not isinstance(uqr_info, UserQunRelateInfo):
         raise TypeError
     if not isinstance(um_lib, UserMaterialLibrary):
@@ -106,6 +109,25 @@ def add_task_to_consumption_task(uqr_info, um_lib, user_id, task_type, task_rele
     c_task.task_relevant_id = task_relevant_id
 
     c_task.task_send_type = um_lib.task_send_type
+
+    # 组装content
+    if c_task.task_send_type == 1:
+        send_content = json.loads(um_lib.task_send_content)
+        text = send_content.get("text")
+        res_text = ""
+        for message_said_username in message_said_username_list:
+            a_contact = db.session.query(AContact).filter(AContact.username == message_said_username).first()
+            if not a_contact:
+                logger.error("无法找到该人名称")
+                nickname = ""
+            else:
+                nickname = str_to_unicode(a_contact.nickname)
+            res_text += u"@" + nickname + u" "
+        c_task.task_send_content = res_text + um_lib.task_send_content
+    else:
+        logger.error("目前无法发送其他类型")
+        return ERR_WRONG_ITEM
+
     c_task.task_send_content = um_lib.task_send_content
 
     # 目前一个人只能有一个机器人，所以此处不进行机器人选择；未来会涉及机器人选择问题
