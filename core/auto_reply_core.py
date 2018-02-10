@@ -346,7 +346,7 @@ def activate_rule_and_add_task_to_consumption_task(ar_setting_id, message_said_u
 def _add_task_to_consumption_task(uqr_info, um_lib, ar_setting_info, message_said_username):
     status = add_task_to_consumption_task(uqr_info, um_lib, ar_setting_info.user_id,
                                           CONSUMPTION_TASK_TYPE["auto_reply"], ar_setting_info.setting_id,
-                                          [message_said_username])
+                                          message_said_username_list=[message_said_username])
     return status
 
 
