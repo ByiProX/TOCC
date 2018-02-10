@@ -28,7 +28,10 @@ def echo(ws):
                 text = json.dumps(text_json)
                 print 'text', text
                 ws.send(text)
-            # TODO-zc 当状态异常时，跳出循环
-            if not ws:
+            if not ws.connected:
+                # TODO-zwf 退出逻辑待完善
+                print 'ws.connected', str(ws.connected)
+                print 'quit'
+                WS_MAP.pop(username)
                 break
         consumption_thread.stop()
