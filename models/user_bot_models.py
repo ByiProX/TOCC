@@ -97,7 +97,7 @@ class BotInfo(db.Model):
     """
     bot_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     # 安卓端返回的唯一id
-    username = db.Column(db.String(32), index=True, nullable=True)
+    username = db.Column(db.String(32), index=True, unique=True, nullable=True)
 
     create_bot_time = db.Column(db.DateTime, index=True, nullable=False)
     is_alive = db.Column(db.Boolean, index=True, nullable=False)
