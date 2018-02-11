@@ -365,7 +365,7 @@ def get_a_chatroom_dict_by_uqun_id(uqr_info=None, uqun_id=None):
                     logger.error(
                         u"没有对应的uqbr关系. uqun_id: %s. user_bot_rid: %s." % (uqr_info.uqun_id, ubr_info.user_bot_rid))
                     return ERR_WRONG_USER_ITEM, None
-                if uqbr_info.is_error is False:
+                if not uqbr_info.is_error:
                     status_is_error_flag = False
                     break
             if status_is_error_flag is True:
