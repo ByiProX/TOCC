@@ -33,11 +33,12 @@ def app_create_a_auto_reply_setting():
         return make_response(ERR_PARAM_SET)
 
     # 注：此处，如果有setting时，则意味着此处为修改，如果没有，则意味着此处为新建
+    # 文法和磊的临时约定 BY FRank5433 20180210
     setting_id = request.json.get('setting_id')
     if setting_id:
-        status = create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list)
-    else:
         status = update_a_tuto_reply_setting(user_info, chatroom_list, message_list, keyword_list, setting_id)
+    else:
+        status = create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list)
     if status == SUCCESS:
         return make_response(SUCCESS)
     else:
