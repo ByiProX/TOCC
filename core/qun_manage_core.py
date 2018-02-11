@@ -351,7 +351,27 @@ def get_a_chatroom_dict_by_uqun_id(uqr_info=None, uqun_id=None):
         if uqr_info.is_deleted is True:
             temp_chatroom_dict.setdefault("chatroom_status", -1)
         else:
-            temp_chatroom_dict.setdefault("chatroom_status", 0)
+            ubr_info_list = db.session.query(UserBotRelateInfo).filter(
+                UserBotRelateInfo.user_id == uqr_info.user_id).all()
+            if not ubr_info_list:
+                logger.error(u"没有对应的机器人关系可以使用. 逻辑错误. user_id: %s." % uqr_info.user_id)
+                return ERR_WRONG_USER_ITEM, None
+            status_is_error_flag = True
+            for ubr_info in ubr_info_list:
+                uqbr_info = db.session.query(UserQunBotRelateInfo).filter(
+                    UserQunBotRelateInfo.uqun_id == uqr_info.uqun_id,
+                    UserQunBotRelateInfo.user_bot_rid == ubr_info.user_bot_rid).first()
+                if not uqbr_info:
+                    logger.error(
+                        u"没有对应的uqbr关系. uqun_id: %s. user_bot_rid: %s." % (uqr_info.uqun_id, ubr_info.user_bot_rid))
+                    return ERR_WRONG_USER_ITEM, None
+                if uqbr_info.is_error is False:
+                    status_is_error_flag = False
+                    break
+            if status_is_error_flag is True:
+                temp_chatroom_dict.setdefault("chatroom_status", -3)
+            else:
+                temp_chatroom_dict.setdefault("chatroom_status", 0)
 
     return SUCCESS, temp_chatroom_dict
 
