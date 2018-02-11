@@ -112,18 +112,21 @@ def add_task_to_consumption_task(uqr_info, um_lib, user_id, task_type, task_rele
 
     # 组装content
     if c_task.task_send_type == 1:
-        send_content = json.loads(um_lib.task_send_content)
-        text = send_content.get("text")
-        res_text = u""
-        for message_said_username in message_said_username_list:
-            a_contact = db.session.query(AContact).filter(AContact.username == message_said_username).first()
-            if not a_contact:
-                logger.error(u"无法找到该人名称")
-                nickname = u""
-            else:
-                nickname = str_to_unicode(a_contact.nickname)
-            res_text += u"@" + nickname + u" "
-        c_task.task_send_content = json.dumps({"text": (res_text + text)})
+        if message_said_username_list is None:
+            c_task.task_send_content = um_lib.task_send_content
+        else:
+            send_content = json.loads(um_lib.task_send_content)
+            text = send_content.get("text")
+            res_text = u""
+            for message_said_username in message_said_username_list:
+                a_contact = db.session.query(AContact).filter(AContact.username == message_said_username).first()
+                if not a_contact:
+                    logger.error(u"无法找到该人名称")
+                    nickname = u""
+                else:
+                    nickname = str_to_unicode(a_contact.nickname)
+                res_text += u"@" + nickname + u" "
+            c_task.task_send_content = json.dumps({"text": (res_text + text)})
     else:
         logger.error("目前无法发送其他类型")
         return ERR_WRONG_ITEM
