@@ -210,13 +210,16 @@ def _remove_bot_process(bot_username, chatroomname):
     uqr_info_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.chatroomname == chatroomname).all()
     ubr_info_list = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.bot_id == bot_id).all()
 
-    for uqr_info in uqr_info_list:
-        uqun_id = uqr_info.uqun_id
-        for ubr_info in ubr_info_list:
-            user_bot_rid = ubr_info.user_bot_rid
+    for ubr_info in ubr_info_list:
+        user_bot_rid = ubr_info.user_bot_rid
+        for uqr_info in uqr_info_list:
+            uqun_id = uqr_info.uqun_id
+
             uqbr_info = db.session.query(UserQunBotRelateInfo). \
                 filter(UserQunBotRelateInfo.uqun_id == uqun_id,
                        UserQunBotRelateInfo.user_bot_rid == user_bot_rid).first()
+            if not uqbr_info:
+                continue
             uqbr_info.is_error = True
             db.session.merge(uqbr_info)
     db.session.commit()
