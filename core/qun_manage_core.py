@@ -195,11 +195,33 @@ def check_is_removed(message_analysis):
     content = str_to_unicode(message_analysis.content)
     if msg_type == MSG_TYPE_SYS and content.find(u'移除群聊') != -1:
         is_removed = True
-        logger.error("NotImplementedError：发现被移出群聊，不进行任何操作")
-
-        pass
-    # logger.error(u"NotImplementedError")
+        bot_username = message_analysis.username
+        chatroomname = message_analysis.talker
+        logger.info(u"发现机器人被提出群聊. bot_username: %s. chatroomname: %s." % (bot_username, chatroomname))
+        _remove_bot_process(bot_username, chatroomname)
     return is_removed
+
+
+def _remove_bot_process(bot_username, chatroomname):
+    bot_info = db.session.query(BotInfo).filter(BotInfo.username == bot_username).first()
+    if not bot_info:
+        logger.error(u"没有找到bot信息. bot_id: %s." % bot_info.bot_id)
+    bot_id = bot_info.bot_id
+    uqr_info_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.chatroomname == chatroomname).all()
+    ubr_info_list = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.bot_id == bot_id).all()
+
+    for uqr_info in uqr_info_list:
+        uqun_id = uqr_info.uqun_id
+        for ubr_info in ubr_info_list:
+            user_bot_rid = ubr_info.user_bot_rid
+            uqbr_info = db.session.query(UserQunBotRelateInfo). \
+                filter(UserQunBotRelateInfo.uqun_id == uqun_id,
+                       UserQunBotRelateInfo.user_bot_rid == user_bot_rid).first()
+            uqbr_info.is_error = True
+            db.session.merge(uqbr_info)
+    db.session.commit()
+    logger.info(u"已将该bot所有相关群设置为异常")
+    return SUCCESS
 
 
 def _bind_qun_success(chatroomname, user_nickname, bot_username):

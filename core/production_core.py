@@ -94,6 +94,8 @@ class ProductionThread(threading.Thread):
 
                     # is_removed
                     is_removed = check_is_removed(message_analysis)
+                    if is_removed:
+                        continue
 
                     # 检测是否是别人的进群提示
                     is_friend_into_qun = check_whether_message_is_friend_into_qun(message_analysis)
