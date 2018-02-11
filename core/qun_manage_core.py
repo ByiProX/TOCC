@@ -282,7 +282,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
             UserQunBotRelateInfo.uqun_id == exist_uqr_info.uqun_id,
             UserQunBotRelateInfo.user_bot_rid == user_bot_rid).first()
         if exist_uqbr_info:
-            if exist_uqbr_info.is_error is True:
+            if exist_uqbr_info.is_error:
                 exist_uqbr_info.is_error = False
                 db.session.merge(exist_uqbr_info)
                 db.session.commit()
