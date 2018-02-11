@@ -193,11 +193,11 @@ def check_is_removed(message_analysis):
     is_removed = False
     msg_type = message_analysis.type
     content = str_to_unicode(message_analysis.content)
-    if msg_type == MSG_TYPE_SYS and content.find(u'移除群聊') != -1:
+    if msg_type == MSG_TYPE_SYS and content.find(u'移出群聊') != -1:
         is_removed = True
         bot_username = message_analysis.username
         chatroomname = message_analysis.talker
-        logger.info(u"发现机器人被提出群聊. bot_username: %s. chatroomname: %s." % (bot_username, chatroomname))
+        logger.info(u"发现机器人被踢出群聊. bot_username: %s. chatroomname: %s." % (bot_username, chatroomname))
         _remove_bot_process(bot_username, chatroomname)
     return is_removed
 
