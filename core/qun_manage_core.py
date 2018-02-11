@@ -225,28 +225,6 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
 
     bot_id = bot_info.bot_id
 
-    uqr_info = UserQunRelateInfo()
-    uqr_info.user_id = user_id
-    uqr_info.chatroomname = chatroomname
-
-    group_info_list = db.session.query(GroupInfo).filter(GroupInfo.user_id == user_id, GroupInfo.is_default == 1).all()
-    if len(group_info_list) > 1:
-        logger.error(u"发现多个默认分组. user_nickname: %s." % user_nickname)
-        return ERR_WRONG_ITEM
-    elif len(group_info_list) == 0:
-        logger.error(u"无默认分组. user_nickname: %s." % user_nickname)
-        return ERR_WRONG_ITEM
-    else:
-        group_info = group_info_list[0]
-
-    uqr_info.group_id = group_info.group_id
-    uqr_info.create_time = datetime.now()
-    uqr_info.is_deleted = False
-
-    db.session.add(uqr_info)
-    db.session.commit()
-    logger.debug(u"user与群关系已绑定. uqun_id: %s." % uqr_info.uqun_id)
-
     ubr_info_list = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_id,
                                                                UserBotRelateInfo.bot_id == bot_id).all()
     if len(ubr_info_list) > 1:
@@ -258,14 +236,57 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
     else:
         ubr_info = ubr_info_list[0]
 
-    uqbr_info = UserQunBotRelateInfo()
-    uqbr_info.uqun_id = uqr_info.uqun_id
-    uqbr_info.user_bot_rid = ubr_info.user_bot_rid
-    uqbr_info.is_error = False
+    user_bot_rid = ubr_info.user_bot_rid
 
-    db.session.add(uqbr_info)
-    db.session.commit()
-    logger.info(u"绑定群的四个关系. uqbr_id: %s." % uqbr_info.rid)
+    group_info_list = db.session.query(GroupInfo).filter(GroupInfo.user_id == user_id, GroupInfo.is_default == 1).all()
+    if len(group_info_list) > 1:
+        logger.error(u"发现多个默认分组. user_nickname: %s." % user_nickname)
+        return ERR_WRONG_ITEM
+    elif len(group_info_list) == 0:
+        logger.error(u"无默认分组. user_nickname: %s." % user_nickname)
+        return ERR_WRONG_ITEM
+    else:
+        group_info = group_info_list[0]
+
+    # 检查该群是否已经被记录过
+    exist_uqr_info = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == user_id,
+                                                                UserQunRelateInfo.chatroomname == chatroomname).first()
+    # 该群被记录过
+    if exist_uqr_info:
+        exist_uqbr_info = db.session.query(UserQunBotRelateInfo).filter(
+            UserQunBotRelateInfo.uqun_id == exist_uqr_info.uqun_id,
+            UserQunBotRelateInfo.user_bot_rid == user_bot_rid).first()
+        if exist_uqbr_info:
+            if exist_uqbr_info.is_error is True:
+                exist_uqbr_info.is_error = False
+                db.session.merge(exist_uqbr_info)
+                db.session.commit()
+                logger.info("将已经有过的群激活. uqbr_id: %s." % exist_uqbr_info.rid)
+            else:
+                logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. uqbr_rid: %s." % exist_uqbr_info.rid)
+        else:
+            logger.error(u"有uqr但却没有uqbr，关系出错. uqun_id: %s." % exist_uqr_info.uqun_id)
+            return ERR_WRONG_ITEM
+    else:
+        uqr_info = UserQunRelateInfo()
+        uqr_info.user_id = user_id
+        uqr_info.chatroomname = chatroomname
+        uqr_info.group_id = group_info.group_id
+        uqr_info.create_time = datetime.now()
+        uqr_info.is_deleted = False
+
+        db.session.add(uqr_info)
+        db.session.commit()
+        logger.debug(u"user与群关系已绑定. uqun_id: %s." % uqr_info.uqun_id)
+
+        uqbr_info = UserQunBotRelateInfo()
+        uqbr_info.uqun_id = uqr_info.uqun_id
+        uqbr_info.user_bot_rid = ubr_info.user_bot_rid
+        uqbr_info.is_error = False
+
+        db.session.add(uqbr_info)
+        db.session.commit()
+        logger.info(u"绑定群的四个关系. uqbr_id: %s." % uqbr_info.rid)
     return SUCCESS
 
 
