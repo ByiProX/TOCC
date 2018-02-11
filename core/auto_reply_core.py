@@ -301,6 +301,26 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
     return SUCCESS
 
 
+def update_a_tuto_reply_setting(user_info, chatroom_list, message_list, keyword_list, setting_id):
+    """
+    先将之前的删除，然后再建立一个新的任务
+    """
+    logger.debug(u"更新某设置，采用先删除之前的规则，后建立新规则的方式")
+    status = delete_a_auto_reply_setting(user_info, setting_id)
+    if status == SUCCESS:
+        logger.debug(u"成功删除之前的设置.")
+    else:
+        logger.error(u"删除失败，不进行任务建立. setting_id: %s." % (setting_id))
+        return status
+    status = create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list)
+    if status == SUCCESS:
+        logger.info(u"更新自动回复任务成功.")
+        return SUCCESS
+    else:
+        logger.error(u"新建任务失败.")
+        return status
+
+
 def activate_rule_and_add_task_to_consumption_task(ar_setting_id, message_chatroomname, message_said_username):
     ar_setting_info = db.session.query(AutoReplySettingInfo).filter(
         AutoReplySettingInfo.setting_id == ar_setting_id).first()
