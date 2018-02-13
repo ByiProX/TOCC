@@ -46,10 +46,18 @@ class TestConfig(Config):
     SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/cia'}
 
 
+class WenFaDevelopmentConfig(Config):
+    ABS_PATH = './assets'
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URI') or 'mysql+pymysql://winner_robot:winnerwinnerrobot0134@127.0.0.1/DevWinnerWinnerRobot'
+    SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://winner_robot:winnerwinnerrobot0134@127.0.0.1/cia'}
+
+
 config_map = {
     'production': ProductionConfig,
     'dev': DevelopmentConfig,
     'test': TestConfig,
+    'zwf_dev': WenFaDevelopmentConfig
 }
 
 # print("---------------------------")
@@ -107,6 +115,9 @@ elif config_name_s == 'd':
 elif config_name_s == 't':
     print("使用test库")
     config_name = 'test'
+elif config_name_s == 'z':
+    print("使用文法的本地环境进行测试")
+    config_name = 'zwf_dev'
 else:
     raise ValueError
 
@@ -181,6 +192,10 @@ ERROR_CODE[ERR_WRONG_FUNC_STATUS] = {'discription': '功能未开启，无法使
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
 ERROR_CODE[WARN_HAS_DEFAULT_QUN] = {'discription': '建立默认分组时已有默认分组', 'status_code': 1}
+
+# 遇到被try到的未知错误
+CRITICAL_HAS_EXCEPT = 'critical_has_except'
+ERROR_CODE[CRITICAL_HAS_EXCEPT] = {'discription': '遇到被try到的未知错误', 'status_code': -1001}
 
 # 该用户目前无正在使用中的bot
 INFO_NO_USED_BOT = 'info_no_used_bot'

@@ -2,16 +2,16 @@
 # 开启gevent
 from gevent import monkey, sleep
 
+from maintenance.database_rel import create_all_databases
+
 monkey.patch_all()
 
 import logging
 
 from configs.config import app, main_api
 from core.production_core import production_thread
-from maintenance import initial_a_bot
 
 from utils import u_log
-from maintenance import create_all_databases, initial_some_user_info, initial_some_bot_info, initial_user_bot_binded
 import models
 import api
 import configs
@@ -36,10 +36,6 @@ u_log.verify_logs_folder_exist()
 
 def initial_all():
     create_all_databases()
-    initial_some_user_info()
-    initial_some_bot_info()
-    initial_user_bot_binded()
-    initial_a_bot()
     exit()
 
 
