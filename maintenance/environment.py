@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import threading
 
 import time
 import logging
@@ -8,6 +9,20 @@ import psutil
 from utils.u_email import EmailAlert
 
 logger = logging.getLogger('main')
+
+
+class EnvironmentDetectionThread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+        self.c_info = ClientInfo()
+
+    def run(self):
+        logger.info(u"开始监控")
+        self.c_info.automatic_detection()
+
+    def stop(self):
+        self.c_info.stop()
 
 
 class ClientInfo:
@@ -43,11 +58,11 @@ class ClientInfo:
 
             # 处理两个memory
             if self.swap_memory_percent > 95.0:
-                logger.warning(u"当前交换内存占用率均值超过95%.")
+                logger.warning(u"当前交换内存占用率超过95%.")
                 EmailAlert.send_it_alert(u"当前交换内存占用率均值超过95%.")
 
             if self.memory_percent > 95.0:
-                logger.warning(u"当前物理内存占用率均值超过95%.")
+                logger.warning(u"当前物理内存占用率超过95%.")
                 EmailAlert.send_it_alert(u"当前物理内存占用率均值超过95%.")
 
             # 处理硬盘
@@ -97,3 +112,6 @@ class ClientInfo:
     @staticmethod
     def _get_list_average(a_list):
         return float(float(sum(a_list)) / float(len(a_list)))
+
+
+environment_client_info = EnvironmentDetectionThread()

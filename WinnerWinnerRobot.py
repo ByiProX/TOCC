@@ -3,12 +3,13 @@
 from gevent import monkey, sleep
 
 from maintenance.database_rel import create_all_databases
+from maintenance.environment import environment_client_info
 
 monkey.patch_all()
 
 import logging
 
-from configs.config import app, main_api
+from configs.config import app, main_api, config_name_s
 from core.production_core import production_thread
 
 from utils import u_log
@@ -41,6 +42,10 @@ def initial_all():
 
 logger = logging.getLogger('main')
 production_thread.start()
+
+# 开启环境监测线程
+if config_name_s == 'p':
+    environment_client_info.start()
 
 if __name__ == '__main__':
     logger.debug("开始程序")

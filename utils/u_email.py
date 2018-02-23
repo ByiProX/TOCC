@@ -3,7 +3,6 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
-from email.utils import formataddr
 
 from utils.u_str_unicode import str_to_unicode
 
@@ -19,8 +18,7 @@ password = "Robot123"
 ue_alert = "ue_alert@doodod.com"
 
 # 技术运维警报
-# it_alert = "it_alert@doodod.com"
-it_alert = "zhangwenfa@doodod.com"
+it_alert = "it_alert@doodod.com"
 
 
 class EmailAlert:
