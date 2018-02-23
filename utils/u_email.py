@@ -44,7 +44,7 @@ class EmailAlert:
     @staticmethod
     def send_it_alert(e_text, e_subject=None):
         server = smtplib.SMTP_SSL(smtp_server, smtp_port)
-        server.set_debuglevel(1)
+        # server.set_debuglevel(1)
         server.login(from_addr, password)
 
         msg = MIMEText(e_text, 'plain', 'utf-8')
