@@ -3,6 +3,7 @@
 # IDE问题，import time无报错
 import json
 import random
+import traceback
 
 import time
 import threading
@@ -43,49 +44,55 @@ class ConsumptionThread(threading.Thread):
         self.run_start_time = datetime.now()
 
         while self.go_work:
-            circle_start_time = time.time()
+            try:
+                circle_start_time = time.time()
 
-            ct_list = db.session.query(ConsumptionTask).filter(ConsumptionTask.bot_username == self.bot_username). \
-                order_by(ConsumptionTask.task_id).all()
+                ct_list = db.session.query(ConsumptionTask).filter(ConsumptionTask.bot_username == self.bot_username). \
+                    order_by(ConsumptionTask.task_id).all()
 
-            for i, each_task in enumerate(ct_list):
-                if each_task.task_type in [1, 2]:
-                    task_send_content = json.loads(each_task.task_send_content)
-                    send_task_content_to_ws(each_task.bot_username, each_task.chatroomname,
-                                            each_task.task_send_type, task_send_content['text'])
-                    time.sleep(random.random() + 0.6)
+                for i, each_task in enumerate(ct_list):
+                    if each_task.task_type in [1, 2]:
+                        task_send_content = json.loads(each_task.task_send_content)
+                        send_task_content_to_ws(each_task.bot_username, each_task.chatroomname,
+                                                each_task.task_send_type, task_send_content['text'])
+                        time.sleep(random.random() + 0.6)
+                    else:
+                        logger.warning("目前不进行处理")
+
+                    c_task_s = ConsumptionTaskStream()
+                    c_task_s.task_id = each_task.task_id
+                    c_task_s.qun_owner_user_id = each_task.qun_owner_user_id
+                    c_task_s.task_initiate_user_id = each_task.task_initiate_user_id
+                    c_task_s.chatroomname = each_task.chatroomname
+                    c_task_s.task_type = each_task.task_type
+                    c_task_s.task_relevant_id = each_task.task_relevant_id
+                    c_task_s.task_send_type = each_task.task_send_type
+                    c_task_s.task_send_content = each_task.task_send_content
+                    c_task_s.bot_username = each_task.bot_username
+                    c_task_s.message_received_time = each_task.message_received_time
+                    c_task_s.task_create_time = each_task.task_create_time
+                    c_task_s.send_to_ws_time = datetime.now()
+                    c_task_s.task_status = 0
+                    db.session.add(c_task_s)
+                    db.session.delete(ct_list[i])
+
+                new_con_stat = ConsumptionStatistic()
+                new_con_stat.ct_count = len(ct_list)
+                new_con_stat.create_time = datetime.now()
+                db.session.add(new_con_stat)
+                db.session.commit()
+
+                circle_now_time = time.time()
+                time_to_rest = CONSUMPTION_CIRCLE_INTERVAL - (circle_now_time - circle_start_time)
+                if time_to_rest > 0:
+                    time.sleep(time_to_rest)
                 else:
-                    logger.warning("目前不进行处理")
-
-                c_task_s = ConsumptionTaskStream()
-                c_task_s.task_id = each_task.task_id
-                c_task_s.qun_owner_user_id = each_task.qun_owner_user_id
-                c_task_s.task_initiate_user_id = each_task.task_initiate_user_id
-                c_task_s.chatroomname = each_task.chatroomname
-                c_task_s.task_type = each_task.task_type
-                c_task_s.task_relevant_id = each_task.task_relevant_id
-                c_task_s.task_send_type = each_task.task_send_type
-                c_task_s.task_send_content = each_task.task_send_content
-                c_task_s.bot_username = each_task.bot_username
-                c_task_s.message_received_time = each_task.message_received_time
-                c_task_s.task_create_time = each_task.task_create_time
-                c_task_s.send_to_ws_time = datetime.now()
-                c_task_s.task_status = 0
-                db.session.add(c_task_s)
-                db.session.delete(ct_list[i])
-
-            new_con_stat = ConsumptionStatistic()
-            new_con_stat.ct_count = len(ct_list)
-            new_con_stat.create_time = datetime.now()
-            db.session.add(new_con_stat)
-            db.session.commit()
-
-            circle_now_time = time.time()
-            time_to_rest = CONSUMPTION_CIRCLE_INTERVAL - (circle_now_time - circle_start_time)
-            if time_to_rest > 0:
-                time.sleep(time_to_rest)
-            else:
-                pass
+                    pass
+            except Exception:
+                logger.critical("发生未知错误，捕获所有异常，待查")
+                logger.critical(traceback.format_exc())
+                self.go_work = False
+                logger.critical("循环停止运行")
         logger.info(u"End thread id: %s." % str(self.thread_id))
         self.run_end_time = datetime.now()
 
