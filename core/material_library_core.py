@@ -55,7 +55,6 @@ def analysis_frontend_material_and_put_into_mysql(user_id, message_info, now_tim
 
         um_lib_old.used_count += 1
         um_lib_old.last_used_time = now_time
-        db.session.merge(um_lib_old)
         db.session.commit()
         return SUCCESS, um_lib_old
 
