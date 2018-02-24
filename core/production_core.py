@@ -17,8 +17,8 @@ from core.qun_manage_core import check_whether_message_is_add_qun, check_is_remo
 from core.user_core import check_whether_message_is_add_friend
 from core.welcome_message_core import check_whether_message_is_friend_into_qun
 from models.android_db_models import AMessage
-from models.matching_rule_models import GlobalMatchingRule
 from models.production_consumption_models import ProductionStatistic
+from sqlalchemy import orm as sql_orm
 
 logger = logging.getLogger('main')
 
@@ -134,6 +134,12 @@ class ProductionThread(threading.Thread):
                     time.sleep(time_to_rest)
                 else:
                     pass
+            except sql_orm.exc.ObjectDeletedError:
+                logger.critical("原a_message的id对应的条目不存在")
+                logger.critical("暂时不对该问题进行处理")
+                logger.critical(traceback.format_exc())
+                self.go_work = False
+                logger.critical("循环停止运行")
             except Exception:
                 logger.critical("发生未知错误，捕获所有异常，待查")
                 logger.critical(traceback.format_exc())
