@@ -2,7 +2,7 @@
 import json
 import logging
 
-from configs.config import db, ERR_WRONG_ITEM, SUCCESS
+from configs.config import db, ERR_WRONG_ITEM, SUCCESS, TASK_SEND_TYPE
 from models.material_library_models import UserMaterialLibrary
 
 logger = logging.getLogger('main')
@@ -15,7 +15,7 @@ def generate_material_into_frontend_by_material_id(material_id):
     temp_material_dict.setdefault("material_id", um_lib.material_id)
     temp_material_dict.setdefault("task_send_type", um_lib.task_send_type)
     temp_content = json.loads(um_lib.task_send_content)
-    if um_lib.task_send_type == 1:
+    if um_lib.task_send_type == TASK_SEND_TYPE['text']:
         text = temp_content.get("text")
         if text is None:
             logger.warning(u"解析material中content失败. material_id: %s." % material_id)
@@ -33,7 +33,7 @@ def analysis_frontend_material_and_put_into_mysql(user_id, message_info, now_tim
     um_lib = UserMaterialLibrary()
     um_lib.user_id = user_id
     send_type = message_info.get("send_type")
-    if send_type == 1:
+    if send_type == TASK_SEND_TYPE['text']:
         um_lib.task_send_type = send_type
         text = message_info.get("text")
         if not text:

@@ -24,7 +24,7 @@ class ConsumptionTask(db.Model):
     # 是指不同任务的表中id
     task_relevant_id = db.Column(db.BigInteger, index=True, nullable=False)
 
-    # 发送内容的类型；1为文字；2为公众号；3为链接；4为文件；5为小程序
+    # 发送内容的类型；1为文字；2为图片；3为链接；4为文件；5为小程序；6为公众号；7为视频；8为语音
     task_send_type = db.Column(db.Integer, index=True, nullable=False)
     task_send_content = db.Column(db.String(2048), index=True, nullable=False)
     bot_username = db.Column(db.String(32), index=True, nullable=False)

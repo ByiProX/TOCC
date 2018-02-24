@@ -11,7 +11,7 @@ import logging
 
 from datetime import datetime
 
-from configs.config import db, CONSUMPTION_CIRCLE_INTERVAL, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, SUCCESS
+from configs.config import db, CONSUMPTION_CIRCLE_INTERVAL, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, SUCCESS, TASK_SEND_TYPE
 from core.send_task_and_ws_setting_core import send_task_content_to_ws
 from models.android_db_models import AContact
 from models.material_library_models import UserMaterialLibrary
@@ -53,9 +53,13 @@ class ConsumptionThread(threading.Thread):
                 for i, each_task in enumerate(ct_list):
                     if each_task.task_type in [1, 2]:
                         task_send_content = json.loads(each_task.task_send_content)
-                        send_task_content_to_ws(each_task.bot_username, each_task.chatroomname,
-                                                each_task.task_send_type, task_send_content['text'])
-                        time.sleep(random.random() + 0.6)
+                        if each_task.task_send_type == TASK_SEND_TYPE['text']:
+
+                            send_task_content_to_ws(each_task.bot_username, each_task.chatroomname,
+                                                    each_task.task_send_type, task_send_content['text'])
+                            time.sleep(random.random() + 0.6)
+                        else:
+                            logger.error("目前不支持其他类型发送")
                     else:
                         logger.warning("目前不进行处理")
 
@@ -118,7 +122,7 @@ def add_task_to_consumption_task(uqr_info, um_lib, user_id, task_type, task_rele
     c_task.task_send_type = um_lib.task_send_type
 
     # 组装content
-    if c_task.task_send_type == 1:
+    if c_task.task_send_type == TASK_SEND_TYPE['text']:
         if message_said_username_list is None:
             c_task.task_send_content = um_lib.task_send_content
         else:

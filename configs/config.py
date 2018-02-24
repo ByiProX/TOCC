@@ -207,6 +207,18 @@ TOKEN_EXPIRED_THRESHOLD = 365
 # consumption类型
 CONSUMPTION_TASK_TYPE = {"batch_sending_task": 1, "auto_reply": 2, "daily_bonus": 3, "welcome_message": 4}
 
+# 发送内容的类型；1为文字；2为图片；3为链接；4为文件；5为小程序；6为公众号；7为视频；8为语音
+TASK_SEND_TYPE = {
+    "text": 1,
+    "picture": 2,
+    "link": 3,
+    "file": 4,
+    "mini_programs": 5,
+    "massive_platform": 6,
+    "video": 7,
+    "voice": 8
+}
+
 # 全局匹配规则更新标记，每次更新规则库需将锁打开
 GLOBAL_MATCHING_RULES_UPDATE_FLAG = dict()
 GLOBAL_MATCHING_RULES_UPDATE_FLAG.setdefault("global_matching_rules_update_flag", True)
