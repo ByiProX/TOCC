@@ -138,9 +138,10 @@ class AMember(db.Model):
 class AMessage(db.Model):
     __tablename__ = 'a_message'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-    msg_svr_id = db.Column(db.String(64), index = True, nullable = False)
+    msg_local_id = db.Column(db.String(64), index = True, nullable = False)
     username = db.Column(db.String(32), index = True, nullable = False)
 
+    msg_svr_id = db.Column(db.String(64), index = True, nullable = False)
     type = db.Column(db.Integer, index = True, nullable = False)
     status = db.Column(db.Integer, index = True, nullable = False)
     is_send = db.Column(db.Boolean, index = True, nullable = False)
@@ -151,4 +152,4 @@ class AMessage(db.Model):
 
     create_time = db.Column(db.DateTime, index = True, nullable = False)
 
-    db.UniqueConstraint(msg_svr_id, username, name='ix_a_message_id')
+    db.UniqueConstraint(msg_local_id, username, name='ix_a_message_id')
