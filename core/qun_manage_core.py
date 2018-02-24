@@ -7,7 +7,7 @@ from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE
-from models.android_db_models import AContact, AChatroom
+from models.android_db_models import AContact, AChatroom, AMember
 from models.qun_friend_models import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
 from models.user_bot_models import UserInfo, UserBotRelateInfo, BotInfo
 from utils.u_str_unicode import str_to_unicode
@@ -230,17 +230,48 @@ def _remove_bot_process(bot_username, chatroomname):
 def _bind_qun_success(chatroomname, user_nickname, bot_username):
     """
     当确认message为加群时，将群加入到系统中
+    :param user_nickname: 除了有可能是nickname，还有可能是displayname
     :return:
     """
+    # 标记是否找到member_flag
+    a_member_list = db.session.query(AMember).filter(AMember.chatroomname == chatroomname,
+                                                     AMember.displayname == user_nickname,
+                                                     AMember.is_deleted == 0).all()
+    if len(a_member_list) > 1:
+        logger.error(u"一个群中出现两个相同的群备注名，无法确定身份. chatroomname: %s. user_nickname: %s." %
+                     (chatroomname, user_nickname))
+        return ERR_HAVE_SAME_PEOPLE
+    elif len(a_member_list) == 0:
+        member_flag = False
+    else:
+        member_flag = True
+
+    # 标记是否找到user_info
     user_info_list = db.session.query(UserInfo).filter(UserInfo.nick_name == user_nickname).all()
     if len(user_info_list) > 1:
         logger.error(u"根据nickname无法确定其身份. user_nickname: %s." % user_nickname)
         return ERR_HAVE_SAME_PEOPLE
     elif len(user_info_list) == 0:
-        logger.error(u"配对user信息出错. bot_username: %s. user_nickname: %s" % user_nickname)
-        return ERR_WRONG_ITEM
+        user_info_flag = False
+    else:
+        user_info_flag = True
 
-    user_info = user_info_list[0]
+    if member_flag is True and user_info_flag is True:
+        logger.error(u"同时匹配到群备注和用户昵称，无法识别用户身份. chatroomname: %s. user_nickname: %s." %
+                     (chatroomname, user_nickname))
+        return ERR_HAVE_SAME_PEOPLE
+    elif member_flag is False and user_info_flag is False:
+        logger.error(u"没有找到群备注也没有找到用户昵称.没有找到该用户. chatroomname: %s. user_nickname: %s." %
+                     (chatroomname, user_nickname))
+        return ERR_WRONG_USER_ITEM
+    elif user_info_flag is True:
+        user_info = user_info_list[0]
+    else:
+        user_info = db.session.query(UserInfo).filter(UserInfo.username == a_member_list[0].username).first()
+        if not user_info:
+            logger.error(u"没有找到对应的用户信息. user_username: %s." % a_member_list[0].username)
+            return ERR_WRONG_ITEM
+
     user_id = user_info.user_id
 
     bot_info = db.session.query(BotInfo).filter(BotInfo.username == bot_username).first()
