@@ -59,6 +59,7 @@ class AutoReplyTargetRelate(db.Model):
 
     uqun_id = db.Column(db.BigInteger, index=True, nullable=False)
 
+
 class AutoReplyDefaultSettingInfo(db.Model):
     """
     存储默认的规则模板
@@ -68,6 +69,7 @@ class AutoReplyDefaultSettingInfo(db.Model):
     ds_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
 
     create_time = db.Column(db.DateTime, index=True, nullable=False)
+
 
 class AutoReplyDefaultKeywordRelateInfo(db.Model):
     """
@@ -82,6 +84,7 @@ class AutoReplyDefaultKeywordRelateInfo(db.Model):
     # True则必须完全相等
     is_full_match = db.Column(db.Boolean, index=True, nullable=False)
     send_seq = db.Column(db.Integer, index=True, nullable=False)
+
 
 class AutoReplyDefaultMaterialRelate(db.Model):
     """
