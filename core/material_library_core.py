@@ -24,19 +24,21 @@ def generate_material_into_frontend_by_material_id(material_id):
             pass
         temp_material_dict.setdefault("text", text)
     elif um_lib.task_send_type == TASK_SEND_TYPE['picture']:
-        title = temp_content.get("title")
-        if not title:
-            title = ""
-        description = temp_content.get("description")
-        if not description:
-            description = ""
-        url = temp_content.get("url")
-        if not url:
-            logger.error(u"发现无地址的图片类型. material_id: %s." % material_id)
-            url = ""
-        temp_material_dict.setdefault("title", title)
-        temp_material_dict.setdefault("description", description)
-        temp_material_dict.setdefault("url", url)
+        logger.critical(u"NotImplementedError: 暂不考虑其他类型.")
+        raise NotImplementedError
+        # title = temp_content.get("title")
+        # if not title:
+        #     title = ""
+        # description = temp_content.get("description")
+        # if not description:
+        #     description = ""
+        # url = temp_content.get("url")
+        # if not url:
+        #     logger.error(u"发现无地址的图片类型. material_id: %s." % material_id)
+        #     url = ""
+        # temp_material_dict.setdefault("title", title)
+        # temp_material_dict.setdefault("description", description)
+        # temp_material_dict.setdefault("url", url)
     else:
         logger.critical(u"NotImplementedError: 暂不考虑其他类型.")
         raise NotImplementedError
@@ -70,23 +72,25 @@ def analysis_frontend_material_and_put_into_mysql(user_id, message_info, now_tim
             return ERR_WRONG_ITEM, None
         um_lib.task_send_content = json.dumps({"text": text})
     elif send_type == TASK_SEND_TYPE['picture']:
-        title = message_info.get("title")
-        if not title:
-            title = u""
-        description = message_info.get("description")
-        if not description:
-            description = u""
-        media_id = message_info.get("server_id")
-        if not media_id:
-            logger.error("没有读取到图片id")
-            return ERR_WRONG_ITEM, None
-        status, url = _execute_media_id_and_update_cdn(media_id)
-        if status != SUCCESS:
-            logger.error("无法正确获得url地址")
-            return ERR_WRONG_ITEM, None
-        um_lib.task_send_content = json.dumps({"title": title,
-                                               "description": description,
-                                               "url": url})
+        logger.warning("目前只允许文字任务")
+        return ERR_WRONG_ITEM, None
+        # title = message_info.get("title")
+        # if not title:
+        #     title = u""
+        # description = message_info.get("description")
+        # if not description:
+        #     description = u""
+        # media_id = message_info.get("server_id")
+        # if not media_id:
+        #     logger.error("没有读取到图片id")
+        #     return ERR_WRONG_ITEM, None
+        # status, url = _execute_media_id_and_update_cdn(media_id)
+        # if status != SUCCESS:
+        #     logger.error("无法正确获得url地址")
+        #     return ERR_WRONG_ITEM, None
+        # um_lib.task_send_content = json.dumps({"title": title,
+        #                                        "description": description,
+        #                                        "url": url})
     else:
         logger.warning("目前只允许文字和图片任务")
         return ERR_WRONG_ITEM, None
