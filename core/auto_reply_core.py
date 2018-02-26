@@ -14,7 +14,7 @@ from models.android_db_models import AContact
 from models.auto_reply_models import AutoReplySettingInfo, AutoReplyTargetRelate, AutoReplyMaterialRelate, \
     AutoReplyKeywordRelateInfo
 from models.matching_rule_models import GlobalMatchingRule
-from models.material_library_models import UserMaterialLibrary
+from models.material_library_models import MaterialLibraryUser
 from models.qun_friend_models import UserQunRelateInfo
 from models.user_bot_models import UserInfo
 from utils.u_time import datetime_to_timestamp_utc_8
@@ -343,8 +343,8 @@ def activate_rule_and_add_task_to_consumption_task(ar_setting_id, message_chatro
         AutoReplyMaterialRelate.setting_id == ar_setting_id).all()
     valid_material_list = []
     for ar_setting_material in ar_setting_material_list:
-        um_lib = db.session.query(UserMaterialLibrary).filter(
-            UserMaterialLibrary.material_id == ar_setting_material.material_id).first()
+        um_lib = db.session.query(MaterialLibraryUser).filter(
+            MaterialLibraryUser.material_id == ar_setting_material.material_id).first()
         if not um_lib:
             logger.error("素材库中没有该群")
             return ERR_WRONG_USER_ITEM

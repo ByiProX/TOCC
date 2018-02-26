@@ -13,7 +13,7 @@ from core.qun_manage_core import get_a_chatroom_dict_by_uqun_id
 from models.android_db_models import AContact
 from models.batch_sending_models import BatchSendingTaskInfo, BatchSendingTaskTargetRelate, \
     BatchSendingTaskMaterialRelate
-from models.material_library_models import UserMaterialLibrary
+from models.material_library_models import MaterialLibraryUser
 from models.production_consumption_models import ConsumptionTaskStream, ConsumptionTask
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
 from models.user_bot_models import UserBotRelateInfo, BotInfo

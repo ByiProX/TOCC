@@ -3,15 +3,15 @@ import json
 import logging
 
 from configs.config import db, ERR_WRONG_ITEM, SUCCESS, TASK_SEND_TYPE
-from models.material_library_models import UserMaterialLibrary
+from models.material_library_models import MaterialLibraryUser
 
 logger = logging.getLogger('main')
 
 
 def generate_material_into_frontend_by_material_id(material_id):
     temp_material_dict = dict()
-    um_lib = db.session.query(UserMaterialLibrary).filter(
-        UserMaterialLibrary.material_id == material_id).first()
+    um_lib = db.session.query(MaterialLibraryUser).filter(
+        MaterialLibraryUser.material_id == material_id).first()
     temp_material_dict.setdefault("material_id", um_lib.material_id)
     temp_material_dict.setdefault("task_send_type", um_lib.task_send_type)
     temp_content = json.loads(um_lib.task_send_content)
@@ -49,8 +49,8 @@ def analysis_frontend_material_and_put_into_mysql(user_id, message_info, now_tim
     # 确认是否为已有的资源
     material_id = message_info.get("material_id")
     if material_id:
-        um_lib_old = db.session.query(UserMaterialLibrary).filter(
-            UserMaterialLibrary.material_id == material_id).first()
+        um_lib_old = db.session.query(MaterialLibraryUser).filter(
+            MaterialLibraryUser.material_id == material_id).first()
         if not um_lib_old:
             logger.error(u"没有根据material_id找到对应的资源. material_id: %s." % material_id)
             return ERR_WRONG_ITEM, None
@@ -60,7 +60,7 @@ def analysis_frontend_material_and_put_into_mysql(user_id, message_info, now_tim
         db.session.commit()
         return SUCCESS, um_lib_old
 
-    um_lib = UserMaterialLibrary()
+    um_lib = MaterialLibraryUser()
     um_lib.user_id = user_id
     send_type = message_info.get("send_type")
 
@@ -113,7 +113,7 @@ def _execute_media_id_and_update_cdn(media_id):
         return status, None
     status, material_id = _check_media_whether_in_cdn(media_file)
     if status is True:
-        um_lib = db.session.query(UserMaterialLibrary).filter(UserMaterialLibrary.material_id == material_id).first()
+        um_lib = db.session.query(MaterialLibraryUser).filter(MaterialLibraryUser.material_id == material_id).first()
         if not um_lib:
             logger.error(u"没有读取到媒体id. material_id: %s." % material_id)
             return ERR_WRONG_ITEM, None

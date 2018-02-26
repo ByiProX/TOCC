@@ -14,7 +14,7 @@ from datetime import datetime
 from configs.config import db, CONSUMPTION_CIRCLE_INTERVAL, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, SUCCESS, TASK_SEND_TYPE
 from core.send_task_and_ws_setting_core import send_task_content_to_ws
 from models.android_db_models import AContact
-from models.material_library_models import UserMaterialLibrary
+from models.material_library_models import MaterialLibraryUser
 from models.production_consumption_models import ConsumptionTask, ConsumptionStatistic, \
     ConsumptionTaskStream
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
@@ -109,7 +109,7 @@ def add_task_to_consumption_task(uqr_info, um_lib, user_id, task_type, task_rele
                                  message_said_username_list=None):
     if not isinstance(uqr_info, UserQunRelateInfo):
         raise TypeError
-    if not isinstance(um_lib, UserMaterialLibrary):
+    if not isinstance(um_lib, MaterialLibraryUser):
         raise TypeError
 
     c_task = ConsumptionTask()
