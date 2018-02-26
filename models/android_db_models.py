@@ -89,7 +89,6 @@ class AContact(db.Model):
     chatroom_flag = db.Column(db.Boolean, index=True, nullable=False, default=0)
     verify_flag = db.Column(db.Boolean, index=True, nullable=False, default=0)
     contact_label_ids = db.Column(db.String(256), index=True, nullable=False, default="")
-    type = db.Column(db.Integer, index=True, nullable=False)
     show_head = db.Column(db.BigInteger)
     lvbuff = db.Column(db.BLOB)
 
@@ -114,6 +113,7 @@ class AFriend(db.Model):
     con_remark = db.Column(db.String(64), index=True, nullable=False, default="")
     con_remark_py_full = db.Column(db.String(256), index=True, nullable=False, default="")
     con_remark_py_short = db.Column(db.String(64), index=True, nullable=False, default="")
+    type = db.Column(db.Integer, index=True, nullable=False)
 
     create_time = db.Column(db.DateTime, index=True, nullable=False)
     update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
