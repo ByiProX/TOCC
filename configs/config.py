@@ -28,36 +28,36 @@ class Config:
 class ProductionConfig(Config):
     ABS_PATH = './assets'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/WinnerWinnerRobot'
+        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/YACA'
     SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/cia'}
 
 
 class DevelopmentConfig(Config):
     ABS_PATH = './assets'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/DevWinnerWinnerRobot'
+        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/YACADev'
     SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/cia'}
 
 
 class TestConfig(Config):
     ABS_PATH = './assets'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/TestWinnerWinnerRobot'
+        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/YACATest'
     SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/cia'}
 
 
-class WenFaDevelopmentConfig(Config):
-    ABS_PATH = './assets'
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URI') or 'mysql+pymysql://winner_robot:winnerwinnerrobot0134@127.0.0.1/DevWinnerWinnerRobot'
-    SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://winner_robot:winnerwinnerrobot0134@127.0.0.1/cia'}
+# class WenFaDevelopmentConfig(Config):
+#     ABS_PATH = './assets'
+#     SQLALCHEMY_DATABASE_URI = os.environ.get(
+#         'DATABASE_URI') or 'mysql+pymysql://winner_robot:winnerwinnerrobot0134@127.0.0.1/DevWinnerWinnerRobot'
+#     SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://winner_robot:winnerwinnerrobot0134@127.0.0.1/cia'}
 
 
 config_map = {
     'production': ProductionConfig,
     'dev': DevelopmentConfig,
     'test': TestConfig,
-    'zwf_dev': WenFaDevelopmentConfig
+    # 'zwf_dev': WenFaDevelopmentConfig
 }
 
 # print("---------------------------")
@@ -117,7 +117,9 @@ elif config_name_s == 't':
     config_name = 'test'
 elif config_name_s == 'z':
     print("使用文法的本地环境进行测试")
+    print("目前没有该环境")
     config_name = 'zwf_dev'
+    raise NotImplementedError
 else:
     raise ValueError
 
@@ -126,6 +128,7 @@ app.config.from_object(config_map[config_name])
 config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
+# TODO 此处应换为新公众号的数值
 APP_ID = 'wxc8b40fcec9626528'
 APP_SECRET = '6e63c26d856f7ecb1779f24ab2fc08f4'
 
