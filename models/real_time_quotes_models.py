@@ -41,11 +41,13 @@ class RealTimeQuotesDefaultMaterialRelate(db.Model):
     send_seq = db.Column(db.Integer, index=True, nullable=False)
 
 
-class RealTimeQuotesDSUQBRelate(db.Model):
+class RealTimeQuotesDSUserRelate(db.Model):
     """
-    每条规则与群的联结
+    每条规则与用户的联结
     """
-    __tablename__ = "real_time_quotes_ds_uqb_relate"
+    __tablename__ = "real_time_quotes_ds_user_relate"
     rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     ds_id = db.Column(db.BigInteger, index=True, nullable=False)
-    uqb_rid = db.Column(db.BigInteger, index=True, nullable=False)
+    user_id = db.Column(db.BigInteger, index=True, nullable=False)
+
+    create_time = db.Column(db.DateTime, index=True, nullable=False)
