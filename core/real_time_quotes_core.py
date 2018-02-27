@@ -40,7 +40,7 @@ def switch_func_real_time_quotes(user_info, switch):
                 gm_rule.is_take_effect = choose
                 db.session.merge(gm_rule)
 
-            user_info.func_auto_reply = choose
+            user_info.func_real_time_quotes = choose
             db.session.merge(user_info)
             db.session.commit()
             GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"] = True
