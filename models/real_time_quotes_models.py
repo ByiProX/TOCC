@@ -51,7 +51,7 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
     # 24 小时成交额
     vol = db.Column(db.DECIMAL(30, 15), index = True, nullable = False)
 
-    def __init__(self, symbol, coin_name, coin_name_cn, coin_id, available_supply, change1d, change7d, change1h, price, volume_ex, marketcap):
+    def __init__(self, symbol, coin_name, coin_name_cn, coin_id, available_supply, change1d, change7d, change1h, price, volume_ex, marketcap, suggest_ex1, suggest_ex2, suggest_ex1_url, suggest_ex2_url):
         self.symbol = symbol
         self.coin_name = coin_name
         self.coin_name_cn = coin_name_cn
@@ -65,10 +65,10 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
         self.volume_ex = volume_ex
         self.marketcap = marketcap
         self.create_time = datetime.now()
-        self.suggest_ex1 = u""
-        self.suggest_ex2 = u""
-        self.suggest_ex1_url = u""
-        self.suggest_ex2_url = u""
+        self.suggest_ex1 = suggest_ex1
+        self.suggest_ex2 = suggest_ex2
+        self.suggest_ex1_url = suggest_ex1_url
+        self.suggest_ex2_url = suggest_ex2_url
         self.is_integral = True
 
         self.open = 0
