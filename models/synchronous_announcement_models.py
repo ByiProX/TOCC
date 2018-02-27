@@ -9,6 +9,8 @@ class SynchronousAnnouncementDefaultSettingInfo(db.Model):
     """
     __tablename__ = "synchronous_announcement_default_setting_info"
     ds_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    platform_name = db.Column(db.String(16), unique=True, index=True, nullable=False)
+    platform_icon = db.Column(db.String(1024))
 
     create_time = db.Column(db.DateTime, index=True, nullable=False)
 
@@ -41,14 +43,16 @@ class SynchronousAnnouncementDefaultMaterialRelate(db.Model):
     send_seq = db.Column(db.Integer, index=True, nullable=False)
 
 
-class SynchronousAnnouncementDSUQBRelate(db.Model):
+class SynchronousAnnouncementDSUserRelate(db.Model):
     """
-    每条规则与群的联结
+    每条规则与用户的联结
     """
-    __tablename__ = "synchronous_announcement_ds_uqb_relate"
+    __tablename__ = "synchronous_announcement_ds_user_relate"
     rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     ds_id = db.Column(db.BigInteger, index=True, nullable=False)
-    uqb_rid = db.Column(db.BigInteger, index=True, nullable=False)
+    user_id = db.Column(db.BigInteger, index=True, nullable=False)
+
+    create_time = db.Column(db.DateTime, index=True, nullable=False)
 
 
 class BlockCCCrawlNotice(db.Model):
@@ -64,4 +68,4 @@ class BlockCCCrawlNotice(db.Model):
     description = db.Column(db.String(2048), index=True, nullable=False)
     timestamp = db.Column(db.BigInteger, index=True, nullable=False)
     updatedAt = db.Column(db.String(64), index=True, nullable=False)
-    is_handled = db.Column(db.Boolean, index=True,nullable=False)
+    is_handled = db.Column(db.Boolean, index=True, nullable=False)
