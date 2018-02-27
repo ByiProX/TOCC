@@ -40,20 +40,24 @@ def app_get_rt_quotes_list_and_status():
     example = [
         {
             "coin_id": 1,
-            "coin_name": "比特币"
+            "coin_name": "比特币",
+            "logo": "http://"
         },
         {
             "coin_id": 2,
-            "coin_name": "以太坊"
+            "coin_name": "以太坊",
+            "logo": "http://"
         },
         {
             "coin_id": 3,
-            "coin_name": "火币"
+            "coin_name": "火币",
+            "logo": "http://"
         },
     ]
+    example_func = True
 
     if status == SUCCESS:
-        return make_response(SUCCESS, coin_list=example)
+        return make_response(SUCCESS, coin_list=example, func_real_time_quotes=example_func)
     else:
         return make_response(status)
 
@@ -73,22 +77,18 @@ def app_get_rt_quotes_preview():
 
     example = {
         "coin_id": coin_id,
-        "coin_name": "比特币",
+        "name": 'BTC-比特币',
+        "logo": './assets/imgs/logo.png',
         "keyword_list": ["BTC", "btc", "比特币"],
-        "reply":
-            """
-            比特币的当前价格为：￥11234.00
-            当前市值：￥123亿
-            市值排名：第1名
-            流通数量：￥1234万
-            推荐交易所：比特交易网
-            24小时变化：-2.53%
-            24小时成交额：￥124万
-            【友问币答 2018-02-27 13:46:00】
-            """
+        "price": '64634',
+        "all_price": '100921亿',
+        "rank": '第1名',
+        "coin_num": '3011万',
+        "add_rate": '+5.73%',
+        "change_num": '500万'
     }
 
     if status == SUCCESS:
-        return make_response(SUCCESS, coin_list=example)
+        return make_response(SUCCESS, coin=example)
     else:
         return make_response(status)

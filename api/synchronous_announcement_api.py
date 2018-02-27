@@ -42,22 +42,26 @@ def app_get_s_announcement_list_and_status():
         {
             "platform_id": 1,
             "platform_name": "比特交易网",
+            "logo": "http://",
             "is_take_effect": True
         },
         {
             "platform_id": 2,
             "platform_name": "库币网",
+            "logo": "http://",
             "is_take_effect": False
         },
         {
             "platform_id": 3,
             "platform_name": "币交易",
+            "logo": "http://",
             "is_take_effect": True
         },
     ]
+    example_func = True
 
     if status == SUCCESS:
-        return make_response(SUCCESS, platform_list=example)
+        return make_response(SUCCESS, platform_list=example, func_synchronous_announcement=example_func)
     else:
         return make_response(status)
 
@@ -67,6 +71,10 @@ def app_switch_a_s_announcement_effect():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
+
+    platform_id = request.json.get('platform_id')
+    if not platform_id:
+        return make_response(ERR_PARAM_SET)
 
     switch = request.json.get('switch')
     if not (switch is True or switch is False):
