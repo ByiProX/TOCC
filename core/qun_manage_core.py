@@ -7,6 +7,7 @@ from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE
+from core.welcome_message_core import generate_welcome_message_c_task_into_new_qun
 from models.android_db_models import AContact, AChatroom, AMember
 from models.qun_friend_models import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
 from models.user_bot_models import UserInfo, UserBotRelateInfo, BotInfo
@@ -343,6 +344,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
         db.session.add(uqbr_info)
         db.session.commit()
         logger.info(u"绑定群的四个关系. uqbr_id: %s." % uqbr_info.rid)
+        generate_welcome_message_c_task_into_new_qun(uqr_info, user_id, bot_info.username)
     return SUCCESS
 
 

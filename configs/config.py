@@ -217,7 +217,8 @@ CONSUMPTION_TASK_TYPE = {"batch_sending_task": 1,
                          "daily_bonus": 3,
                          "welcome_message": 4,
                          "real_time_quotes": 5,
-                         "synchronous_announcement": 6}
+                         "synchronous_announcement": 6,
+                         "instruction_when_into_a_qun": 7}
 
 # 发送内容的类型；1为文字；2为图片；3为链接；4为文件；5为小程序；6为公众号；7为视频；8为语音
 TASK_SEND_TYPE = {
