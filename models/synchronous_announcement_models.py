@@ -51,7 +51,7 @@ class SynchronousAnnouncementDSUQBRelate(db.Model):
     uqb_rid = db.Column(db.BigInteger, index=True, nullable=False)
 
 
-class BlockCCCrawlData(db.Model):
+class BlockCCCrawlNotice(db.Model):
     __tablename__ = "block_cc_crawl_notice"
     aid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     uid = db.Column(db.String(64), index=True, nullable=False)
