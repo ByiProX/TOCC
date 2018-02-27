@@ -52,7 +52,8 @@ def switch_func_auto_reply(user_info, switch):
                 db.session.merge(ar_setting_info)
 
             gm_rule_list = db.session.query(GlobalMatchingRule).filter(
-                GlobalMatchingRule.user_id == user_info.user_id).all()
+                GlobalMatchingRule.user_id == user_info.user_id,
+                GlobalMatchingRule.task_type == CONSUMPTION_TASK_TYPE['auto_reply']).all()
             for gm_rule in gm_rule_list:
                 gm_rule.is_take_effect = choose
                 db.session.merge(gm_rule)
@@ -310,7 +311,7 @@ def update_a_tuto_reply_setting(user_info, chatroom_list, message_list, keyword_
     if status == SUCCESS:
         logger.debug(u"成功删除之前的设置.")
     else:
-        logger.error(u"删除失败，不进行任务建立. setting_id: %s." % (setting_id))
+        logger.error(u"删除失败，不进行任务建立. setting_id: %s." % setting_id)
         return status
     status = create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list)
     if status == SUCCESS:
@@ -329,7 +330,8 @@ def activate_rule_and_add_task_to_consumption_task(ar_setting_id, message_chatro
 
     valid_chatroom_list = []
     uqr_info = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == ar_setting_info.user_id,
-                                                          UserQunRelateInfo.chatroomname == message_chatroomname).first()
+                                                          UserQunRelateInfo.chatroomname == message_chatroomname).\
+        first()
     if not uqr_info:
         logger.error("没有属于该用户的该群")
         return ERR_WRONG_USER_ITEM

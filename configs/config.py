@@ -212,7 +212,12 @@ ERROR_CODE[INFO_NO_USED_BOT] = {'discription': '该用户目前无正在使用�
 TOKEN_EXPIRED_THRESHOLD = 365
 
 # consumption类型
-CONSUMPTION_TASK_TYPE = {"batch_sending_task": 1, "auto_reply": 2, "daily_bonus": 3, "welcome_message": 4}
+CONSUMPTION_TASK_TYPE = {"batch_sending_task": 1,
+                         "auto_reply": 2,
+                         "daily_bonus": 3,
+                         "welcome_message": 4,
+                         "real_time_quotes": 5,
+                         "synchronous_announcement": 6}
 
 # 发送内容的类型；1为文字；2为图片；3为链接；4为文件；5为小程序；6为公众号；7为视频；8为语音
 TASK_SEND_TYPE = {
