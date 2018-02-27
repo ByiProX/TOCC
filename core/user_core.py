@@ -276,6 +276,8 @@ def cal_user_basic_page_info(user_info):
         res['user_func'].setdefault('func_sign', user_info.func_qun_sign)
         res['user_func'].setdefault('func_reply', user_info.func_auto_reply)
         res['user_func'].setdefault('func_welcome', user_info.func_welcome_message)
+        res['user_func'].setdefault('func_real_time_quotes', user_info.func_real_time_quotes)
+        res['user_func'].setdefault('func_synchronous_announcement', user_info.func_synchronous_announcement)
         logger.info(u"返回有机器人时群组列表. user_id: %s." % user_info.user_id)
         return SUCCESS, res
 
