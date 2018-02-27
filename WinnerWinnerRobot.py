@@ -17,7 +17,7 @@ import models
 import api
 import configs
 
-app.register_blueprint(main_api, url_prefix='/winner_api')
+app.register_blueprint(main_api, url_prefix='/yaca_api')
 
 models.import_str = ""
 api.api_str = ""
