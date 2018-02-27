@@ -28,7 +28,7 @@ def app_switch_func_real_time_quotes():
         return make_response(status)
 
 
-@main_api.route('get_rt_quotes_list_and_status', methods=['POST'])
+@main_api.route('/get_rt_quotes_list_and_status', methods=['POST'])
 def app_get_rt_quotes_list_and_status():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
@@ -62,7 +62,7 @@ def app_get_rt_quotes_list_and_status():
         return make_response(status)
 
 
-@main_api.route('get_rt_quotes_preview', methods=['POST'])
+@main_api.route('/get_rt_quotes_preview', methods=['POST'])
 def app_get_rt_quotes_preview():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:

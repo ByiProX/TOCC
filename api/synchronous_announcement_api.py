@@ -29,7 +29,7 @@ def app_switch_func_synchronous_announcement():
         return make_response(status)
 
 
-@main_api.route('get_s_announcement_list_and_status', methods=['POST'])
+@main_api.route('/get_s_announcement_list_and_status', methods=['POST'])
 def app_get_s_announcement_list_and_status():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
@@ -66,7 +66,7 @@ def app_get_s_announcement_list_and_status():
         return make_response(status)
 
 
-@main_api.route('switch_a_s_announcement_effect', methods=['POST'])
+@main_api.route('/switch_a_s_announcement_effect', methods=['POST'])
 def app_switch_a_s_announcement_effect():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
