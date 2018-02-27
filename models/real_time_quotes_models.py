@@ -11,11 +11,11 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
     __tablename__ = "real_time_quotes_default_setting_info"
     ds_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     # 简称
-    symbol = db.Column(db.String(16), unique = True, index = True, nullable = False)
+    symbol = db.Column(db.String(16), unique=True, index=True, nullable=False)
     # 全称
     coin_name = db.Column(db.String(64), index = True, nullable = False)
     # 中文名
-    coin_name_cn = db.Column(db.String(32), index = True, nullable = False)
+    coin_name_cn = db.Column(db.String(32), index=True, nullable=False)
     coin_icon = db.Column(db.String(1024))
     # 24 小时涨幅
     change1d = db.Column(db.DECIMAL(10, 2), index = True, nullable = False)
@@ -23,13 +23,13 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
     change1h = db.Column(db.DECIMAL(10, 2), index = True, nullable = False)
     change7d = db.Column(db.DECIMAL(10, 2), index = True, nullable = False)
     # 当前市值
-    marketcap = db.Column(db.DECIMAL(30, 15), index = True, nullable = False)
+    marketcap = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
     # 当前币数量
-    available_supply = db.Column(db.DECIMAL(30, 15), index = True, nullable = False)
+    available_supply = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
     # 当前交易价
-    price = db.Column(db.DECIMAL(30, 15), index = True, nullable = False)
+    price = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
     # 交易量
-    volume_ex = db.Column(db.DECIMAL(30, 15), index = True, nullable = False)
+    volume_ex = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
 
     # 推荐交易所
     suggest_ex1 = db.Column(db.String(64))
@@ -37,21 +37,22 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
     suggest_ex1_url = db.Column(db.String(1024))
     suggest_ex2_url = db.Column(db.String(1024))
     # 数据完整性
-    is_integral = db.Column(db.Boolean, index = True, nullable = False)
+    is_integral = db.Column(db.Boolean, index=True, nullable=False)
 
     create_time = db.Column(db.DateTime, index=True, nullable=False)
 
     # deprecated
     # 排名
-    rank = db.Column(db.Integer, index = True, nullable = False)
+    rank = db.Column(db.Integer, index=True, nullable=False)
     # 前推 24 小时交易价
-    open = db.Column(db.DECIMAL(30, 15), index = True, nullable = False)
+    open = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
     # 当前交易价
-    close = db.Column(db.DECIMAL(30, 15), index = True, nullable = False)
+    close = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
     # 24 小时成交额
-    vol = db.Column(db.DECIMAL(30, 15), index = True, nullable = False)
+    vol = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
 
-    def __init__(self, symbol, coin_name, coin_name_cn, coin_id, available_supply, change1d, change7d, change1h, price, volume_ex, marketcap, suggest_ex1, suggest_ex2, suggest_ex1_url, suggest_ex2_url):
+    def __init__(self, symbol, coin_name, coin_name_cn, coin_id, available_supply, change1d, change7d, change1h, price,
+                 volume_ex, marketcap, suggest_ex1, suggest_ex2, suggest_ex1_url, suggest_ex2_url):
         self.symbol = symbol
         self.coin_name = coin_name
         self.coin_name_cn = coin_name_cn

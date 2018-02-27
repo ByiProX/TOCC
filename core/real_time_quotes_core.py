@@ -8,7 +8,8 @@ from configs.config import ERR_WRONG_FUNC_STATUS, db, SUCCESS, ERR_WRONG_ITEM, C
     ERR_WRONG_USER_ITEM
 from models.production_consumption_models import ConsumptionTask
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
-from models.real_time_quotes_models import RealTimeQuotesDSUserRelate, RealTimeQuotesDefaultSettingInfo
+from models.real_time_quotes_models import RealTimeQuotesDSUserRelate, RealTimeQuotesDefaultSettingInfo, \
+    RealTimeQuotesDefaultKeywordRelateInfo
 from models.user_bot_models import UserBotRelateInfo, BotInfo
 from utils.u_str_unicode import str_to_unicode
 
@@ -50,6 +51,49 @@ def switch_func_real_time_quotes(user_info, switch):
         db.session.commit()
 
     return SUCCESS
+
+
+def get_rt_quotes_list_and_status(user_info):
+    # FIXME 此处应按照个人读取，而不应该所有人读取相同的结果
+    # 因为目前进度比较急，所以直接读取全部人的结果
+    ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).all()
+
+    res = []
+    for ds_info in ds_info_list:
+        res_dict = {}
+        res_dict.setdefault("coin_id", ds_info.ds_id)
+        res_dict.setdefault("coin_name", ds_info.coin_name)
+        res_dict.setdefault("logo", ds_info.coin_icon)
+        res.append(res_dict)
+    return SUCCESS, res, user_info.func_real_time_quotes
+
+
+def get_rt_quotes_preview(coin_id):
+    ds_info = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
+        RealTimeQuotesDefaultSettingInfo.ds_id == coin_id).first()
+    if not ds_info:
+        logger.error(u"没有对应的币号. coin_id: %s." % coin_id)
+        return ERR_WRONG_ITEM, None
+
+    res = {}
+    res.setdefault("coin_id", coin_id)
+    res.setdefault("name", ds_info.coin_name)
+    res.setdefault("logo", ds_info.coin_icon)
+    res.setdefault("price", ds_info.price)
+    res.setdefault("all_price", ds_info.marketcap)
+    res.setdefault("rank", ds_info.rank)
+    res.setdefault("coin_num", ds_info.available_supply)
+    res.setdefault("add_rate", ds_info.change1d)
+    res.setdefault("change_num", ds_info.volume_ex)
+    res.setdefault("keyword_list", [])
+
+    ds_keyword_list = db.session.query(RealTimeQuotesDefaultKeywordRelateInfo).filter(
+        RealTimeQuotesDefaultKeywordRelateInfo.ds_id == coin_id).all()
+
+    for ds_keyword_info in ds_keyword_list:
+        res["keyword_list"].append(ds_keyword_info.keyword)
+
+    return SUCCESS, res
 
 
 def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
