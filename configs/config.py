@@ -137,6 +137,7 @@ main_api = Blueprint('api', __name__)
 # 生成所有任务的循环和发送所有任务的循环所需要用的时间
 PRODUCTION_CIRCLE_INTERVAL = 1
 CONSUMPTION_CIRCLE_INTERVAL = 1
+CRAWLER_CIRCLE_INTERVAL = 1
 
 # 错误代码
 ERROR_CODE = dict()

@@ -335,8 +335,10 @@ def check_whether_message_is_add_friend(message_analysis):
         # add friend
         is_add_friend = True
         user_username = message_analysis.real_talker
-        a_contact = db.session.query(AContact).filter(AContact.username == user_username).first()
         bot_info = db.session.query(BotInfo).filter(BotInfo.username == message_analysis.username).first()
+        if not bot_info:
+            return is_add_friend
+        a_contact = db.session.query(AContact).filter(AContact.username == user_username).first()
         logger.info(u"发现加bot好友用户. username: %s." % user_username)
         _bind_bot_success(a_contact.nickname, user_username, bot_info)
     return is_add_friend
