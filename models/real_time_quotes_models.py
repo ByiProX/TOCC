@@ -13,15 +13,15 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
     # 简称
     symbol = db.Column(db.String(16), unique = True, index = True, nullable = False)
     # 全称
-    coin_name = db.Column(db.String(16), index = True, nullable = False)
+    coin_name = db.Column(db.String(64), index = True, nullable = False)
     # 中文名
     coin_name_cn = db.Column(db.String(32), index = True, nullable = False)
     coin_icon = db.Column(db.String(1024))
     # 24 小时涨幅
-    change1d = db.Column(db.DECIMAL(3, 2), index = True, nullable = False)
+    change1d = db.Column(db.DECIMAL(10, 2), index = True, nullable = False)
 
-    change1h = db.Column(db.DECIMAL(3, 2), index = True, nullable = False)
-    change7d = db.Column(db.DECIMAL(3, 2), index = True, nullable = False)
+    change1h = db.Column(db.DECIMAL(10, 2), index = True, nullable = False)
+    change7d = db.Column(db.DECIMAL(10, 2), index = True, nullable = False)
     # 当前市值
     marketcap = db.Column(db.DECIMAL(30, 15), index = True, nullable = False)
     # 当前币数量
