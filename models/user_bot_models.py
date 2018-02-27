@@ -43,6 +43,8 @@ class UserInfo(db.Model):
     func_qun_sign = db.Column(db.Boolean, index=True, nullable=False)
     func_auto_reply = db.Column(db.Boolean, index=True, nullable=False)
     func_welcome_message = db.Column(db.Boolean, index=True, nullable=False)
+    func_real_time_quotes = db.Column(db.Boolean, index=True, nullable=False)
+    func_synchronous_announcement = db.Column(db.Boolean, index=True, nullable=False)
 
     def to_dict(self):
         res = model_to_dict(self, self.__class__)

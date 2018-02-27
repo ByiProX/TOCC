@@ -191,6 +191,9 @@ ERROR_CODE[ERR_SET_LENGTH_WRONG] = {'discription': '设置内容的长度不符'
 # 功能未开启，无法使用
 ERR_WRONG_FUNC_STATUS = 'err_wrong_func_status'
 ERROR_CODE[ERR_WRONG_FUNC_STATUS] = {'discription': '功能未开启，无法使用', 'status_code': -15}
+# 功能未实现，先留出口
+ERR_NOT_IMPLEMENTED = 'err_not_implemented'
+ERROR_CODE[ERR_NOT_IMPLEMENTED] = {'discription': '功能未实现，先留出口', 'status_code': -16}
 
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
