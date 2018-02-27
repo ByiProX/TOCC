@@ -19,10 +19,10 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
     # 排名
     rank = db.Column(db.Integer, index = True, nullable = False)
     # 24 小时涨幅
-    change1d = db.Column(db.DECIMAL(1, 3), index = True, nullable = False)
+    change1d = db.Column(db.DECIMAL(3, 3), index = True, nullable = False)
 
-    change1h = db.Column(db.DECIMAL(1, 3), index = True, nullable = False)
-    change7d = db.Column(db.DECIMAL(1, 3), index = True, nullable = False)
+    change1h = db.Column(db.DECIMAL(3, 3), index = True, nullable = False)
+    change7d = db.Column(db.DECIMAL(3, 3), index = True, nullable = False)
     # 当前市值
     marketcap = db.Column(db.DECIMAL(20, 20), index = True, nullable = False)
     # 当前币数量

@@ -52,7 +52,7 @@ class SynchronousAnnouncementDSUQBRelate(db.Model):
 
 
 class BlockCCCrawlData(db.Model):
-    __tablename__ = "block_cc_crawl_data"
+    __tablename__ = "block_cc_crawl_notice"
     aid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     uid = db.Column(db.String(64), index=True, nullable=False)
     lang = db.Column(db.String(16), index=True, nullable=False)
@@ -60,7 +60,8 @@ class BlockCCCrawlData(db.Model):
     createdAt = db.Column(db.String(64), index=True, nullable=False)
     zh_name = db.Column(db.String(64), index=True, nullable=False)
     from_source = db.Column(db.String(64), index=True, nullable=False)
-    title = db.Column(db.String(256), index=True, nullable=False)
+    title = db.Column(db.String(512), index=True, nullable=False)
     description = db.Column(db.String(2048), index=True, nullable=False)
     timestamp = db.Column(db.BigInteger, index=True, nullable=False)
     updatedAt = db.Column(db.String(64), index=True, nullable=False)
+    is_handled = db.Column(db.Boolean, index=True,nullable=False)
