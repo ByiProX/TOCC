@@ -232,8 +232,11 @@ TASK_SEND_TYPE = {
 }
 
 # 全局匹配规则更新标记，每次更新规则库需将锁打开
-GLOBAL_MATCHING_RULES_UPDATE_FLAG = dict()
-GLOBAL_MATCHING_RULES_UPDATE_FLAG.setdefault("global_matching_rules_update_flag", True)
+GLOBAL_RULES_UPDATE_FLAG = dict()
+GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG = "global_user_matching_rules_update_flag"
+GLOBAL_RULES_UPDATE_FLAG.setdefault(GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, True)
+GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG = "global_matching_default_rules_update_flag"
+GLOBAL_RULES_UPDATE_FLAG.setdefault(GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, True)
 
 MSG_TYPE_UNKNOWN = -1  # 未知类型
 MSG_TYPE_TXT = 1

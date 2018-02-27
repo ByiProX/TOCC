@@ -4,8 +4,8 @@ import logging
 from copy import deepcopy
 from datetime import datetime
 
-from configs.config import db, ERR_WRONG_USER_ITEM, SUCCESS, GLOBAL_MATCHING_RULES_UPDATE_FLAG, ERR_WRONG_FUNC_STATUS, \
-    ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE
+from configs.config import db, ERR_WRONG_USER_ITEM, SUCCESS, GLOBAL_RULES_UPDATE_FLAG, ERR_WRONG_FUNC_STATUS, \
+    ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG
 from core.consumption_core import add_task_to_consumption_task
 from core.material_library_core import generate_material_into_frontend_by_material_id, \
     analysis_frontend_material_and_put_into_mysql
@@ -61,7 +61,7 @@ def switch_func_auto_reply(user_info, switch):
             user_info.func_auto_reply = choose
             db.session.merge(user_info)
             db.session.commit()
-            GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"] = True
+            GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = True
 
     return SUCCESS
 
@@ -200,7 +200,7 @@ def delete_a_auto_reply_setting(user_info, setting_id):
     for gm_rule in gm_rule_list:
         db.session.delete(gm_rule)
     db.session.commit()
-    GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"] = True
+    GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = True
     return SUCCESS
 
 
@@ -298,7 +298,7 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
             u_flag = True
             _add_rule_to_matching_rule(uqr_info_iter, keyword_iter, ar_setting_info)
     if u_flag:
-        GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"] = True
+        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = True
     return SUCCESS
 
 
