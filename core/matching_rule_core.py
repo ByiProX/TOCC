@@ -6,6 +6,7 @@ from sqlalchemy import desc
 from configs.config import db, CONSUMPTION_TASK_TYPE, SUCCESS
 from core.auto_reply_core import activate_rule_and_add_task_to_consumption_task
 from models.matching_rule_models import GlobalMatchingRule, MatchingRuleInMemory
+from models.real_time_quotes_models import RealTimeQuotesDefaultKeywordRelateInfo
 from utils.u_str_unicode import str_to_unicode
 
 logger = logging.getLogger('main')
@@ -83,3 +84,22 @@ def match_message_by_rule(gm_rule_dict, message_analysis):
         return True
     else:
         return status_flag
+
+
+def get_gm_default_rule_dict():
+    """
+    获得规则
+    :return:
+    """
+
+    gm_default_rule_dict = {}
+    gm_default_rule_dict.setdefault("is_full_match", {})
+    gm_default_rule_dict.setdefault("is_not_full_match", {})
+
+    qr_quotes_dkr_info_list = db.session.query(RealTimeQuotesDefaultKeywordRelateInfo).all()
+    for qr_quotes_dkr_info in qr_quotes_dkr_info_list:
+        if qr_quotes_dkr_info.is_full_match:
+            gm_default_rule_dict["is_full_match"].setdefault(qr_quotes_dkr_info.keyword, qr_quotes_dkr_info.ds_id)
+        else:
+            gm_default_rule_dict["is_not_full_match"].setdefault(qr_quotes_dkr_info.keyword, qr_quotes_dkr_info.ds_id)
+    return gm_default_rule_dict

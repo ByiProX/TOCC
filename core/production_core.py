@@ -10,10 +10,12 @@ import logging
 from datetime import datetime, timedelta
 from sqlalchemy import desc
 
-from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, GLOBAL_MATCHING_RULES_UPDATE_FLAG, MSG_TYPE_TXT, MSG_TYPE_SYS
-from core.matching_rule_core import get_gm_rule_dict, match_message_by_rule
+from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, GLOBAL_RULES_UPDATE_FLAG, MSG_TYPE_TXT, MSG_TYPE_SYS, \
+    GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
+from core.matching_rule_core import get_gm_rule_dict, match_message_by_rule, get_gm_default_rule_dict
 from core.message_core import analysis_and_save_a_message
 from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
+from core.real_time_quotes_core import match_message_by_coin_keyword
 from core.user_core import check_whether_message_is_add_friend
 from core.welcome_message_core import check_whether_message_is_friend_into_qun
 from models.android_db_models import AMessage
@@ -52,8 +54,14 @@ class ProductionThread(threading.Thread):
                 self.last_a_message_id = 0
                 self.last_a_message_create_time = datetime.now() - timedelta(days=365 * 10)
 
+        # 第一次读取用户设置词
         gm_rule_dict = get_gm_rule_dict()
-        GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"] = False
+        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
+
+        # 第一次读取统一设置词
+        gm_default_rule_dict = get_gm_default_rule_dict()
+        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
+
         while self.go_work:
             try:
                 circle_start_time = time.time()
@@ -62,9 +70,13 @@ class ProductionThread(threading.Thread):
                     order_by(AMessage.id).all()
 
                 # 每次循环时，如果全局锁发生变更，则重新读取规则
-                if GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"]:
+                if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
                     gm_rule_dict = get_gm_rule_dict()
-                    GLOBAL_MATCHING_RULES_UPDATE_FLAG["global_matching_rules_update_flag"] = False
+                    GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
+
+                if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
+                    gm_default_rule_dict = get_gm_default_rule_dict()
+                    GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
 
                 if len(message_list) != 0:
                     message_analysis_list = list()
@@ -105,9 +117,14 @@ class ProductionThread(threading.Thread):
 
                         # 根据规则和内容进行匹配，并生成任务
                         rule_status = match_message_by_rule(gm_rule_dict, message_analysis)
-                        if rule_status is True or rule_status is False:
+                        if rule_status is True:
                             continue
                         else:
+                            pass
+
+                        # 对内容进行判断，是否为查询比价的情况
+                        coin_price_status = match_message_by_coin_keyword(gm_default_rule_dict, message_analysis)
+                        if coin_price_status is True:
                             continue
 
                         # 处理完毕后将新情况存入
