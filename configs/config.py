@@ -129,8 +129,8 @@ config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
 # TODO 此处应换为新公众号的数值
-APP_ID = 'wxc8b40fcec9626528'
-APP_SECRET = '6e63c26d856f7ecb1779f24ab2fc08f4'
+APP_ID = 'wxc3bc48b4c40651fd'
+APP_SECRET = '959f45dbf812a5685f85ff572e76a671'
 
 main_api = Blueprint('api', __name__)
 

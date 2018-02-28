@@ -80,7 +80,8 @@ class ProductionThread(threading.Thread):
                     GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
 
                 # 这个是
-                for each_platform, whether_should_execute in GLOBAL_RULES_UPDATE_FLAG[GLOBAL_NOTICE_UPDATE_FLAG]:
+                for each_platform, whether_should_execute in GLOBAL_RULES_UPDATE_FLAG[
+                    GLOBAL_NOTICE_UPDATE_FLAG].items():
                     if whether_should_execute:
                         match_which_user_should_get_notice(each_platform)
                         GLOBAL_RULES_UPDATE_FLAG[GLOBAL_NOTICE_UPDATE_FLAG][each_platform] = False

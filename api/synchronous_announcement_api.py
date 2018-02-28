@@ -2,7 +2,8 @@
 
 import logging
 
-from core.synchronous_announcement_core import switch_func_synchronous_announcement, get_s_announcement_list_and_status
+from core.synchronous_announcement_core import switch_func_synchronous_announcement, get_s_announcement_list_and_status, \
+    switch_a_s_announcement_effect
 from flask import request
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api
@@ -89,7 +90,7 @@ def app_switch_a_s_announcement_effect():
     # status = SUCCESS
     # logger.error("ERR_NOT_IMPLEMENTED 功能未实现，先留出口")
 
-    status = app_switch_a_s_announcement_effect(user_info, platform_id, switch)
+    status = switch_a_s_announcement_effect(user_info, platform_id, switch)
 
     if status == SUCCESS:
         return make_response(SUCCESS)

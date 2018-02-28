@@ -36,16 +36,16 @@ def switch_func_synchronous_announcement(user_info, switch):
             sa_user_rel.user_id = user_info.user_id
             sa_user_rel.create_time = datetime.now()
             db.session.add(sa_user_rel)
-        user_info.func_real_time_quotes = True
+        user_info.func_synchronous_announcement = True
         db.session.commit()
     elif switch is False:
-        sa_user_rel_list = db.session.query(SynchronousAnnouncementDefaultSettingInfo).filter(
-            SynchronousAnnouncementDefaultSettingInfo.user_id == user_info.user_id).all()
+        sa_user_rel_list = db.session.query(SynchronousAnnouncementDSUserRelate).filter(
+            SynchronousAnnouncementDSUserRelate.user_id == user_info.user_id).all()
 
         for sa_user_rel in sa_user_rel_list:
             db.session.delete(sa_user_rel)
 
-        user_info.func_real_time_quotes = False
+        user_info.func_synchronous_announcement = False
         db.session.commit()
 
     return SUCCESS
@@ -101,9 +101,9 @@ def switch_a_s_announcement_effect(user_info, platform_id, switch):
         sa_user_rel.create_time = datetime.now()
         db.session.add(sa_user_rel)
     elif switch is False:
-        sa_user_rel = db.session.query(SynchronousAnnouncementDefaultSettingInfo).filter(
-            SynchronousAnnouncementDefaultSettingInfo.user_id == user_info.user_id,
-            SynchronousAnnouncementDefaultSettingInfo.ds_id == platform_id).first()
+        sa_user_rel = db.session.query(SynchronousAnnouncementDSUserRelate).filter(
+            SynchronousAnnouncementDSUserRelate.user_id == user_info.user_id,
+            SynchronousAnnouncementDSUserRelate.ds_id == platform_id).first()
 
         if not sa_user_rel:
             logger.error("不应没有该项目")
@@ -121,6 +121,7 @@ def match_which_user_should_get_notice(platform_name):
 
     if not sa_info:
         logger.critical(u"没有找到对应的平台. platform_name: %s." % platform_name)
+        return ERR_WRONG_ITEM
     ds_id = sa_info.ds_id
 
     # 读取更新的信息
