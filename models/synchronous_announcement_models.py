@@ -78,6 +78,6 @@ class BlockCCCrawlNotice(db.Model):
         self.updated_at = updated_at
         self.zh_name = zh_name
         self.from_source = from_source
-        self.title = title
-        self.description = description
+        self.title = title.strip()
+        self.description = description.strip()
         self.timestamp = timestamp
