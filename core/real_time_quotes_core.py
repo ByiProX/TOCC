@@ -79,12 +79,12 @@ def get_rt_quotes_preview(coin_id):
     res.setdefault("coin_id", coin_id)
     res.setdefault("name", ds_info.coin_name)
     res.setdefault("logo", ds_info.coin_icon)
-    res.setdefault("price", ds_info.price)
-    res.setdefault("all_price", ds_info.marketcap)
+    res.setdefault("price", ds_info.price.to_eng_string())
+    res.setdefault("all_price", ds_info.marketcap.to_eng_string())
     res.setdefault("rank", ds_info.rank)
-    res.setdefault("coin_num", ds_info.available_supply)
-    res.setdefault("add_rate", ds_info.change1d)
-    res.setdefault("change_num", ds_info.volume_ex)
+    res.setdefault("coin_num", ds_info.available_supply.to_eng_string())
+    res.setdefault("add_rate", ds_info.change1d.to_eng_string())
+    res.setdefault("change_num", ds_info.volume_ex.to_eng_string())
     res.setdefault("keyword_list", [])
 
     ds_keyword_list = db.session.query(RealTimeQuotesDefaultKeywordRelateInfo).filter(
