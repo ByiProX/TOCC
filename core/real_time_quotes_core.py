@@ -6,6 +6,7 @@ from datetime import datetime
 
 from configs.config import ERR_WRONG_FUNC_STATUS, db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, TASK_SEND_TYPE, \
     ERR_WRONG_USER_ITEM, GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
+from models.android_db_models import AContact
 from models.production_consumption_models import ConsumptionTask
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
 from models.real_time_quotes_models import RealTimeQuotesDSUserRelate, RealTimeQuotesDefaultSettingInfo, \
@@ -165,7 +166,14 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
 
             c_task.task_send_type = TASK_SEND_TYPE['text']
 
-            c_task.task_send_content = json.dumps({"text": message_said_username + u"这里是币的信息"})
+            a_contact = db.session.query(AContact).filter(AContact.username == message_said_username).first()
+            if not a_contact:
+                logger.error(u"无法找到该人名称")
+                nickname = u""
+            else:
+                nickname = str_to_unicode(a_contact.nickname)
+            res_text = u"@" + nickname + u" \n"
+            c_task.task_send_content = json.dumps({"text": res_text + u"这里是币的信息"})
 
             uqun_id = chatroom_relate_user_id_dict[rt_quotes_dsu_relate.user_id].uqun_id
 
