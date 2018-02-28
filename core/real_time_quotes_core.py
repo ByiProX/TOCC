@@ -9,8 +9,7 @@ from configs.config import ERR_WRONG_FUNC_STATUS, db, SUCCESS, ERR_WRONG_ITEM, C
 from models.android_db_models import AContact
 from models.production_consumption_models import ConsumptionTask
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
-from models.real_time_quotes_models import RealTimeQuotesDSUserRelate, RealTimeQuotesDefaultSettingInfo, \
-    RealTimeQuotesDefaultKeywordRelateInfo
+from models.real_time_quotes_models import RealTimeQuotesDSUserRelate, RealTimeQuotesDefaultSettingInfo
 from models.user_bot_models import UserBotRelateInfo, BotInfo
 from utils.u_transformat import str_to_unicode
 
@@ -117,8 +116,6 @@ def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
     message_text = message_text.upper()
     message_said_username = message_analysis.real_talker
 
-    print(message_text)
-    print(gm_default_rule_dict)
     if not message_said_username:
         raise ValueError("没有message_said_username")
 
