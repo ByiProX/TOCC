@@ -171,13 +171,13 @@ def match_which_user_should_get_notice(platform_name):
                     c_task.task_send_type = TASK_SEND_TYPE['text']
 
                     if len(wait_to_send_info.description) >= 20:
-                        res_text = "《" + wait_to_send_info.title + "》\n来源：" + wait_to_send_info.from_source + \
-                                   "\n\n" + wait_to_send_info.description[:17] + "...\n\n" + \
-                                   wait_to_send_info.origin_url + "\n" + str(datetime.now())
+                        res_text = u"《" + wait_to_send_info.title + u"》\n来源：" + wait_to_send_info.from_source + \
+                                   u"\n\n" + wait_to_send_info.description[:17] + u"...\n\n" + \
+                                   wait_to_send_info.origin_url + u"\n" + unicode(datetime.now())
                     else:
-                        res_text = "《" + wait_to_send_info.title + "》\n来源：" + wait_to_send_info.from_source + \
-                                   "\n\n" + wait_to_send_info.description + "\n\n" + \
-                                   wait_to_send_info.origin_url + "\n" + str(datetime.now())
+                        res_text = u"《" + wait_to_send_info.title + u"》\n来源：" + wait_to_send_info.from_source + \
+                                   u"\n\n" + wait_to_send_info.description + u"\n\n" + \
+                                   wait_to_send_info.origin_url + u"\n" + unicode(datetime.now())
 
                     c_task.task_send_content = json.dumps({"text": res_text})
                     c_task.bot_username = bot_username
