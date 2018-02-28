@@ -116,6 +116,8 @@ def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
     message_text = message_text.lower()
     message_said_username = message_analysis.real_talker
 
+    print(message_text)
+    print(gm_default_rule_dict)
     if not message_said_username:
         raise ValueError("没有message_said_username")
 
