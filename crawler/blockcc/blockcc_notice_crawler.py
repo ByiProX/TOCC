@@ -90,7 +90,8 @@ def update_notice_info():
             new_notice_dict[uid] = notice
 
         # 去重插新
-        old_notice_list = db.session.query(BlockCCCrawlNotice).order_by(BlockCCCrawlNotice.timestamp.desc()).limit(notice_size).all()
+        old_notice_list = db.session.query(BlockCCCrawlNotice).order_by(BlockCCCrawlNotice.timestamp.desc()).limit(notice_size * 10).all()
+        # old_notice_list = db.session.query(BlockCCCrawlNotice).all()
         old_notice_dict = {notice.uid: notice for notice in old_notice_list}
         old_notice_uid_set = set(old_notice_dict.keys())
         new_notice_uid_set = set(new_notice_dict.keys())
