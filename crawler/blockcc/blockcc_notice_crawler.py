@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+import logging
 import json
 from datetime import datetime
 
 import requests
 
-from configs.config import db
+from configs.config import db, GLOBAL_RULES_UPDATE_FLAG, GLOBAL_NOTICE_UPDATE_FLAG
 from models.synchronous_announcement_models import BlockCCCrawlNotice
+
+logger = logging.getLogger('main')
 
 headers = {
     "Host": "block.cc",
@@ -72,38 +75,43 @@ def update_notice_info():
     if len(notice_list) > 0:
         new_notice_dict = dict()
         for notice_json in notice_list:
-            uid = notice_json.get(u'_id')
-            lang = notice_json.get(u'lang')
-            origin_url = notice_json.get(u'originUrl')
-            created_at = notice_json.get(u'createdAt')
-            updated_at = notice_json.get(u'updatedAt')
-            zh_name = notice_json.get(u'zh_name')
-            from_source = notice_json.get(u'from')
-            title = notice_json.get(u'title')
-            description = notice_json.get(u'description')
+            uid = notice_json.get(u'_id', u'')
+            lang = notice_json.get(u'lang', u'')
+            origin_url = notice_json.get(u'originUrl', u'')
+            created_at = notice_json.get(u'createdAt', u'')
+            updated_at = notice_json.get(u'updatedAt', u'')
+            zh_name = notice_json.get(u'zh_name', u'')
+            from_source = notice_json.get(u'from', u'')
+            title = notice_json.get(u'title', u'')
+            description = notice_json.get(u'description', u'')
             timestamp = notice_json.get(u'timestamp')
 
             notice = BlockCCCrawlNotice(uid, lang, origin_url, created_at, updated_at, zh_name, from_source, title, description, timestamp)
             new_notice_dict[uid] = notice
 
         # 去重插新
-        old_notice_list = db.session.query(BlockCCCrawlNotice).limit(notice_size).order_by(BlockCCCrawlNotice.timestamp.desc()).all()
+        old_notice_list = db.session.query(BlockCCCrawlNotice).order_by(BlockCCCrawlNotice.timestamp.desc()).limit(notice_size).all()
         old_notice_dict = {notice.uid: notice for notice in old_notice_list}
         old_notice_uid_set = set(old_notice_dict.keys())
         new_notice_uid_set = set(new_notice_dict.keys())
         comm_notice_uid_set = new_notice_uid_set & old_notice_uid_set
         diff_notice_uid_set = new_notice_uid_set - old_notice_uid_set
         if len(diff_notice_uid_set) > 0:
-            # GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
-            pass
+            GLOBAL_RULES_UPDATE_FLAG[GLOBAL_NOTICE_UPDATE_FLAG]["blockcc"] = True
 
         for diff_notice_uid in diff_notice_uid_set:
             new_notice = new_notice_dict[diff_notice_uid]
+            new_notice.is_handled = False
             db.session.add(new_notice)
         for comm_notice_uid in comm_notice_uid_set:
             old_notice = old_notice_dict[comm_notice_uid]
             new_notice = new_notice_dict[comm_notice_uid]
             new_notice.ds_id = old_notice.ds_id
+            new_notice.is_handled = old_notice.is_handled
             db.session.merge(new_notice)
 
         db.session.commit()
+        logger.info(u"update_notice_info success")
+
+
+# update_notice_info()

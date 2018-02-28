@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
+import logging
 import json
 
 import requests
 
 
-# https://block.cc/api/v1/coin/list?page=0&size=5000
 from datetime import datetime
 
 from configs.config import db, GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
 from models.real_time_quotes_models import RealTimeQuotesDefaultSettingInfo
 from utils.u_transformat import str_to_decimal
 
+logger = logging.getLogger('main')
 
 headers = {
     "Host": "block.cc",
@@ -55,12 +56,10 @@ def update_coin_info():
     if len(coin_list) > 0:
         new_coin_dict = dict()
         for coin_json in coin_list:
-            coin_id = coin_json.get(u'id')
-            symbol = coin_json.get(u'symbol')
-            coin_name = coin_json.get(u'name')
-            coin_name_cn = coin_json.get(u'zhName')
-            if coin_name_cn is None:
-                coin_name_cn = u""
+            coin_id = coin_json.get(u'id', u'')
+            symbol = coin_json.get(u'symbol', u'')
+            coin_name = coin_json.get(u'name', u'')
+            coin_name_cn = coin_json.get(u'zhName', u'')
 
             available_supply = str_to_decimal(str(coin_json.get(u'available_supply')))
             change1d = str_to_decimal(str(coin_json.get(u'change1d')))
@@ -105,6 +104,7 @@ def update_coin_info():
             db.session.merge(new_coin)
 
         db.session.commit()
+        logger.info(u"update_coin_info success")
 
 
 # update_coin_info()
