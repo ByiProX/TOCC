@@ -94,6 +94,8 @@ class UserLogin:
                     self.user_info_up_to_date.func_qun_sign = False
                     self.user_info_up_to_date.func_auto_reply = False
                     self.user_info_up_to_date.func_welcome_message = False
+                    self.user_info_up_to_date.func_real_time_quotes = False
+                    self.user_info_up_to_date.func_synchronous_announcement = False
 
                     db.session.add(self.user_info_up_to_date)
                     db.session.commit()
@@ -293,6 +295,8 @@ def cal_user_basic_page_info(user_info):
         res['user_func'].setdefault('func_sign', False)
         res['user_func'].setdefault('func_reply', False)
         res['user_func'].setdefault('func_welcome', False)
+        res['user_func'].setdefault('func_real_time_quotes', False)
+        res['user_func'].setdefault('func_synchronous_announcement', False)
         logger.info(u"返回无机器人时群组列表. user_id: %s." % user_info.user_id)
         return INFO_NO_USED_BOT, res
 
