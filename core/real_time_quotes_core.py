@@ -113,7 +113,7 @@ def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
     is_match_coin_keyword = False
     message_chatroomname = message_analysis.talker
     message_text = str_to_unicode(message_analysis.real_content)
-    message_text = message_text.lower()
+    message_text = message_text.upper()
     message_said_username = message_analysis.real_talker
 
     print(message_text)
