@@ -58,7 +58,7 @@ class SynchronousAnnouncementDSUserRelate(db.Model):
 class BlockCCCrawlNotice(db.Model):
     __tablename__ = "block_cc_crawl_notice"
     aid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-    uid = db.Column(db.String(64), index=True, nullable=False)
+    uid = db.Column(db.String(64), unique=True, index=True, nullable=False)
     lang = db.Column(db.String(16), index=True, nullable=False)
     origin_url = db.Column(db.String(256), index=True, nullable=False)
     created_at = db.Column(db.String(64), index=True, nullable=False)
@@ -78,5 +78,6 @@ class BlockCCCrawlNotice(db.Model):
         self.updated_at = updated_at
         self.zh_name = zh_name
         self.from_source = from_source
+        self.title = title
         self.description = description
         self.timestamp = timestamp
