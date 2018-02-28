@@ -173,11 +173,11 @@ def match_which_user_should_get_notice(platform_name):
                     if len(wait_to_send_info.description) >= 105:
                         res_text = u"《" + wait_to_send_info.title + u"》\n来源：" + wait_to_send_info.from_source + \
                                    u"\n\n" + wait_to_send_info.description[:100] + u"...\n\n" + \
-                                   wait_to_send_info.origin_url + u"\n" + unicode(datetime.now())
+                                   wait_to_send_info.origin_url + u"\n" + unicode(datetime.now())[:19]
                     else:
                         res_text = u"《" + wait_to_send_info.title + u"》\n来源：" + wait_to_send_info.from_source + \
                                    u"\n\n" + wait_to_send_info.description + u"\n\n" + \
-                                   wait_to_send_info.origin_url + u"\n" + unicode(datetime.now())
+                                   wait_to_send_info.origin_url + u"\n" + unicode(datetime.now())[:19]
 
                     c_task.task_send_content = json.dumps({"text": res_text})
                     c_task.bot_username = bot_username
