@@ -11,11 +11,12 @@ from datetime import datetime, timedelta
 from sqlalchemy import desc
 
 from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, GLOBAL_RULES_UPDATE_FLAG, MSG_TYPE_TXT, MSG_TYPE_SYS, \
-    GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
+    GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, GLOBAL_NOTICE_UPDATE_FLAG
 from core.matching_rule_core import get_gm_rule_dict, match_message_by_rule, get_gm_default_rule_dict
 from core.message_core import analysis_and_save_a_message
 from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core.real_time_quotes_core import match_message_by_coin_keyword
+from core.synchronous_announcement_core import match_which_user_should_get_notice
 from core.user_core import check_whether_message_is_add_friend
 from core.welcome_message_core import check_whether_message_is_friend_into_qun
 from models.android_db_models import AMessage
@@ -77,6 +78,12 @@ class ProductionThread(threading.Thread):
                 if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
                     gm_default_rule_dict = get_gm_default_rule_dict()
                     GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
+
+                # 这个是
+                for each_platform, whether_should_execute in GLOBAL_RULES_UPDATE_FLAG[GLOBAL_NOTICE_UPDATE_FLAG]:
+                    if whether_should_execute:
+                        match_which_user_should_get_notice(each_platform)
+                        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_NOTICE_UPDATE_FLAG][each_platform] = False
 
                 if len(message_list) != 0:
                     message_analysis_list = list()

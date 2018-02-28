@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import json
 import logging
 
 from datetime import datetime
@@ -150,7 +150,7 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
 
             c_task.task_send_type = TASK_SEND_TYPE['text']
 
-            c_task.task_send_content = message_said_username + u"这里是币的信息"
+            c_task.task_send_content = json.dumps({"text": message_said_username + u"这里是币的信息"})
 
             uqun_id = chatroom_relate_user_id_dict[rt_quotes_dsu_relate.user_id].uqun_id
 
