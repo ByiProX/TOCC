@@ -87,11 +87,22 @@ def get_rt_quotes_preview(coin_id):
     res.setdefault("change_num", ds_info.volume_ex.to_eng_string())
     res.setdefault("keyword_list", [])
 
-    ds_keyword_list = db.session.query(RealTimeQuotesDefaultKeywordRelateInfo).filter(
-        RealTimeQuotesDefaultKeywordRelateInfo.ds_id == coin_id).all()
+    # # 目前先用主表来存储关键词
+    if ds_info.symbol:
+        res['keyword_list'].append(ds_info.symbol)
+    else:
+        pass
 
-    for ds_keyword_info in ds_keyword_list:
-        res["keyword_list"].append(ds_keyword_info.keyword)
+    if ds_info.coin_name_cn:
+        res['keyword_list'].append(ds_info.coin_name_cn)
+    else:
+        pass
+    #
+    # ds_keyword_list = db.session.query(RealTimeQuotesDefaultKeywordRelateInfo).filter(
+    #     RealTimeQuotesDefaultKeywordRelateInfo.ds_id == coin_id).all()
+    #
+    # for ds_keyword_info in ds_keyword_list:
+    #     res["keyword_list"].append(ds_keyword_info.keyword)
 
     return SUCCESS, res
 
