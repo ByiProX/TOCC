@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 
 from configs.config import ERR_WRONG_FUNC_STATUS, db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, TASK_SEND_TYPE, \
-    ERR_WRONG_USER_ITEM
+    ERR_WRONG_USER_ITEM, GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
 from models.production_consumption_models import ConsumptionTask
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
 from models.real_time_quotes_models import RealTimeQuotesDSUserRelate, RealTimeQuotesDefaultSettingInfo, \
@@ -40,6 +40,7 @@ def switch_func_real_time_quotes(user_info, switch):
             db.session.add(rt_quotes_dsu_rel)
         user_info.func_real_time_quotes = True
         db.session.commit()
+        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
     elif switch is False:
         rt_quotes_dsu_rel_list = db.session.query(RealTimeQuotesDSUserRelate).filter(
             RealTimeQuotesDSUserRelate.user_id == user_info.user_id).all()
@@ -49,6 +50,7 @@ def switch_func_real_time_quotes(user_info, switch):
 
         user_info.func_real_time_quotes = False
         db.session.commit()
+        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
 
     return SUCCESS
 
