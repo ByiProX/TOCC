@@ -1,0 +1,109 @@
+# -*- coding: utf-8 -*-
+import json
+from datetime import datetime
+
+import requests
+
+from configs.config import db
+from models.synchronous_announcement_models import BlockCCCrawlNotice
+
+headers = {
+    "Host": "block.cc",
+    "Connection": "keep-alive",
+    "Accept": "application/json, text/plain, */*",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36 encors/0.0.6",
+    "lan": "zh",
+    "DNT": 1,
+    "Referer": "https://block.cc/",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Cookie": "Hm_lvt_e5950dd990c06938d5c1010c07ba467c=1519713610; Hm_lpvt_e5950dd990c06938d5c1010c07ba467c=1519732238"
+}
+
+
+# def get_total_notice_list():
+#     page_count = 10
+#     page = 0
+#     start_time = datetime.now()
+#     notice_list = list()
+#     while page < page_count:
+#         url = u"https://block.cc/api/v1/getNoticesInfo?lang=zh&page=" + str(page) + u"&size=10"
+#         try:
+#             response = requests.get(url, timeout = 600, headers = headers)
+#             data_json = json.loads(response.content).get('data')
+#             notice_list += data_json.get('data')
+#             page_count = data_json.get('pageCount')
+#             page += 1
+#         except Exception as e:
+#             print 'err'
+#
+#         print 'done', page, '|', page_count, (datetime.now() - start_time)
+#
+#     end_time = datetime.now()
+#     print end_time - start_time
+#
+#     return notice_list
+
+notice_size = 10
+
+
+def get_notice_list():
+    success_flag = False
+    start_time = datetime.now()
+    notice_list = list()
+    while not success_flag:
+        url = u"https://block.cc/api/v1/getNoticesInfo?lang=zh&page=0&size=" + str(notice_size)
+        try:
+            response = requests.get(url, timeout = 600, headers = headers)
+            data_json = json.loads(response.content).get('data')
+            notice_list += data_json.get('data')
+            success_flag = True
+        except Exception as e:
+            print 'err'
+
+    end_time = datetime.now()
+    print end_time - start_time
+
+    return notice_list
+
+
+def update_notice_info():
+    notice_list = get_notice_list()
+    if len(notice_list) > 0:
+        new_notice_dict = dict()
+        for notice_json in notice_list:
+            uid = notice_json.get(u'_id')
+            lang = notice_json.get(u'lang')
+            origin_url = notice_json.get(u'originUrl')
+            created_at = notice_json.get(u'createdAt')
+            updated_at = notice_json.get(u'updatedAt')
+            zh_name = notice_json.get(u'zh_name')
+            from_source = notice_json.get(u'from')
+            title = notice_json.get(u'title')
+            description = notice_json.get(u'description')
+            timestamp = notice_json.get(u'timestamp')
+
+            notice = BlockCCCrawlNotice(uid, lang, origin_url, created_at, updated_at, zh_name, from_source, title, description, timestamp)
+            new_notice_dict[uid] = notice
+
+        # 去重插新
+        old_notice_list = db.session.query(BlockCCCrawlNotice).limit(notice_size).order_by(BlockCCCrawlNotice.timestamp.desc()).all()
+        old_notice_dict = {notice.uid: notice for notice in old_notice_list}
+        old_notice_uid_set = set(old_notice_dict.keys())
+        new_notice_uid_set = set(new_notice_dict.keys())
+        comm_notice_uid_set = new_notice_uid_set & old_notice_uid_set
+        diff_notice_uid_set = new_notice_uid_set - old_notice_uid_set
+        if len(diff_notice_uid_set) > 0:
+            # GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
+            pass
+
+        for diff_notice_uid in diff_notice_uid_set:
+            new_notice = new_notice_dict[diff_notice_uid]
+            db.session.add(new_notice)
+        for comm_notice_uid in comm_notice_uid_set:
+            old_notice = old_notice_dict[comm_notice_uid]
+            new_notice = new_notice_dict[comm_notice_uid]
+            new_notice.ds_id = old_notice.ds_id
+            db.session.merge(new_notice)
+
+        db.session.commit()

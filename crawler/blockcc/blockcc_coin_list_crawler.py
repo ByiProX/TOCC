@@ -32,7 +32,7 @@ def get_coin_list():
     start_time = datetime.now()
     coin_list = list()
     while page < page_count:
-        url = u"https://block.cc/api/v1/coin/list?page=" + str(page) + u"&size=100"
+        url = u"https://block.cc/api/v1/coin/list?page=" + str(page) + u"&size=200"
         try:
             response = requests.get(url, timeout = 600, headers = headers)
             data_json = json.loads(response.content).get('data')
@@ -74,7 +74,7 @@ def update_coin_info():
             suggest_ex1_url = u""
             suggest_ex2_url = u""
             suggest_ex_list = coin_json.get(u'suggest_ex')
-            if len(suggest_ex_list) > 0:
+            if suggest_ex_list and len(suggest_ex_list) > 0:
                 suggest_ex1 = suggest_ex_list[0].get(u'zh_name')
                 suggest_ex1_url = suggest_ex_list[0].get(u'link')
                 if len(suggest_ex_list) > 1:
