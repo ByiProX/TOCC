@@ -138,7 +138,7 @@ def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
 
 
 def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, message_said_username):
-    ds_info = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(ds_id).first()
+    ds_info = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(RealTimeQuotesDefaultSettingInfo.ds_id).first()
     if not ds_info:
         return ERR_WRONG_ITEM
 
