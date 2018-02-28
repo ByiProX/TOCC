@@ -12,7 +12,7 @@ from core.consumption_core import ConsumptionThread
 websocket = GeventWebSocket(app)
 
 
-@websocket.route('/api/wwr_ws')
+@websocket.route('/yaca_api/yaca_ws')
 def echo(ws):
     with app.request_context(ws.environ), app.app_context():
         username = request.args.get('username')
