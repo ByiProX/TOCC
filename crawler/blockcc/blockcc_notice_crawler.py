@@ -106,7 +106,7 @@ def update_notice_info():
         for comm_notice_uid in comm_notice_uid_set:
             old_notice = old_notice_dict[comm_notice_uid]
             new_notice = new_notice_dict[comm_notice_uid]
-            new_notice.ds_id = old_notice.ds_id
+            new_notice.aid = old_notice.aid
             new_notice.is_handled = old_notice.is_handled
             db.session.merge(new_notice)
 
@@ -114,4 +114,4 @@ def update_notice_info():
         logger.info(u"update_notice_info success")
 
 
-# update_notice_info()
+update_notice_info()
