@@ -19,7 +19,7 @@ from models.production_consumption_models import ConsumptionTask, ConsumptionSta
     ConsumptionTaskStream
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
 from models.user_bot_models import BotInfo, UserBotRelateInfo, UserInfo
-from utils.u_str_unicode import str_to_unicode
+from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
 

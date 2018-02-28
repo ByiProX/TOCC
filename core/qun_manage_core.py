@@ -11,7 +11,7 @@ from core.welcome_message_core import generate_welcome_message_c_task_into_new_q
 from models.android_db_models import AContact, AChatroom, AMember
 from models.qun_friend_models import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
 from models.user_bot_models import UserInfo, UserBotRelateInfo, BotInfo
-from utils.u_str_unicode import str_to_unicode
+from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
 

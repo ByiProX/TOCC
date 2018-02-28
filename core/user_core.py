@@ -14,7 +14,7 @@ from core.wechat_core import WechatConn
 from models.android_db_models import AContact, ABot, AFriend
 from models.qun_friend_models import UserQunRelateInfo
 from models.user_bot_models import UserInfo, UserBotRelateInfo, BotInfo
-from utils.u_str_unicode import str_to_unicode
+from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
 

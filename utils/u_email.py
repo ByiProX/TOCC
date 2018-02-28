@@ -4,7 +4,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
 
-from utils.u_str_unicode import str_to_unicode
+from utils.u_transformat import str_to_unicode
 
 # 输入SMTP服务器地址:
 smtp_server = "smtp.exmail.qq.com"

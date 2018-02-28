@@ -10,6 +10,7 @@ import logging
 from datetime import datetime
 
 from configs.config import db, CRAWLER_CIRCLE_INTERVAL
+from crawler.blockcc.blockcc_coin_list_crawler import update_coin_info
 from models.crawler_log import CrawlerLog
 
 logger = logging.getLogger('main')
@@ -57,8 +58,7 @@ class CrawlerThread(threading.Thread):
 
     @staticmethod
     def _process():
-        # TODO: process crawler and save to DB
-        pass
+        update_coin_info()
 
 
-crawler_thread = CrawlerThread(thread_id= 'crawler_zclaiqcc')
+crawler_thread = CrawlerThread(thread_id = 'crawler_zclaiqcc')

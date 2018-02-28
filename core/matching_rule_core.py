@@ -7,7 +7,7 @@ from configs.config import db, CONSUMPTION_TASK_TYPE, SUCCESS
 from core.auto_reply_core import activate_rule_and_add_task_to_consumption_task
 from models.matching_rule_models import GlobalMatchingRule, MatchingRuleInMemory
 from models.real_time_quotes_models import RealTimeQuotesDefaultKeywordRelateInfo
-from utils.u_str_unicode import str_to_unicode
+from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
 

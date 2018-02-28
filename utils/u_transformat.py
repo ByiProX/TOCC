@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import decimal
 import logging
 
 logger = logging.getLogger('main')
@@ -23,3 +23,10 @@ def unicode_to_str(txt):
     else:
         raise TypeError(u'param is not (str and unicode)')
     return txt
+
+
+def str_to_decimal(_str):
+    if _str and _str != u'None':
+        return decimal.Decimal(_str)
+    else:
+        return decimal.Decimal(u'0')

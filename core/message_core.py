@@ -2,7 +2,7 @@
 from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT
 from models.android_db_models import AMessage
 from models.message_ext_models import MessageAnalysis
-from utils.u_str_unicode import str_to_unicode, unicode_to_str
+from utils.u_transformat import str_to_unicode, unicode_to_str
 
 import logging
 

@@ -11,7 +11,7 @@ from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
 from models.real_time_quotes_models import RealTimeQuotesDSUserRelate, RealTimeQuotesDefaultSettingInfo, \
     RealTimeQuotesDefaultKeywordRelateInfo
 from models.user_bot_models import UserBotRelateInfo, BotInfo
-from utils.u_str_unicode import str_to_unicode
+from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
 
