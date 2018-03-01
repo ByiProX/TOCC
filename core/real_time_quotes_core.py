@@ -55,10 +55,11 @@ def switch_func_real_time_quotes(user_info, switch):
     return SUCCESS
 
 
-def get_rt_quotes_list_and_status(user_info):
+def get_rt_quotes_list_and_status(user_info, per_page, page_number):
     # FIXME 此处应按照个人读取，而不应该所有人读取相同的结果
     # 因为目前进度比较急，所以直接读取全部人的结果
-    ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).all()
+    ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).order_by(
+        RealTimeQuotesDefaultSettingInfo.ds_id).limit(per_page).offset(page_number).all()
 
     res = []
     for ds_info in ds_info_list:

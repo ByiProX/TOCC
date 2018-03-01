@@ -38,6 +38,15 @@ def app_get_rt_quotes_list_and_status():
     if status != SUCCESS:
         return make_response(status)
 
+    task_per_page = request.json.get('page_size')
+    page_number = request.json.get('page')
+    if not task_per_page:
+        logger.warning("没有收到page_size，设置为10")
+        task_per_page = 10
+    if page_number is None:
+        logger.warning("没有收到page_number，设置为0")
+        page_number = 0
+
     # status = SUCCESS
     # logger.error("ERR_NOT_IMPLEMENTED 功能未实现，先留出口")
 
@@ -59,12 +68,21 @@ def app_get_rt_quotes_list_and_status():
     #     },
     # ]
     # example_func = True
-    status, res, func_status = get_rt_quotes_list_and_status(user_info)
+    status, res, func_status = get_rt_quotes_list_and_status(user_info, task_per_page, page_number)
 
     if status == SUCCESS:
         return make_response(SUCCESS, coin_list=res, func_real_time_quotes=func_status)
     else:
         return make_response(status)
+
+
+@main_api.route('/get_func_real_time_quotes_status', methods=['POST'])
+def app_get_func_real_time_quotes_status():
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    return make_response(SUCCESS, func_real_time_quotes=user_info.func_real_time_quotes)
 
 
 @main_api.route('/get_rt_quotes_preview', methods=['POST'])
