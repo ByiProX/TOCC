@@ -11,7 +11,7 @@ from models.production_consumption_models import ConsumptionTask
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
 from models.real_time_quotes_models import RealTimeQuotesDSUserRelate, RealTimeQuotesDefaultSettingInfo
 from models.user_bot_models import UserBotRelateInfo, BotInfo
-from utils.u_transformat import str_to_unicode
+from utils.u_transformat import str_to_unicode, decimal_to_str
 
 logger = logging.getLogger('main')
 
@@ -170,7 +170,25 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
             else:
                 nickname = str_to_unicode(a_contact.nickname)
             res_text = u"@" + nickname + u" \n"
-            c_task.task_send_content = json.dumps({"text": res_text + u"这里是币的信息"})
+
+            res_text += u"block.cc" + ds_info.coin_name + u"价格为：$"
+
+            res_text += decimal_to_str(ds_info.price) + u"\n"
+
+            res_text += u"当前市值：$" + decimal_to_str(ds_info.marketcap) + u"\n"
+
+            res_text += u"流通数量：" + decimal_to_str(ds_info.available_supply) + u"\n"
+
+            if ds_info.suggest_ex1:
+                res_text += u'推荐交易所：<a href="' + ds_info.suggest_ex1_url + u'">' + ds_info.suggest_ex1 + u'</a>\n'
+            if ds_info.suggest_ex2:
+                res_text += u'<a href="' + ds_info.suggest_ex2_url + u'">' + ds_info.suggest_ex2 + u'</a>\n'
+
+            res_text += u"24小时涨幅：" + decimal_to_str(ds_info.change1d) + u"\n"
+
+            res_text += unicode(ds_info.create_time)[:19]
+
+            c_task.task_send_content = json.dumps({"text": res_text})
 
             uqun_id = chatroom_relate_user_id_dict[rt_quotes_dsu_relate.user_id].uqun_id
 
