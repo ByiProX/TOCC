@@ -178,16 +178,20 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
 
             res_text += u"流通数量：" + decimal_to_str(ds_info.available_supply) + u"\n"
 
+            res_text += u"推荐交易所：\n"
             if ds_info.suggest_ex1:
-                res_text += u'推荐交易所：<a href="' + ds_info.suggest_ex1_url + u'">' + ds_info.suggest_ex1 + u'</a>\n'
+                res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url
             if ds_info.suggest_ex2:
-                res_text += u'<a href="' + ds_info.suggest_ex2_url + u'">' + ds_info.suggest_ex2 + u'</a>\n'
+                res_text += ds_info.suggest_ex2 + u" " + ds_info.suggest_ex2_url
+            # if ds_info.suggest_ex1:
+            #     res_text += u'推荐交易所：<a href="' + ds_info.suggest_ex1_url + u'">' + ds_info.suggest_ex1 + u'</a>\n'
+            # if ds_info.suggest_ex2:
+            #     res_text += u'<a href="' + ds_info.suggest_ex2_url + u'">' + ds_info.suggest_ex2 + u'</a>\n'
 
             res_text += u"24小时涨幅：" + decimal_to_str(ds_info.change1d) + u"%\n"
 
-            res_text += u"【友问币答 来源" + u"block.cc】"
-
             res_text += unicode(ds_info.create_time)[:19]
+            res_text += u"【友问币答 来源" + u"block.cc】"
 
             c_task.task_send_content = json.dumps({"text": res_text})
 
