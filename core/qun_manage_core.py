@@ -8,10 +8,12 @@ from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE
+from core.wechat_core import WechatConn
 from core.welcome_message_core import generate_welcome_message_c_task_into_new_qun
 from models.android_db_models import AContact, AChatroom, AMember
 from models.qun_friend_models import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
 from models.user_bot_models import UserInfo, UserBotRelateInfo, BotInfo
+from utils.u_email import EmailAlert
 from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
@@ -181,8 +183,13 @@ def check_whether_message_is_add_qun(message_analysis):
         bot_username = message_analysis.username
         user_nickname = content.split(u'邀请')[0][1:-1]
         logger.info(u"发现加群. user_nickname: %s. chatroomname: %s." % (user_nickname, message_analysis.talker))
-        _bind_qun_success(message_analysis.talker, user_nickname, bot_username)
-
+        status, user_info = _bind_qun_success(message_analysis.talker, user_nickname, bot_username)
+        we_conn = WechatConn()
+        if status == SUCCESS:
+            we_conn.send_txt_to_follower("您已成功添加bot机器人", user_info.open_id)
+        else:
+            EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
+                                     u"user_nickname: %s." % user_nickname)
     return is_add_qun
 
 
@@ -247,7 +254,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
     if len(a_member_list) > 1:
         logger.error(u"一个群中出现两个相同的群备注名，无法确定身份. chatroomname: %s. user_nickname: %s." %
                      (chatroomname, user_nickname))
-        return ERR_HAVE_SAME_PEOPLE
+        return ERR_HAVE_SAME_PEOPLE, None
     elif len(a_member_list) == 0:
         member_flag = False
     else:
@@ -257,7 +264,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
     user_info_list = db.session.query(UserInfo).filter(UserInfo.nick_name == user_nickname).all()
     if len(user_info_list) > 1:
         logger.error(u"根据nickname无法确定其身份. user_nickname: %s." % user_nickname)
-        return ERR_HAVE_SAME_PEOPLE
+        return ERR_HAVE_SAME_PEOPLE, None
     elif len(user_info_list) == 0:
         user_info_flag = False
     else:
@@ -266,25 +273,25 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
     if member_flag is True and user_info_flag is True:
         logger.error(u"同时匹配到群备注和用户昵称，无法识别用户身份. chatroomname: %s. user_nickname: %s." %
                      (chatroomname, user_nickname))
-        return ERR_HAVE_SAME_PEOPLE
+        return ERR_HAVE_SAME_PEOPLE, None
     elif member_flag is False and user_info_flag is False:
         logger.error(u"没有找到群备注也没有找到用户昵称.没有找到该用户. chatroomname: %s. user_nickname: %s." %
                      (chatroomname, user_nickname))
-        return ERR_WRONG_USER_ITEM
+        return ERR_WRONG_USER_ITEM, None
     elif user_info_flag is True:
         user_info = user_info_list[0]
     else:
         user_info = db.session.query(UserInfo).filter(UserInfo.username == a_member_list[0].username).first()
         if not user_info:
             logger.error(u"没有找到对应的用户信息. user_username: %s." % a_member_list[0].username)
-            return ERR_WRONG_ITEM
+            return ERR_WRONG_ITEM, None
 
     user_id = user_info.user_id
 
     bot_info = db.session.query(BotInfo).filter(BotInfo.username == bot_username).first()
     if not bot_info:
         logger.error(u"bot信息出错. bot_username: %s" % bot_username)
-        return ERR_WRONG_ITEM
+        return ERR_WRONG_ITEM, None
 
     bot_id = bot_info.bot_id
 
@@ -292,10 +299,10 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
                                                                UserBotRelateInfo.bot_id == bot_id).all()
     if len(ubr_info_list) > 1:
         logger.error(u"找到多个bot关系. user_id: %s." % user_id)
-        return ERR_WRONG_ITEM
+        return ERR_WRONG_ITEM, None
     elif len(ubr_info_list) == 0:
         logger.error(u"没有找到bot关系. user_id: %s." % user_id)
-        return ERR_WRONG_ITEM
+        return ERR_WRONG_ITEM, None
     else:
         ubr_info = ubr_info_list[0]
 
@@ -304,10 +311,10 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
     group_info_list = db.session.query(GroupInfo).filter(GroupInfo.user_id == user_id, GroupInfo.is_default == 1).all()
     if len(group_info_list) > 1:
         logger.error(u"发现多个默认分组. user_nickname: %s." % user_nickname)
-        return ERR_WRONG_ITEM
+        return ERR_WRONG_ITEM, None
     elif len(group_info_list) == 0:
         logger.error(u"无默认分组. user_nickname: %s." % user_nickname)
-        return ERR_WRONG_ITEM
+        return ERR_WRONG_ITEM, None
     else:
         group_info = group_info_list[0]
 
@@ -329,7 +336,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
                 logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. uqbr_rid: %s." % exist_uqbr_info.rid)
         else:
             logger.error(u"有uqr但却没有uqbr，关系出错. uqun_id: %s." % exist_uqr_info.uqun_id)
-            return ERR_WRONG_ITEM
+            return ERR_WRONG_ITEM, None
     else:
         uqr_info = UserQunRelateInfo()
         uqr_info.user_id = user_id
@@ -351,7 +358,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
         db.session.commit()
         logger.info(u"绑定群的四个关系. uqbr_id: %s." % uqbr_info.rid)
         generate_welcome_message_c_task_into_new_qun(uqr_info, user_id, bot_info.username)
-    return SUCCESS
+    return SUCCESS, user_info
 
 
 def get_a_chatroom_dict_by_uqun_id(uqr_info=None, uqun_id=None):

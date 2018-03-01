@@ -15,6 +15,7 @@ from core.wechat_core import WechatConn
 from models.android_db_models import AContact, ABot, AFriend
 from models.qun_friend_models import UserQunRelateInfo
 from models.user_bot_models import UserInfo, UserBotRelateInfo, BotInfo
+from utils.u_email import EmailAlert
 from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
@@ -345,7 +346,13 @@ def check_whether_message_is_add_friend(message_analysis):
             return is_add_friend
         a_contact = db.session.query(AContact).filter(AContact.username == user_username).first()
         logger.info(u"发现加bot好友用户. username: %s." % user_username)
-        _bind_bot_success(a_contact.nickname, user_username, bot_info)
+        status, user_info = _bind_bot_success(a_contact.nickname, user_username, bot_info)
+        we_conn = WechatConn()
+        if status == SUCCESS:
+            we_conn.send_txt_to_follower("您已成功添加bot机器人", user_info.open_id)
+        else:
+            EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
+                                     u"user_username: %s." % user_username)
     return is_add_friend
 
 
@@ -364,27 +371,27 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     if len(a_friend_list) > 1:
         logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
-        return ERR_HAVE_SAME_PEOPLE
+        return ERR_HAVE_SAME_PEOPLE, None
     elif len(a_friend_list) == 0:
         logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
-        return ERR_WRONG_ITEM
+        return ERR_WRONG_ITEM, None
 
     user_info_list = db.session.query(UserInfo).filter(UserInfo.nick_name == user_nickname).all()
     if len(user_info_list) > 1:
         logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
-        return ERR_HAVE_SAME_PEOPLE
+        return ERR_HAVE_SAME_PEOPLE, None
     elif len(user_info_list) == 0:
         logger.error(u"配对user信息出错. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
-        return ERR_WRONG_ITEM
+        return ERR_WRONG_ITEM, None
 
     user_info_list_2 = db.session.query(UserInfo).filter(UserInfo.username == user_username).all()
     if user_info_list_2:
         logger.error(u"已绑定username与user关系. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
-        return ERR_HAVE_SAME_PEOPLE
+        return ERR_HAVE_SAME_PEOPLE, None
 
     user_info = user_info_list[0]
     user_info.username = user_username
@@ -403,7 +410,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
 
     set_default_group(user_info)
     logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_info.bot_id))
-    return SUCCESS
+    return SUCCESS, user_info
 
 
 def _get_a_balanced_bot():
