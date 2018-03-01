@@ -57,7 +57,9 @@ def update_coin_info():
         new_coin_dict = dict()
         for coin_json in coin_list:
             coin_id = coin_json.get(u'id', u'')
-            symbol = coin_json.get(u'symbol', u'')
+            symbol = coin_json.get(u'symbol')
+            if not symbol:
+                continue
             coin_name = coin_json.get(u'name', u'')
             coin_name_cn = coin_json.get(u'zhName', u'')
 
