@@ -22,11 +22,11 @@ def switch_func_synchronous_announcement(user_info, switch):
     :return:
     """
     if user_info.func_synchronous_announcement and switch:
-        logger.error("目前已为开启状态，无需再次开启")
-        return ERR_WRONG_FUNC_STATUS
+        logger.error("目前已为开启状态，无需再次开启. 返回正常.")
+        return SUCCESS
     if not user_info.func_synchronous_announcement and not switch:
-        logger.error("目前已为关闭状态，无需再次开启")
-        return ERR_WRONG_FUNC_STATUS
+        logger.error("目前已为关闭状态，无需再次开启. 返回正常.")
+        return SUCCESS
 
     if switch is True:
         sa_info_list = db.session.query(SynchronousAnnouncementDefaultSettingInfo).all()
@@ -88,11 +88,11 @@ def switch_a_s_announcement_effect(user_info, platform_id, switch):
         old_switch = False
 
     if old_switch and switch:
-        logger.error("目前已为开启状态，无需再次开启")
-        return ERR_WRONG_FUNC_STATUS
+        logger.error("目前已为开启状态，无需再次开启. 返回正常.")
+        return SUCCESS
     if not old_switch and not switch:
-        logger.error("目前已为关闭状态，无需再次开启")
-        return ERR_WRONG_FUNC_STATUS
+        logger.error("目前已为关闭状态，无需再次开启. 返回正常.")
+        return SUCCESS
 
     if switch is True:
         sa_user_rel = SynchronousAnnouncementDSUserRelate()

@@ -35,11 +35,11 @@ def switch_func_auto_reply(user_info, switch):
     :return:
     """
     if user_info.func_auto_reply and switch:
-        logger.error("目前已为开启状态，无需再次开启")
-        return ERR_WRONG_FUNC_STATUS
+        logger.error("目前已为开启状态，无需再次开启. 返回正常.")
+        return SUCCESS
     if not user_info.func_auto_reply and not switch:
-        logger.error("目前已为关闭状态，无需再次开启")
-        return ERR_WRONG_FUNC_STATUS
+        logger.error("目前已为关闭状态，无需再次开启. 返回正常.")
+        return SUCCESS
 
     switch_choose = [True, False]
     for choose in switch_choose:
