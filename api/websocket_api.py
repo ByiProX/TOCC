@@ -32,7 +32,6 @@ def echo(ws):
         while True:
             msg = ws.receive()
             if msg:
-                print 'msg', msg
                 msg_json = json.loads(msg)
                 if "ping" in msg_json.keys():
                     text_json = dict()
@@ -41,6 +40,7 @@ def echo(ws):
                     # print 'text', text
                     ws.send(text)
                     continue
+                print 'msg', msg
                 text_json = dict()
                 text_json['username'] = "wxid_u391xytt57gc21"
                 text_json['content'] = "是小智呀"
