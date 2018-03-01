@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import time
 
 from copy import deepcopy
 from datetime import datetime
@@ -234,6 +235,11 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
     :param user_nickname: 除了有可能是nickname，还有可能是displayname
     :return:
     """
+
+    # 因为AMember等库更新未必在Message之前（在网速较慢的情况下可能出现）
+    # 所以此处先sleep一段时间，等待AMember更新后再读取
+    time.sleep(5)
+
     # 标记是否找到member_flag
     a_member_list = db.session.query(AMember).filter(AMember.chatroomname == chatroomname,
                                                      AMember.displayname == user_nickname,

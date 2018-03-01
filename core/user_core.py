@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 import base64
 import logging
 import hashlib
@@ -353,6 +354,11 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     确认将一个bot绑入一个user之中
     :return:
     """
+
+    # 因为AFriend等库更新未必在Message之前（在网速较慢的情况下可能出现）
+    # 所以此处先sleep一段时间，等待AFriend更新后再读取
+    time.sleep(10)
+
     a_friend_list = db.session.query(AFriend).filter(AFriend.from_username == bot_info.username,
                                                      AFriend.to_username == user_username).all()
     if len(a_friend_list) > 1:
