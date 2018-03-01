@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, timedelta
 
 from configs.config import db
 from utils.u_model_json_str import model_to_dict
@@ -119,3 +120,9 @@ class AccessToken(db.Model):
     __tablename = 'access_token'
     token = db.Column(db.String(128), primary_key=True)
     expired_time = db.Column(db.DateTime)
+
+    def load_from_json(self, access_token_json):
+        self.token = access_token_json.get('access_token')
+        expires_in = access_token_json.get('expires_in')
+        self.expired_time = datetime.now() + timedelta(seconds=expires_in)
+        return self
