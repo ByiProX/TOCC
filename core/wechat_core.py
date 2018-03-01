@@ -48,6 +48,7 @@ class WechatConn:
             if self.access_token is None:
                 access_token = AccessToken().load_from_json(res_json)
                 db.session.add(access_token)
+                self.access_token=access_token
             else:
                 self.access_token.load_from_json(res_json)
             db.session.commit()
