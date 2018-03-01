@@ -238,7 +238,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
 
     # 因为AMember等库更新未必在Message之前（在网速较慢的情况下可能出现）
     # 所以此处先sleep一段时间，等待AMember更新后再读取
-    time.sleep(5)
+    time.sleep(4)
 
     # 标记是否找到member_flag
     a_member_list = db.session.query(AMember).filter(AMember.chatroomname == chatroomname,
