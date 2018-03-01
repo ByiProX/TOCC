@@ -30,3 +30,20 @@ def str_to_decimal(_str):
         return decimal.Decimal(_str)
     else:
         return decimal.Decimal(u'0')
+
+
+def decimal_to_str(a_decimal):
+    if isinstance(a_decimal, decimal.Decimal):
+        pass
+    a_str = a_decimal.to_eng_string()
+    if "." in a_str:
+        a_split = a_str.split(".")
+        while True:
+            if len(a_split[1]) == 0:
+                return a_split[0] + ".00"
+            if a_split[1][-1] == "0":
+                a_split[1] = a_split[1][:-1]
+            else:
+                return a_split[0] + "." + a_split[1]
+    else:
+        return a_str
