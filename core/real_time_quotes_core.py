@@ -172,9 +172,7 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
                 nickname = str_to_unicode(a_contact.nickname)
             res_text = u"@" + nickname + u" \n"
 
-            res_text += u"block.cc" + ds_info.coin_name + u"价格为：$"
-
-            res_text += decimal_to_str(ds_info.price) + u"\n"
+            res_text += ds_info.coin_name + u"的价格为：$" + decimal_to_str(ds_info.price) + u"\n"
 
             res_text += u"当前市值：$" + decimal_to_str(ds_info.marketcap) + u"\n"
 
@@ -185,7 +183,9 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
             if ds_info.suggest_ex2:
                 res_text += u'<a href="' + ds_info.suggest_ex2_url + u'">' + ds_info.suggest_ex2 + u'</a>\n'
 
-            res_text += u"24小时涨幅：" + decimal_to_str(ds_info.change1d) + u"\n"
+            res_text += u"24小时涨幅：" + decimal_to_str(ds_info.change1d) + u"%\n"
+
+            res_text += u"【友问币答 来源" + u"block.cc】"
 
             res_text += unicode(ds_info.create_time)[:19]
 
