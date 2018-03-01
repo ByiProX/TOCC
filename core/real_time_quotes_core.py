@@ -180,9 +180,9 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
 
             res_text += u"推荐交易所：\n"
             if ds_info.suggest_ex1:
-                res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url
+                res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url + "\n"
             if ds_info.suggest_ex2:
-                res_text += ds_info.suggest_ex2 + u" " + ds_info.suggest_ex2_url
+                res_text += ds_info.suggest_ex2 + u" " + ds_info.suggest_ex2_url + "\n"
             # if ds_info.suggest_ex1:
             #     res_text += u'推荐交易所：<a href="' + ds_info.suggest_ex1_url + u'">' + ds_info.suggest_ex1 + u'</a>\n'
             # if ds_info.suggest_ex2:
