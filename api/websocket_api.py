@@ -31,11 +31,21 @@ def echo(ws):
             msg = ws.receive()
             if msg:
                 print 'msg', msg
+                msg_json = json.loads(msg)
+                if "ping" in msg_json.keys():
+                    text_json = dict()
+                    text_json['pong'] = msg_json['ping']
+                    text = json.dumps(text_json)
+                    print 'text', text
+                    ws.send(text)
+                    continue
                 text_json = dict()
                 text_json['username'] = "wxid_u391xytt57gc21"
                 text_json['content'] = "是小智呀"
                 text = json.dumps(text_json)
                 print 'text', text
+                text_json['username'] = "wxid_1xn3vv67x4fk12"
+                text = json.dumps(text_json)
                 ws.send(text)
             if not ws.connected:
                 # TODO-zwf 退出逻辑待完善
