@@ -28,22 +28,22 @@ class Config:
 class ProductionConfig(Config):
     ABS_PATH = './assets'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/YACA'
-    SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/cia'}
+        'DATABASE_URI') or 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/YACA'
+    SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/cia'}
 
 
 class DevelopmentConfig(Config):
     ABS_PATH = './assets'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/YACADev'
-    SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/cia'}
+        'DATABASE_URI') or 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/YACADev'
+    SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/cia'}
 
 
 class TestConfig(Config):
     ABS_PATH = './assets'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URI') or 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/YACATest'
-    SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://wechat:DOODOD.123456@101.251.222.236/cia'}
+        'DATABASE_URI') or 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/YACATest'
+    SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/cia'}
 
 
 # class WenFaDevelopmentConfig(Config):
