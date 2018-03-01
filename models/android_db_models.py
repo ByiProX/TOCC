@@ -127,7 +127,7 @@ class AMember(db.Model):
     chatroomname = db.Column(db.String(32), index=True, nullable=True)
     username = db.Column(db.String(32), index=True, nullable=False)
     displayname = db.Column(db.String(64), index=True, nullable=False, default="")
-    is_deleted = db.Column(db.Boolean, index = True, nullable = False)
+    is_deleted = db.Column(db.Boolean, index=True, nullable=False)
 
     create_time = db.Column(db.DateTime, index=True, nullable=False)
     update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
@@ -138,18 +138,27 @@ class AMember(db.Model):
 class AMessage(db.Model):
     __tablename__ = 'a_message'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-    msg_local_id = db.Column(db.String(64), index = True, nullable = False)
-    username = db.Column(db.String(32), index = True, nullable = False)
+    msg_local_id = db.Column(db.String(64), index=True, nullable=False)
+    username = db.Column(db.String(32), index=True, nullable=False)
 
-    msg_svr_id = db.Column(db.String(64), index = True, nullable = False)
-    type = db.Column(db.Integer, index = True, nullable = False)
-    status = db.Column(db.Integer, index = True, nullable = False)
-    is_send = db.Column(db.Boolean, index = True, nullable = False)
-    talker = db.Column(db.String(32), index = True, nullable = False)
+    msg_svr_id = db.Column(db.String(64), index=True, nullable=False)
+    type = db.Column(db.Integer, index=True, nullable=False)
+    status = db.Column(db.Integer, index=True, nullable=False)
+    is_send = db.Column(db.Boolean, index=True, nullable=False)
+    talker = db.Column(db.String(32), index=True, nullable=False)
     content = db.Column(db.BLOB)
     img_path = db.Column(db.String(256))
     reserved = db.Column(db.BLOB)
 
-    create_time = db.Column(db.DateTime, index = True, nullable = False)
+    create_time = db.Column(db.DateTime, index=True, nullable=False)
 
     db.UniqueConstraint(msg_local_id, username, name='ix_a_message_id')
+
+
+class ABotPingLog(db.Model):
+    __tablename__ = 'a_bot_ping_log'
+
+    aid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    timestamp = db.Column(db.TIMESTAMP, nullable=False)
+    bot_username = db.Column(db.String(32), index=True, nullable=False)
+    status = db.Column(db.Boolean, index=True, nullable=False)
