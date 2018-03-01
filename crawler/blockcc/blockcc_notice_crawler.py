@@ -110,6 +110,7 @@ def update_notice_info():
             new_notice.aid = old_notice.aid
             if new_notice.timestamp > old_notice.timestamp:
                 new_notice.is_handled = False
+                GLOBAL_RULES_UPDATE_FLAG[GLOBAL_NOTICE_UPDATE_FLAG]["blockcc"] = True
             else:
                 new_notice.is_handled = old_notice.is_handled
             db.session.merge(new_notice)
