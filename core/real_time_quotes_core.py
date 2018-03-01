@@ -190,7 +190,7 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
 
             res_text += u"24小时涨幅：" + decimal_to_str(ds_info.change1d) + u"%\n"
 
-            res_text += unicode(ds_info.create_time)[:19]
+            res_text += unicode(ds_info.create_time)[:19] + u"\n"
             res_text += u"【友问币答 来源" + u"block.cc】"
 
             c_task.task_send_content = json.dumps({"text": res_text})
