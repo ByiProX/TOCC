@@ -109,6 +109,7 @@ class RealTimeQuotesDefaultMaterialRelate(db.Model):
 class RealTimeQuotesDSUserRelate(db.Model):
     """
     每条规则与用户的联结
+    暂时不适用该表，所有的该功能的控制均适用一个开关
     """
     __tablename__ = "real_time_quotes_ds_user_relate"
     rid = db.Column(db.BigInteger, primary_key=True, autoincrement=True)

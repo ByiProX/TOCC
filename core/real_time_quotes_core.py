@@ -7,12 +7,12 @@ from datetime import datetime
 from sqlalchemy import func
 
 from configs.config import db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, TASK_SEND_TYPE, \
-    ERR_WRONG_USER_ITEM, GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
+    ERR_WRONG_USER_ITEM
 from models.android_db_models import AContact
 from models.production_consumption_models import ConsumptionTask
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
-from models.real_time_quotes_models import RealTimeQuotesDSUserRelate, RealTimeQuotesDefaultSettingInfo
-from models.user_bot_models import UserBotRelateInfo, BotInfo
+from models.real_time_quotes_models import RealTimeQuotesDefaultSettingInfo
+from models.user_bot_models import UserBotRelateInfo, BotInfo, UserInfo
 from utils.u_transformat import str_to_unicode, decimal_to_str
 
 logger = logging.getLogger('main')
@@ -33,27 +33,29 @@ def switch_func_real_time_quotes(user_info, switch):
         return SUCCESS
 
     if switch is True:
-        rt_quotes_ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
-            RealTimeQuotesDefaultSettingInfo.is_integral == 1).all()
-        for rt_quotes_ds_info in rt_quotes_ds_info_list:
-            rt_quotes_dsu_rel = RealTimeQuotesDSUserRelate()
-            rt_quotes_dsu_rel.ds_id = rt_quotes_ds_info.ds_id
-            rt_quotes_dsu_rel.user_id = user_info.user_id
-            rt_quotes_dsu_rel.create_time = datetime.now()
-            db.session.add(rt_quotes_dsu_rel)
+        # rt_quotes_ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
+        #     RealTimeQuotesDefaultSettingInfo.is_integral == 1).all()
+        # 因为读取速度太慢，而且目前所有币种均是全部开全部关，所以就先不适用关系表进行控制，而使用全局
+        # for rt_quotes_ds_info in rt_quotes_ds_info_list:
+        #     rt_quotes_dsu_rel = RealTimeQuotesDSUserRelate()
+        #     rt_quotes_dsu_rel.ds_id = rt_quotes_ds_info.ds_id
+        #     rt_quotes_dsu_rel.user_id = user_info.user_id
+        #     rt_quotes_dsu_rel.create_time = datetime.now()
+        #     db.session.add(rt_quotes_dsu_rel)
+        # GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
+
         user_info.func_real_time_quotes = True
         db.session.commit()
-        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
     elif switch is False:
-        rt_quotes_dsu_rel_list = db.session.query(RealTimeQuotesDSUserRelate).filter(
-            RealTimeQuotesDSUserRelate.user_id == user_info.user_id).all()
-
-        for rt_quotes_dsu_rel in rt_quotes_dsu_rel_list:
-            db.session.delete(rt_quotes_dsu_rel)
+        # rt_quotes_dsu_rel_list = db.session.query(RealTimeQuotesDSUserRelate).filter(
+        #     RealTimeQuotesDSUserRelate.user_id == user_info.user_id).all()
+        #
+        # for rt_quotes_dsu_rel in rt_quotes_dsu_rel_list:
+        #     db.session.delete(rt_quotes_dsu_rel)
+        # GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
 
         user_info.func_real_time_quotes = False
         db.session.commit()
-        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
 
     return SUCCESS
 
@@ -164,82 +166,25 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
     for uqr_info in uqr_info_list:
         chatroom_relate_user_id_dict.setdefault(uqr_info.user_id, uqr_info)
 
-    rt_quotes_dsu_relate_list = db.session.query(RealTimeQuotesDSUserRelate).filter(
-        RealTimeQuotesDSUserRelate.ds_id == ds_id).all()
-    for rt_quotes_dsu_relate in rt_quotes_dsu_relate_list:
-        if rt_quotes_dsu_relate.user_id in chatroom_relate_user_id_dict:
-            c_task = ConsumptionTask()
-            c_task.qun_owner_user_id = rt_quotes_dsu_relate.user_id
-            c_task.task_initiate_user_id = rt_quotes_dsu_relate.user_id
+    user_info_list = db.session.query(UserInfo).filter(UserInfo.func_real_time_quotes == 1).all()
 
-            c_task.chatroomname = chatroom_relate_user_id_dict[rt_quotes_dsu_relate.user_id].chatroomname
+    for user_info in user_info_list:
+        if user_info.user_id in chatroom_relate_user_id_dict:
+            c_task = ConsumptionTask()
+            c_task.qun_owner_user_id = user_info.user_id
+            c_task.task_initiate_user_id = user_info.user_id
+
+            c_task.chatroomname = chatroom_relate_user_id_dict[user_info.user_id].chatroomname
             c_task.task_type = CONSUMPTION_TASK_TYPE['real_time_quotes']
             c_task.task_relevant_id = ds_id
 
             c_task.task_send_type = TASK_SEND_TYPE['text']
 
-            a_contact = db.session.query(AContact).filter(AContact.username == message_said_username).first()
-            if not a_contact:
-                logger.error(u"无法找到该人名称")
-                nickname = u""
-            else:
-                nickname = str_to_unicode(a_contact.nickname)
-            res_text = u"@" + nickname + u" " + ds_info.coin_name + u"\n"
-
-            # 计算价格
-            price = decimal_to_str(ds_info.price)
-            if "." in price:
-                p_split = price.split(".")
-                if len(p_split[1]) > 4:
-                    price = p_split[0] + u"." + p_split[1][:4]
-
-            res_text += u"币单价：￥" + price + u"\n"
-
-            # 市值计算
-            marketcap = decimal_to_str(ds_info.marketcap)
-            if "." in marketcap:
-                m_s = marketcap.split(".")
-                if int(m_s[0]) > 1000000000:
-                    marketcap = m_s[0][:-8] + u"." + m_s[0][-8:-6] + u"亿"
-                elif int(m_s[0]) > 100000:
-                    marketcap = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
-            res_text += u"当前市值：￥" + marketcap + u"\n"
-
-            available_supply = decimal_to_str(ds_info.available_supply)
-            if "." in available_supply:
-                m_s = available_supply.split(".")
-                if int(m_s[0]) > 1000000000:
-                    available_supply = m_s[0][:-8] + u"." + m_s[0][-8:-6] + u"亿"
-                elif int(m_s[0]) > 100000:
-                    available_supply = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
-            res_text += u"流通数量：" + available_supply + u"\n"
-
-            res_text += u"推荐交易所："
-            if ds_info.suggest_ex1:
-                res_text += ds_info.suggest_ex1
-            if ds_info.suggest_ex2:
-                res_text += "   " + ds_info.suggest_ex2 + u"\n"
-            else:
-                res_text += u"\n"
-            # res_text += u"推荐交易所：\n"
-            # if ds_info.suggest_ex1:
-            #     res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url + "\n"
-            # if ds_info.suggest_ex2:
-            #     res_text += ds_info.suggest_ex2 + u" " + ds_info.suggest_ex2_url + "\n"
-
-            # 24小时涨幅计算
-            hour24changed = decimal_to_str(ds_info.change1d)
-            if hour24changed[0] != "-":
-                hour24changed = "+" + hour24changed
-            res_text += u"24小时涨幅：" + hour24changed + u"%\n"
-
-            res_text += unicode(ds_info.create_time)[:19] + u"\n"
-            res_text += u"【数据来源" + u"block.cc】\n"
-            res_text += u"【友问币答 服务号ID：YACA】"
+            res_text = _build_a_rs_text_to_send(message_said_username, ds_info)
 
             c_task.task_send_content = json.dumps({"text": res_text})
 
-            uqun_id = chatroom_relate_user_id_dict[rt_quotes_dsu_relate.user_id].uqun_id
+            uqun_id = chatroom_relate_user_id_dict[user_info.user_id].uqun_id
 
             uqbr_info_list = db.session.query(UserQunBotRelateInfo).filter(
                 UserQunBotRelateInfo.uqun_id == uqun_id).all()
@@ -274,3 +219,66 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
             db.session.add(c_task)
             db.session.commit()
             return SUCCESS
+
+
+def _build_a_rs_text_to_send(message_said_username, ds_info):
+    a_contact = db.session.query(AContact).filter(AContact.username == message_said_username).first()
+    if not a_contact:
+        logger.error(u"无法找到该人名称")
+        nickname = u""
+    else:
+        nickname = str_to_unicode(a_contact.nickname)
+    res_text = u"@" + nickname + u" " + ds_info.coin_name + u"\n"
+
+    # 计算价格
+    price = decimal_to_str(ds_info.price)
+    if "." in price:
+        p_split = price.split(".")
+        if len(p_split[1]) > 4:
+            price = p_split[0] + u"." + p_split[1][:4]
+
+    res_text += u"币单价：￥" + price + u"\n"
+
+    # 市值计算
+    marketcap = decimal_to_str(ds_info.marketcap)
+    if "." in marketcap:
+        m_s = marketcap.split(".")
+        if int(m_s[0]) > 1000000000:
+            marketcap = m_s[0][:-8] + u"." + m_s[0][-8:-6] + u"亿"
+        elif int(m_s[0]) > 100000:
+            marketcap = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
+    res_text += u"当前市值：￥" + marketcap + u"\n"
+
+    available_supply = decimal_to_str(ds_info.available_supply)
+    if "." in available_supply:
+        m_s = available_supply.split(".")
+        if int(m_s[0]) > 1000000000:
+            available_supply = m_s[0][:-8] + u"." + m_s[0][-8:-6] + u"亿"
+        elif int(m_s[0]) > 100000:
+            available_supply = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
+    res_text += u"流通数量：" + available_supply + u"\n"
+
+    res_text += u"推荐交易所："
+    if ds_info.suggest_ex1:
+        res_text += ds_info.suggest_ex1
+    if ds_info.suggest_ex2:
+        res_text += "   " + ds_info.suggest_ex2 + u"\n"
+    else:
+        res_text += u"\n"
+    # res_text += u"推荐交易所：\n"
+    # if ds_info.suggest_ex1:
+    #     res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url + "\n"
+    # if ds_info.suggest_ex2:
+    #     res_text += ds_info.suggest_ex2 + u" " + ds_info.suggest_ex2_url + "\n"
+
+    # 24小时涨幅计算
+    hour24changed = decimal_to_str(ds_info.change1d)
+    if hour24changed[0] != "-":
+        hour24changed = "+" + hour24changed
+    res_text += u"24小时涨幅：" + hour24changed + u"%\n"
+
+    res_text += unicode(ds_info.create_time)[:19] + u"\n"
+    res_text += u"【数据来源" + u"block.cc】\n"
+    res_text += u"【友问币答 YACA_coin】"
+
+    return res_text
