@@ -8,6 +8,7 @@ import requests
 from datetime import datetime
 
 from configs.config import db, GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
+from crawler.usdcny import dollar_currency_rate
 from models.real_time_quotes_models import RealTimeQuotesDefaultSettingInfo
 from utils.u_transformat import str_to_decimal
 
@@ -32,7 +33,7 @@ def get_coin_list():
     page = 0
     start_time = datetime.now()
     coin_list = list()
-    while page < page_count:
+    while page < page_count / 10:
         url = u"https://block.cc/api/v1/coin/list?page=" + str(page) + u"&size=200"
         try:
             response = requests.get(url, timeout = 600, headers = headers)
@@ -53,6 +54,8 @@ def get_coin_list():
 
 def update_coin_info():
     coin_list = get_coin_list()
+    usdcny_str = dollar_currency_rate()
+    usdcny = str_to_decimal(usdcny_str)
     if len(coin_list) > 0:
         new_coin_dict = dict()
         for coin_json in coin_list:
@@ -67,9 +70,9 @@ def update_coin_info():
             change1d = str_to_decimal(str(coin_json.get(u'change1d')))
             change1h = str_to_decimal(str(coin_json.get(u'change1h')))
             change7d = str_to_decimal(str(coin_json.get(u'change7d')))
-            price = str_to_decimal(str(coin_json.get(u'price')))
+            price = str_to_decimal(str(coin_json.get(u'price'))) * usdcny
             volume_ex = str_to_decimal(str(coin_json.get(u'volume_ex')))
-            marketcap = str_to_decimal(str(coin_json.get(u'marketCap')))
+            marketcap = str_to_decimal(str(coin_json.get(u'marketCap'))) * usdcny
             suggest_ex1 = u""
             suggest_ex2 = u""
             suggest_ex1_url = u""
@@ -109,4 +112,4 @@ def update_coin_info():
         logger.info(u"update_coin_info success")
 
 
-# update_coin_info()
+update_coin_info()
