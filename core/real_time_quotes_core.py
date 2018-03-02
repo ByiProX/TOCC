@@ -6,7 +6,7 @@ from datetime import datetime
 
 from sqlalchemy import func
 
-from configs.config import ERR_WRONG_FUNC_STATUS, db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, TASK_SEND_TYPE, \
+from configs.config import db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, TASK_SEND_TYPE, \
     ERR_WRONG_USER_ITEM, GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
 from models.android_db_models import AContact
 from models.production_consumption_models import ConsumptionTask
@@ -184,7 +184,7 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
                 nickname = u""
             else:
                 nickname = str_to_unicode(a_contact.nickname)
-            res_text = u"@" + nickname + u" \n"
+            res_text = u"@" + nickname + u" " + ds_info.coin_name + u"\n"
 
             # 计算价格
             price = decimal_to_str(ds_info.price)
@@ -193,21 +193,39 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
                 if len(p_split[1]) > 4:
                     price = p_split[0] + "." + p_split[1][:4]
 
-            res_text += ds_info.coin_name + u"的价格为：$" + price + u"\n"
+            res_text += u"币单价：$" + price + u"\n"
 
-            res_text += u"当前市值：$" + decimal_to_str(ds_info.marketcap) + u"\n"
+            # 市值计算
+            marketcap = decimal_to_str(ds_info.marketcap)
+            if "." in marketcap:
+                m_s = marketcap.split(".")
+                if int(m_s[0]) > 1000000000:
+                    marketcap = m_s[:-8] + "亿"
+                elif int(m_s[0]) > 100000:
+                    marketcap = m_s[:-4] + "万"
+            res_text += u"当前市值：$" + marketcap + u"\n"
 
-            res_text += u"流通数量：" + decimal_to_str(ds_info.available_supply) + u"\n"
+            available_supply = decimal_to_str(ds_info.available_supply)
+            if "." in available_supply:
+                m_s = available_supply.split(".")
+                if int(m_s[0]) > 1000000000:
+                    available_supply = m_s[:-8] + "亿"
+                elif int(m_s[0]) > 100000:
+                    available_supply = m_s[:-4] + "万"
+            res_text += u"流通数量：" + available_supply + u"\n"
 
-            res_text += u"推荐交易所：\n"
+            res_text += u"推荐交易所："
             if ds_info.suggest_ex1:
-                res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url + "\n"
+                res_text += ds_info.suggest_ex1
             if ds_info.suggest_ex2:
-                res_text += ds_info.suggest_ex2 + u" " + ds_info.suggest_ex2_url + "\n"
+                res_text += " " + ds_info.suggest_ex2 + "\n"
+            else:
+                res_text += "\n"
+            # res_text += u"推荐交易所：\n"
             # if ds_info.suggest_ex1:
-            #     res_text += u'推荐交易所：<a href="' + ds_info.suggest_ex1_url + u'">' + ds_info.suggest_ex1 + u'</a>\n'
+            #     res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url + "\n"
             # if ds_info.suggest_ex2:
-            #     res_text += u'<a href="' + ds_info.suggest_ex2_url + u'">' + ds_info.suggest_ex2 + u'</a>\n'
+            #     res_text += ds_info.suggest_ex2 + u" " + ds_info.suggest_ex2_url + "\n"
 
             # 24小时涨幅计算
             hour24changed = decimal_to_str(ds_info.change1d)
