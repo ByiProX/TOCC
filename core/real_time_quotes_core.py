@@ -193,7 +193,7 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
                 if len(p_split[1]) > 4:
                     price = p_split[0] + u"." + p_split[1][:4]
 
-            res_text += u"币单价：$" + price + u"\n"
+            res_text += u"币单价：￥" + price + u"\n"
 
             # 市值计算
             marketcap = decimal_to_str(ds_info.marketcap)
@@ -203,7 +203,7 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
                     marketcap = m_s[0][:-8] + u"." + m_s[0][-8:-6] + u"亿"
                 elif int(m_s[0]) > 100000:
                     marketcap = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
-            res_text += u"当前市值：$" + marketcap + u"\n"
+            res_text += u"当前市值：￥" + marketcap + u"\n"
 
             available_supply = decimal_to_str(ds_info.available_supply)
             if "." in available_supply:
