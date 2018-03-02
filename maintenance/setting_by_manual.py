@@ -3,9 +3,9 @@ from datetime import datetime
 
 from configs.config import db, SUCCESS
 from models.android_db_models import ABot
-from models.material_library_models import MaterialLibraryDefault
-from models.real_time_quotes_models import RealTimeQuotesDefaultSettingInfo, RealTimeQuotesDefaultKeywordRelateInfo, \
-    RealTimeQuotesDefaultMaterialRelate
+# from models.material_library_models import MaterialLibraryDefault
+# from models.real_time_quotes_models import RealTimeQuotesDefaultSettingInfo, RealTimeQuotesDefaultKeywordRelateInfo, \
+#     RealTimeQuotesDefaultMaterialRelate
 from models.user_bot_models import BotInfo
 
 
@@ -46,41 +46,45 @@ class SetRealTimeQuoteSettingByManual:
 
     @staticmethod
     def set_a_coin_setting_just_one_text(keyword_list, one_text):
-        now_time = datetime.now()
-        rt_quotes_ds_info = RealTimeQuotesDefaultSettingInfo()
-        rt_quotes_ds_info.create_time = now_time
-        db.session.add(rt_quotes_ds_info)
-        db.session.commit()
-
-        ds_id = rt_quotes_ds_info.ds_id
-
-        # 存入关键词
-        for i, keyword in enumerate(keyword_list):
-            rt_quotes_dkr_info = RealTimeQuotesDefaultKeywordRelateInfo()
-            rt_quotes_dkr_info.ds_id = ds_id
-            rt_quotes_dkr_info.keyword = keyword
-            rt_quotes_dkr_info.is_full_match = True
-            rt_quotes_dkr_info.send_seq = i
-            db.session.add(rt_quotes_dkr_info)
-        db.session.commit()
-
-        # 新建默认模板
-        mld_info = MaterialLibraryDefault()
-        # 文字类型
-        mld_info.task_send_type = 1
-        mld_info.task_send_content = {"text": one_text}
-        mld_info.used_count = 0
-        mld_info.create_time = now_time
-        mld_info.last_used_time = now_time
-        db.session.add(mld_info)
-        db.session.commit()
-
-        dm_id = mld_info.dm_id
-
-        # 存入物料关系
-        rt_quotes_ds_ml_rel = RealTimeQuotesDefaultMaterialRelate()
-        rt_quotes_ds_ml_rel.ds_id = ds_id
-        rt_quotes_ds_ml_rel.dm_id = dm_id
-        rt_quotes_ds_ml_rel.send_seq = 0
-        db.session.add(rt_quotes_ds_ml_rel)
-        db.session.commit()
+        """
+        老版代码，现在数据库格式已经更改
+        """
+        raise NotImplementedError
+        # now_time = datetime.now()
+        # rt_quotes_ds_info = RealTimeQuotesDefaultSettingInfo()
+        # rt_quotes_ds_info.create_time = now_time
+        # db.session.add(rt_quotes_ds_info)
+        # db.session.commit()
+        #
+        # ds_id = rt_quotes_ds_info.ds_id
+        #
+        # # 存入关键词
+        # for i, keyword in enumerate(keyword_list):
+        #     rt_quotes_dkr_info = RealTimeQuotesDefaultKeywordRelateInfo()
+        #     rt_quotes_dkr_info.ds_id = ds_id
+        #     rt_quotes_dkr_info.keyword = keyword
+        #     rt_quotes_dkr_info.is_full_match = True
+        #     rt_quotes_dkr_info.send_seq = i
+        #     db.session.add(rt_quotes_dkr_info)
+        # db.session.commit()
+        #
+        # # 新建默认模板
+        # mld_info = MaterialLibraryDefault()
+        # # 文字类型
+        # mld_info.task_send_type = 1
+        # mld_info.task_send_content = {"text": one_text}
+        # mld_info.used_count = 0
+        # mld_info.create_time = now_time
+        # mld_info.last_used_time = now_time
+        # db.session.add(mld_info)
+        # db.session.commit()
+        #
+        # dm_id = mld_info.dm_id
+        #
+        # # 存入物料关系
+        # rt_quotes_ds_ml_rel = RealTimeQuotesDefaultMaterialRelate()
+        # rt_quotes_ds_ml_rel.ds_id = ds_id
+        # rt_quotes_ds_ml_rel.dm_id = dm_id
+        # rt_quotes_ds_ml_rel.send_seq = 0
+        # db.session.add(rt_quotes_ds_ml_rel)
+        # db.session.commit()
