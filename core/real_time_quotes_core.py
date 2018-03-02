@@ -191,7 +191,7 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
             if "." in price:
                 p_split = price.split(".")
                 if len(p_split[1]) > 4:
-                    price = p_split[0] + "." + p_split[1][:4]
+                    price = p_split[0] + u"." + p_split[1][:4]
 
             res_text += u"币单价：$" + price + u"\n"
 
@@ -200,27 +200,27 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
             if "." in marketcap:
                 m_s = marketcap.split(".")
                 if int(m_s[0]) > 1000000000:
-                    marketcap = m_s[:-8] + "亿"
+                    marketcap = m_s[:-8] + u"亿"
                 elif int(m_s[0]) > 100000:
-                    marketcap = m_s[:-4] + "万"
+                    marketcap = m_s[:-4] + u"万"
             res_text += u"当前市值：$" + marketcap + u"\n"
 
             available_supply = decimal_to_str(ds_info.available_supply)
             if "." in available_supply:
                 m_s = available_supply.split(".")
                 if int(m_s[0]) > 1000000000:
-                    available_supply = m_s[:-8] + "亿"
+                    available_supply = m_s[:-8] + u"亿"
                 elif int(m_s[0]) > 100000:
-                    available_supply = m_s[:-4] + "万"
+                    available_supply = m_s[:-4] + u"万"
             res_text += u"流通数量：" + available_supply + u"\n"
 
             res_text += u"推荐交易所："
             if ds_info.suggest_ex1:
                 res_text += ds_info.suggest_ex1
             if ds_info.suggest_ex2:
-                res_text += " " + ds_info.suggest_ex2 + "\n"
+                res_text += " " + ds_info.suggest_ex2 + u"\n"
             else:
-                res_text += "\n"
+                res_text += u"\n"
             # res_text += u"推荐交易所：\n"
             # if ds_info.suggest_ex1:
             #     res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url + "\n"
