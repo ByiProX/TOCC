@@ -25,13 +25,11 @@ def _is_friend_into_qun():
     """
 
 
-first_into_a_qun_and_say_something = """
-大家好，我是你们的区块链学习小助手
+first_into_a_qun_and_say_something = """大家好，我是你们的区块链学习小助手
 调用小助手规则：
 1.发送#币种名#
 助手回复该币种的价格，当前市值，排名，推荐交易所等
-2.不定时的推送各大交易所公告，让您掌握第一手消息
-"""
+2.不定时的推送各大交易所公告，让您掌握第一手消息"""
 
 
 def generate_welcome_message_c_task_into_new_qun(uqr_info, user_id, bot_username):

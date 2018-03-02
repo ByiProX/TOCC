@@ -97,7 +97,8 @@ def get_gm_default_rule_dict():
     gm_default_rule_dict.setdefault("is_not_full_match", {})
 
     # 目前先用主表来判断
-    rt_quotes_ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).all()
+    rt_quotes_ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
+        RealTimeQuotesDefaultSettingInfo.is_integral == 1).all()
     for rt_quotes_ds_info in rt_quotes_ds_info_list:
         if rt_quotes_ds_info.symbol:
             gm_default_rule_dict["is_full_match"].setdefault(rt_quotes_ds_info.symbol, rt_quotes_ds_info.ds_id)

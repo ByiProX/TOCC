@@ -68,10 +68,10 @@ def app_get_rt_quotes_list_and_status():
     #     },
     # ]
     # example_func = True
-    status, res, func_status = get_rt_quotes_list_and_status(user_info, task_per_page, page_number)
+    status, res, func_status, count = get_rt_quotes_list_and_status(user_info, task_per_page, page_number)
 
     if status == SUCCESS:
-        return make_response(SUCCESS, coin_list=res, func_real_time_quotes=func_status)
+        return make_response(SUCCESS, coin_list=res, func_real_time_quotes=func_status, count=count)
     else:
         return make_response(status)
 

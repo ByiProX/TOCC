@@ -186,7 +186,7 @@ def check_whether_message_is_add_qun(message_analysis):
         status, user_info = _bind_qun_success(message_analysis.talker, user_nickname, bot_username)
         we_conn = WechatConn()
         if status == SUCCESS:
-            we_conn.send_txt_to_follower("您已成功添加bot机器人", user_info.open_id)
+            we_conn.send_txt_to_follower("恭喜！友问币答小助手已经进入您的群了，可立即使用啦\n想再次试用？再次把我拉进群就好啦", user_info.open_id)
         else:
             EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
                                      u"user_nickname: %s." % user_nickname)

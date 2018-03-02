@@ -4,7 +4,9 @@ import logging
 
 from datetime import datetime
 
-from configs.config import ERR_WRONG_FUNC_STATUS, db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, TASK_SEND_TYPE, \
+from sqlalchemy import func
+
+from configs.config import db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, TASK_SEND_TYPE, \
     ERR_WRONG_USER_ITEM, GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
 from models.android_db_models import AContact
 from models.production_consumption_models import ConsumptionTask
@@ -31,7 +33,8 @@ def switch_func_real_time_quotes(user_info, switch):
         return SUCCESS
 
     if switch is True:
-        rt_quotes_ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).all()
+        rt_quotes_ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
+            RealTimeQuotesDefaultSettingInfo.is_integral == 1).all()
         for rt_quotes_ds_info in rt_quotes_ds_info_list:
             rt_quotes_dsu_rel = RealTimeQuotesDSUserRelate()
             rt_quotes_dsu_rel.ds_id = rt_quotes_ds_info.ds_id
@@ -58,8 +61,16 @@ def switch_func_real_time_quotes(user_info, switch):
 def get_rt_quotes_list_and_status(user_info, per_page, page_number):
     # FIXME 此处应按照个人读取，而不应该所有人读取相同的结果
     # 因为目前进度比较急，所以直接读取全部人的结果
-    ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).order_by(
+    ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
+        RealTimeQuotesDefaultSettingInfo.is_integral == 1).order_by(
         RealTimeQuotesDefaultSettingInfo.ds_id).limit(per_page).offset(page_number).all()
+
+    ds_info_count = db.session.query(func.count(RealTimeQuotesDefaultSettingInfo.ds_id)).filter(
+        RealTimeQuotesDefaultSettingInfo.is_integral == 1).first()
+    if ds_info_count:
+        count = int(ds_info_count[0])
+    else:
+        count = 0
 
     res = []
     for ds_info in ds_info_list:
@@ -68,12 +79,13 @@ def get_rt_quotes_list_and_status(user_info, per_page, page_number):
         res_dict.setdefault("coin_name", ds_info.coin_name)
         res_dict.setdefault("logo", ds_info.coin_icon)
         res.append(res_dict)
-    return SUCCESS, res, user_info.func_real_time_quotes
+    return SUCCESS, res, user_info.func_real_time_quotes, count
 
 
 def get_rt_quotes_preview(coin_id):
     ds_info = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
-        RealTimeQuotesDefaultSettingInfo.ds_id == coin_id).first()
+        RealTimeQuotesDefaultSettingInfo.ds_id == coin_id,
+        RealTimeQuotesDefaultSettingInfo.is_integral == 1).first()
     if not ds_info:
         logger.error(u"没有对应的币号. coin_id: %s." % coin_id)
         return ERR_WRONG_ITEM, None
@@ -138,7 +150,8 @@ def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
 
 def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, message_said_username):
     ds_info = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
-        RealTimeQuotesDefaultSettingInfo.ds_id == ds_id).first()
+        RealTimeQuotesDefaultSettingInfo.ds_id == ds_id,
+        RealTimeQuotesDefaultSettingInfo.is_integral == 1).first()
     if not ds_info:
         return ERR_WRONG_ITEM
 
@@ -171,28 +184,58 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
                 nickname = u""
             else:
                 nickname = str_to_unicode(a_contact.nickname)
-            res_text = u"@" + nickname + u" \n"
+            res_text = u"@" + nickname + u" " + ds_info.coin_name + u"\n"
 
-            res_text += ds_info.coin_name + u"的价格为：$" + decimal_to_str(ds_info.price) + u"\n"
+            # 计算价格
+            price = decimal_to_str(ds_info.price)
+            if "." in price:
+                p_split = price.split(".")
+                if len(p_split[1]) > 4:
+                    price = p_split[0] + u"." + p_split[1][:4]
 
-            res_text += u"当前市值：$" + decimal_to_str(ds_info.marketcap) + u"\n"
+            res_text += u"币单价：$" + price + u"\n"
 
-            res_text += u"流通数量：" + decimal_to_str(ds_info.available_supply) + u"\n"
+            # 市值计算
+            marketcap = decimal_to_str(ds_info.marketcap)
+            if "." in marketcap:
+                m_s = marketcap.split(".")
+                if int(m_s[0]) > 1000000000:
+                    marketcap = m_s[0][:-8] + u"." + m_s[0][-8:-6] + u"亿"
+                elif int(m_s[0]) > 100000:
+                    marketcap = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
+            res_text += u"当前市值：$" + marketcap + u"\n"
 
-            res_text += u"推荐交易所：\n"
+            available_supply = decimal_to_str(ds_info.available_supply)
+            if "." in available_supply:
+                m_s = available_supply.split(".")
+                if int(m_s[0]) > 1000000000:
+                    available_supply = m_s[0][:-8] + u"." + m_s[0][-8:-6] + u"亿"
+                elif int(m_s[0]) > 100000:
+                    available_supply = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
+            res_text += u"流通数量：" + available_supply + u"\n"
+
+            res_text += u"推荐交易所："
             if ds_info.suggest_ex1:
-                res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url + "\n"
+                res_text += ds_info.suggest_ex1
             if ds_info.suggest_ex2:
-                res_text += ds_info.suggest_ex2 + u" " + ds_info.suggest_ex2_url + "\n"
+                res_text += "   " + ds_info.suggest_ex2 + u"\n"
+            else:
+                res_text += u"\n"
+            # res_text += u"推荐交易所：\n"
             # if ds_info.suggest_ex1:
-            #     res_text += u'推荐交易所：<a href="' + ds_info.suggest_ex1_url + u'">' + ds_info.suggest_ex1 + u'</a>\n'
+            #     res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url + "\n"
             # if ds_info.suggest_ex2:
-            #     res_text += u'<a href="' + ds_info.suggest_ex2_url + u'">' + ds_info.suggest_ex2 + u'</a>\n'
+            #     res_text += ds_info.suggest_ex2 + u" " + ds_info.suggest_ex2_url + "\n"
 
-            res_text += u"24小时涨幅：" + decimal_to_str(ds_info.change1d) + u"%\n"
+            # 24小时涨幅计算
+            hour24changed = decimal_to_str(ds_info.change1d)
+            if hour24changed[0] != "-":
+                hour24changed = "+" + hour24changed
+            res_text += u"24小时涨幅：" + hour24changed + u"%\n"
 
             res_text += unicode(ds_info.create_time)[:19] + u"\n"
-            res_text += u"【友问币答 来源" + u"block.cc】"
+            res_text += u"【数据来源" + u"block.cc】\n"
+            res_text += u"【友问币答 服务号ID：YACA】"
 
             c_task.task_send_content = json.dumps({"text": res_text})
 
