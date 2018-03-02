@@ -4,6 +4,8 @@ import logging
 
 from datetime import datetime
 
+from sqlalchemy import func
+
 from configs.config import ERR_WRONG_FUNC_STATUS, db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, TASK_SEND_TYPE, \
     ERR_WRONG_USER_ITEM, GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
 from models.android_db_models import AContact
@@ -61,6 +63,12 @@ def get_rt_quotes_list_and_status(user_info, per_page, page_number):
     ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).order_by(
         RealTimeQuotesDefaultSettingInfo.ds_id).limit(per_page).offset(page_number).all()
 
+    ds_info_count = db.session.query(func.count(RealTimeQuotesDefaultSettingInfo)).first()
+    if ds_info_count:
+        count = int(ds_info_count[0])
+    else:
+        count = 0
+
     res = []
     for ds_info in ds_info_list:
         res_dict = {}
@@ -68,7 +76,7 @@ def get_rt_quotes_list_and_status(user_info, per_page, page_number):
         res_dict.setdefault("coin_name", ds_info.coin_name)
         res_dict.setdefault("logo", ds_info.coin_icon)
         res.append(res_dict)
-    return SUCCESS, res, user_info.func_real_time_quotes
+    return SUCCESS, res, user_info.func_real_time_quotes, count
 
 
 def get_rt_quotes_preview(coin_id):
