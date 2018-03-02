@@ -65,7 +65,7 @@ def get_rt_quotes_list_and_status(user_info, per_page, page_number):
         RealTimeQuotesDefaultSettingInfo.is_integral == 1).order_by(
         RealTimeQuotesDefaultSettingInfo.ds_id).limit(per_page).offset(page_number).all()
 
-    ds_info_count = db.session.query(func.count(RealTimeQuotesDefaultSettingInfo)).filter(
+    ds_info_count = db.session.query(func.count(RealTimeQuotesDefaultSettingInfo.ds_id)).filter(
         RealTimeQuotesDefaultSettingInfo.is_integral == 1).first()
     if ds_info_count:
         count = int(ds_info_count[0])
