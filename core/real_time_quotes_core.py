@@ -279,6 +279,6 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
 
     res_text += unicode(ds_info.create_time)[:19] + u"\n"
     res_text += u"【数据来源" + u"block.cc】\n"
-    res_text += u"【友问币答 服务号ID：YACA】"
+    res_text += u"【友问币答 YACA_coin】"
 
     return res_text
