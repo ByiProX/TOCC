@@ -181,7 +181,14 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
                 nickname = str_to_unicode(a_contact.nickname)
             res_text = u"@" + nickname + u" \n"
 
-            res_text += ds_info.coin_name + u"的价格为：$" + decimal_to_str(ds_info.price) + u"\n"
+            # 计算价格
+            price = decimal_to_str(ds_info.price)
+            if "." in price:
+                p_split = price.split(".")
+                if len(p_split[1]) > 4:
+                    price = p_split[0] + "." + p_split[1][:4]
+
+            res_text += ds_info.coin_name + u"的价格为：$" + price + u"\n"
 
             res_text += u"当前市值：$" + decimal_to_str(ds_info.marketcap) + u"\n"
 
