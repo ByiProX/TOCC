@@ -33,7 +33,8 @@ def switch_func_real_time_quotes(user_info, switch):
         return SUCCESS
 
     if switch is True:
-        rt_quotes_ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).all()
+        rt_quotes_ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
+            RealTimeQuotesDefaultSettingInfo.is_integral == 1).all()
         for rt_quotes_ds_info in rt_quotes_ds_info_list:
             rt_quotes_dsu_rel = RealTimeQuotesDSUserRelate()
             rt_quotes_dsu_rel.ds_id = rt_quotes_ds_info.ds_id
@@ -60,10 +61,12 @@ def switch_func_real_time_quotes(user_info, switch):
 def get_rt_quotes_list_and_status(user_info, per_page, page_number):
     # FIXME 此处应按照个人读取，而不应该所有人读取相同的结果
     # 因为目前进度比较急，所以直接读取全部人的结果
-    ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).order_by(
+    ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
+        RealTimeQuotesDefaultSettingInfo.is_integral == 1).order_by(
         RealTimeQuotesDefaultSettingInfo.ds_id).limit(per_page).offset(page_number).all()
 
-    ds_info_count = db.session.query(func.count(RealTimeQuotesDefaultSettingInfo)).first()
+    ds_info_count = db.session.query(func.count(RealTimeQuotesDefaultSettingInfo)).filter(
+        RealTimeQuotesDefaultSettingInfo.is_integral == 1).first()
     if ds_info_count:
         count = int(ds_info_count[0])
     else:
@@ -81,7 +84,8 @@ def get_rt_quotes_list_and_status(user_info, per_page, page_number):
 
 def get_rt_quotes_preview(coin_id):
     ds_info = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
-        RealTimeQuotesDefaultSettingInfo.ds_id == coin_id).first()
+        RealTimeQuotesDefaultSettingInfo.ds_id == coin_id,
+        RealTimeQuotesDefaultSettingInfo.is_integral == 1).first()
     if not ds_info:
         logger.error(u"没有对应的币号. coin_id: %s." % coin_id)
         return ERR_WRONG_ITEM, None
@@ -146,7 +150,8 @@ def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
 
 def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, message_said_username):
     ds_info = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
-        RealTimeQuotesDefaultSettingInfo.ds_id == ds_id).first()
+        RealTimeQuotesDefaultSettingInfo.ds_id == ds_id,
+        RealTimeQuotesDefaultSettingInfo.is_integral == 1).first()
     if not ds_info:
         return ERR_WRONG_ITEM
 
