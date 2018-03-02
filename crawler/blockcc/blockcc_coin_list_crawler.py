@@ -33,7 +33,7 @@ def get_coin_list():
     page = 0
     start_time = datetime.now()
     coin_list = list()
-    while page < page_count / 10:
+    while page < page_count:
         url = u"https://block.cc/api/v1/coin/list?page=" + str(page) + u"&size=200"
         try:
             response = requests.get(url, timeout = 600, headers = headers)
