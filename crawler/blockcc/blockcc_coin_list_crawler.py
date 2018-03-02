@@ -18,7 +18,8 @@ headers = {
     "Host": "block.cc",
     "Connection": "keep-alive",
     "Accept": "application/json, text/plain, */*",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36 encors/0.0.6",
+    "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                  'Chrome/64.0.3282.186 Safari/537.36 encors/0.0.6',
     "lan": "zh",
     "DNT": 1,
     "Referer": "https://block.cc/",
@@ -41,10 +42,10 @@ def get_coin_list():
             coin_list += data_json.get('list')
             page_count = data_json.get('pageCount')
             page += 1
-        except Exception as e:
+        except Exception:
             print 'err'
 
-        print 'done', page, '|', page_count, (datetime.now() - start_time)
+    print 'coin crawler done', (datetime.now() - start_time)
 
     end_time = datetime.now()
     print end_time - start_time
