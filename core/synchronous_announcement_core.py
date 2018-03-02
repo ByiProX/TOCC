@@ -171,13 +171,13 @@ def match_which_user_should_get_notice(platform_name):
                     c_task.task_send_type = TASK_SEND_TYPE['text']
 
                     if len(wait_to_send_info.description) >= 105:
-                        res_text = u"《" + wait_to_send_info.title + u"》\n来源：" + wait_to_send_info.from_source + \
+                        res_text = u" 《" + wait_to_send_info.title + u"》\n来源：" + wait_to_send_info.from_source + \
                                    u"\n\n" + wait_to_send_info.description[:100] + u"...\n\n" + \
                                    wait_to_send_info.origin_url + u"\n" + \
                                    unicode(datetime.fromtimestamp(wait_to_send_info.timestamp / 1000))[:19] + u"\n" + \
                                    u"【友问币答 服务号ID：YACA】"
                     else:
-                        res_text = u"《" + wait_to_send_info.title + u"》\n来源：" + wait_to_send_info.from_source + \
+                        res_text = u" 《" + wait_to_send_info.title + u"》\n来源：" + wait_to_send_info.from_source + \
                                    u"\n\n" + wait_to_send_info.description + u"\n\n" + \
                                    wait_to_send_info.origin_url + u"\n" + \
                                    unicode(datetime.fromtimestamp(wait_to_send_info.timestamp / 1000))[:19] + u"\n" + \
