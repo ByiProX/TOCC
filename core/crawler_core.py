@@ -48,8 +48,8 @@ class CrawlerThread(threading.Thread):
             except Exception:
                 logger.critical("发生未知错误，捕获所有异常，待查")
                 logger.critical(traceback.format_exc())
-                self.go_work = False
-                logger.critical("循环停止运行")
+                # self.go_work = False
+                logger.critical("循环继续运行")
         logger.info(u"End thread id: %s." % str(self.thread_id))
         self.run_end_time = datetime.now()
 
