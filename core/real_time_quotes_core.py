@@ -96,6 +96,10 @@ def get_rt_quotes_preview(coin_id):
     res.setdefault("coin_id", coin_id)
     res.setdefault("name", ds_info.coin_name)
     res.setdefault("logo", ds_info.coin_icon)
+
+    # 组合后的结果
+    text = _build_a_rs_text_to_send(message_said_username=None,ds_info=ds_info)
+    res.setdefault("text",text)
     res.setdefault("price", ds_info.price.to_eng_string())
     res.setdefault("all_price", ds_info.marketcap.to_eng_string())
     res.setdefault("rank", ds_info.rank)
