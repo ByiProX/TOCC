@@ -28,21 +28,21 @@ class Config:
 class ProductionConfig(Config):
     ABS_PATH = './assets'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URI') or 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/YACA'
+        'DATABASE_URI') or 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/CIA'
     SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/cia'}
 
 
 class DevelopmentConfig(Config):
     ABS_PATH = './assets'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URI') or 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/YACADev'
+        'DATABASE_URI') or 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/CIADev'
     SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/cia'}
 
 
 class TestConfig(Config):
     ABS_PATH = './assets'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URI') or 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/YACATest'
+        'DATABASE_URI') or 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/CIATest'
     SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/cia'}
 
 
