@@ -13,6 +13,7 @@ from datetime import datetime
 
 from configs.config import db, CONSUMPTION_CIRCLE_INTERVAL, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, SUCCESS, TASK_SEND_TYPE
 from core.send_task_and_ws_setting_core import send_task_content_to_ws
+from maintenance.setting_by_manual import SetBotRelSettingByManual
 from models.android_db_models import AContact
 from models.material_library_models import MaterialLibraryUser
 from models.production_consumption_models import ConsumptionTask, ConsumptionStatistic, \
@@ -37,7 +38,10 @@ class ConsumptionThread(threading.Thread):
         self.bot_username = self.thread_id[15:]
         bot_info = db.session.query(BotInfo).filter(BotInfo.username == self.bot_username).first()
         if not bot_info:
-            raise ValueError("没有该bot，无法启动")
+            SetBotRelSettingByManual.set_bot_info_by_a_bot_db()
+            bot_info_new = db.session.query(BotInfo).filter(BotInfo.username == self.bot_username).first()
+            if not bot_info_new:
+                raise ValueError("没有该bot，无法启动")
 
     def run(self):
         logger.info(u"Start thread id: %s." % str(self.thread_id))
