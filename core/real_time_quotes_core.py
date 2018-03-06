@@ -229,8 +229,8 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
     # else:
     #     nickname = str_to_unicode(a_contact.nickname)
 
-    res_text = u"\ud83d\udca1" + ds_info.coin_name + u"\ud83d\udca1 \n"
-    res_text += u"-------------------------------\n"
+    res_text = u"\ud83d\udca1" + ds_info.coin_name + u" " + ds_info.coin_name_cn + u" 实时行情\ud83d\udca1 \n"
+    res_text += u"-----------------------\n"
 
     price = decimal_to_str(ds_info.price)
     if "." in price:
@@ -269,7 +269,7 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
     if ds_info.suggest_ex1:
         res_text += ds_info.suggest_ex1
     if ds_info.suggest_ex2:
-        res_text += "   " + ds_info.suggest_ex2 + u"\n"
+        res_text += " " + ds_info.suggest_ex2 + u"\n"
     else:
         res_text += u"\n"
 
