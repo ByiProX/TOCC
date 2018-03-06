@@ -113,4 +113,4 @@ def update_coin_info():
         logger.info(u"update_coin_info success")
 
 
-update_coin_info()
+# update_coin_info()
