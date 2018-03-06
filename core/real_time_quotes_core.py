@@ -222,22 +222,22 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
 
 
 def _build_a_rs_text_to_send(message_said_username, ds_info):
-    a_contact = db.session.query(AContact).filter(AContact.username == message_said_username).first()
-    if not a_contact:
-        logger.error(u"无法找到该人名称")
-        nickname = u""
-    else:
-        nickname = str_to_unicode(a_contact.nickname)
-    res_text = u"@" + nickname + u" " + ds_info.coin_name + u"\n"
+    # a_contact = db.session.query(AContact).filter(AContact.username == message_said_username).first()
+    # if not a_contact:
+    #     logger.error(u"无法找到该人名称")
+    #     nickname = u""
+    # else:
+    #     nickname = str_to_unicode(a_contact.nickname)
 
-    # 计算价格
+    res_text = u"\ud83d\udca1" + ds_info.coin_name + u"\ud83d\udca1 \n"
+    res_text += u"-------------------------------\n"
+
     price = decimal_to_str(ds_info.price)
     if "." in price:
         p_split = price.split(".")
         if len(p_split[1]) > 4:
             price = p_split[0] + u"." + p_split[1][:4]
-
-    res_text += u"币单价：￥" + price + u"\n"
+    res_text += u"价格：￥" + price + u"\n"
 
     # 市值计算
     marketcap = decimal_to_str(ds_info.marketcap)
@@ -247,8 +247,9 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
             marketcap = m_s[0][:-8] + u"." + m_s[0][-8:-6] + u"亿"
         elif int(m_s[0]) > 100000:
             marketcap = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
-    res_text += u"当前市值：￥" + marketcap + u"\n"
+    res_text += u"市值：￥" + marketcap + u"\n"
 
+    # 流通数量
     available_supply = decimal_to_str(ds_info.available_supply)
     if "." in available_supply:
         m_s = available_supply.split(".")
@@ -258,6 +259,12 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
             available_supply = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
     res_text += u"流通数量：" + available_supply + u"\n"
 
+    # 24小时涨幅计算
+    hour24changed = decimal_to_str(ds_info.change1d)
+    if hour24changed[0] != "-":
+        hour24changed = "+" + hour24changed
+    res_text += u"24小时涨幅：" + hour24changed + u"%\n"
+
     res_text += u"推荐交易所："
     if ds_info.suggest_ex1:
         res_text += ds_info.suggest_ex1
@@ -265,20 +272,66 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
         res_text += "   " + ds_info.suggest_ex2 + u"\n"
     else:
         res_text += u"\n"
-    # res_text += u"推荐交易所：\n"
-    # if ds_info.suggest_ex1:
-    #     res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url + "\n"
-    # if ds_info.suggest_ex2:
-    #     res_text += ds_info.suggest_ex2 + u" " + ds_info.suggest_ex2_url + "\n"
 
-    # 24小时涨幅计算
-    hour24changed = decimal_to_str(ds_info.change1d)
-    if hour24changed[0] != "-":
-        hour24changed = "+" + hour24changed
-    res_text += u"24小时涨幅：" + hour24changed + u"%\n"
-
-    res_text += unicode(ds_info.create_time)[:19] + u"\n"
-    res_text += u"【数据来源" + u"block.cc】\n"
-    res_text += u"【友问币答 YACA_coin】"
-
+    res_text += u"更多来源：" + u"block.cc\n"
+    res_text += u"【" + unicode(ds_info.create_time)[:19] + u"】\n"
+    res_text += u"\ud83d\udcc8 友问币答 YACA_coin"
     return res_text
+
+    # 这是以前的算法
+    #
+    #
+    # res_text = u"@" + nickname + u" " + ds_info.coin_name + u"\n"
+    #
+    # # 计算价格
+    # price = decimal_to_str(ds_info.price)
+    # if "." in price:
+    #     p_split = price.split(".")
+    #     if len(p_split[1]) > 4:
+    #         price = p_split[0] + u"." + p_split[1][:4]
+    #
+    # res_text += u"币单价：￥" + price + u"\n"
+    #
+    # # 市值计算
+    # marketcap = decimal_to_str(ds_info.marketcap)
+    # if "." in marketcap:
+    #     m_s = marketcap.split(".")
+    #     if int(m_s[0]) > 1000000000:
+    #         marketcap = m_s[0][:-8] + u"." + m_s[0][-8:-6] + u"亿"
+    #     elif int(m_s[0]) > 100000:
+    #         marketcap = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
+    # res_text += u"当前市值：￥" + marketcap + u"\n"
+    #
+    # available_supply = decimal_to_str(ds_info.available_supply)
+    # if "." in available_supply:
+    #     m_s = available_supply.split(".")
+    #     if int(m_s[0]) > 1000000000:
+    #         available_supply = m_s[0][:-8] + u"." + m_s[0][-8:-6] + u"亿"
+    #     elif int(m_s[0]) > 100000:
+    #         available_supply = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
+    # res_text += u"流通数量：" + available_supply + u"\n"
+    #
+    # res_text += u"推荐交易所："
+    # if ds_info.suggest_ex1:
+    #     res_text += ds_info.suggest_ex1
+    # if ds_info.suggest_ex2:
+    #     res_text += "   " + ds_info.suggest_ex2 + u"\n"
+    # else:
+    #     res_text += u"\n"
+    # # res_text += u"推荐交易所：\n"
+    # # if ds_info.suggest_ex1:
+    # #     res_text += ds_info.suggest_ex1 + u" " + ds_info.suggest_ex1_url + "\n"
+    # # if ds_info.suggest_ex2:
+    # #     res_text += ds_info.suggest_ex2 + u" " + ds_info.suggest_ex2_url + "\n"
+    #
+    # # 24小时涨幅计算
+    # hour24changed = decimal_to_str(ds_info.change1d)
+    # if hour24changed[0] != "-":
+    #     hour24changed = "+" + hour24changed
+    # res_text += u"24小时涨幅：" + hour24changed + u"%\n"
+    #
+    # res_text += unicode(ds_info.create_time)[:19] + u"\n"
+    # res_text += u"【数据来源" + u"block.cc】\n"
+    # res_text += u"【友问币答 YACA_coin】"
+    #
+    # return res_text
