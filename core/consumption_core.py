@@ -19,7 +19,7 @@ from models.material_library_models import MaterialLibraryUser
 from models.production_consumption_models import ConsumptionTask, ConsumptionStatistic, \
     ConsumptionTaskStream
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
-from models.user_bot_models import BotInfo, UserBotRelateInfo, UserInfo
+from models.user_bot_models import BotInfo, UserBotRelateInfo
 from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
@@ -61,7 +61,7 @@ class ConsumptionThread(threading.Thread):
 
                             send_task_content_to_ws(each_task.bot_username, each_task.chatroomname,
                                                     each_task.task_send_type, task_send_content['text'])
-                            time.sleep(random.random() + 0.6)
+                            time.sleep(random.random() * 2 + 2.0)
                         else:
                             logger.error("目前不支持其他类型发送")
                     else:
