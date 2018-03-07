@@ -17,6 +17,7 @@ class CoinWalletQunMemberRelate(db.Model):
     uqun_id = db.Column(db.BigInteger, index=True, nullable=False)
     member_username = db.Column(db.String(32), index=True, nullable=True)
 
+    # 是否被删除。当有可能了解到这个人消失时，更新标记
     member_is_deleted = db.Column(db.Boolean, index=True, nullable=False)
     last_update_time = db.Column(db.DateTime, index=True, nullable=False)
 
