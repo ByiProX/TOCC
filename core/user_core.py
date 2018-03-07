@@ -98,6 +98,7 @@ class UserLogin:
                     self.user_info_up_to_date.func_welcome_message = False
                     self.user_info_up_to_date.func_real_time_quotes = False
                     self.user_info_up_to_date.func_synchronous_announcement = False
+                    self.user_info_up_to_date.func_coin_wallet = False
 
                     db.session.add(self.user_info_up_to_date)
                     db.session.commit()
@@ -282,6 +283,7 @@ def cal_user_basic_page_info(user_info):
         res['user_func'].setdefault('func_welcome', user_info.func_welcome_message)
         res['user_func'].setdefault('func_real_time_quotes', user_info.func_real_time_quotes)
         res['user_func'].setdefault('func_synchronous_announcement', user_info.func_synchronous_announcement)
+        res['user_func'].setdefault('func_coin_wallet', user_info.func_coin_wallet)
         logger.info(u"返回有机器人时群组列表. user_id: %s." % user_info.user_id)
         return SUCCESS, res
 
@@ -299,6 +301,7 @@ def cal_user_basic_page_info(user_info):
         res['user_func'].setdefault('func_welcome', False)
         res['user_func'].setdefault('func_real_time_quotes', False)
         res['user_func'].setdefault('func_synchronous_announcement', False)
+        res['user_func'].setdefault('func_coin_wallet', False)
         logger.info(u"返回无机器人时群组列表. user_id: %s." % user_info.user_id)
         return INFO_NO_USED_BOT, res
 
@@ -349,7 +352,9 @@ def check_whether_message_is_add_friend(message_analysis):
         status, user_info = _bind_bot_success(a_contact.nickname, user_username, bot_info)
         we_conn = WechatConn()
         if status == SUCCESS:
-            we_conn.send_txt_to_follower("您好，欢迎使用数字货币友问币答！请将我拉入您要管理的区块链社群，拉入成功后即可为您的群提供实时查询币价，涨幅榜，币种成交榜，交易所榜，最新动态，行业百科等服务。步骤如下：\n拉我入群➡确认拉群成功➡ 机器人在群发自我介绍帮助群友了解规则➡群友按照命令发关键字➡机器人回复➡完毕", user_info.open_id)
+            we_conn.send_txt_to_follower(
+                "您好，欢迎使用数字货币友问币答！请将我拉入您要管理的区块链社群，拉入成功后即可为您的群提供实时查询币价，涨幅榜，币种成交榜，交易所榜，最新动态，行业百科等服务。步骤如下：\n拉我入群➡确认拉群成功➡ 机器人在群发自我介绍帮助群友了解规则➡群友按照命令发关键字➡机器人回复➡完毕",
+                user_info.open_id)
         else:
             EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
                                      u"user_username: %s." % user_username)
@@ -399,6 +404,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     user_info.func_auto_reply = False
     user_info.func_real_time_quotes = True
     user_info.func_synchronous_announcement = True
+    user_info.func_coin_wallet = False
     db.session.merge(user_info)
     db.session.commit()
     logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.user_id, user_username))
