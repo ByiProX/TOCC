@@ -55,6 +55,19 @@ class UserInfo(db.Model):
         res.pop('token_expired_time')
         return res
 
+    @staticmethod
+    def get_filter_list(filter_list = None, nickname = None, username = None):
+        if filter_list is None:
+            filter_list = list()
+
+        if nickname is not None:
+            filter_list.append(UserInfo.nick_name == nickname)
+
+        if username is not None:
+            filter_list.append(UserInfo.username == username)
+
+        return filter_list
+
 
 class UserPermission(db.Model):
     """
@@ -86,6 +99,8 @@ class UserBotRelateInfo(db.Model):
     set_time = db.Column(db.DateTime, index=True, nullable=False)
     is_setted = db.Column(db.Boolean, index=True, nullable=False)
     is_being_used = db.Column(db.Boolean, index=True, nullable=False)
+
+    create_time = db.Column(db.DateTime, index=True, nullable=False)
 
     db.UniqueConstraint(user_id, bot_id, name='ix_user_bot_relate_user_id_wechat_two_id')
 

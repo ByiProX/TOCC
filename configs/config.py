@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+from decimal import Decimal
 
 from flask import Flask, Blueprint
 from flask_sqlalchemy import SQLAlchemy
@@ -254,3 +255,5 @@ MSG_TYPE_SHARE = 49
 MSG_TYPE_SYS = 10000
 
 WS_MAP = dict()
+
+MAX_MEMBER_COUNT_DECIMAL = Decimal(500)

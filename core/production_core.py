@@ -135,8 +135,7 @@ class ProductionThread(threading.Thread):
                         if coin_price_status is True:
                             continue
 
-                        # 处理完毕后将新情况存入
-
+                    # 处理完毕后将新情况存入
                     self.last_a_message_id = message_list[-1].id
                     self.last_a_message_create_time = message_list[-1].create_time
 
@@ -176,6 +175,47 @@ class ProductionThread(threading.Thread):
     def stop(self):
         logger.info(u"停止进程")
         self.go_work = False
+
+    @staticmethod
+    def _process_a_msg_list(message_list, message_analysis_list = None):
+        if message_analysis_list is None:
+            message_analysis_list = list()
+        for i, a_message in enumerate(message_list):
+            message_analysis = AMessage.analysis_and_save_a_message(a_message)
+            if not message_analysis:
+                continue
+            message_analysis_list.append(message_analysis)
+
+            # 判断这个机器人说的话是否是文字或系统消息
+            if message_analysis.type == MSG_TYPE_TXT or message_analysis.type == MSG_TYPE_SYS:
+                pass
+            else:
+                continue
+
+            # 这个机器人说的话
+            # TODO 当有两个机器人的时候，这里不仅要判断是否是自己说的，还是要判断是否是其他机器人说的
+            if message_analysis.is_send == 1:
+                continue
+
+            # is_add_friend
+            is_add_friend = MessageAnalysis.check_whether_message_is_add_friend(message_analysis)
+            if is_add_friend:
+                continue
+
+            # 检查信息是否为加了一个群
+            is_add_qun = MessageAnalysis.check_whether_message_is_add_qun(message_analysis)
+            if is_add_qun:
+                continue
+
+            # is_removed
+            is_removed = MessageAnalysis.check_is_removed(message_analysis)
+            if is_removed:
+                continue
+
+            # 检测是否是别人的进群提示
+            is_friend_into_qun = MessageAnalysis.check_whether_message_is_friend_into_qun(message_analysis)
+
+        return message_analysis_list
 
 
 production_thread = ProductionThread(thread_id='pcwiyQgeoilnoBkS')
