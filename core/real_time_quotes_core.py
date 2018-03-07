@@ -8,7 +8,6 @@ from sqlalchemy import func
 
 from configs.config import db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, TASK_SEND_TYPE, \
     ERR_WRONG_USER_ITEM
-from models.android_db_models import AContact
 from models.production_consumption_models import ConsumptionTask
 from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
 from models.real_time_quotes_models import RealTimeQuotesDefaultSettingInfo
@@ -65,7 +64,7 @@ def get_rt_quotes_list_and_status(user_info, per_page, page_number):
     # 因为目前进度比较急，所以直接读取全部人的结果
     ds_info_list = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
         RealTimeQuotesDefaultSettingInfo.is_integral == 1).order_by(
-        RealTimeQuotesDefaultSettingInfo.marketcap.desc()).limit(per_page).offset(page_number).all()
+        RealTimeQuotesDefaultSettingInfo.marketcap.desc()).limit(per_page).offset(page_number * per_page).all()
 
     ds_info_count = db.session.query(func.count(RealTimeQuotesDefaultSettingInfo.ds_id)).filter(
         RealTimeQuotesDefaultSettingInfo.is_integral == 1).first()
@@ -98,8 +97,8 @@ def get_rt_quotes_preview(coin_id):
     res.setdefault("logo", ds_info.coin_icon)
 
     # 组合后的结果
-    text = _build_a_rs_text_to_send(message_said_username=None,ds_info=ds_info)
-    res.setdefault("text",text)
+    text = _build_a_rs_text_to_send(message_said_username=None, ds_info=ds_info)
+    res.setdefault("text", text)
     res.setdefault("price", ds_info.price.to_eng_string())
     res.setdefault("all_price", ds_info.marketcap.to_eng_string())
     res.setdefault("rank", ds_info.rank)
