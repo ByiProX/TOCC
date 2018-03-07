@@ -4,6 +4,7 @@ import logging
 from flask import request
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api
+from core.coin_wallet_core import switch_func_coin_wallet
 from core.user_core import UserLogin
 from utils.u_response import make_response
 
@@ -20,8 +21,7 @@ def app_switch_func_coin_wallet():
     if not (switch is True or switch is False):
         return make_response(ERR_PARAM_SET)
 
-    # 样例数据
-    status = SUCCESS
+    status = switch_func_coin_wallet(user_info, switch)
 
     if status == SUCCESS:
         return make_response(SUCCESS)

@@ -5,12 +5,33 @@ import re
 
 from datetime import datetime
 
-from configs.config import db, SUCCESS
+from configs.config import db, SUCCESS, ERR_WRONG_USER_ITEM
 from models.coin_wallet_models import CoinWalletQunMemberRelate, CoinWalletMemberAddressRelate
 from models.qun_friend_models import UserQunRelateInfo
+from models.user_bot_models import UserInfo
 from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
+
+
+def switch_func_coin_wallet(user_info, switch):
+    """
+    打开或关闭钱包记录查看功能
+    :param user_info:
+    :param switch:
+    :return:
+    """
+    if user_info.func_coin_wallet and switch:
+        logger.error("目前已为开启状态，无需再次开启. 返回正常.")
+        return SUCCESS
+    if not user_info.func_coin_wallet and not switch:
+        logger.error("目前已为关闭状态，无需再次关闭. 返回正常.")
+        return SUCCESS
+
+    user_info.func_coin_wallet = switch
+    db.session.merge(user_info)
+    db.session.commit()
+    return SUCCESS
 
 
 def check_whether_message_is_a_coin_wallet(message_analysis):
@@ -41,6 +62,16 @@ def _save_coin_wallet(message_analysis, wallet_address):
                                                                UserQunRelateInfo.is_deleted == 0).all()
     for uqr_info in uqr_info_list:
         uqun_id = uqr_info.uqun_id
+
+        user_id = uqr_info.user_id
+        user_info = db.session.query(UserInfo).filter(UserInfo.user_id == user_id).first()
+        if not user_info:
+            logger.error(u"没有找到uqr绑定关系的userinfo. uqun_id: %s." % uqun_id)
+            return ERR_WRONG_USER_ITEM
+        # 用户功能关闭，不对其进行记录
+        if user_info.func_coin_wallet is False:
+            continue
+
         old_cw_qmr_info = db.session.query(CoinWalletQunMemberRelate). \
             filter(CoinWalletQunMemberRelate.uqun_id == uqun_id,
                    CoinWalletQunMemberRelate.member_username == member_username).first()
