@@ -125,7 +125,7 @@ def match_which_user_should_get_notice(platform_name):
     ds_id = sa_info.ds_id
 
     # 读取更新的信息
-    if sa_info.platform_name == "blockcc":
+    if sa_info.platform_name == "block.cc":
         crawler_database = BlockCCCrawlNotice
 
         wait_to_send_info_list = db.session.query(crawler_database).filter(crawler_database.is_handled == 0).all()
