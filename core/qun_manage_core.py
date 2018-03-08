@@ -95,6 +95,9 @@ def get_group_list(user_info):
     logger.info(u"获取分组列表. user_id: %s." % user_info.user_id)
     return SUCCESS, res
 
+def get_chatroom_list_by_user_info(user_info):
+    uqr_info_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == user_info.user_id).all()
+    # TODO 完成读取一个人的所有群列表的功能
 
 def rename_a_group(group_rename, group_id, user_id):
     group_info = db.session.query(GroupInfo).filter(GroupInfo.group_id == group_id).first()

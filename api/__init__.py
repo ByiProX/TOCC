@@ -10,5 +10,6 @@ import auto_reply_api
 import welcome_message_api
 import real_time_quotes_api
 import synchronous_announcement_api
+import coin_wallet_api
 
 api_str = ""
