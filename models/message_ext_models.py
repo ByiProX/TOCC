@@ -3,10 +3,16 @@ import logging
 
 from datetime import datetime
 
-from configs.config import db, MSG_TYPE_TXT, MSG_TYPE_SYS
+import copy
+
+from configs.config import db, MSG_TYPE_TXT, MSG_TYPE_SYS, CONTENT_TYPE_UNKNOWN, CONTENT_TYPE_TXT, CONTENT_TYPE_PIC, \
+    CONTENT_TYPE_MP3, CONTENT_TYPE_MP4, CONTENT_TYPE_GIF, CONTENT_TYPE_VIDEO, CONTENT_TYPE_SHARE, \
+    CONTENT_TYPE_NAME_CARD, CONTENT_TYPE_SYS, CONTENT_TYPE_RED
 from models.android_db_models import AContact, AMember, ABot, AChatroomR, AFriend
-from models.chatroom_member_models import ChatroomInfo, BotChatroomR, UserChatroomR
+from models.chatroom_member_models import ChatroomInfo, BotChatroomR, UserChatroomR, ChatroomStatistic, MemberStatistic, \
+    MemberInfo
 from models.user_bot_models import BotInfo, UserInfo, UserBotRelateInfo
+from utils.u_time import get_today_0
 from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger("main")
@@ -88,8 +94,7 @@ class MessageAnalysis(db.Model):
             logger.info(u"发现加bot好友用户. username: %s, nickname: %s" % (user_username, user_nickname))
 
             # 验证是否是唯一的friend
-            a_friend = db.session.query(AFriend).filter(AFriend.from_username == bot.username,
-                                                        AFriend.to_username == user_username).first()
+            a_friend = AFriend.get_a_friend(from_username = bot.username, to_username = user_username)
             if a_friend.type % 2 == 1:
                 logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
                              (bot.username, user_username))
@@ -221,6 +226,7 @@ class MessageAnalysis(db.Model):
                                           username = a_chatroom_r.username, is_on = is_on).generate_create_time()
             db.session.merge(bot_chatroom_r)
 
+            # TODO: 初始化
             # 初始化 MemberInfo
             rows = db.session.query(AMember, AContact) \
                 .outerjoin(AContact, AMember.username == AContact.username) \
@@ -250,14 +256,18 @@ class MessageAnalysis(db.Model):
             bot_username = message_analysis.username
             chatroomname = message_analysis.talker
             logger.info(u"发现机器人被踢出群聊. bot_username: %s. chatroomname: %s." % (bot_username, chatroomname))
-            MessageAnalysis._process_is_removed()
+            MessageAnalysis._process_is_removed(chatroomname, bot_username)
         return is_removed
 
     @staticmethod
-    def _process_is_removed():
-        # TODO: is_removed
-        # BotChatroomR is_on = False
-        pass
+    def _process_is_removed(chatroomname, username):
+        filter_list_bcr = BotChatroomR.get_filter_list(chatroomname = chatroomname, username = username, is_on = True)
+        bot_chatroom_r_list = db.session.query(BotChatroomR).filter(*filter_list_bcr).all()
+        # 理论上只有一个
+        for bcr in bot_chatroom_r_list:
+            bcr.is_on = False
+
+        db.session.commit()
 
     @staticmethod
     def check_whether_message_is_friend_into_qun(message_analysis):
@@ -286,32 +296,33 @@ class MessageAnalysis(db.Model):
                 is_send = msg.is_send
                 msg_type = msg.type
 
-                chatroom = db.session.query(Chatroom).filter(Chatroom.chatroom_name == chatroomname).first()
-                wechat_id = chatroom.wechat_id
+                chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroomname == chatroomname).first()
 
-                chatroom_id = chatroom.id
+                chatroom_id = chatroom.chatroom_id
 
                 # calc chatroom statics
-                logger.info('calc chatroom statics')
-                chatroom_statics = ChatroomStatics.get_chatroom_statics(chatroom_id = chatroom_id, time_to_day = today,
-                                                                        wechat_id = wechat_id)
+                logger.info('calc chatroom statistics')
+                chatroom_statics = ChatroomStatistic.fetch_chatroom_statistics(chatroom_id = chatroom_id,
+                                                                               time_to_day = today)
                 logger.info('| speak_count')
                 if msg_type != CONTENT_TYPE_SYS:
                     chatroom_statics.speak_count += 1
                     chatroom.total_speak_count += 1
-                    member = db.session.query(Member).filter(Member.member_name == username).first()
-                    talker_id = member.id
+                    member = db.session.query(MemberInfo).filter(MemberInfo.username == username,
+                                                                 MemberInfo.chatroomname == chatroomname).first()
+                    if not member:
+                        # TODO
+                        pass
+                    talker_id = member.member_id
 
                     # calc member statics
-                    logger.info('calc member   statics')
-                    member_statics = MemberStatics.get_member_statics(member_id = talker_id, time_to_day = today,
-                                                                      chatroom_id = chatroom_id)
+                    logger.info('calc member   statistics')
+                    member_statics = MemberStatistic.fetch_member_statistics(member_id = talker_id, time_to_day = today,
+                                                                             chatroom_id = chatroom_id)
                     logger.info('| speak_count')
                     member_statics.speak_count += 1
-                    if member:
-                        member.speak_count += 1
+                    member.speak_count += 1
 
-                    at_count = 0
                     if msg_type == CONTENT_TYPE_TXT:
                         if content.find(u'@') != -1:
                             logger.info('| be_at_count')
@@ -320,103 +331,83 @@ class MessageAnalysis(db.Model):
                                 chatroom_statics.at_count += at_count
                                 chatroom.total_at_count += at_count
 
-                    # calc wechat statics
-                    if wechat_id is not None:
-                        logger.info('calc wechat   statics')
-                        wechat_statics = WechatStatics.get_wechat_statics(wechat_id = wechat_id, time_to_day = today)
-                        wechat_statics.speak_count += 1
-                        if msg.is_at:
-                            wechat_statics.at_count += at_count
-                        wechat = db.session.query(Wechat).filter(Wechat.id == wechat_id).first()
-                        member_self = db.session.query(Member).filter(Member.nick_name == wechat.nick_name,
-                                                                      Member.chatroom_id == chatroom_id).first()
-                        if member_self and member_self.id == talker_id:
-                            logger.info('| self_speak_count')
-                            wechat_statics.self_speak_count += 1
-                            chatroom_statics.self_speak_count += 1
                 db.session.commit()
 
-                content_type = CONTENT_TYPE_UNKNOWN
-                if msg_type == CONTENT_TYPE_TXT:
-                    content_type = CONTENT_TYPE_TXT
-                elif msg_type == CONTENT_TYPE_PIC:
-                    content_type = CONTENT_TYPE_PIC
-                elif msg_type == CONTENT_TYPE_MP3:
-                    content_type = CONTENT_TYPE_MP3
-                elif msg_type == CONTENT_TYPE_MP4:
-                    content_type = CONTENT_TYPE_MP4
-                elif msg_type == CONTENT_TYPE_GIF:
-                    content_type = CONTENT_TYPE_GIF
-                elif msg_type == CONTENT_TYPE_VIDEO:
-                    content_type = CONTENT_TYPE_VIDEO
-                elif msg_type == CONTENT_TYPE_SHARE:
-                    content_type = CONTENT_TYPE_SHARE
-                elif msg_type == CONTENT_TYPE_NAME_CARD:
-                    content_type = CONTENT_TYPE_NAME_CARD
-                elif msg_type == CONTENT_TYPE_SYS:
-                    content_type = CONTENT_TYPE_SYS
-                    # 红包
-                    if content == u'收到红包，请在手机上查看':
-                        logger.info(u'收到红包')
-                        content_type = CONTENT_TYPE_RED
-                    # 被邀请入群
-                    # Content="frank5433"邀请你和"秦思语-Doodod、磊"加入了群聊
-                    # "Sw-fQ"邀请你加入了群聊，群聊参与人还有：qiezi、Hugh、蒋郁、123
-                    elif content.find(u'邀请你') != -1:
-                        logger.info(u'invite_bot')
-                        MessageAnalysis.invite_bot(msg, chatroom)
-
-                    # 其他人入群：邀请、扫码
-                    # "斗西"邀请"陈若曦"加入了群聊
-                    # " BILL"通过扫描"谢工@GitChat&图灵工作用"分享的二维码加入群聊
-                    # "風中落葉🍂"邀请"大冬天的、追忆那年的似水年华、往事随风去、搁浅、陈梁～HILTI"加入了群聊
-                    elif content.find(u'加入了群聊') != -1 or content.find(u'加入群聊') != -1:
-                        logger.info(u'invite_other')
-                        MessageAnalysis.invite_other(msg, chatroom)
-
-                    # 修改群名
-                    # "阿紫"修改群名为“测试群”
-                    elif content.find(u'修改群名为') != -1:
-                        logger.info(u'修改群名')
-                        chatroom_nick_name = content.split(u'修改群名为')[1][1:-1]
-                        logger.info(u'chatroom_nick_name: ' + chatroom_nick_name)
-                        chatroom.nick_name = chatroom_nick_name
-                    # 移除群聊
-                    elif content.find(u'移除群聊') != -1:
-                        pass
-                    else:
-                        logger.info('UNKOWN SYS INFO: ')
-                        logger.info(content)
-                    db.session.commit()
-
-                # calc content_type
-                logger.info('calc chatroom content type')
-                logger.info('calc member   content type')
-                chatroom_content_type = ChatroomContentType.get_chatroom_content_type(chatroom_id = chatroom_id,
-                                                                                      content_type = content_type)
-
-                chatroom_content_type.incre()
-                if content_type is not CONTENT_TYPE_SYS and content_type is not CONTENT_TYPE_RED:
-                    member = db.session.query(Member).filter(Member.member_name == username).first()
-                    talker_id = member.id
-                    member_content_type = MemberContentType.get_member_content_type(member_id = talker_id,
-                                                                                    content_type = content_type)
-                    member_content_type.incre()
-                    if content_type is CONTENT_TYPE_SHARE:
-                        pass
-
-                if wechat_id is not None:
-                    logger.info('calc wechat   content type')
-                    wechat_content_type = WechatContentType.get_wechat_content_type(wechat_id = wechat_id,
-                                                                                    content_type = content_type)
-                    wechat_content_type.incre()
-
-                db.session.commit()
+                # content_type = CONTENT_TYPE_UNKNOWN
+                # if msg_type == CONTENT_TYPE_TXT:
+                #     content_type = CONTENT_TYPE_TXT
+                # elif msg_type == CONTENT_TYPE_PIC:
+                #     content_type = CONTENT_TYPE_PIC
+                # elif msg_type == CONTENT_TYPE_MP3:
+                #     content_type = CONTENT_TYPE_MP3
+                # elif msg_type == CONTENT_TYPE_MP4:
+                #     content_type = CONTENT_TYPE_MP4
+                # elif msg_type == CONTENT_TYPE_GIF:
+                #     content_type = CONTENT_TYPE_GIF
+                # elif msg_type == CONTENT_TYPE_VIDEO:
+                #     content_type = CONTENT_TYPE_VIDEO
+                # elif msg_type == CONTENT_TYPE_SHARE:
+                #     content_type = CONTENT_TYPE_SHARE
+                # elif msg_type == CONTENT_TYPE_NAME_CARD:
+                #     content_type = CONTENT_TYPE_NAME_CARD
+                # elif msg_type == CONTENT_TYPE_SYS:
+                #     content_type = CONTENT_TYPE_SYS
+                #     # 红包
+                #     if content == u'收到红包，请在手机上查看':
+                #         logger.info(u'收到红包')
+                #         content_type = CONTENT_TYPE_RED
+                #     # 被邀请入群
+                #     # Content="frank5433"邀请你和"秦思语-Doodod、磊"加入了群聊
+                #     # "Sw-fQ"邀请你加入了群聊，群聊参与人还有：qiezi、Hugh、蒋郁、123
+                #     elif content.find(u'邀请你') != -1:
+                #         logger.info(u'invite_bot')
+                #         MessageAnalysis.invite_bot(msg, chatroom)
+                #
+                #     # 其他人入群：邀请、扫码
+                #     # "斗西"邀请"陈若曦"加入了群聊
+                #     # " BILL"通过扫描"谢工@GitChat&图灵工作用"分享的二维码加入群聊
+                #     # "風中落葉🍂"邀请"大冬天的、追忆那年的似水年华、往事随风去、搁浅、陈梁～HILTI"加入了群聊
+                #     elif content.find(u'加入了群聊') != -1 or content.find(u'加入群聊') != -1:
+                #         logger.info(u'invite_other')
+                #         MessageAnalysis.invite_other(msg, chatroom)
+                #
+                #     # 修改群名
+                #     # "阿紫"修改群名为“测试群”
+                #     elif content.find(u'修改群名为') != -1:
+                #         logger.info(u'修改群名')
+                #         chatroom_nick_name = content.split(u'修改群名为')[1][1:-1]
+                #         logger.info(u'chatroom_nick_name: ' + chatroom_nick_name)
+                #         chatroom.nick_name = chatroom_nick_name
+                #     # 移除群聊
+                #     elif content.find(u'移除群聊') != -1:
+                #         pass
+                #     else:
+                #         logger.info('UNKOWN SYS INFO: ')
+                #         logger.info(content)
+                #     db.session.commit()
+                #
+                # # calc content_type
+                # logger.info('calc chatroom content type')
+                # logger.info('calc member   content type')
+                # chatroom_content_type = ChatroomContentType.get_chatroom_content_type(chatroom_id = chatroom_id,
+                #                                                                       content_type = content_type)
+                #
+                # chatroom_content_type.incre()
+                # if content_type is not CONTENT_TYPE_SYS and content_type is not CONTENT_TYPE_RED:
+                #     member = db.session.query(Member).filter(Member.member_name == username).first()
+                #     talker_id = member.id
+                #     member_content_type = MemberContentType.get_member_content_type(member_id = talker_id,
+                #                                                                     content_type = content_type)
+                #     member_content_type.incre()
+                #     if content_type is CONTENT_TYPE_SHARE:
+                #         pass
+                #
+                # db.session.commit()
         except:
             db.session.rollback()
-            logger.exception("BaseException")
+            logger.exception("Exception")
         finally:
-            logger.info('process_msg_v2 db.session.close()')
+            logger.info('count_msg db.session.close()')
             db.session.close()
 
     @staticmethod
@@ -425,14 +416,14 @@ class MessageAnalysis(db.Model):
         content = str_to_unicode(msg.content)
         content_tmp = copy.deepcopy(content)
         today = get_today_0()
-        member = db.session.query(Member).filter(Member.member_name == msg.real_talker).first()
+        member = db.session.query(MemberInfo).filter(MemberInfo.member_name == msg.real_talker).first()
         if not member:
             logger.error(u"找不到 member: " + str_to_unicode(msg.real_talker))
             return
-        talker_id = member.id
+        talker_id = member.member_id
 
         print u''
-        chatroom_id = chatroom.id
+        chatroom_id = chatroom.chatroom_id
         if content_tmp.find(u'@') != -1:
             msg.is_at = True
             checked_flag = False
@@ -587,7 +578,7 @@ class MessageAnalysis(db.Model):
     @staticmethod
     def check_chatroom(chatroom):
         bot = db.session.query(Bot).filter(Bot.id == chatroom.bot_id).first()
-        a_contact_chatroom = db.session.query(AContact).filter(AContact.username == chatroom.chatroom_name)
+        a_contact_chatroom = db.session.query(AContact).filter(AContact.username == chatroom.chatroomname)
         chatroom = Chatroom().load_from_a_chatroom(
             bot_id = bot.id, a_contact_chatroom = a_contact_chatroom, wechat_id = chatroom.wechat_id) \
             .generate_create_time().generate_update_time()
@@ -596,5 +587,5 @@ class MessageAnalysis(db.Model):
 
         rows = db.session.query(AMember, AContact) \
             .outerjoin(AContact, AMember.username == AContact.username) \
-            .filter(AMember.chatroomname == chatroom.chatroom_name).all()
+            .filter(AMember.chatroomname == chatroom.chatroomname).all()
         chatroom.init_members_from_a_members(rows)

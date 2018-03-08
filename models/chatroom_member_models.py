@@ -18,6 +18,9 @@ class ChatroomInfo(db.Model):
     chatroom_id = db.Column(db.BigInteger, primary_key=True)
     chatroomname = db.Column(db.String(32), index=True, unique=True, nullable=False)
 
+    total_speak_count = db.Column(db.BigInteger, index=True, nullable=False)
+    total_at_count = db.Column(db.BigInteger, index=True, nullable=False)
+
     bz_value = db.Column(db.DECIMAL(5, 2), index=True)
     # participative_count = db.Column(db.Integer, index = True)
     # interactive_index = db.Column(db.Float, index = True)
@@ -29,11 +32,14 @@ class ChatroomInfo(db.Model):
     create_time = db.Column(db.DateTime, index=True, nullable=False)
     update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
 
-    def __init__(self, chatroom_id, chatroomname, member_count):
+    def __init__(self, chatroom_id, chatroomname, member_count, total_speak_count = 0, total_at_count = 0):
         self.chatroom_id = chatroom_id
         self.chatroomname = chatroomname
 
         self.bz_value = Decimal(member_count) / MAX_MEMBER_COUNT_DECIMAL
+
+        self.total_speak_count = total_speak_count
+        self.total_at_count = total_at_count
 
     def generate_create_time(self, create_time = None):
         if create_time is None:
@@ -71,6 +77,22 @@ class BotChatroomR(db.Model):
         self.create_time = create_time
         return self
 
+    @staticmethod
+    def get_filter_list(filter_list = None, chatroomname = None, username = None, is_on = None):
+        if filter_list is None:
+            filter_list = list()
+
+        if chatroomname is not None:
+            filter_list.append(BotChatroomR.chatroomname == chatroomname)
+
+        if username is not None:
+            filter_list.append(BotChatroomR.username == username)
+
+        if is_on is not None:
+            filter_list.append(BotChatroomR.is_on == is_on)
+
+        return filter_list
+
 
 class UserChatroomR(db.Model):
     __tablename__ = "user_chatroom_r"
@@ -102,6 +124,10 @@ class MemberInfo(db.Model):
     chatroomname = db.Column(db.String(32), index=True, nullable=True)
     username = db.Column(db.String(32), index=True, nullable=False)
 
+    chatroom_id = db.Column(db.BigInteger, index=True, nullable=False)
+
+    speak_count = db.Column(db.BigInteger, index = True, nullable = False)
+
     create_time = db.Column(db.DateTime, index=True, nullable=False)
     update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
 
@@ -127,16 +153,96 @@ class ChatroomActive(db.Model):
     username = db.Column(db.String(32), primary_key=True)
     time_to_day = db.Column(db.DateTime, primary_key=True)
 
-    create_time = db.Column(db.DateTime, index=True)
+    create_time = db.Column(db.DateTime, index=True, nullable=False)
 
 
 class ChatroomStatistic(db.Model):
     __tablename__ = "chatroom_statistic"
+    chatroom_id = db.Column(db.BigInteger, primary_key=True)
+    time_to_day = db.Column(db.DateTime, primary_key=True)
+
+    speak_count = db.Column(db.BigInteger, index=True, nullable=False)
+
+    # deprecated
+    at_count = db.Column(db.Integer, index=True, nullable=False)
+
+    update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
+
+    def __init__(self, chatroom_id, time_to_day, speak_count = 0, at_count = 0):
+        self.chatroom_id = chatroom_id
+        self.time_to_day = time_to_day
+        self.speak_count = speak_count
+        self.at_count = at_count
+
+    @staticmethod
+    def fetch_chatroom_statistics(chatroom_id, time_to_day, create_flag = True, save_flag = True):
+        chatroom_statistics = db.session.query(ChatroomStatistic.chatroom_id == chatroom_id,
+                                               ChatroomStatistic.time_to_day == time_to_day).first()
+        if not chatroom_statistics and create_flag:
+            chatroom_statistics = ChatroomStatistic(chatroom_id, time_to_day)
+            if save_flag:
+                db.session.add(chatroom_statistics)
+                db.session.commit()
+
+        return chatroom_statistics
 
 
 class MemberOverview(db.Model):
     __tablename__ = "member_overview"
+    member_id = db.Column(db.BigInteger, primary_key=True)
+    scope = db.Column(db.Integer, primary_key=True)
+
+    chatroom_id = db.Column(db.BigInteger, index=True, nullable=False)
+
+    be_at_count = db.Column(db.Integer, index=True, nullable=False)
+    speak_count = db.Column(db.Integer, index=True, nullable=False)
+    invitation_count = db.Column(db.Integer, index=True, nullable=False)
+
+    red_package_count = db.Column(db.Integer, index=True, nullable=False)
+    effect_num = db.Column(db.DECIMAL(5, 2), index=True, nullable=False)
+
+    # active_index = db.Column(db.Float, index = True)
+    # importance_index = db.Column(db.Float, index = True)
+
+    update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
 
 
 class MemberStatistic(db.Model):
     __tablename__ = "member_statistic"
+    member_id = db.Column(db.BigInteger, primary_key=True)
+    time_to_day = db.Column(db.DateTime, primary_key=True)
+
+    chatroom_id = db.Column(db.BigInteger, index=True, nullable=False)
+
+    be_at_count = db.Column(db.Integer, index=True, nullable=False)
+    speak_count = db.Column(db.Integer, index=True, nullable=False)
+    invitation_count = db.Column(db.Integer, index=True, nullable=False)
+
+    red_package_count = db.Column(db.Integer, index=True, nullable=False)
+    effect_num = db.Column(db.DECIMAL(5, 2), index=True, nullable=False)
+
+    update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
+
+    def __init__(self, member_id, time_to_day, chatroom_id, be_at_count = 0, speak_count = 0, invitation_count = 0,
+                 red_package_count = 0, effect_num = Decimal(u"0")):
+        self.member_id = member_id
+        self.time_to_day = time_to_day
+        self.chatroom_id = chatroom_id
+
+        self.be_at_count = be_at_count
+        self.speak_count = speak_count
+        self.invitation_count = invitation_count
+        self.red_package_count = red_package_count
+        self.effect_num = effect_num
+
+    @staticmethod
+    def fetch_member_statistics(member_id, time_to_day, chatroom_id, create_flag = True, save_flag = True):
+        member_statistics = db.session.query(MemberStatistic.member_id == member_id,
+                                             MemberStatistic.time_to_day == time_to_day).first()
+        if not member_statistics and create_flag:
+            member_statistics = MemberStatistic(member_id, time_to_day, chatroom_id)
+            if save_flag:
+                db.session.add(member_statistics)
+                db.session.commit()
+
+        return member_statistics

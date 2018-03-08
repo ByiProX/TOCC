@@ -148,6 +148,20 @@ class AFriend(db.Model):
 
     db.UniqueConstraint(from_username, to_username, name='ix_a_friend_name')
 
+    @staticmethod
+    def get_a_friend(from_username, to_username):
+        a_friend = None
+        times = 3
+        while times:
+            a_friend = db.session.query(AFriend).filter(AFriend.from_username == from_username,
+                                                        AFriend.to_username == to_username).first()
+            if a_friend:
+                break
+            sleep(1)
+            times -= 1
+
+        return a_friend
+
 
 class AMember(db.Model):
     __tablename__ = 'a_member'
