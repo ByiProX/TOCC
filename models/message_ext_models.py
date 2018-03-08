@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 
 from configs.config import db, MSG_TYPE_TXT, MSG_TYPE_SYS
-from models.android_db_models import AContact, AMember, ABot, AChatroomR
+from models.android_db_models import AContact, AMember, ABot, AChatroomR, AFriend
 from models.chatroom_member_models import ChatroomInfo, BotChatroomR, UserChatroomR
 from models.user_bot_models import BotInfo, UserInfo, UserBotRelateInfo
 from utils.u_transformat import str_to_unicode
@@ -86,6 +86,14 @@ class MessageAnalysis(db.Model):
         if a_contact:
             user_nickname = a_contact.nickname
             logger.info(u"发现加bot好友用户. username: %s, nickname: %s" % (user_username, user_nickname))
+
+            # 验证是否是唯一的friend
+            a_friend = db.session.query(AFriend).filter(AFriend.from_username == bot.username,
+                                                        AFriend.to_username == user_username).first()
+            if a_friend.type % 2 == 1:
+                logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
+                             (bot.username, user_username))
+                return
 
             filter_list_user = UserInfo.get_filter_list(nickname = user_nickname)
             filter_list_user.append(UserInfo.username == u"")
