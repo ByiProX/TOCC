@@ -5,6 +5,7 @@ from decimal import Decimal
 from datetime import datetime
 
 from configs.config import db, MAX_MEMBER_COUNT_DECIMAL
+from models.android_db_models import AMember, AContact
 
 logger = logging.getLogger("main")
 
@@ -127,11 +128,48 @@ class MemberInfo(db.Model):
     chatroom_id = db.Column(db.BigInteger, index=True, nullable=False)
 
     speak_count = db.Column(db.BigInteger, index = True, nullable = False)
+    be_at_count = db.Column(db.BigInteger, index = True, nullable = False)
 
     create_time = db.Column(db.DateTime, index=True, nullable=False)
     update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
 
     db.UniqueConstraint(chatroomname, username, name='ix_a_member_name')
+
+    @staticmethod
+    def fetch_member_by_username(chatroomname, username):
+        member = db.session.query(MemberInfo).filter(MemberInfo.chatroomname == chatroomname,
+                                                     MemberInfo.username == username).first()
+        if not member:
+            MemberInfo.update_members()
+            # 更新信息之后再查不到就不管了
+            member = db.session.query(MemberInfo).filter(MemberInfo.chatroomname == chatroomname,
+                                                         MemberInfo.username == username).first()
+
+        return member
+
+    @staticmethod
+    def fetch_member_by_nickname(chatroomname, nickname):
+        member = None
+        if nickname:
+            # 匹配 AMember
+            a_member = db.session.query(AMember).filter(AMember.displayname == nickname,
+                                                        AMember.chatroomname == chatroomname).first()
+            if not a_member:
+                # 匹配 AContact
+                a_contact = db.session.query(AContact).outerjoin(AMember, AMember.username == AContact.username)\
+                    .filter(AContact.nickname == nickname, AMember.chatroomname == chatroomname).first()
+                if a_contact:
+                    member = MemberInfo.fetch_member_by_username(chatroomname, a_contact.username)
+                else:
+                    logger.error(u"未匹配到 member, nickname: %s, chatroom: %s" % (nickname, chatroomname))
+            else:
+                member = MemberInfo.fetch_member_by_username(chatroomname, a_member.username)
+
+        return member
+
+    @staticmethod
+    def update_members():
+        pass
 
 
 class ChatroomOverview(db.Model):
