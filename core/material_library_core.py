@@ -45,20 +45,22 @@ def generate_material_into_frontend_by_material_id(material_id):
     return temp_material_dict
 
 
-def analysis_frontend_material_and_put_into_mysql(user_id, message_info, now_time):
-    # 确认是否为已有的资源
-    material_id = message_info.get("material_id")
-    if material_id:
-        um_lib_old = db.session.query(MaterialLibraryUser).filter(
-            MaterialLibraryUser.material_id == material_id).first()
-        if not um_lib_old:
-            logger.error(u"没有根据material_id找到对应的资源. material_id: %s." % material_id)
-            return ERR_WRONG_ITEM, None
+def analysis_frontend_material_and_put_into_mysql(user_id, message_info, now_time, update_material=True):
+    if update_material is True:
 
-        um_lib_old.used_count += 1
-        um_lib_old.last_used_time = now_time
-        db.session.commit()
-        return SUCCESS, um_lib_old
+        # 确认是否为已有的资源
+        material_id = message_info.get("material_id")
+        if material_id:
+            um_lib_old = db.session.query(MaterialLibraryUser).filter(
+                MaterialLibraryUser.material_id == material_id).first()
+            if not um_lib_old:
+                logger.error(u"没有根据material_id找到对应的资源. material_id: %s." % material_id)
+                return ERR_WRONG_ITEM, None
+
+            um_lib_old.used_count += 1
+            um_lib_old.last_used_time = now_time
+            db.session.commit()
+            return SUCCESS, um_lib_old
 
     um_lib = MaterialLibraryUser()
     um_lib.user_id = user_id
