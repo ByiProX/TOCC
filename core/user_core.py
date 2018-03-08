@@ -371,13 +371,18 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     # 所以此处先sleep一段时间，等待AFriend更新后再读取
     time.sleep(5)
 
+    # 验证是否是唯一的friend
     a_friend_list = db.session.query(AFriend).filter(AFriend.from_username == bot_info.username,
                                                      AFriend.to_username == user_username).all()
-    if len(a_friend_list) > 1:
+    true_a_friend_list = []
+    for a_friend in a_friend_list:
+        if a_friend.type % 2 == 1:
+            true_a_friend_list.append(a_friend)
+    if len(true_a_friend_list) > 1:
         logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
         return ERR_HAVE_SAME_PEOPLE, None
-    elif len(a_friend_list) == 0:
+    elif len(true_a_friend_list) == 0:
         logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
         return ERR_WRONG_ITEM, None
@@ -411,6 +416,9 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
 
     ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
                                                           UserBotRelateInfo.bot_id == bot_info.bot_id).first()
+    if not ubr_info:
+        logger.error("没有完成bot与user的预绑定过程. user_id: %s." % user_info.user_id)
+        return ERR_WRONG_ITEM, None
 
     ubr_info.is_setted = True
     ubr_info.is_being_used = True
