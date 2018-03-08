@@ -55,7 +55,7 @@ class ConsumptionThread(threading.Thread):
                     order_by(ConsumptionTask.task_id).all()
 
                 for i, each_task in enumerate(ct_list):
-                    if each_task.task_type in [1, 2, 5, 6, 7]:
+                    if each_task.task_type in [1, 2, 5, 7]:
                         task_send_content = json.loads(each_task.task_send_content)
                         if each_task.task_send_type == TASK_SEND_TYPE['text']:
 
