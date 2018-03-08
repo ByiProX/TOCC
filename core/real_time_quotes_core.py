@@ -161,9 +161,10 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
         return ERR_WRONG_ITEM
 
     uqr_info_list = db.session.query(UserQunRelateInfo).filter(
-        UserQunRelateInfo.chatroomname == message_chatroomname).all()
+        UserQunRelateInfo.chatroomname == message_chatroomname,
+        UserQunRelateInfo.is_deleted == 0).all()
     if not uqr_info_list:
-        logger.error("没有符合该群的机器人及用户")
+        logger.warning("在未开启实时报价的群中发现报价关键字")
         return ERR_WRONG_ITEM
     chatroom_relate_user_id_dict = {}
     for uqr_info in uqr_info_list:
