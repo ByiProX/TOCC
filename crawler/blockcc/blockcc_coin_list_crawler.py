@@ -61,7 +61,7 @@ def update_coin_info():
         new_coin_dict = dict()
         for coin_json in coin_list:
             coin_id = coin_json.get(u'id', u'')
-            symbol = coin_json.get(u'symbol')
+            symbol = coin_json.get(u'symbol').upper()
             if not symbol:
                 continue
             coin_name = coin_json.get(u'name', u'')
@@ -92,7 +92,7 @@ def update_coin_info():
 
         # 去重插新
         old_coin_list = db.session.query(RealTimeQuotesDefaultSettingInfo).all()
-        old_coin_dict = {coin.symbol: coin for coin in old_coin_list if coin.symbol}
+        old_coin_dict = {coin.symbol.upper(): coin for coin in old_coin_list if coin.symbol}
         old_coin_symbol_set = set(old_coin_dict.keys())
         new_coin_symbol_set = set(new_coin_dict.keys())
         comm_coin_symbol_set = new_coin_symbol_set & old_coin_symbol_set
