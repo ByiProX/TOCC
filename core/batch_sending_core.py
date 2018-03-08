@@ -162,7 +162,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     valid_material_list = []
     for i, message_info in enumerate(message_list):
         message_return, um_lib = analysis_frontend_material_and_put_into_mysql(user_info.user_id, message_info,
-                                                                               now_time)
+                                                                               now_time, update_material=True)
         if message_return == SUCCESS:
             pass
         elif message_return == ERR_WRONG_ITEM:

@@ -204,8 +204,9 @@ def delete_a_auto_reply_setting(user_info, setting_id):
     return SUCCESS
 
 
-def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list):
+def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list, update_material=True):
     """
+    update_material 指是否读取每个material中的id。如果为True，则用老的。如果为False，则用新的
     新建一条回复setting
     :return:
     """
@@ -252,7 +253,8 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
     valid_material_list = []
     for i, message_info in enumerate(message_list):
         message_return, um_lib = analysis_frontend_material_and_put_into_mysql(user_info.user_id, message_info,
-                                                                               now_time)
+                                                                               now_time,
+                                                                               update_material=update_material)
         if message_return == SUCCESS:
             pass
         elif message_return == ERR_WRONG_ITEM:
@@ -313,7 +315,7 @@ def update_a_tuto_reply_setting(user_info, chatroom_list, message_list, keyword_
     else:
         logger.error(u"删除失败，不进行任务建立. setting_id: %s." % setting_id)
         return status
-    status = create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list)
+    status = create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list, update_material=False)
     if status == SUCCESS:
         logger.info(u"更新自动回复任务成功.")
         return SUCCESS
@@ -330,7 +332,7 @@ def activate_rule_and_add_task_to_consumption_task(ar_setting_id, message_chatro
 
     valid_chatroom_list = []
     uqr_info = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == ar_setting_info.user_id,
-                                                          UserQunRelateInfo.chatroomname == message_chatroomname).\
+                                                          UserQunRelateInfo.chatroomname == message_chatroomname). \
         first()
     if not uqr_info:
         logger.error("没有属于该用户的该群")
