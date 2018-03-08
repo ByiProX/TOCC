@@ -417,7 +417,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
                                                           UserBotRelateInfo.bot_id == bot_info.bot_id).first()
     if not ubr_info:
-        logger.error("没有完成bot与user的预绑定过程. user_id: %s." % user_info.user_id)
+        logger.error(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.user_id)
         return ERR_WRONG_ITEM, None
 
     ubr_info.is_setted = True
