@@ -30,20 +30,20 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
     price = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
     # 交易量
     volume_ex = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
+    # 排名
+    rank = db.Column(db.Integer, index=True, nullable=False)
 
-    # 推荐交易所
-    suggest_ex1 = db.Column(db.String(64))
-    suggest_ex2 = db.Column(db.String(64))
-    suggest_ex1_url = db.Column(db.String(1024))
-    suggest_ex2_url = db.Column(db.String(1024))
     # 数据完整性
     is_integral = db.Column(db.Boolean, index=True, nullable=False)
 
     create_time = db.Column(db.DateTime, index=True, nullable=False)
 
     # deprecated
-    # 排名
-    rank = db.Column(db.Integer, index=True, nullable=False)
+    # 推荐交易所
+    suggest_ex1 = db.Column(db.String(64))
+    suggest_ex2 = db.Column(db.String(64))
+    suggest_ex1_url = db.Column(db.String(1024))
+    suggest_ex2_url = db.Column(db.String(1024))
     # 前推 24 小时交易价
     open = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
     # 当前交易价
@@ -51,13 +51,12 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
     # 24 小时成交额
     vol = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
 
-    def __init__(self, symbol, coin_name, coin_name_cn, coin_id, available_supply, change1d, change7d, change1h, price,
-                 volume_ex, marketcap, suggest_ex1, suggest_ex2, suggest_ex1_url, suggest_ex2_url):
+    def __init__(self, symbol, coin_name, coin_name_cn, coin_icon, available_supply, change1d, change7d, change1h,
+                 price, volume_ex, marketcap, rank):
         self.symbol = symbol
         self.coin_name = coin_name
         self.coin_name_cn = coin_name_cn
-        self.coin_icon = u"https://blockchains.oss-cn-shanghai.aliyuncs.com/static/coinInfo/" + unicode(
-            coin_id) + u".png"
+        self.coin_icon = coin_icon
         self.available_supply = available_supply
         self.change1d = change1d
         self.change7d = change7d
@@ -66,16 +65,12 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
         self.volume_ex = volume_ex
         self.marketcap = marketcap
         self.create_time = datetime.now()
-        self.suggest_ex1 = suggest_ex1
-        self.suggest_ex2 = suggest_ex2
-        self.suggest_ex1_url = suggest_ex1_url
-        self.suggest_ex2_url = suggest_ex2_url
+        self.rank = rank
         self.is_integral = True
 
         self.open = 0
         self.close = 0
         self.vol = 0
-        self.rank = 0
 
 
 class RealTimeQuotesDefaultKeywordRelateInfo(db.Model):
