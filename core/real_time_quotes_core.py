@@ -245,7 +245,7 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
 
     # 市场排名
     rank = ds_info.rank
-    res_text += u"排名：第 " + rank + u" 名\n"
+    res_text += u"排名：第 " + unicode(rank) + u" 名\n"
 
     # 市值计算
     marketcap = decimal_to_str(ds_info.marketcap)
