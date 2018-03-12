@@ -17,7 +17,7 @@ import models
 import api
 import configs
 
-app.register_blueprint(main_api, url_prefix='/yaca_api')
+app.register_blueprint(main_api, url_prefix='/cia_api')
 
 models.import_str = ""
 api.api_str = ""
@@ -28,6 +28,12 @@ __version__ = "2.0.1"
 
 @app.route('/hello')
 def hello():
+    return "hello"
+    # return make_response(SUCCESS, str = "hello")
+
+
+@app.route('/cia_api/hello')
+def cia_api_hello():
     return "hello"
     # return make_response(SUCCESS, str = "hello")
 
