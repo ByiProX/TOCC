@@ -243,6 +243,10 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
             price = p_split[0] + u"." + p_split[1][:4]
     res_text += u"价格：￥" + price + u"\n"
 
+    # 市场排名
+    rank = ds_info.rank
+    res_text += u"排名：第 " + rank + u" 名\n"
+
     # 市值计算
     marketcap = decimal_to_str(ds_info.marketcap)
     if "." in marketcap:
@@ -269,15 +273,16 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
         hour24changed = "+" + hour24changed
     res_text += u"24小时涨幅：" + hour24changed + u"%\n"
 
-    res_text += u"推荐交易所："
-    if ds_info.suggest_ex1:
-        res_text += ds_info.suggest_ex1
-    if ds_info.suggest_ex2:
-        res_text += " " + ds_info.suggest_ex2 + u"\n"
-    else:
-        res_text += u"\n"
+    # 暂时不要
+    # res_text += u"推荐交易所："
+    # if ds_info.suggest_ex1:
+    #     res_text += ds_info.suggest_ex1
+    # if ds_info.suggest_ex2:
+    #     res_text += " " + ds_info.suggest_ex2 + u"\n"
+    # else:
+    #     res_text += u"\n"
 
-    res_text += u"更多来源：" + u"block.cc\n"
+    res_text += u"数据来源：" + u"coinmarketcap\n"
     res_text += u"【" + unicode(ds_info.create_time)[:19] + u"】\n"
     res_text += u"\ud83d\udcc8 友问币答 YACA_coin"
     return res_text
