@@ -10,16 +10,9 @@ import logging
 from datetime import datetime, timedelta
 from sqlalchemy import desc
 
-from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, GLOBAL_RULES_UPDATE_FLAG, MSG_TYPE_TXT, MSG_TYPE_SYS, \
-    GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, GLOBAL_NOTICE_UPDATE_FLAG
-from core.matching_rule_core import get_gm_rule_dict, match_message_by_rule, get_gm_default_rule_dict
-from core.message_core import analysis_and_save_a_message
-from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
-from core.real_time_quotes_core import match_message_by_coin_keyword
-from core.synchronous_announcement_core import match_which_user_should_get_notice
-from core.user_core import check_whether_message_is_add_friend
-from core.welcome_message_core import check_whether_message_is_friend_into_qun
+from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, MSG_TYPE_TXT, MSG_TYPE_SYS
 from models.android_db_models import AMessage
+from models.message_ext_models import MessageAnalysis
 from models.production_consumption_models import ProductionStatistic
 from sqlalchemy import orm as sql_orm
 
@@ -55,14 +48,6 @@ class ProductionThread(threading.Thread):
                 self.last_a_message_id = 0
                 self.last_a_message_create_time = datetime.now() - timedelta(days=365 * 10)
 
-        # 第一次读取用户设置词
-        gm_rule_dict = get_gm_rule_dict()
-        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
-
-        # 第一次读取统一设置词
-        gm_default_rule_dict = get_gm_default_rule_dict()
-        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
-
         while self.go_work:
             try:
                 circle_start_time = time.time()
@@ -70,70 +55,8 @@ class ProductionThread(threading.Thread):
                     filter(AMessage.id > self.last_a_message_id). \
                     order_by(AMessage.id).all()
 
-                # 每次循环时，如果全局锁发生变更，则重新读取规则
-                if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
-                    gm_rule_dict = get_gm_rule_dict()
-                    GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
-
-                if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
-                    gm_default_rule_dict = get_gm_default_rule_dict()
-                    GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
-
-                # 这个是
-                for each_platform, whether_should_execute in GLOBAL_RULES_UPDATE_FLAG[
-                    GLOBAL_NOTICE_UPDATE_FLAG].items():
-                    if whether_should_execute:
-                        match_which_user_should_get_notice(each_platform)
-                        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_NOTICE_UPDATE_FLAG][each_platform] = False
-
                 if len(message_list) != 0:
-                    message_analysis_list = list()
-                    for i, a_message in enumerate(message_list):
-                        message_analysis = analysis_and_save_a_message(a_message)
-                        if not message_analysis:
-                            continue
-                        message_analysis_list.append(message_analysis)
-
-                        # 判断这个机器人说的话是否是文字或系统消息
-                        if message_analysis.type == MSG_TYPE_TXT or message_analysis.type == MSG_TYPE_SYS:
-                            pass
-                        else:
-                            continue
-
-                        # 这个机器人说的话
-                        # TODO 当有两个机器人的时候，这里不仅要判断是否是自己说的，还是要判断是否是其他机器人说的
-                        if message_analysis.is_send == 1:
-                            continue
-
-                        # is_add_friend
-                        is_add_friend = check_whether_message_is_add_friend(message_analysis)
-                        if is_add_friend:
-                            continue
-
-                        # 检查信息是否为加了一个群
-                        is_add_qun = check_whether_message_is_add_qun(message_analysis)
-                        if is_add_qun:
-                            continue
-
-                        # is_removed
-                        is_removed = check_is_removed(message_analysis)
-                        if is_removed:
-                            continue
-
-                        # 检测是否是别人的进群提示
-                        is_friend_into_qun = check_whether_message_is_friend_into_qun(message_analysis)
-
-                        # 根据规则和内容进行匹配，并生成任务
-                        rule_status = match_message_by_rule(gm_rule_dict, message_analysis)
-                        if rule_status is True:
-                            continue
-                        else:
-                            pass
-
-                        # 对内容进行判断，是否为查询比价的情况
-                        coin_price_status = match_message_by_coin_keyword(gm_default_rule_dict, message_analysis)
-                        if coin_price_status is True:
-                            continue
+                    message_analysis_list = ProductionThread._process_a_msg_list(message_list)
 
                     # 处理完毕后将新情况存入
                     self.last_a_message_id = message_list[-1].id
@@ -213,7 +136,7 @@ class ProductionThread(threading.Thread):
                 continue
 
             # 检测是否是别人的进群提示
-            is_friend_into_qun = MessageAnalysis.check_whether_message_is_friend_into_qun(message_analysis)
+            # is_friend_into_qun = MessageAnalysis.check_whether_message_is_friend_into_qun(message_analysis)
 
         return message_analysis_list
 

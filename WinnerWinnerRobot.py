@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # 开启gevent
-from gevent import monkey, sleep
+from gevent import monkey
 
-from core.crawler_core import crawler_thread
 from maintenance.database_rel import create_all_databases
 from maintenance.environment import environment_client_info
 
@@ -24,7 +23,7 @@ models.import_str = ""
 api.api_str = ""
 configs.config_str = ""
 
-__version__ = "0.0.1a1"
+__version__ = "2.0.1"
 
 
 @app.route('/hello')

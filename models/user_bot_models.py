@@ -133,7 +133,7 @@ class AccessToken(db.Model):
     存整个公众号的access_token
     """
     __tablename = 'access_token'
-    token = db.Column(db.String(256), primary_key=True)
+    token = db.Column(db.String(191), primary_key=True)  # 256
     expired_time = db.Column(db.DateTime)
 
     def load_from_json(self, access_token_json):
