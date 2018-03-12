@@ -6,7 +6,7 @@ import user_bot_models
 # import batch_sending_models
 # import material_library_models
 # import message_ext_models
-# import production_consumption_models
+import production_consumption_models
 # import crawler_log
 
 import_str = ""
