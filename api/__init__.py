@@ -10,5 +10,7 @@ import manage_api
 # import welcome_message_api
 # import real_time_quotes_api
 # import synchronous_announcement_api
+import chatroom_api
+import member_api
 
 api_str = ""

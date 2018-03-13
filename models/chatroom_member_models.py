@@ -6,6 +6,7 @@ from datetime import datetime
 
 from configs.config import db, MAX_MEMBER_COUNT_DECIMAL
 from models.android_db_models import AMember, AContact
+from utils.u_model_json_str import model_to_dict
 
 logger = logging.getLogger("main")
 
@@ -47,6 +48,14 @@ class ChatroomInfo(db.Model):
             create_time = datetime.now()
         self.create_time = create_time
         return self
+
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        return res
+
+    def to_json_ext(self):
+        res = self.to_json()
+        return res
 
 
 class BotChatroomR(db.Model):

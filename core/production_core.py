@@ -104,7 +104,7 @@ class ProductionThread(threading.Thread):
         if message_analysis_list is None:
             message_analysis_list = list()
         for i, a_message in enumerate(message_list):
-            message_analysis = AMessage.analysis_and_save_a_message(a_message)
+            message_analysis = MessageAnalysis.analysis_and_save_a_message(a_message)
             if not message_analysis:
                 continue
             message_analysis_list.append(message_analysis)
