@@ -3,6 +3,7 @@ import logging
 from time import sleep
 
 from configs.config import db, MSG_TYPE_SYS, MSG_TYPE_TXT
+from utils.u_model_json_str import model_to_dict
 from utils.u_transformat import str_to_unicode, unicode_to_str
 
 logger = logging.getLogger("main")
@@ -85,7 +86,7 @@ class AChatroomR(db.Model):
                                                                AChatroomR.chatroomname == chatroomname).first()
             if a_chatroom_r:
                 break
-            sleep(1)
+            sleep(5)
             times -= 1
 
         return a_chatroom_r
@@ -120,6 +121,22 @@ class AContact(db.Model):
 
     member_count = db.Column(db.Integer, index=True, nullable=False)
 
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        res.pop('username')
+        res.pop('alias')
+        res.pop('chatroom_flag')
+        res.pop('verify_flag')
+        res.pop('contact_label_ids')
+        res.pop('show_head')
+        res.pop('lvbuff')
+        res.pop('img_lastupdatetime')
+        return res
+
+    def to_json_ext(self):
+        res = self.to_json()
+        return res
+
     @staticmethod
     def get_a_contact(username):
         a_contact = None
@@ -128,7 +145,7 @@ class AContact(db.Model):
             a_contact = db.session.query(AContact).filter(AContact.username == username).first()
             if a_contact:
                 break
-            sleep(1)
+            sleep(5)
             times -= 1
 
         return a_contact
@@ -158,7 +175,7 @@ class AFriend(db.Model):
                                                         AFriend.to_username == to_username).first()
             if a_friend:
                 break
-            sleep(1)
+            sleep(5)
             times -= 1
 
         return a_friend

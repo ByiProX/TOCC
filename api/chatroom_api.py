@@ -28,14 +28,23 @@ def chatroom_get_chatroom_list():
     chatroom_ids_row = db.session.query(UserChatroomR.chatroom_id) \
         .outerjoin(ChatroomOverview, UserChatroomR.chatroom_id == ChatroomOverview.chatroom_id) \
         .filter(UserChatroomR.user_id == user_info.user_id) \
-        .order_by(order).limit(page).offset(page * page_size).all()
+        .order_by(order).limit(page_size).offset(page * page_size).all()
 
     chatroom_ids = [r[0] for r in chatroom_ids_row]
 
-    rows = db.session.query(ChatroomInfo).outerjoin(AContact, ChatroomInfo.chatroom_id == AContact.id) \
-        .filter()
+    rows = db.session.query(ChatroomInfo, AContact).outerjoin(AContact, ChatroomInfo.chatroom_id == AContact.id) \
+        .filter(ChatroomInfo.chatroom_id.in_(chatroom_ids)).all()
 
-    return make_response()
+    chatroom_json_list = list()
+    for row in rows:
+        chatroom_json = dict()
+        chatroom = row[0]
+        a_contact_chatroom = row[1]
+        chatroom_json.update(a_contact_chatroom.to_json())
+        chatroom_json.update(chatroom.to_json())
+        chatroom_json_list.append(chatroom_json)
+
+    return make_response(SUCCESS, chatroom_json_list = chatroom_json_list)
 
 
 @main_api.route('/chatroom/get_chatroom_info', methods = ['POST'])
@@ -47,5 +56,9 @@ def chatroom_get_chatroom_info():
 
     chatroom_id = request.json.get('chatroom_id')
     chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == chatroom_id).first()
+    a_contact_chatroom = db.session.query(AContact).filter(AContact.id == chatroom.chatroom_id).first()
+    chatroom_json = chatroom.to_json()
+    a_contact_chatroom_json = a_contact_chatroom.to_json()
+    a_contact_chatroom_json.update(chatroom_json)
 
-    return make_response(SUCCESS, chatroom_info = chatroom.to_json())
+    return make_response(SUCCESS, chatroom_info = a_contact_chatroom_json)

@@ -47,7 +47,7 @@ def initial_all():
 
 
 logger = logging.getLogger('main')
-production_thread.start()
+# production_thread.start()
 # crawler_thread.start()
 
 # 开启环境监测线程
