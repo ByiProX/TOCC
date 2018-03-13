@@ -11,7 +11,7 @@ from models.chatroom_member_models import ChatroomInfo, BotChatroomR, UserChatro
     MemberStatistic, MemberInfo
 from models.user_bot_models import BotInfo, UserInfo, UserBotRelateInfo
 from utils.u_time import get_today_0
-from utils.u_transformat import str_to_unicode
+from utils.u_transformat import str_to_unicode, unicode_to_str
 
 logger = logging.getLogger("main")
 
