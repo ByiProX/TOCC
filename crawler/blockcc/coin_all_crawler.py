@@ -31,7 +31,7 @@ Headers = {
 Url = "https://coinmarketcap.com/all/views/all/#"
 
 result = requests.get(Url, headers = Headers, cookies = Cookie)
-Soup = BeautifulSoup(result.text, 'lxml')
+Soup = BeautifulSoup(result.text, 'html.parser')
 
 
 def get_coin_all():

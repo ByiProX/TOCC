@@ -27,9 +27,13 @@ def unicode_to_str(txt):
 
 def str_to_decimal(_str):
     if _str and _str != u'None':
-        return decimal.Decimal(_str)
+        return round_decimal(decimal.Decimal(_str))
     else:
-        return decimal.Decimal(u'0')
+        return round_decimal(decimal.Decimal(u'0'))
+
+
+def round_decimal(dec):
+    return dec.quantize(decimal.Decimal('1.00'), rounding = decimal.ROUND_05UP)
 
 
 def decimal_to_str(a_decimal):
