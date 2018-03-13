@@ -5,10 +5,11 @@ from datetime import datetime
 
 import copy
 
-from configs.config import db, MSG_TYPE_TXT, MSG_TYPE_SYS, CONTENT_TYPE_TXT, CONTENT_TYPE_SYS
+from configs.config import db, MSG_TYPE_TXT, MSG_TYPE_SYS, CONTENT_TYPE_TXT, CONTENT_TYPE_SYS, \
+    USER_CHATROOM_R_PERMISSION_1
 from models.android_db_models import AContact, AMember, AChatroomR, AFriend, AMessage
 from models.chatroom_member_models import ChatroomInfo, BotChatroomR, UserChatroomR, ChatroomStatistic, \
-    MemberStatistic, MemberInfo
+    MemberStatistic, MemberInfo, ChatroomOverview
 from models.user_bot_models import BotInfo, UserInfo, UserBotRelateInfo
 from utils.u_time import get_today_0
 from utils.u_transformat import str_to_unicode, unicode_to_str
@@ -215,6 +216,14 @@ class MessageAnalysis(db.Model):
         chatroomname = message_analysis.talker
         a_contact_chatroom = AContact.get_a_contact(username = chatroomname)
         if a_contact_chatroom:
+            a_chatroom_r = AChatroomR.get_a_chatroom_r(chatroomname = chatroomname, username = bot.username)
+            if not a_chatroom_r:
+                a_chatroom_r = AChatroomR()
+                a_chatroom_r.chatroomname = chatroomname
+                a_chatroom_r.username = bot_username
+                a_chatroom_r.create_time = datetime.now()
+                db.session.add(a_chatroom_r)
+                db.session.commit()
             user_nickname = content.split(u'邀请')[0][1:-1]
             if not user_nickname:
                 logger.error(u"发现加群，但是获取不到邀请人 nickname, content: %s" % content)
@@ -267,7 +276,8 @@ class MessageAnalysis(db.Model):
             db.session.merge(chatroom)
 
             # user_chatroom_r
-            user_chatroom_r = UserChatroomR(user_id = user_id, chatroom_id = a_contact_chatroom.id)\
+            user_chatroom_r = UserChatroomR(user_id = user_id, chatroom_id = a_contact_chatroom.id,
+                                            permission = USER_CHATROOM_R_PERMISSION_1)\
                 .generate_create_time()
             db.session.add(user_chatroom_r)
 
@@ -278,21 +288,15 @@ class MessageAnalysis(db.Model):
                                                                          BotChatroomR.is_on == 1).first()
             if bot_chatroom_r_is_on:
                 is_on = False
-            a_chatroom_r = AChatroomR().get_a_chatroom_r(chatroomname = chatroomname, username = bot.username)
             bot_chatroom_r = BotChatroomR(a_chatroom_r_id = a_chatroom_r.id, chatroomname = a_chatroom_r.chatroomname,
                                           username = a_chatroom_r.username, is_on = is_on).generate_create_time()
             db.session.merge(bot_chatroom_r)
 
-            # TODO: 初始化
-            # 初始化 MemberInfo
-            rows = db.session.query(AMember, AContact) \
-                .outerjoin(AContact, AMember.username == AContact.username) \
-                .filter(AMember.chatroomname == chatroomname).all()
-            chatroom.init_members_from_a_members(rows)
+            # 初始化 MemberInfo 和 MemberOverview
+            MemberInfo.update_members(chatroomname)
 
             # 初始化 ChatroomOverview
-
-            # 初始化 MemberOverview
+            ChatroomOverview.init_all_scope(chatroom_id = a_contact_chatroom.id)
 
             db.session.commit()
         else:

@@ -104,6 +104,12 @@ class UserBotRelateInfo(db.Model):
 
     db.UniqueConstraint(user_id, bot_id, name='ix_user_bot_relate_user_id_wechat_two_id')
 
+    def generate_create_time(self, create_time = None):
+        if create_time is None:
+            create_time = datetime.now()
+        self.create_time = create_time
+        return self
+
     def to_dict(self):
         res = model_to_dict(self, self.__class__)
         return res
