@@ -123,6 +123,7 @@ class AContact(db.Model):
 
     def to_json(self):
         res = model_to_dict(self, self.__class__)
+        res['id'] = res.get('chatroom_id')
         res.pop('username')
         res.pop('alias')
         res.pop('chatroom_flag')
@@ -213,6 +214,17 @@ class AMember(db.Model):
             filter_list.append(AMember.is_deleted == is_deleted)
 
         return filter_list
+
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        res['member_id'] = res.get('id')
+        res.pop("chatroomname")
+        res.pop("username")
+        return res
+
+    def to_json_ext(self):
+        res = self.to_json()
+        return res
 
 
 class AMessage(db.Model):

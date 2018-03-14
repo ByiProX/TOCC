@@ -51,6 +51,7 @@ class ChatroomInfo(db.Model):
 
     def to_json(self):
         res = model_to_dict(self, self.__class__)
+        res['id'] = res.get('chatroom_id')
         res.pop('chatroomname')
         return res
 
@@ -156,6 +157,14 @@ class MemberInfo(db.Model):
         self.speak_count = speak_count
         self.be_at_count = be_at_count
 
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        return res
+
+    def to_json_ext(self):
+        res = self.to_json()
+        return res
+
     def generate_create_time(self, create_time = None):
         if create_time is None:
             create_time = datetime.now()
@@ -241,6 +250,14 @@ class ChatroomOverview(db.Model):
         self.active_count = active_count
         self.active_rate = active_rate
 
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        return res
+
+    def to_json_ext(self):
+        res = self.to_json()
+        return res
+
     @staticmethod
     def init_all_scope(chatroom_id, speak_count = 0, incre_count = 0, active_count = 0,
                        active_rate = Decimal('0'), save_flag = False):
@@ -323,6 +340,14 @@ class MemberOverview(db.Model):
         self.invitation_count = invitation_count
         self.red_package_count = red_package_count
         self.effect_num = effect_num
+
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        return res
+
+    def to_json_ext(self):
+        res = self.to_json()
+        return res
 
     @staticmethod
     def init_all_scope(member_id, chatroom_id, be_at_count = 0, speak_count = 0, invitation_count = 0,
