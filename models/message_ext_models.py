@@ -95,13 +95,11 @@ class MessageAnalysis(db.Model):
             # 除了 TXT 和 SYS 的处理
             real_content = content
             if content.find(u':') == -1:
-                # Mark: 收到的群消息没有 ':\n'，需要查错
-                logger.info(u"ERR: chatroom msg received doesn't have ':', msg_id: " + unicode(
-                    msg_ext.msg_id) + u" type: " + unicode(msg_type))
-                raise ValueError(u"ERR: chatroom msg received doesn't have ':', msg_id: " + unicode(
-                    msg_ext.msg_id) + u" type: " + unicode(msg_type))
-            content_part = content.split(u':')
-            real_talker = content_part[0]
+                # 收到的群消息没有 ':\n', "语言聊天已结束" 等
+                real_talker = talker
+            else:
+                content_part = content.split(u':')
+                real_talker = content_part[0]
         else:
             if content.find(u':\n') == -1:
                 # Mark: 收到的群消息没有 ':\n'，需要查错
