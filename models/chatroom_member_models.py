@@ -303,8 +303,9 @@ class ChatroomStatistic(db.Model):
 
     @staticmethod
     def fetch_chatroom_statistics(chatroom_id, time_to_day, create_flag = True, save_flag = True):
-        chatroom_statistics = db.session.query(ChatroomStatistic.chatroom_id == chatroom_id,
-                                               ChatroomStatistic.time_to_day == time_to_day).first()
+        chatroom_statistics = db.session.query(ChatroomStatistic)\
+            .filter(ChatroomStatistic.chatroom_id == chatroom_id,
+                    ChatroomStatistic.time_to_day == time_to_day).first()
         if not chatroom_statistics and create_flag:
             chatroom_statistics = ChatroomStatistic(chatroom_id, time_to_day)
             if save_flag:
@@ -395,8 +396,9 @@ class MemberStatistic(db.Model):
 
     @staticmethod
     def fetch_member_statistics(member_id, time_to_day, chatroom_id, create_flag = True, save_flag = True):
-        member_statistics = db.session.query(MemberStatistic.member_id == member_id,
-                                             MemberStatistic.time_to_day == time_to_day).first()
+        member_statistics = db.session.query(MemberStatistic)\
+            .filter(MemberStatistic.member_id == member_id,
+                    MemberStatistic.time_to_day == time_to_day).first()
         if not member_statistics and create_flag:
             member_statistics = MemberStatistic(member_id, time_to_day, chatroom_id)
             if save_flag:
