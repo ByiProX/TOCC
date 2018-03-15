@@ -337,12 +337,15 @@ class MessageAnalysis(db.Model):
         """
 
     @staticmethod
-    def count_msg(msg_id):
-        print msg_id
-        msg = db.session.query(MessageAnalysis).filter(MessageAnalysis.msg_id == msg_id).first()
-        if not msg:
-            logger.error(u"message_analysis dose not exist: " + str(msg_id))
-            return
+    def count_msg_by_ids(start_id, end_id):
+        print 'start', start_id, 'end', end_id
+        msg_list = db.session.query(MessageAnalysis).filter(MessageAnalysis.msg_id >= start_id,
+                                                            MessageAnalysis.msg_id <= end_id).all()
+        for msg in msg_list:
+            MessageAnalysis.count_msg(msg)
+
+    @staticmethod
+    def count_msg(msg):
         try:
             today = get_today_0()
 
@@ -358,7 +361,7 @@ class MessageAnalysis(db.Model):
                 # TODO: 在内存中，用全局标识控制更新
                 bot_chatroom_r = db.session.query(BotChatroomR).filter(BotChatroomR.chatroomname == chatroomname,
                                                                        BotChatroomR.username == msg.username,
-                                                                       BotChatroomR.is_on == True).first()
+                                                                       BotChatroomR.is_on == 1).first()
                 if bot_chatroom_r:
                     chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroomname == chatroomname).first()
 
@@ -380,7 +383,8 @@ class MessageAnalysis(db.Model):
 
                         # calc member statics
                         logger.info('calc member   statistics')
-                        member_statics = MemberStatistic.fetch_member_statistics(member_id = talker_id, time_to_day = today,
+                        member_statics = MemberStatistic.fetch_member_statistics(member_id = talker_id,
+                                                                                 time_to_day = today,
                                                                                  chatroom_id = chatroom_id)
                         logger.info('| speak_count')
                         member_statics.speak_count += 1
