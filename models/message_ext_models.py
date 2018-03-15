@@ -378,7 +378,7 @@ class MessageAnalysis(db.Model):
                         member = MemberInfo.fetch_member_by_username(chatroomname, username)
                         if not member:
                             logger.error(u"find no member, chatroomname: %s, username: %s." % (chatroomname, username))
-                            pass
+                            return
                         talker_id = member.member_id
 
                         # calc member statics
@@ -474,16 +474,16 @@ class MessageAnalysis(db.Model):
             db.session.rollback()
             logger.exception("Exception")
         finally:
-            logger.info('count_msg db.session.close()')
+            # logger.info('count_msg db.session.close()')
             db.session.close()
 
     @staticmethod
     def extract_msg_be_at(msg, chatroom):
         at_count = 0
-        content = str_to_unicode(msg.content)
+        content = str_to_unicode(msg.real_content)
         content_tmp = copy.deepcopy(content)
         today = get_today_0()
-        member = db.session.query(MemberInfo).filter(MemberInfo.member_name == msg.real_talker).first()
+        member = db.session.query(MemberInfo).filter(MemberInfo.username == msg.real_talker).first()
         if not member:
             logger.error(u"找不到 member: " + str_to_unicode(msg.real_talker))
             return
@@ -515,7 +515,7 @@ class MessageAnalysis(db.Model):
                     if member_be_at:
                         msg.is_at = True
                         offset += end_index
-                        logger.info(u'member_be_at ' + member_be_at.nickname)
+                        logger.info(u'member_be_at ' + str(member_be_at.member_id))
                         member_be_at.be_at_count += 1
                         member_be_at_id = member_be_at.member_id
                         msg.member_id_be_at = member_be_at_id

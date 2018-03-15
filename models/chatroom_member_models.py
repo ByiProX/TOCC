@@ -7,6 +7,7 @@ from datetime import datetime
 from configs.config import db, MAX_MEMBER_COUNT_DECIMAL, DEFAULT_SCOPE_LIST
 from models.android_db_models import AMember, AContact
 from utils.u_model_json_str import model_to_dict
+from utils.u_transformat import unicode_to_str
 
 logger = logging.getLogger("main")
 
@@ -197,7 +198,7 @@ class MemberInfo(db.Model):
             if not a_member:
                 # 匹配 AContact
                 a_contact = db.session.query(AContact).outerjoin(AMember, AMember.username == AContact.username)\
-                    .filter(AContact.nickname == nickname, AMember.chatroomname == chatroomname).first()
+                    .filter(AContact.nickname == unicode_to_str(nickname), AMember.chatroomname == chatroomname).first()
                 if a_contact:
                     member = MemberInfo.fetch_member_by_username(chatroomname, a_contact.username)
                 else:
