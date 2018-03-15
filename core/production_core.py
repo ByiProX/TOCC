@@ -55,8 +55,9 @@ class ProductionThread(threading.Thread):
                     filter(AMessage.id > self.last_a_message_id). \
                     order_by(AMessage.id).all()
 
+                message_analysis_list = list()
                 if len(message_list) != 0:
-                    message_analysis_list = ProductionThread._process_a_msg_list(message_list)
+                    ProductionThread._process_a_msg_list(message_list, message_analysis_list)
 
                     # 处理完毕后将新情况存入
                     self.last_a_message_id = message_list[-1].id
@@ -74,6 +75,13 @@ class ProductionThread(threading.Thread):
                 new_pro_stat.create_time = datetime.now()
                 db.session.add(new_pro_stat)
                 db.session.commit()
+
+                for message_analysis in message_analysis_list:
+                    if not message_analysis.is_to_friend:
+                        msg_count_thread = threading.Thread(target = MessageAnalysis.count_msg, name = u'MsgCountThread',
+                                                            args = (message_analysis.msg_id,))
+                        msg_count_thread.setDaemon(True)
+                        msg_count_thread.start()
 
                 circle_now_time = time.time()
                 time_to_rest = PRODUCTION_CIRCLE_INTERVAL - (circle_now_time - circle_start_time)

@@ -31,6 +31,8 @@ def member_get_member_list():
 
     # Mark
     # 被删除成员是否要显示出来
+    # AContact 可能不存在
+    # AContact 信息可能下载不下来
     order = [MemberOverview.speak_count.desc(), MemberOverview.member_id.asc()]
     rows = db.session.query(MemberOverview, MemberInfo, AMember, AContact) \
         .filter(MemberOverview.chatroom_id == chatroom_id,
@@ -39,7 +41,9 @@ def member_get_member_list():
         .outerjoin(AMember, MemberInfo.member_id == AMember.id) \
         .outerjoin(AContact, MemberInfo.username == AContact.username) \
         .filter(MemberOverview.chatroom_id == chatroom_id,
-                MemberOverview.scope == scope)\
+                MemberOverview.scope == scope,
+                # AContact.nickname > ""
+                )\
         .order_by(*order)\
         .limit(page_size)\
         .offset(page * page_size)\

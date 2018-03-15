@@ -52,6 +52,7 @@ class ChatroomInfo(db.Model):
     def to_json(self):
         res = model_to_dict(self, self.__class__)
         res['id'] = res.get('chatroom_id')
+        res.pop('id')
         res.pop('chatroomname')
         return res
 
@@ -159,6 +160,8 @@ class MemberInfo(db.Model):
 
     def to_json(self):
         res = model_to_dict(self, self.__class__)
+        res.pop('username')
+        res.pop('chatroomname')
         return res
 
     def to_json_ext(self):

@@ -148,12 +148,12 @@ class MessageAnalysis(db.Model):
         user_username = message_analysis.real_talker
         a_contact = AContact.get_a_contact(username = user_username)
         if a_contact:
-            user_nickname = a_contact.nickname
+            user_nickname = str_to_unicode(a_contact.nickname)
             logger.info(u"发现加bot好友用户. username: %s, nickname: %s" % (user_username, user_nickname))
 
             # 验证是否是唯一的friend
             a_friend = AFriend.get_a_friend(from_username = bot.username, to_username = user_username)
-            if a_friend.type % 2 == 1:
+            if a_friend.type % 2 != 1:
                 logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
                              (bot.username, user_username))
                 return
