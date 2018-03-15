@@ -76,12 +76,13 @@ class ProductionThread(threading.Thread):
                 db.session.add(new_pro_stat)
                 db.session.commit()
 
-                # for message_analysis in message_analysis_list:
-                #     if not message_analysis.is_to_friend:
-                #         msg_count_thread = threading.Thread(target = MessageAnalysis.count_msg, name = u'MsgCountThread',
-                #                                             args = (message_analysis.msg_id,))
-                #         msg_count_thread.setDaemon(True)
-                #         msg_count_thread.start()
+                if message_analysis_list:
+                    msg_count_thread = threading.Thread(target = MessageAnalysis.count_msg_by_ids,
+                                                        name = u'MsgCountThread',
+                                                        args = (message_analysis_list[0].msg_id,
+                                                                message_analysis_list[-1].msg_id))
+                    msg_count_thread.setDaemon(True)
+                    msg_count_thread.start()
 
                 circle_now_time = time.time()
                 time_to_rest = PRODUCTION_CIRCLE_INTERVAL - (circle_now_time - circle_start_time)
