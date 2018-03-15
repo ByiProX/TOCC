@@ -32,37 +32,31 @@ def member_get_member_list():
     # Mark
     # 被删除成员是否要显示出来
     order = [MemberOverview.speak_count.desc(), MemberOverview.member_id.asc()]
-    member_overview_list = db.session.query(MemberOverview).filter(MemberOverview.chatroom_id == chatroom_id,
-                                                                   MemberOverview.scope == scope)\
+    rows = db.session.query(MemberOverview, MemberInfo, AMember, AContact) \
+        .filter(MemberOverview.chatroom_id == chatroom_id,
+                MemberOverview.scope == scope)\
+        .outerjoin(MemberInfo, MemberOverview.member_id == MemberInfo.member_id) \
+        .outerjoin(AMember, MemberInfo.member_id == AMember.id) \
+        .outerjoin(AContact, MemberInfo.username == AContact.username) \
+        .filter(MemberOverview.chatroom_id == chatroom_id,
+                MemberOverview.scope == scope)\
         .order_by(*order)\
         .limit(page_size)\
         .offset(page * page_size)\
         .all()
 
-    member_ids_in_order = [r.member_id for r in member_overview_list]
-
-    rows = db.session.query(MemberInfo, AMember, AContact) \
-        .outerjoin(AMember, MemberInfo.member_id == AMember.id) \
-        .outerjoin(AContact, MemberInfo.username == AContact.username) \
-        .filter(MemberInfo.member_id.in_(member_ids_in_order))\
-        .all()
-    member_json_dict = dict()
+    member_json_list = list()
     for row in rows:
-        member_info = row[0]
-        a_member = row[1]
-        a_contact = row[2]
+        member_overview = row[0]
+        member_info = row[1]
+        a_member = row[2]
+        a_contact = row[3]
         member_json = dict()
         member_json.update(a_contact.to_json())
         member_json.update(a_member.to_json())
         member_json.update(member_info.to_json())
-        member_json_dict[member_info.member_id] = member_json
-
-    print member_json_dict.keys()
-    member_json_list = list()
-    for member_overview in member_overview_list:
-        print member_overview.member_id
-        member_json = member_json_dict[member_overview.member_id]
         member_json.update(member_overview.to_json())
+        member_json_list.append(member_json)
 
     return make_response(SUCCESS, member_list = member_json_list)
 
@@ -87,7 +81,7 @@ def member_get_member_info():
     if not member_info:
         return make_response(ERR_INVALID_MEMBER)
     a_member = db.session.query(AMember).filter(AMember.id == member_id).first()
-    a_contact = db.session.query(AContact).filter(AContact.username == member_info.username)
+    a_contact = db.session.query(AContact).filter(AContact.username == member_info.username).first()
     member_json = dict()
     member_json.update(a_contact.to_json())
     member_json.update(a_member.to_json())
