@@ -154,6 +154,8 @@ def get_members_coin_wallet_list(user_info, uqun_id = None, limit = 10, offset =
             wallet_json['is_origin'] = wallet.address_is_origin
             wallet_json['last_updated_time'] = datetime_to_timestamp_utc_8(wallet.last_updated_time)
             wallet_json_list.append(wallet_json)
+        cw_qmr_json['wallets'] = wallet_json_list
+        members_coin_wallet_list.append(cw_qmr_json)
 
     return SUCCESS, members_coin_wallet_list
 
