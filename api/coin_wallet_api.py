@@ -3,11 +3,11 @@
 import logging
 
 from datetime import datetime
-from flask import request
+from flask import request, send_file
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api
 from core.coin_wallet_core import switch_func_coin_wallet, get_members_coin_wallet_list, update_coin_address_by_id, \
-    delete_wallet_by_id, get_members_without_coin_wallet, get_members
+    delete_wallet_by_id, get_members_without_coin_wallet, get_members, build_wallet_excel
 from core.qun_manage_core import get_chatroom_list_by_user_info
 from core.user_core import UserLogin
 from utils.u_response import make_response
@@ -100,7 +100,7 @@ def app_get_members_coin_wallet():
                                                        limit = limit, offset = offset)
     last_updated_time = datetime_to_timestamp_utc_8(datetime.now())
     if wallet_list:
-        last_updated_time = wallet_list[0].get('last_updated_time')
+        last_updated_time = wallet_list[0].get('last_update_time')
     status = SUCCESS
 
     # 读取该群的所有成员
@@ -197,3 +197,16 @@ def app_search_coin_wallet():
                                              keyword = keyword)
 
     return make_response(SUCCESS, member_list = member_list, count = count)
+
+
+# @main_api.route('/download_wallet_excel', methods=['GET', 'POST'])
+# def app_download_wallet_excel():
+#     status, user_info = UserLogin.verify_token(request.json.get('token'))
+#     if status != SUCCESS:
+#         return make_response(status)
+#
+#     uqun_id = request.json.get('uqun_id')
+#
+#     excel_path = build_wallet_excel(user_info = user_info, uqun_id = uqun_id)
+#
+#     return send_file(excel_path)
