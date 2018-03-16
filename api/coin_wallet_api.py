@@ -100,7 +100,7 @@ def app_get_members_coin_wallet():
                                                        limit = limit, offset = offset)
     last_updated_time = datetime_to_timestamp_utc_8(datetime.now())
     if wallet_list:
-        last_updated_time = wallet_list[0]
+        last_updated_time = wallet_list[0].get('last_updated_time')
     status = SUCCESS
 
     # 读取该群的所有成员
