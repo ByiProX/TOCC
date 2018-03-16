@@ -2,7 +2,7 @@
 
 import logging
 import re
-import xlwt
+# import xlwt
 
 from datetime import datetime
 
@@ -258,6 +258,6 @@ def delete_wallet_by_id(wallet_id):
         return ERR_WRONG_ITEM
 
 
-def build_wallet_excel(user_info, uqun_id = None):
-
-    return ''
+# def build_wallet_excel(user_info, uqun_id = None):
+#
+#     return ''
