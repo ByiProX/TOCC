@@ -119,4 +119,4 @@ def update_notice_info():
         logger.info(u"update_notice_info success")
 
 
-update_notice_info()
+# update_notice_info()

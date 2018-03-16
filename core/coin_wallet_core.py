@@ -34,6 +34,25 @@ def switch_func_coin_wallet(user_info, switch):
     return SUCCESS
 
 
+# def get_coin_wallet_setting(user_info):
+#     """
+#     得到一个人的所有自动回复设置
+#     :return:
+#     """
+#     ar_setting_info_list = db.session.query(AutoReplySettingInfo).filter(
+#         AutoReplySettingInfo.user_id == user_info.user_id).filter(AutoReplySettingInfo.is_deleted == 0).order_by(
+#         AutoReplySettingInfo.setting_create_time.desc()).all()
+#
+#     result = []
+#     for ar_setting_info in ar_setting_info_list:
+#         status, task_detail_res = get_setting_detail(ar_setting_info)
+#         if status == SUCCESS:
+#             result.append(deepcopy(task_detail_res))
+#         else:
+#             logger.error(u"部分任务无法读取. setting_id: %s." % ar_setting_info.setting_id)
+#     return SUCCESS, result
+
+
 def check_whether_message_is_a_coin_wallet(message_analysis):
     """
     根据一条message，判断该条是否符合币的地址规则

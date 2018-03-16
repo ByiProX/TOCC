@@ -62,20 +62,34 @@ def app_get_user_chatroom_list():
         return make_response(status)
 
 
+@main_api.route('/get_coin_wallet_setting', methods=['POST'])
+def app_get_coin_wallet_setting():
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    # status, res = get_coin_wallet_setting(user_info)
+
+    if status == SUCCESS:
+        return make_response(SUCCESS, func_coin_wallet=user_info.func_coin_wallet)
+    else:
+        return make_response(status)
+
+
 @main_api.route('/get_members_coin_wallet', methods=['POST'])
 def app_get_members_coin_wallet():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
 
-    task_per_page = request.json.get('page_size')
-    page_number = request.json.get('page')
-    if not task_per_page:
+    limit = request.json.get('limit')
+    offset = request.json.get('offset')
+    if not limit:
         logger.warning("没有收到page_size，设置为10")
-        task_per_page = 10
-    if page_number is None:
+        limit = 10
+    if offset is None:
         logger.warning("没有收到page_number，设置为0")
-        page_number = 0
+        offset = 0
 
     uqun_id = request.json.get('chatroom_id')
     if uqun_id:
