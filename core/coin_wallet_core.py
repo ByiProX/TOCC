@@ -124,7 +124,7 @@ def get_members_coin_wallet_list(user_info, uqun_id = None, limit = 10, offset =
     if uqun_id is not None:
         filter_list_cw_qmr.append(CoinWalletQunMemberRelate.uqun_id == uqun_id)
     cw_qmr_list = db.session.query(CoinWalletQunMemberRelate, AContact)\
-        .outerjoin(UserQunRelateInfo, CoinWalletQunMemberRelate.member_username == AContact.username)\
+        .outerjoin(AContact, CoinWalletQunMemberRelate.member_username == AContact.username)\
         .filter(*filter_list_cw_qmr)\
         .order_by(CoinWalletQunMemberRelate.last_update_time.desc()).limit(limit).offset(offset).all()
 
