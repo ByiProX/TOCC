@@ -12,6 +12,7 @@ from sqlalchemy import desc
 
 from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, GLOBAL_RULES_UPDATE_FLAG, MSG_TYPE_TXT, MSG_TYPE_SYS, \
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, GLOBAL_NOTICE_UPDATE_FLAG
+from core.coin_wallet_core import check_whether_message_is_a_coin_wallet
 from core.matching_rule_core import get_gm_rule_dict, match_message_by_rule, get_gm_default_rule_dict
 from core.message_core import analysis_and_save_a_message
 from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
@@ -118,6 +119,11 @@ class ProductionThread(threading.Thread):
                         # is_removed
                         is_removed = check_is_removed(message_analysis)
                         if is_removed:
+                            continue
+
+                        # is_a_coin_wallet
+                        is_a_coin_wallet = check_whether_message_is_a_coin_wallet(message_analysis)
+                        if is_a_coin_wallet:
                             continue
 
                         # 检测是否是别人的进群提示
