@@ -7,7 +7,7 @@ from flask import request
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api
 from core.coin_wallet_core import switch_func_coin_wallet, get_members_coin_wallet_list, update_coin_address_by_id, \
-    delete_wallet_by_id, get_members_without_coin_wallet
+    delete_wallet_by_id, get_members_without_coin_wallet, get_members
 from core.qun_manage_core import get_chatroom_list_by_user_info
 from core.user_core import UserLogin
 from utils.u_response import make_response
@@ -174,3 +174,26 @@ def app_get_members_without_coin_wallet():
         return make_response(SUCCESS, member_list=member_list, last_updated_time=last_updated_time, count=count)
     else:
         return make_response(status)
+
+
+@main_api.route('/search_coin_wallet', methods=['POST'])
+def app_search_coin_wallet():
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    limit = request.json.get('limit')
+    offset = request.json.get('offset')
+    if not limit:
+        logger.warning("没有收到page_size，设置为10")
+        limit = 10
+    if offset is None:
+        logger.warning("没有收到page_number，设置为0")
+        offset = 0
+
+    uqun_id = request.json.get('chatroom_id')
+    keyword = request.json.get('keyword')
+    status, member_list, count = get_members(user_info = user_info, uqun_id = uqun_id, limit = limit, offset = offset,
+                                             keyword = keyword)
+
+    return make_response(SUCCESS, member_list = member_list, count = count)

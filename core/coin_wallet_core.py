@@ -11,7 +11,7 @@ from models.coin_wallet_models import CoinWalletQunMemberRelate, CoinWalletMembe
 from models.qun_friend_models import UserQunRelateInfo
 from models.user_bot_models import UserInfo
 from utils.u_time import datetime_to_timestamp_utc_8
-from utils.u_transformat import str_to_unicode
+from utils.u_transformat import str_to_unicode, unicode_to_str
 
 logger = logging.getLogger('main')
 
@@ -54,30 +54,21 @@ def switch_func_coin_wallet(user_info, switch):
 #             logger.error(u"部分任务无法读取. setting_id: %s." % ar_setting_info.setting_id)
 #     return SUCCESS, result
 
-def get_members_without_coin_wallet(user_info, uqun_id = None, limit = 10, offset = 0):
-    filter_list_cw_qmr = list()
-    filter_list_cw_qmr.append(CoinWalletQunMemberRelate.member_is_deleted == 0)
-    filter_list_cw_qmr.append(CoinWalletQunMemberRelate.user_id == user_info.user_id)
+def get_members(user_info, uqun_id = None, limit = 10, offset = 0, member_username_except = None, keyword = None):
+    filter_list_members = list()
+    if keyword:
+        filter_list_members.append(AContact.nickname.like('' + unicode_to_str(keyword) + ''))
+    if member_username_except:
+        filter_list_members.append(AMember.username.notin_(member_username_except))
     if uqun_id is not None:
-        filter_list_cw_qmr.append(CoinWalletQunMemberRelate.uqun_id == uqun_id)
-    rows_member_username = db.session.query(CoinWalletQunMemberRelate.member_username).filter(*filter_list_cw_qmr).all()
-    members_has_wallet = {r[0] for r in rows_member_username}
-    print members_has_wallet
-
-    filter_list_uqun_r = list()
-    if members_has_wallet:
-        filter_list_uqun_r.append(AMember.username.notin_(members_has_wallet))
-    if uqun_id is not None:
-        print uqun_id
-        filter_list_uqun_r.append(UserQunRelateInfo.uqun_id == uqun_id)
+        filter_list_members.append(UserQunRelateInfo.uqun_id == uqun_id)
     else:
-        filter_list_uqun_r.append(UserQunRelateInfo.user_id == user_info.user_id)
+        filter_list_members.append(UserQunRelateInfo.user_id == user_info.user_id)
 
-    members_query = db.session.query(UserQunRelateInfo.uqun_id, AContact)\
-        .outerjoin(AMember, UserQunRelateInfo.chatroomname == AMember.chatroomname)\
-        .outerjoin(AContact, AMember.username == AContact.username)\
-        .filter(*filter_list_uqun_r)
-    print members_query
+    members_query = db.session.query(UserQunRelateInfo.uqun_id, AContact) \
+        .outerjoin(AMember, UserQunRelateInfo.chatroomname == AMember.chatroomname) \
+        .outerjoin(AContact, AMember.username == AContact.username) \
+        .filter(*filter_list_members)
     total_count = members_query.count()
     rows = members_query.limit(limit).offset(offset).all()
 
@@ -91,8 +82,38 @@ def get_members_without_coin_wallet(user_info, uqun_id = None, limit = 10, offse
         member_json['member_nickname'] = str_to_unicode(a_contact.nickname)
         member_json['member_avatar'] = a_contact.avatar_url2
         member_json_list.append(member_json)
+        wallet_json_list = list()
+        wallet_list = db.session.query(CoinWalletQunMemberRelate, CoinWalletMemberAddressRelate) \
+            .outerjoin(CoinWalletMemberAddressRelate,
+                       CoinWalletQunMemberRelate.uqun_member_id == CoinWalletMemberAddressRelate.uqun_member_id)\
+            .filter(CoinWalletMemberAddressRelate.wallet_is_deleted == 0,
+                    CoinWalletQunMemberRelate.member_username == a_contact.username).all()
+        member_json['wallet_count'] = len(wallet_list)
+        for wallet in wallet_list:
+            wallet_json = dict()
+            wallet_json['wallet_id'] = wallet.wallet_id
+            wallet_json['coin_address'] = wallet.coin_address
+            wallet_json['is_origin'] = wallet.address_is_origin
+            wallet_json['last_updated_time'] = datetime_to_timestamp_utc_8(wallet.last_updated_time)
+            wallet_json_list.append(wallet_json)
 
     return SUCCESS, member_json_list, total_count
+
+
+def get_members_without_coin_wallet(user_info, uqun_id = None, limit = 10, offset = 0):
+    filter_list_cw_qmr = list()
+    filter_list_cw_qmr.append(CoinWalletQunMemberRelate.member_is_deleted == 0)
+    filter_list_cw_qmr.append(CoinWalletQunMemberRelate.user_id == user_info.user_id)
+    if uqun_id is not None:
+        filter_list_cw_qmr.append(CoinWalletQunMemberRelate.uqun_id == uqun_id)
+    rows_member_username = db.session.query(CoinWalletQunMemberRelate.member_username).filter(*filter_list_cw_qmr).all()
+    members_has_wallet = {r[0] for r in rows_member_username}
+
+    status, member_json_list, total_count = get_members(user_info = user_info, uqun_id = uqun_id,
+                                                        limit = limit, offset = offset,
+                                                        member_username_except = members_has_wallet)
+
+    return status, member_json_list, total_count
 
 
 def get_members_coin_wallet_list(user_info, uqun_id = None, limit = 10, offset = 0):
