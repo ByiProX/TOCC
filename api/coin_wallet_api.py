@@ -99,7 +99,7 @@ def app_get_members_coin_wallet():
     status, wallet_list = get_members_coin_wallet_list(user_info = user_info, uqun_id = uqun_id,
                                                        limit = limit, offset = offset)
     last_updated_time = datetime_to_timestamp_utc_8(datetime.now())
-    if wallet_list[0]:
+    if wallet_list:
         last_updated_time = wallet_list[0]
     status = SUCCESS
 
