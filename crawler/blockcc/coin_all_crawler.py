@@ -2,7 +2,6 @@
 from bs4 import BeautifulSoup
 import requests
 import re
-import lxml
 
 import logging
 from datetime import datetime
