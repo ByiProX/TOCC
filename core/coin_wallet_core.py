@@ -78,7 +78,7 @@ def get_members(user_info, uqun_id = None, limit = 10, offset = 0, member_userna
 
     member_json_list = list()
     for row in rows:
-        member_username = row[0]
+        # member_username = row[0]
         a_contact = row[1]
         member_json = dict()
         # member_json['chatroom_id'] = uqun_id
@@ -93,8 +93,8 @@ def get_members(user_info, uqun_id = None, limit = 10, offset = 0, member_userna
             .filter(CoinWalletMemberAddressRelate.wallet_is_deleted == 0,
                     CoinWalletQunMemberRelate.member_username == a_contact.username).all()
         member_json['wallet_count'] = len(rows_wallet_list)
-        for row in rows_wallet_list:
-            wallet = row[0]
+        for row_wallet in rows_wallet_list:
+            wallet = row_wallet[0]
             wallet_json = dict()
             wallet_json['wallet_id'] = wallet.wallet_id
             wallet_json['coin_address'] = wallet.coin_address
