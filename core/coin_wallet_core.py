@@ -68,31 +68,33 @@ def get_members(user_info, uqun_id = None, limit = 10, offset = 0, member_userna
     else:
         filter_list_members.append(UserQunRelateInfo.user_id == user_info.user_id)
 
-    members_query = db.session.query(UserQunRelateInfo.uqun_id, AContact) \
-        .outerjoin(AMember, UserQunRelateInfo.chatroomname == AMember.chatroomname) \
+    members_query = db.session.query(AMember.username, AContact) \
+        .outerjoin(UserQunRelateInfo, AMember.chatroomname == UserQunRelateInfo.chatroomname) \
         .outerjoin(AContact, AMember.username == AContact.username) \
+        .group_by(AMember.username)\
         .filter(*filter_list_members)
     total_count = members_query.count()
     rows = members_query.limit(limit).offset(offset).all()
 
     member_json_list = list()
     for row in rows:
-        uqun_id = row[0]
+        member_username = row[0]
         a_contact = row[1]
         member_json = dict()
-        member_json['chatroom_id'] = uqun_id
+        # member_json['chatroom_id'] = uqun_id
         member_json['member_id'] = a_contact.id
         member_json['member_nickname'] = str_to_unicode(a_contact.nickname)
         member_json['member_avatar'] = a_contact.avatar_url2
         member_json_list.append(member_json)
         wallet_json_list = list()
-        wallet_list = db.session.query(CoinWalletQunMemberRelate, CoinWalletMemberAddressRelate) \
-            .outerjoin(CoinWalletMemberAddressRelate,
-                       CoinWalletQunMemberRelate.uqun_member_id == CoinWalletMemberAddressRelate.uqun_member_id)\
+        rows_wallet_list = db.session.query(CoinWalletMemberAddressRelate, CoinWalletQunMemberRelate) \
+            .outerjoin(CoinWalletQunMemberRelate,
+                       CoinWalletMemberAddressRelate.uqun_member_id == CoinWalletQunMemberRelate.uqun_member_id)\
             .filter(CoinWalletMemberAddressRelate.wallet_is_deleted == 0,
                     CoinWalletQunMemberRelate.member_username == a_contact.username).all()
-        member_json['wallet_count'] = len(wallet_list)
-        for wallet in wallet_list:
+        member_json['wallet_count'] = len(rows_wallet_list)
+        for row in rows_wallet_list:
+            wallet = row[0]
             wallet_json = dict()
             wallet_json['wallet_id'] = wallet.wallet_id
             wallet_json['coin_address'] = wallet.coin_address
