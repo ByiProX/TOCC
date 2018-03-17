@@ -7,7 +7,7 @@ from flask import request, send_file
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api
 from core.coin_wallet_core import switch_func_coin_wallet, get_members_coin_wallet_list, update_coin_address_by_id, \
-    delete_wallet_by_id, get_members_without_coin_wallet, get_members, build_wallet_excel
+    delete_wallet_by_id, get_members_without_coin_wallet, get_members
 from core.qun_manage_core import get_chatroom_list_by_user_info
 from core.user_core import UserLogin
 from utils.u_response import make_response

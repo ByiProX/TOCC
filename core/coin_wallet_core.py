@@ -6,6 +6,8 @@ import re
 
 from datetime import datetime
 
+from sqlalchemy import func
+
 from configs.config import db, SUCCESS, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM
 from models.android_db_models import AContact, AMember
 from models.coin_wallet_models import CoinWalletQunMemberRelate, CoinWalletMemberAddressRelate
@@ -124,39 +126,58 @@ def get_members_coin_wallet_list(user_info, uqun_id = None, limit = 10, offset =
     filter_list_cw_qmr.append(CoinWalletQunMemberRelate.user_id == user_info.user_id)
     if uqun_id is not None:
         filter_list_cw_qmr.append(CoinWalletQunMemberRelate.uqun_id == uqun_id)
-    cw_qmr_list = db.session.query(CoinWalletQunMemberRelate, AContact)\
+
+    rows_member_username = db.session.query(CoinWalletQunMemberRelate.member_username,
+                                            func.max(CoinWalletQunMemberRelate.last_update_time),
+                                            AContact)\
         .outerjoin(AContact, CoinWalletQunMemberRelate.member_username == AContact.username)\
         .filter(*filter_list_cw_qmr)\
-        .order_by(CoinWalletQunMemberRelate.last_update_time.desc()).limit(limit).offset(offset).all()
+        .group_by(CoinWalletQunMemberRelate.member_username)\
+        .order_by(func.max(CoinWalletQunMemberRelate.last_update_time)).limit(limit).offset(offset).all()
 
-    for row in cw_qmr_list:
-        cw_qmr = row[0]
-        a_contact = row[1]
-        cw_qmr_json = dict()
-        # 暂：member_id = AContact.id
-        cw_qmr_json['member_id'] = -1
-        cw_qmr_json['member_nickname'] = ""
-        cw_qmr_json['member_avatar'] = ""
+    member_info_dict = dict()
+    member_username_list = list()
+    for row in rows_member_username:
+        member_username = row[0]
+        last_update_time = row[1]
+        a_contact = row[2]
+        member_info_json = dict()
+        member_info_json['member_id'] = -1
+        member_info_json['member_nickname'] = ""
+        member_info_json['member_avatar'] = ""
         if a_contact:
-            cw_qmr_json['member_id'] = a_contact.id
-            cw_qmr_json['member_nickname'] = str_to_unicode(a_contact.nickname)
-            cw_qmr_json['member_avatar'] = a_contact.avatar_url2
-        cw_qmr_json['chatroom_id'] = cw_qmr.uqun_id
-        cw_qmr_json['last_update_time'] = datetime_to_timestamp_utc_8(cw_qmr.last_update_time)
-        wallet_json_list = list()
-        wallet_list = db.session.query(CoinWalletMemberAddressRelate)\
-            .filter(CoinWalletMemberAddressRelate.uqun_member_id == cw_qmr.uqun_member_id,
-                    CoinWalletMemberAddressRelate.wallet_is_deleted == 0).all()
-        cw_qmr_json['wallet_count'] = len(wallet_list)
-        for wallet in wallet_list:
-            wallet_json = dict()
-            wallet_json['wallet_id'] = wallet.wallet_id
-            wallet_json['coin_address'] = wallet.coin_address
-            wallet_json['is_origin'] = wallet.address_is_origin
-            wallet_json['last_updated_time'] = datetime_to_timestamp_utc_8(wallet.last_updated_time)
-            wallet_json_list.append(wallet_json)
-        cw_qmr_json['wallets'] = wallet_json_list
-        members_coin_wallet_list.append(cw_qmr_json)
+            member_info_json['member_id'] = a_contact.id
+            member_info_json['member_nickname'] = str_to_unicode(a_contact.nickname)
+            member_info_json['member_avatar'] = a_contact.avatar_url2
+        member_info_json['last_update_time'] = datetime_to_timestamp_utc_8(last_update_time)
+        member_info_dict[member_username] = member_info_json
+        member_username_list.append(member_username)
+
+    rows_wallet_list = db.session.query(CoinWalletMemberAddressRelate, CoinWalletQunMemberRelate.member_username) \
+        .outerjoin(CoinWalletQunMemberRelate,
+                   CoinWalletMemberAddressRelate.uqun_member_id == CoinWalletQunMemberRelate.uqun_member_id)\
+        .filter(CoinWalletQunMemberRelate.member_username.in_(member_username_list),
+                CoinWalletMemberAddressRelate.wallet_is_deleted == 0).\
+        order_by(CoinWalletMemberAddressRelate.last_updated_time.desc()).all()
+
+    member_wallet_dict = dict()
+    for row in rows_wallet_list:
+        wallet = row[0]
+        wallet_json = dict()
+        wallet_json['wallet_id'] = wallet.wallet_id
+        wallet_json['coin_address'] = wallet.coin_address
+        wallet_json['is_origin'] = wallet.address_is_origin
+        wallet_json['last_updated_time'] = datetime_to_timestamp_utc_8(wallet.last_updated_time)
+        member_username = row[1]
+        member_wallet_dict.setdefault(member_username, list())
+        member_wallet_dict[member_username].append(wallet_json)
+
+    for member_username in member_username_list:
+        member_info_json = member_info_dict[member_username]
+        wallet_list = member_wallet_dict[member_username]
+        member_info_json['wallet_count'] = len(wallet_list)
+        member_info_json['wallets'] = wallet_list
+        members_coin_wallet_list.append(member_info_json)
 
     return SUCCESS, members_coin_wallet_list
 
