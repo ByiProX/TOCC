@@ -155,11 +155,15 @@ def get_members_coin_wallet_list(user_info, uqun_id = None, limit = 10, offset =
         member_info_dict[member_username] = member_info_json
         member_username_list.append(member_username)
 
+    filter_list_wallet = list()
+    filter_list_wallet.append(CoinWalletQunMemberRelate.member_username.in_(member_username_list))
+    filter_list_wallet.append(CoinWalletMemberAddressRelate.wallet_is_deleted == 0)
+    if uqun_id is not None:
+        filter_list_wallet.append(CoinWalletQunMemberRelate.uqun_id == uqun_id)
     rows_wallet_list = db.session.query(CoinWalletMemberAddressRelate, CoinWalletQunMemberRelate.member_username) \
         .outerjoin(CoinWalletQunMemberRelate,
                    CoinWalletMemberAddressRelate.uqun_member_id == CoinWalletQunMemberRelate.uqun_member_id)\
-        .filter(CoinWalletQunMemberRelate.member_username.in_(member_username_list),
-                CoinWalletMemberAddressRelate.wallet_is_deleted == 0).\
+        .filter(*filter_list_wallet).\
         order_by(CoinWalletMemberAddressRelate.last_updated_time.desc()).all()
 
     member_wallet_dict = dict()
