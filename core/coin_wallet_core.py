@@ -101,6 +101,7 @@ def get_members(user_info, uqun_id = None, limit = 10, offset = 0, member_userna
             wallet_json['is_origin'] = wallet.address_is_origin
             wallet_json['last_updated_time'] = datetime_to_timestamp_utc_8(wallet.last_updated_time)
             wallet_json_list.append(wallet_json)
+        member_json['wallets'] = wallet_json_list
 
     return SUCCESS, member_json_list, total_count
 
