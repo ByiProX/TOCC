@@ -436,7 +436,7 @@ class ChatroomStatistic(db.Model):
         return filter_list
 
     @staticmethod
-    def fetch_chatroom_statistics(chatroom_id, time_to_day, member_count, create_flag = True, save_flag = True):
+    def fetch_chatroom_statistics(chatroom_id, time_to_day, create_flag = True, save_flag = True):
         chatroom_statistics = db.session.query(ChatroomStatistic)\
             .filter(ChatroomStatistic.chatroom_id == chatroom_id,
                     ChatroomStatistic.time_to_day == time_to_day).first()
