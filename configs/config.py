@@ -104,7 +104,7 @@ config_map = {
 #         config_name = 'test'
 #     else:
 #         raise ValueError("没有设置环境参数")
-config_name_s = 'p'
+config_name_s = 'd'
 
 if config_name_s == 'p':
     print("注意！线上环境！使用production库")
