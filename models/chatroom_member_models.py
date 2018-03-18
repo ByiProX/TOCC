@@ -8,8 +8,6 @@ from datetime import datetime, timedelta
 from sqlalchemy import func, distinct
 
 from configs.config import db, MAX_MEMBER_COUNT_DECIMAL, DEFAULT_SCOPE_LIST, SCOPE_24_HOUR
-from models.android_db_models import AMember, AContact
-from models.message_ext_models import MessageAnalysis
 from utils.u_model_json_str import model_to_dict
 from utils.u_time import get_time_window_by_scope
 from utils.u_transformat import unicode_to_str
@@ -673,3 +671,7 @@ class MemberInviteMember(db.Model):
             filter_list.append(MemberInviteMember.create_time < end_time)
 
         return filter_list
+
+
+from models.android_db_models import AMember, AContact
+from models.message_ext_models import MessageAnalysis
