@@ -32,6 +32,7 @@ for chatroom_overview_row in chatroom_overview_list:
     print json.dumps(chatroom_overview.to_json())
     chatroom_overview.batch_update(chatroom_create_time)
     print json.dumps(chatroom_overview.to_json())
+    print '---'
 
 member_overview_list = db.session.query(MemberOverview, MemberInfo.chatroomname, MemberInfo.username)\
     .outerjoin(MemberInfo, MemberOverview.member_id == MemberInfo.member_id).all()
@@ -41,9 +42,15 @@ for member_overview_row in member_overview_list:
     username = member_overview_row[2]
     member_overview.chatroomname = chatroomname
     member_overview.username = username
-    print json.dumps(member_overview.to_json())
+    if member_overview.speak_count:
+        print json.dumps(member_overview.to_json())
     member_overview.update_batch()
-    print json.dumps(member_overview.to_json())
+    if member_overview.speak_count:
+        print json.dumps(member_overview.to_json())
+    # print json.dumps(member_overview.to_json())
+    # member_overview.update_batch()
+    # print json.dumps(member_overview.to_json())
+    print '---'
 
 db.session.commit()
 
