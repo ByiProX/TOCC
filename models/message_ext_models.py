@@ -276,15 +276,16 @@ class MessageAnalysis(db.Model):
                     return
             user_id = user.user_id
 
+            now = datetime.now()
             # chatroom
             chatroom = ChatroomInfo(chatroom_id = a_contact_chatroom.id, chatroomname = chatroomname,
-                                    member_count = a_contact_chatroom.member_count).generate_create_time()
+                                    member_count = a_contact_chatroom.member_count).generate_create_time(now)
             db.session.merge(chatroom)
 
             # user_chatroom_r
             user_chatroom_r = UserChatroomR(user_id = user_id, chatroom_id = a_contact_chatroom.id,
                                             permission = USER_CHATROOM_R_PERMISSION_1)\
-                .generate_create_time()
+                .generate_create_time(now)
             db.session.add(user_chatroom_r)
 
             # bot_chatroom_r
@@ -295,11 +296,11 @@ class MessageAnalysis(db.Model):
             if bot_chatroom_r_is_on:
                 is_on = False
             bot_chatroom_r = BotChatroomR(a_chatroom_r_id = a_chatroom_r.id, chatroomname = a_chatroom_r.chatroomname,
-                                          username = a_chatroom_r.username, is_on = is_on).generate_create_time()
+                                          username = a_chatroom_r.username, is_on = is_on).generate_create_time(now)
             db.session.merge(bot_chatroom_r)
 
             # 初始化 MemberInfo 和 MemberOverview
-            MemberInfo.update_members(chatroomname)
+            MemberInfo.update_members(chatroomname, create_time = now)
 
             # 初始化 ChatroomOverview
             ChatroomOverview.init_all_scope(chatroom_id = a_contact_chatroom.id,

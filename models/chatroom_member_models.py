@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 from decimal import Decimal
 
@@ -213,7 +214,7 @@ class MemberInfo(db.Model):
         return member
 
     @staticmethod
-    def update_members(chatroomname, save_flag = False):
+    def update_members(chatroomname, create_time = None, save_flag = False):
         a_contact_chatroom = db.session.query(AContact).filter(AContact.username == chatroomname).first()
         if not a_contact_chatroom:
             logger.error(u'Not found chatroomname in AContact: %s.' % chatroomname)
@@ -228,7 +229,7 @@ class MemberInfo(db.Model):
             else:
                 new_member_info = MemberInfo(member_id = a_member.id, chatroomname = chatroomname,
                                              username = a_member.username, chatroom_id = a_contact_chatroom.id) \
-                    .generate_create_time()
+                    .generate_create_time(create_time)
 
                 MemberOverview.init_all_scope(member_id = a_member.id, chatroom_id = a_contact_chatroom.id,
                                               chatroomname = chatroomname, username = a_member.username)
@@ -284,14 +285,13 @@ class ChatroomOverview(db.Model):
         if save_flag:
             db.session.commit()
 
-    def batch_update(self, save_flag = False):
+    def batch_update(self, chatroom_create_time, save_flag = False):
         self.update_speak_count()
-        self.update_incre_count()
+        self.update_incre_count(chatroom_create_time)
         self.update_active_count()
         self.update_active_rate()
         if save_flag:
             db.session.commit()
-
         return self
 
     def update_speak_count(self, save_flag = False):
@@ -504,6 +504,14 @@ class MemberOverview(db.Model):
             db.session.merge(member_overview)
         if save_flag:
             db.session.commit()
+
+    def update_batch(self, save_flag = False):
+        self.update_speak_count_and_be_at_count()
+        self.update_invitation_count()
+        self.update_effect_num()
+        if save_flag:
+            db.session.commit()
+        return self
 
     def update_speak_count_and_be_at_count(self, save_flag = False):
         if self.scope == SCOPE_24_HOUR:
