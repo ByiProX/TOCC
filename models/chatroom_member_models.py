@@ -284,6 +284,16 @@ class ChatroomOverview(db.Model):
         if save_flag:
             db.session.commit()
 
+    def batch_update(self, save_flag = False):
+        self.update_speak_count()
+        self.update_incre_count()
+        self.update_active_count()
+        self.update_active_rate()
+        if save_flag:
+            db.session.commit()
+
+        return self
+
     def update_speak_count(self, save_flag = False):
         if self.scope == SCOPE_24_HOUR:
             end_time = datetime.now()
@@ -615,9 +625,9 @@ class MemberStatistic(db.Model):
 class MemberInviteMember(db.Model):
     __tablename_ = 'member_invite_member'
     invitor_id = db.Column(db.BigInteger, primary_key = True)
-    invitor_username = db.Column(db.String(32), index = True, nullable = True)
+    invitor_username = db.Column(db.String(32), index = True, nullable = False)
     invited_id = db.Column(db.BigInteger, primary_key = True)
-    invited_username = db.Column(db.String(32), index = True, nullable = True)
+    invited_username = db.Column(db.String(32), index = True, nullable = False)
 
     create_time = db.Column(db.DateTime, primary_key = True)
 

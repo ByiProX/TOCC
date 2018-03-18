@@ -7,10 +7,6 @@ import copy
 
 from configs.config import db, MSG_TYPE_TXT, MSG_TYPE_SYS, CONTENT_TYPE_TXT, CONTENT_TYPE_SYS, \
     USER_CHATROOM_R_PERMISSION_1
-from models.android_db_models import AContact, AMember, AChatroomR, AFriend, AMessage
-from models.chatroom_member_models import ChatroomInfo, BotChatroomR, UserChatroomR, ChatroomStatistic, \
-    MemberStatistic, MemberInfo, ChatroomOverview
-from models.user_bot_models import BotInfo, UserInfo, UserBotRelateInfo
 from utils.u_time import get_today_0
 from utils.u_transformat import str_to_unicode, unicode_to_str
 
@@ -662,3 +658,10 @@ class MessageAnalysis(db.Model):
     #         .outerjoin(AContact, AMember.username == AContact.username) \
     #         .filter(AMember.chatroomname == chatroom.chatroomname).all()
     #     chatroom.init_members_from_a_members(rows)
+
+
+# Mark
+from models.android_db_models import AContact, AMember, AChatroomR, AFriend, AMessage
+from models.chatroom_member_models import ChatroomInfo, BotChatroomR, UserChatroomR, ChatroomStatistic, \
+    MemberStatistic, MemberInfo, ChatroomOverview
+from models.user_bot_models import BotInfo, UserInfo, UserBotRelateInfo

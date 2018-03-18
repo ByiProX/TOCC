@@ -56,4 +56,5 @@ production_thread.start()
 
 if __name__ == '__main__':
     logger.debug("开始程序")
+    initial_all()
     app.run(host='0.0.0.0', port=5505, debug=True, use_reloader=False)
