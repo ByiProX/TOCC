@@ -352,143 +352,143 @@ class MessageAnalysis(db.Model):
     @staticmethod
     def count_msg_by_ids(start_id, end_id):
         print 'start', start_id, 'end', end_id
-        msg_list = db.session.query(MessageAnalysis).filter(MessageAnalysis.msg_id >= start_id,
-                                                            MessageAnalysis.msg_id <= end_id).all()
-        for msg in msg_list:
-            MessageAnalysis.count_msg(msg)
-
-    @staticmethod
-    def count_msg(msg):
         try:
-            today = get_today_0()
-
-            if msg.is_to_friend:
-                pass
-            else:
-                content = str_to_unicode(msg.content)
-                chatroomname = msg.talker
-                username = msg.real_talker
-                # is_send = msg.is_send
-                msg_type = msg.type
-
-                # TODO: 在内存中，用全局标识控制更新
-                bot_chatroom_r = db.session.query(BotChatroomR).filter(BotChatroomR.chatroomname == chatroomname,
-                                                                       BotChatroomR.username == msg.username,
-                                                                       BotChatroomR.is_on == 1).first()
-                if bot_chatroom_r:
-                    chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroomname == chatroomname).first()
-
-                    chatroom_id = chatroom.chatroom_id
-
-                    # calc chatroom statics
-                    logger.info('calc chatroom statistics')
-                    chatroom_statics = ChatroomStatistic.fetch_chatroom_statistics(chatroom_id = chatroom_id,
-                                                                                   time_to_day = today)
-                    logger.info('| speak_count')
-                    if msg_type != CONTENT_TYPE_SYS:
-                        chatroom_statics.speak_count += 1
-                        chatroom.total_speak_count += 1
-                        member = MemberInfo.fetch_member_by_username(chatroomname, username)
-                        if not member:
-                            logger.error(u"find no member, chatroomname: %s, username: %s." % (chatroomname, username))
-                            return
-                        talker_id = member.member_id
-
-                        # calc member statics
-                        logger.info('calc member   statistics')
-                        member_statics = MemberStatistic.fetch_member_statistics(member_id = talker_id,
-                                                                                 time_to_day = today,
-                                                                                 chatroom_id = chatroom_id)
-                        logger.info('| speak_count')
-                        member_statics.speak_count += 1
-                        member.speak_count += 1
-
-                        if msg_type == CONTENT_TYPE_TXT:
-                            if content.find(u'@') != -1:
-                                logger.info('| be_at_count')
-                                at_count = MessageAnalysis.extract_msg_be_at(msg, chatroom)
-                                if msg.is_at:
-                                    chatroom_statics.at_count += at_count
-                                    chatroom.total_at_count += at_count
-
-                    db.session.commit()
-
-                    # content_type = CONTENT_TYPE_UNKNOWN
-                    # if msg_type == CONTENT_TYPE_TXT:
-                    #     content_type = CONTENT_TYPE_TXT
-                    # elif msg_type == CONTENT_TYPE_PIC:
-                    #     content_type = CONTENT_TYPE_PIC
-                    # elif msg_type == CONTENT_TYPE_MP3:
-                    #     content_type = CONTENT_TYPE_MP3
-                    # elif msg_type == CONTENT_TYPE_MP4:
-                    #     content_type = CONTENT_TYPE_MP4
-                    # elif msg_type == CONTENT_TYPE_GIF:
-                    #     content_type = CONTENT_TYPE_GIF
-                    # elif msg_type == CONTENT_TYPE_VIDEO:
-                    #     content_type = CONTENT_TYPE_VIDEO
-                    # elif msg_type == CONTENT_TYPE_SHARE:
-                    #     content_type = CONTENT_TYPE_SHARE
-                    # elif msg_type == CONTENT_TYPE_NAME_CARD:
-                    #     content_type = CONTENT_TYPE_NAME_CARD
-                    # elif msg_type == CONTENT_TYPE_SYS:
-                    #     content_type = CONTENT_TYPE_SYS
-                    #     # 红包
-                    #     if content == u'收到红包，请在手机上查看':
-                    #         logger.info(u'收到红包')
-                    #         content_type = CONTENT_TYPE_RED
-                    #     # 被邀请入群
-                    #     # Content="frank5433"邀请你和"秦思语-Doodod、磊"加入了群聊
-                    #     # "Sw-fQ"邀请你加入了群聊，群聊参与人还有：qiezi、Hugh、蒋郁、123
-                    #     elif content.find(u'邀请你') != -1:
-                    #         logger.info(u'invite_bot')
-                    #         MessageAnalysis.invite_bot(msg, chatroom)
-                    #
-                    #     # 其他人入群：邀请、扫码
-                    #     # "斗西"邀请"陈若曦"加入了群聊
-                    #     # " BILL"通过扫描"谢工@GitChat&图灵工作用"分享的二维码加入群聊
-                    #     # "風中落葉🍂"邀请"大冬天的、追忆那年的似水年华、往事随风去、搁浅、陈梁～HILTI"加入了群聊
-                    #     elif content.find(u'加入了群聊') != -1 or content.find(u'加入群聊') != -1:
-                    #         logger.info(u'invite_other')
-                    #         MessageAnalysis.invite_other(msg, chatroom)
-                    #
-                    #     # 修改群名
-                    #     # "阿紫"修改群名为“测试群”
-                    #     elif content.find(u'修改群名为') != -1:
-                    #         logger.info(u'修改群名')
-                    #         chatroom_nick_name = content.split(u'修改群名为')[1][1:-1]
-                    #         logger.info(u'chatroom_nick_name: ' + chatroom_nick_name)
-                    #         chatroom.nick_name = chatroom_nick_name
-                    #     # 移除群聊
-                    #     elif content.find(u'移除群聊') != -1:
-                    #         pass
-                    #     else:
-                    #         logger.info('UNKOWN SYS INFO: ')
-                    #         logger.info(content)
-                    #     db.session.commit()
-                    #
-                    # # calc content_type
-                    # logger.info('calc chatroom content type')
-                    # logger.info('calc member   content type')
-                    # chatroom_content_type = ChatroomContentType.get_chatroom_content_type(chatroom_id = chatroom_id,
-                    #                                                                       content_type = content_type)
-                    #
-                    # chatroom_content_type.incre()
-                    # if content_type is not CONTENT_TYPE_SYS and content_type is not CONTENT_TYPE_RED:
-                    #     member = db.session.query(Member).filter(Member.member_name == username).first()
-                    #     talker_id = member.id
-                    #     member_content_type = MemberContentType.get_member_content_type(member_id = talker_id,
-                    #                                                                     content_type = content_type)
-                    #     member_content_type.incre()
-                    #     if content_type is CONTENT_TYPE_SHARE:
-                    #         pass
-                    #
-                    # db.session.commit()
+            msg_list = db.session.query(MessageAnalysis).filter(MessageAnalysis.msg_id >= start_id,
+                                                                MessageAnalysis.msg_id <= end_id).all()
+            for msg in msg_list:
+                MessageAnalysis.count_msg(msg)
         except Exception:
             db.session.rollback()
             logger.exception("Exception")
         finally:
             # logger.info('count_msg db.session.close()')
             db.session.close()
+
+    @staticmethod
+    def count_msg(msg):
+        today = get_today_0()
+
+        if msg.is_to_friend:
+            pass
+        else:
+            content = str_to_unicode(msg.content)
+            chatroomname = msg.talker
+            username = msg.real_talker
+            # is_send = msg.is_send
+            msg_type = msg.type
+
+            # TODO: 在内存中，用全局标识控制更新
+            bot_chatroom_r = db.session.query(BotChatroomR).filter(BotChatroomR.chatroomname == chatroomname,
+                                                                   BotChatroomR.username == msg.username,
+                                                                   BotChatroomR.is_on == 1).first()
+            if bot_chatroom_r:
+                chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroomname == chatroomname).first()
+
+                chatroom_id = chatroom.chatroom_id
+
+                # calc chatroom statics
+                logger.info('calc chatroom statistics')
+                chatroom_statics = ChatroomStatistic.fetch_chatroom_statistics(chatroom_id = chatroom_id,
+                                                                               time_to_day = today)
+                logger.info('| speak_count')
+                if msg_type != CONTENT_TYPE_SYS:
+                    chatroom_statics.speak_count += 1
+                    chatroom.total_speak_count += 1
+                    member = MemberInfo.fetch_member_by_username(chatroomname, username)
+                    if not member:
+                        logger.error(u"find no member, chatroomname: %s, username: %s." % (chatroomname, username))
+                        return
+                    talker_id = member.member_id
+
+                    # calc member statics
+                    logger.info('calc member   statistics')
+                    member_statics = MemberStatistic.fetch_member_statistics(member_id = talker_id,
+                                                                             time_to_day = today,
+                                                                             chatroom_id = chatroom_id)
+                    logger.info('| speak_count')
+                    member_statics.speak_count += 1
+                    member.speak_count += 1
+
+                    if msg_type == CONTENT_TYPE_TXT:
+                        if content.find(u'@') != -1:
+                            logger.info('| be_at_count')
+                            at_count = MessageAnalysis.extract_msg_be_at(msg, chatroom)
+                            if msg.is_at:
+                                chatroom_statics.at_count += at_count
+                                chatroom.total_at_count += at_count
+
+                db.session.commit()
+
+                # content_type = CONTENT_TYPE_UNKNOWN
+                # if msg_type == CONTENT_TYPE_TXT:
+                #     content_type = CONTENT_TYPE_TXT
+                # elif msg_type == CONTENT_TYPE_PIC:
+                #     content_type = CONTENT_TYPE_PIC
+                # elif msg_type == CONTENT_TYPE_MP3:
+                #     content_type = CONTENT_TYPE_MP3
+                # elif msg_type == CONTENT_TYPE_MP4:
+                #     content_type = CONTENT_TYPE_MP4
+                # elif msg_type == CONTENT_TYPE_GIF:
+                #     content_type = CONTENT_TYPE_GIF
+                # elif msg_type == CONTENT_TYPE_VIDEO:
+                #     content_type = CONTENT_TYPE_VIDEO
+                # elif msg_type == CONTENT_TYPE_SHARE:
+                #     content_type = CONTENT_TYPE_SHARE
+                # elif msg_type == CONTENT_TYPE_NAME_CARD:
+                #     content_type = CONTENT_TYPE_NAME_CARD
+                # elif msg_type == CONTENT_TYPE_SYS:
+                #     content_type = CONTENT_TYPE_SYS
+                #     # 红包
+                #     if content == u'收到红包，请在手机上查看':
+                #         logger.info(u'收到红包')
+                #         content_type = CONTENT_TYPE_RED
+                #     # 被邀请入群
+                #     # Content="frank5433"邀请你和"秦思语-Doodod、磊"加入了群聊
+                #     # "Sw-fQ"邀请你加入了群聊，群聊参与人还有：qiezi、Hugh、蒋郁、123
+                #     elif content.find(u'邀请你') != -1:
+                #         logger.info(u'invite_bot')
+                #         MessageAnalysis.invite_bot(msg, chatroom)
+                #
+                #     # 其他人入群：邀请、扫码
+                #     # "斗西"邀请"陈若曦"加入了群聊
+                #     # " BILL"通过扫描"谢工@GitChat&图灵工作用"分享的二维码加入群聊
+                #     # "風中落葉🍂"邀请"大冬天的、追忆那年的似水年华、往事随风去、搁浅、陈梁～HILTI"加入了群聊
+                #     elif content.find(u'加入了群聊') != -1 or content.find(u'加入群聊') != -1:
+                #         logger.info(u'invite_other')
+                #         MessageAnalysis.invite_other(msg, chatroom)
+                #
+                #     # 修改群名
+                #     # "阿紫"修改群名为“测试群”
+                #     elif content.find(u'修改群名为') != -1:
+                #         logger.info(u'修改群名')
+                #         chatroom_nick_name = content.split(u'修改群名为')[1][1:-1]
+                #         logger.info(u'chatroom_nick_name: ' + chatroom_nick_name)
+                #         chatroom.nick_name = chatroom_nick_name
+                #     # 移除群聊
+                #     elif content.find(u'移除群聊') != -1:
+                #         pass
+                #     else:
+                #         logger.info('UNKOWN SYS INFO: ')
+                #         logger.info(content)
+                #     db.session.commit()
+                #
+                # # calc content_type
+                # logger.info('calc chatroom content type')
+                # logger.info('calc member   content type')
+                # chatroom_content_type = ChatroomContentType.get_chatroom_content_type(chatroom_id = chatroom_id,
+                #                                                                       content_type = content_type)
+                #
+                # chatroom_content_type.incre()
+                # if content_type is not CONTENT_TYPE_SYS and content_type is not CONTENT_TYPE_RED:
+                #     member = db.session.query(Member).filter(Member.member_name == username).first()
+                #     talker_id = member.id
+                #     member_content_type = MemberContentType.get_member_content_type(member_id = talker_id,
+                #                                                                     content_type = content_type)
+                #     member_content_type.incre()
+                #     if content_type is CONTENT_TYPE_SHARE:
+                #         pass
+                #
+                # db.session.commit()
 
     @staticmethod
     def extract_msg_be_at(msg, chatroom):
