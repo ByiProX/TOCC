@@ -190,9 +190,9 @@ def update_coin_all():
         GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
 
     print 'BTC before'
-    print old_coin_dict['BTC'].get('marketcap'), old_coin_dict['BTC'].get('change1d')
+    print old_coin_dict['BTC'].marketcap, old_coin_dict['BTC'].change1d
     print 'BTC after'
-    print new_coin_dict['BTC'].get('marketcap'), new_coin_dict['BTC'].get('change1d')
+    print new_coin_dict['BTC'].marketcap, new_coin_dict['BTC'].change1d
 
     # Mark
     # set update_flag = true everytime
