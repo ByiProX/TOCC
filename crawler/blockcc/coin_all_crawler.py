@@ -31,11 +31,10 @@ Headers = {
 
 Url = "https://coinmarketcap.com/all/views/all/#"
 
-result = requests.get(Url, headers = Headers, cookies = Cookie)
-Soup = BeautifulSoup(result.text, 'html.parser')
-
 
 def get_coin_all():
+    result = requests.get(Url, headers = Headers, cookies = Cookie)
+    Soup = BeautifulSoup(result.text, 'html.parser')
     priority = 0
     start_time = datetime.now()
     coin_list = list()
@@ -127,9 +126,6 @@ def get_coin_all():
                 coin['priority'] = priority
                 coin['is_integral'] = True
                 priority += 1
-            if coin.get('symbol').upper() == u'BTC':
-                print 'BTC'
-                print json.dumps(coin)
             coin_list.append(coin.copy())
         if priority == 0:
             priority += 1
@@ -188,15 +184,6 @@ def update_coin_all():
 
     if len(diff_coin_symbol_set) > 0:
         GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
-
-    print 'BTC before'
-    print old_coin_dict['BTC'].marketcap, old_coin_dict['BTC'].change1d
-    print 'BTC after'
-    print new_coin_dict['BTC'].marketcap, new_coin_dict['BTC'].change1d
-
-    # Mark
-    # set update_flag = true everytime
-    # GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
 
     # logger.info(u"update_coin_info success")
 

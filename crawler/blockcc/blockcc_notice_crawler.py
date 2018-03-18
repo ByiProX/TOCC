@@ -52,7 +52,7 @@ notice_size = 10
 
 def get_notice_list():
     success_flag = False
-    start_time = datetime.now()
+    # start_time = datetime.now()
     notice_list = list()
     while not success_flag:
         url = u"https://block.cc/api/v1/getNoticesInfo?lang=zh&page=0&size=" + str(notice_size)
@@ -64,8 +64,8 @@ def get_notice_list():
         except Exception as e:
             print 'err'
 
-    end_time = datetime.now()
-    print end_time - start_time
+    # end_time = datetime.now()
+    # print end_time - start_time
 
     return notice_list
 
