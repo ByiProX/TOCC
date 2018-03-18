@@ -47,12 +47,12 @@ def initial_all():
 
 
 logger = logging.getLogger('main')
-# production_thread.start()
+production_thread.start()
 # crawler_thread.start()
 
 # 开启环境监测线程
-if config_name_s == 'p':
-    environment_client_info.start()
+# if config_name_s == 'p':
+#     environment_client_info.start()
 
 if __name__ == '__main__':
     logger.debug("开始程序")
