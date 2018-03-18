@@ -52,7 +52,7 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
     vol = db.Column(db.DECIMAL(30, 15), index=True, nullable=False)
 
     def __init__(self, symbol, coin_name, coin_name_cn, coin_icon, available_supply, change1d, change7d, change1h,
-                 price, volume_ex, marketcap, rank):
+                 price, volume_ex, marketcap, rank, is_integral = True):
         self.symbol = symbol
         self.coin_name = coin_name
         self.coin_name_cn = coin_name_cn
@@ -66,7 +66,7 @@ class RealTimeQuotesDefaultSettingInfo(db.Model):
         self.marketcap = marketcap
         self.create_time = datetime.now()
         self.rank = rank
-        self.is_integral = True
+        self.is_integral = is_integral
 
         self.open = 0
         self.close = 0

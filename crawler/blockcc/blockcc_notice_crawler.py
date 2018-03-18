@@ -116,7 +116,7 @@ def update_notice_info():
             db.session.merge(new_notice)
 
         db.session.commit()
-        logger.info(u"update_notice_info success")
+        # logger.info(u"update_notice_info success")
 
 
 # update_notice_info()

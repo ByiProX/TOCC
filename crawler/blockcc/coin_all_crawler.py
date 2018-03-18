@@ -41,7 +41,6 @@ def get_coin_all():
         coin = dict()
         if priority > 0:
             # print "优先级：", str(priority)
-            coin['priority'] = priority
             xx = 0
             for ii in i.children:
                 xx += 1
@@ -118,11 +117,18 @@ def get_coin_all():
                     else:
                         # print "change7d:", ii.get_text()
                         coin['change7d'] = ii['data-sort']
+            if not (coin.get('volume_ex') and coin.get('marketcap')):
+                # 市值和流通盘都没有
+                coin['priority'] = 0
+                coin['is_integral'] = False
+            else:
+                coin['priority'] = priority
+                coin['is_integral'] = True
+                priority += 1
             coin_list.append(coin.copy())
-            priority += 1
         if priority == 0:
             priority += 1
-    print 'coin crawler done', (datetime.now() - start_time)
+    # print 'coin crawler done', (datetime.now() - start_time)
     return coin_list
 
 
@@ -136,6 +142,7 @@ def update_coin_all():
         priority = coin_json.get(u'priority', u'')
         coin_name = coin_json.get(u'coin_name', u'')
         coin_icon = coin_json.get(u'coin_icon', u'')
+        is_integral = coin_json.get(u'is_integral', False)
         marketcap = str_to_decimal(str(coin_json.get(u'marketcap'))) * usdcny
         price = str_to_decimal(str(coin_json.get(u'price'))) * usdcny
         mineable = coin_json.get(u'Mineable')
@@ -147,8 +154,8 @@ def update_coin_all():
 
         coin_name_cn = u""
 
-        coin = RealTimeQuotesDefaultSettingInfo(symbol, coin_name, coin_name_cn, coin_icon, available_supply,
-                                                change1d, change7d, change1h, price, volume_ex, marketcap, priority)
+        coin = RealTimeQuotesDefaultSettingInfo(symbol, coin_name, coin_name_cn, coin_icon, available_supply, change1d,
+                                                change7d, change1h, price, volume_ex, marketcap, priority, is_integral)
         new_coin_dict[symbol] = coin
 
     # 去重插新
@@ -177,7 +184,11 @@ def update_coin_all():
     if len(diff_coin_symbol_set) > 0:
         GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
 
-    logger.info(u"update_coin_info success")
+    # Mark
+    # set update_flag = true everytime
+    # GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = True
+
+    # logger.info(u"update_coin_info success")
 
 
 if __name__ == '__main__':

@@ -265,7 +265,7 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
             available_supply = m_s[0][:-8] + u"." + m_s[0][-8:-6] + u"亿"
         elif int(m_s[0]) > 100000:
             available_supply = m_s[0][:-4] + u"." + m_s[0][-4:-2] + u"万"
-    res_text += u"流通数量：" + available_supply + u"\n"
+    res_text += u"流通盘：" + available_supply + u"\n"
 
     # 24小时涨幅计算
     hour24changed = decimal_to_str(ds_info.change1d)
