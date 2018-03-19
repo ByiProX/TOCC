@@ -406,6 +406,8 @@ class ChatroomStatistic(db.Model):
 
     # update with ChatroomOverview
     member_count = db.Column(db.BigInteger, index=True, nullable=False)
+    in_count = db.Column(db.Integer, index=True, nullable=False)
+    out_count = db.Column(db.Integer, index=True, nullable=False)
 
     # deprecated
     at_count = db.Column(db.Integer, index=True, nullable=False)
