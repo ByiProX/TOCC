@@ -12,7 +12,7 @@ from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 from configs.config import SUCCESS, main_api, db, DEFAULT_PAGE, DEFAULT_PAGE_SIZE, ERR_INVALID_PARAMS, ERR_WRONG_ITEM, \
     SCOPE_WEEK
-from utils.u_time import get_time_window_by_scope
+from utils.u_time import get_time_window_by_scope, datetime_to_timestamp_utc_8
 
 logger = logging.getLogger('main')
 
@@ -143,14 +143,15 @@ def chatroom_get_active_tendency():
     return make_response(SUCCESS, active_count_list = active_count_list)
 
 
-@main_api.route('/chatroom/get', methods=['POST'])
-def chatroom_get():
+@main_api.route('/chatroom/get_in_out_members', methods=['POST'])
+def chatroom_get_in_out_members():
     verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
 
-    scope = request.json.get('scope', SCOPE_WEEK)
+    page = request.json.get('page', DEFAULT_PAGE)
+    page_size = request.json.get('page_size', DEFAULT_PAGE_SIZE)
     chatroom_id = request.json.get("chatroom_id")
     if not chatroom_id:
         return make_response(ERR_INVALID_PARAMS)
@@ -161,6 +162,34 @@ def chatroom_get():
     chatroomname = chatroom.chatroomname
     chatroom_create_time = chatroom.create_time
 
-    start_time, end_time = get_time_window_by_scope(scope = scope)
+    in_list = list()
+    out_list = list()
+    filter_list_in = AMember.get_filter_list(chatroomname = chatroomname, is_deleted = False)
+    filter_list_in.append(AMember.create_time > chatroom_create_time)
+    filter_list_out = AMember.get_filter_list(chatroomname = chatroomname, is_deleted = True)
+    members_in_query = db.session.query(AMember, AContact).outerjoin(AContact, AMember.username == AContact.username)\
+        .filter(*filter_list_in)
+    members_in = members_in_query.order_by(AMember.create_time.desc()).limit(page_size).offset(page * page_size).all()
+    for row in members_in:
+        a_member = row[0]
+        a_contact = row[1]
+        member_json = dict()
+        member_json['member_id'] = a_member.id
+        member_json['nickname'] = a_contact.nickname
+        member_json['avatar_url'] = a_contact.avatar_url2
+        member_json['create_time'] = datetime_to_timestamp_utc_8(a_member.create_time)
+        in_list.append(member_json)
+    members_out_query = db.session.query(AMember, AContact).outerjoin(AContact, AMember.username == AContact.username)\
+        .filter(*filter_list_out)
+    members_out = members_out_query.order_by(AMember.create_time.desc()).limit(page_size).offset(page * page_size).all()
+    for row in members_out:
+        a_member = row[0]
+        a_contact = row[1]
+        member_json = dict()
+        member_json['member_id'] = a_member.id
+        member_json['nickname'] = a_contact.nickname
+        member_json['avatar_url'] = a_contact.avatar_url2
+        member_json['update_time'] = datetime_to_timestamp_utc_8(a_member.update_time)
+        out_list.append(member_json)
 
-    return make_response(SUCCESS, )
+    return make_response(SUCCESS, in_list = in_list, out_list = out_list)
