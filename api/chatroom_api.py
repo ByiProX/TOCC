@@ -5,10 +5,13 @@ from flask import request
 
 from core.user_core import UserLogin
 from models.android_db_models import AContact
-from models.chatroom_member_models import ChatroomInfo, UserChatroomR, ChatroomOverview
+from models.chatroom_member_models import ChatroomInfo, UserChatroomR, ChatroomOverview, ChatroomStatistic, \
+    ChatroomActive
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
-from configs.config import SUCCESS, main_api, db, DEFAULT_PAGE, DEFAULT_PAGE_SIZE
+from configs.config import SUCCESS, main_api, db, DEFAULT_PAGE, DEFAULT_PAGE_SIZE, ERR_INVALID_PARAMS, ERR_WRONG_ITEM, \
+    SCOPE_WEEK
+from utils.u_time import get_time_window_by_scope
 
 logger = logging.getLogger('main')
 
@@ -64,10 +67,61 @@ def chatroom_get_chatroom_info():
         return make_response(status)
 
     chatroom_id = request.json.get('chatroom_id')
+    if not chatroom_id:
+        return make_response(ERR_INVALID_PARAMS)
     chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == chatroom_id).first()
+    if not chatroom:
+        return make_response(ERR_WRONG_ITEM)
     a_contact_chatroom = db.session.query(AContact).filter(AContact.id == chatroom.chatroom_id).first()
     chatroom_json = chatroom.to_json()
     a_contact_chatroom_json = a_contact_chatroom.to_json()
     a_contact_chatroom_json.update(chatroom_json)
 
     return make_response(SUCCESS, chatroom_info = a_contact_chatroom_json)
+
+
+@main_api.route('/chatroom/get_msg_tendency', methods=['POST'])
+def chatroom_get_msg_tendency():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    scope = request.json.get('scope', SCOPE_WEEK)
+    chatroom_id = request.json.get("chatroom_id")
+    if not chatroom_id:
+        return make_response(ERR_INVALID_PARAMS)
+
+    start_time, end_time = get_time_window_by_scope(scope = scope)
+    cs_list = db.session.query(ChatroomStatistic)\
+        .filter(ChatroomStatistic.chatroom_id == chatroom_id,
+                ChatroomStatistic.time_to_day >= start_time,
+                ChatroomStatistic.time_to_day < end_time)\
+        .order_by(ChatroomStatistic.time_to_day.asc()).all()
+
+    msg_tendency = [0] * (scope - len(cs_list))
+    for cs in cs_list:
+        msg_tendency.append(cs.speak_count)
+
+    return make_response(SUCCESS, msg_count_list = msg_tendency)
+
+
+@main_api.route('/chatroom/get_active_tendency', methods=['POST'])
+def chatroom_get_active_tendency():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    scope = request.json.get('scope', SCOPE_WEEK)
+    chatroom_id = request.json.get("chatroom_id")
+    if not chatroom_id:
+        return make_response(ERR_INVALID_PARAMS)
+
+    start_time, end_time = get_time_window_by_scope(scope = scope)
+    chatroom_active_list = db.session.query(ChatroomActive)\
+        .filter(ChatroomActive.chatroom_id == chatroom_id,
+                ChatroomActive.time_to_day >= start_time,
+                ChatroomActive.time_to_day < end_time).group_by().all()
+
+    return make_response(SUCCESS, )

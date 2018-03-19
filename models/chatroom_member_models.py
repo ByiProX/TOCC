@@ -316,7 +316,7 @@ class ChatroomOverview(db.Model):
             db.session.commit()
         return self
 
-    def update_incre_count(self, save_flag = False):
+    def update_incre_count(self, chatroom_create_time, save_flag = False):
         if self.scope == SCOPE_24_HOUR:
             end_time = datetime.now()
             start_time = end_time - timedelta(days = 1)
@@ -325,6 +325,7 @@ class ChatroomOverview(db.Model):
         # both from AMember
         filter_list_am = AMember.get_filter_list(chatroomname = self.chatroomname, start_time = start_time,
                                                  end_time = end_time, is_deleted = False)
+        filter_list_am.append(AMember.create_time > chatroom_create_time)
         incre_count = db.session.query(func.count(AMember.id)).filter(*filter_list_am).first()[0] or 0
 
         self.incre_count = incre_count

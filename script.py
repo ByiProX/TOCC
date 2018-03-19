@@ -11,6 +11,13 @@ from models.message_ext_models import MessageAnalysis
 #     MessageAnalysis.count_msg_by_ids(i, i + 100)
 #     i += 300
 
+# len_wechats = len(wechats)
+# i = 1
+# for wechat in wechats:
+#     wechat_id = wechat.id
+#     logger.info('wechat_id: ' + str(wechat_id) + ' | ' + str(i) + ' / ' + str(len_wechats))
+#     i += 1
+
 chatroom_list = db.session.query(ChatroomInfo).all()
 for chatroom in chatroom_list:
     member_list = db.session.query(MemberInfo)\
@@ -34,6 +41,8 @@ for chatroom_overview_row in chatroom_overview_list:
     print json.dumps(chatroom_overview.to_json())
     print '---'
 
+db.session.commit()
+
 member_overview_list = db.session.query(MemberOverview, MemberInfo.chatroomname, MemberInfo.username)\
     .outerjoin(MemberInfo, MemberOverview.member_id == MemberInfo.member_id).all()
 for member_overview_row in member_overview_list:
@@ -42,14 +51,9 @@ for member_overview_row in member_overview_list:
     username = member_overview_row[2]
     member_overview.chatroomname = chatroomname
     member_overview.username = username
-    if member_overview.speak_count:
-        print json.dumps(member_overview.to_json())
+    print json.dumps(member_overview.to_json())
     member_overview.update_batch()
-    if member_overview.speak_count:
-        print json.dumps(member_overview.to_json())
-    # print json.dumps(member_overview.to_json())
-    # member_overview.update_batch()
-    # print json.dumps(member_overview.to_json())
+    print json.dumps(member_overview.to_json())
     print '---'
 
 db.session.commit()
