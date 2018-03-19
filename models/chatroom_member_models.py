@@ -639,7 +639,7 @@ class MemberInviteMember(db.Model):
     invited_id = db.Column(db.BigInteger, primary_key = True)
     invited_username = db.Column(db.String(32), index = True, nullable = False)
 
-    create_time = db.Column(db.DateTime, primary_key = True)
+    create_time = db.Column(db.DateTime, index = True, nullable = False)
 
     def __init__(self, invitor_id, invitor_username, invited_id, invited_username, create_time):
         self.invitor_id = invitor_id
