@@ -2,6 +2,7 @@
 
 import logging
 from flask import request
+from sqlalchemy import func, and_
 
 from core.user_core import UserLogin
 from models.android_db_models import AContact
@@ -119,9 +120,17 @@ def chatroom_get_active_tendency():
         return make_response(ERR_INVALID_PARAMS)
 
     start_time, end_time = get_time_window_by_scope(scope = scope)
-    chatroom_active_list = db.session.query(ChatroomActive)\
+    rows = db.session.query(func.count(ChatroomActive.member_id), ChatroomStatistic.member_count)\
+        .outerjoin(ChatroomStatistic, and_(ChatroomActive.chatroom_id == ChatroomStatistic.chatroom_id)) \
         .filter(ChatroomActive.chatroom_id == chatroom_id,
                 ChatroomActive.time_to_day >= start_time,
-                ChatroomActive.time_to_day < end_time).group_by().all()
+                ChatroomActive.time_to_day < end_time).group_by(ChatroomActive.time_to_day).all()
 
-    return make_response(SUCCESS, )
+    print rows
+
+    active_count_list = [0] * (scope - len(rows))
+    for row in rows:
+        active_count = row[0]
+        active_count_list.append(active_count)
+
+    return make_response(SUCCESS, active_count_list = active_count_list)
