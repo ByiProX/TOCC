@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
+from decimal import Decimal
 from flask import request
 from sqlalchemy import func, and_
 
@@ -133,14 +135,21 @@ def chatroom_get_active_tendency():
                 ChatroomActive.time_to_day >= start_time,
                 ChatroomActive.time_to_day < end_time).group_by(ChatroomActive.time_to_day).all()
 
-    print rows
-
     active_count_list = [0] * (scope - len(rows))
+    active_rate_list = ['0'] * (scope - len(rows))
+    member_count_list = [0] * (scope - len(rows))
     for row in rows:
         active_count = row[0]
+        member_count = row[1]
+        if member_count:
+            active_rate_list.append((Decimal(active_count) / Decimal(member_count)).to_eng_string())
+        else:
+            active_rate_list.append('0')
         active_count_list.append(active_count)
+        member_count_list.append(member_count)
 
-    return make_response(SUCCESS, active_count_list = active_count_list)
+    return make_response(SUCCESS, active_count_list = active_count_list, active_rate_list = active_rate_list,
+                         member_count_list = member_count_list)
 
 
 @main_api.route('/chatroom/get_in_out_members', methods=['POST'])
@@ -166,7 +175,9 @@ def chatroom_get_in_out_members():
     out_list = list()
     filter_list_in = AMember.get_filter_list(chatroomname = chatroomname, is_deleted = False)
     filter_list_in.append(AMember.create_time > chatroom_create_time)
+    filter_list_in.append(AContact.id != None)
     filter_list_out = AMember.get_filter_list(chatroomname = chatroomname, is_deleted = True)
+    filter_list_out.append(AContact.id != None)
     members_in_query = db.session.query(AMember, AContact).outerjoin(AContact, AMember.username == AContact.username)\
         .filter(*filter_list_in)
     members_in = members_in_query.order_by(AMember.create_time.desc()).limit(page_size).offset(page * page_size).all()
