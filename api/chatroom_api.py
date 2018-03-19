@@ -103,17 +103,17 @@ def chatroom_get_msg_tendency():
         .order_by(ChatroomStatistic.time_to_day.asc()).all()
 
     msg_tendency = [0] * (scope - len(cs_list))
-    in_count = [0] * (scope - len(cs_list))
-    out_count = [0] * (scope - len(cs_list))
-    total_count = [0] * (scope - len(cs_list))
+    in_count_list = [0] * (scope - len(cs_list))
+    out_count_list = [0] * (scope - len(cs_list))
+    total_count_list = [0] * (scope - len(cs_list))
     for cs in cs_list:
         msg_tendency.append(cs.speak_count)
-        in_count.append(cs.in_count)
-        out_count.append(cs.out_count)
-        total_count.append(cs.member_count)
+        in_count_list.append(cs.in_count)
+        out_count_list.append(cs.out_count)
+        total_count_list.append(cs.member_count)
 
-    return make_response(SUCCESS, msg_count_list = msg_tendency, in_count = in_count, out_count = out_count,
-                         total_count = total_count)
+    return make_response(SUCCESS, msg_count_list = msg_tendency, in_count_list = in_count_list, out_count_list = out_count_list,
+                         total_count_list = total_count_list)
 
 
 @main_api.route('/chatroom/get_active_tendency', methods=['POST'])
