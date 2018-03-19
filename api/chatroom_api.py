@@ -175,9 +175,9 @@ def chatroom_get_in_out_members():
     out_list = list()
     filter_list_in = AMember.get_filter_list(chatroomname = chatroomname, is_deleted = False)
     filter_list_in.append(AMember.create_time > chatroom_create_time)
-    filter_list_in.append(AContact.id != None)
+    filter_list_in.append(AContact.id > 0)
     filter_list_out = AMember.get_filter_list(chatroomname = chatroomname, is_deleted = True)
-    filter_list_out.append(AContact.id != None)
+    filter_list_out.append(AContact.id > 0)
     members_in_query = db.session.query(AMember, AContact).outerjoin(AContact, AMember.username == AContact.username)\
         .filter(*filter_list_in)
     members_in = members_in_query.order_by(AMember.create_time.desc()).limit(page_size).offset(page * page_size).all()

@@ -9,7 +9,7 @@ from models.chatroom_member_models import MemberInfo, MemberOverview
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 from configs.config import SUCCESS, main_api, db, DEFAULT_PAGE, DEFAULT_PAGE_SIZE, ERR_INVALID_PARAMS, \
-    ERR_INVALID_MEMBER
+    ERR_INVALID_MEMBER, ERR_WRONG_ITEM
 
 logger = logging.getLogger('main')
 
@@ -42,7 +42,7 @@ def member_get_member_list():
         .outerjoin(AContact, MemberInfo.username == AContact.username) \
         .filter(MemberOverview.chatroom_id == chatroom_id,
                 MemberOverview.scope == scope,
-                # AContact.nickname > ""
+                AContact.id > 0
                 )\
         .order_by(*order)\
         .limit(page_size)\
@@ -86,9 +86,25 @@ def member_get_member_info():
         return make_response(ERR_INVALID_MEMBER)
     a_member = db.session.query(AMember).filter(AMember.id == member_id).first()
     a_contact = db.session.query(AContact).filter(AContact.username == member_info.username).first()
+    if not a_contact:
+        return make_response(ERR_WRONG_ITEM)
     member_json = dict()
     member_json.update(a_contact.to_json())
     member_json.update(a_member.to_json())
     member_json.update(member_info.to_json())
 
     return make_response(SUCCESS, member_info = member_json)
+
+
+@main_api.route('/member/get_at_list', methods=['POST'])
+def member_get_member_info():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    member_id = request.json.get('member_id')
+    if not member_id:
+        return make_response(ERR_INVALID_PARAMS)
+
+    return make_response(SUCCESS)
