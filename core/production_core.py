@@ -68,9 +68,9 @@ class ProductionThread(threading.Thread):
             try:
                 circle_start_time = time.time()
                 message_list = db.session.query(AMessage). \
-                    # filter(AMessage.id > self.last_a_message_id). \
                     filter(AMessage.create_time > self.last_a_message_create_time). \
                     order_by(AMessage.id).all()
+                    # filter(AMessage.id > self.last_a_message_id). \
 
                 # 每次循环时，如果全局锁发生变更，则重新读取规则
                 if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
