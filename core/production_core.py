@@ -149,7 +149,7 @@ class ProductionThread(threading.Thread):
 
                     # 更新循环情况
                     for i, message_analysis in enumerate(message_analysis_list):
-                        db.session.add(message_analysis)
+                        db.session.merge(message_analysis)
                 else:
                     pass
 
