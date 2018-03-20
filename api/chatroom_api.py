@@ -187,7 +187,7 @@ def chatroom_get_in_out_members():
         member_json = dict()
         member_json['member_id'] = a_member.id
         member_json['nickname'] = a_contact.nickname
-        member_json['avatar_url'] = a_contact.avatar_url2
+        member_json['avatar_url2'] = a_contact.avatar_url2
         member_json['create_time'] = datetime_to_timestamp_utc_8(a_member.create_time)
         in_list.append(member_json)
     members_out_query = db.session.query(AMember, AContact).outerjoin(AContact, AMember.username == AContact.username)\
@@ -199,7 +199,7 @@ def chatroom_get_in_out_members():
         member_json = dict()
         member_json['member_id'] = a_member.id
         member_json['nickname'] = a_contact.nickname
-        member_json['avatar_url'] = a_contact.avatar_url2
+        member_json['avatar_url2'] = a_contact.avatar_url2
         member_json['update_time'] = datetime_to_timestamp_utc_8(a_member.update_time)
         out_list.append(member_json)
 

@@ -126,10 +126,10 @@ def member_get_invitation_list():
         member_json['member_id'] = mim.invited_id
         member_json['create_time'] = datetime_to_timestamp_utc_8(mim.create_time)
         member_json['nickname'] = ""
-        member_json['avatar_url'] = ""
+        member_json['avatar_url2'] = ""
         if not a_contact:
             member_json['nickname'] = a_contact.nickname
-            member_json['avatar_url'] = a_contact.avatar_url2
+            member_json['avatar_url2'] = a_contact.avatar_url2
         invitation_list.append(member_json)
 
     return make_response(SUCCESS, invitation_list = invitation_list, total_num = total_num)

@@ -228,7 +228,7 @@ class MessageAnalysis(db.Model):
                 a_chatroom_r.chatroomname = chatroomname
                 a_chatroom_r.username = bot_username
                 a_chatroom_r.create_time = datetime.now()
-                db.session.add(a_chatroom_r)
+                db.session.merge(a_chatroom_r)
                 db.session.commit()
             user_nickname = content.split(u'邀请')[0][1:-1]
             if not user_nickname:
