@@ -16,7 +16,7 @@ def cron_update_chatroom_overview():
 
 
 @main_api.route('/cron/update_chatroom_statistics', methods=['GET', 'POST'])
-def cron_update_chatroom_overview():
+def cron_update_chatroom_statistics():
     update_chatroom_statistics()
     cron_log = CronLog(cron_type = CRON_TYPE_CHATROOM_STATISTIC)
     db.session.add(cron_log)
