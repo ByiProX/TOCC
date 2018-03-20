@@ -12,5 +12,6 @@ import manage_api
 # import synchronous_announcement_api
 import chatroom_api
 import member_api
+import cron_api
 
 api_str = ""
