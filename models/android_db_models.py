@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
+from time import sleep
 
-from configs.config import db
+from configs.config import db, MSG_TYPE_SYS, MSG_TYPE_TXT
+from utils.u_model_json_str import model_to_dict
+from utils.u_transformat import str_to_unicode, unicode_to_str
 
 logger = logging.getLogger("main")
 
@@ -74,6 +77,20 @@ class AChatroomR(db.Model):
 
     db.UniqueConstraint(chatroomname, username, name='ix_a_chatroom_r_name')
 
+    @staticmethod
+    def get_a_chatroom_r(chatroomname, username):
+        a_chatroom_r = None
+        times = 3
+        while times:
+            a_chatroom_r = db.session.query(AChatroomR).filter(AChatroomR.username == username,
+                                                               AChatroomR.chatroomname == chatroomname).first()
+            if a_chatroom_r:
+                break
+            sleep(5)
+            times -= 1
+
+        return a_chatroom_r
+
 
 class AContact(db.Model):
     __tablename__ = 'a_contact'
@@ -104,6 +121,37 @@ class AContact(db.Model):
 
     member_count = db.Column(db.Integer, index=True, nullable=False)
 
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        res['id'] = res.get('contact_id')
+        res.pop('id')
+        res.pop('username')
+        res.pop('alias')
+        res.pop('chatroom_flag')
+        res.pop('verify_flag')
+        res.pop('contact_label_ids')
+        res.pop('show_head')
+        res.pop('lvbuff')
+        res.pop('img_lastupdatetime')
+        return res
+
+    def to_json_ext(self):
+        res = self.to_json()
+        return res
+
+    @staticmethod
+    def get_a_contact(username):
+        a_contact = None
+        times = 3
+        while times:
+            a_contact = db.session.query(AContact).filter(AContact.username == username).first()
+            if a_contact:
+                break
+            sleep(5)
+            times -= 1
+
+        return a_contact
+
 
 class AFriend(db.Model):
     __tablename__ = 'a_friend'
@@ -120,6 +168,20 @@ class AFriend(db.Model):
 
     db.UniqueConstraint(from_username, to_username, name='ix_a_friend_name')
 
+    @staticmethod
+    def get_a_friend(from_username, to_username):
+        a_friend = None
+        times = 3
+        while times:
+            a_friend = db.session.query(AFriend).filter(AFriend.from_username == from_username,
+                                                        AFriend.to_username == to_username).first()
+            if a_friend:
+                break
+            sleep(5)
+            times -= 1
+
+        return a_friend
+
 
 class AMember(db.Model):
     __tablename__ = 'a_member'
@@ -133,6 +195,44 @@ class AMember(db.Model):
     update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
 
     db.UniqueConstraint(chatroomname, username, name='ix_a_member_name')
+
+    @staticmethod
+    def get_filter_list(filter_list = None, chatroomname = None, username = None, displayname = None,
+                        is_deleted = None, start_time = None, end_time = None):
+        if filter_list is None:
+            filter_list = list()
+
+        if chatroomname is not None:
+            filter_list.append(AMember.chatroomname == chatroomname)
+
+        if username is not None:
+            filter_list.append(AMember.username == username)
+
+        if displayname is not None:
+            filter_list.append(AMember.displayname == displayname)
+
+        if start_time is not None:
+            filter_list.append(AMember.create_time >= start_time)
+
+        if end_time is not None:
+            filter_list.append(AMember.create_time < end_time)
+
+        if is_deleted is not None:
+            filter_list.append(AMember.is_deleted == is_deleted)
+
+        return filter_list
+
+    def to_json(self):
+        res = model_to_dict(self, self.__class__)
+        res['member_id'] = res.get('id')
+        res.pop('id')
+        res.pop("chatroomname")
+        res.pop("username")
+        return res
+
+    def to_json_ext(self):
+        res = self.to_json()
+        return res
 
 
 class AMessage(db.Model):

@@ -369,11 +369,11 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
 
     # 因为AFriend等库更新未必在Message之前（在网速较慢的情况下可能出现）
     # 所以此处先sleep一段时间，等待AFriend更新后再读取
-    time.sleep(5)
+    # time.sleep(5)
 
     # 验证是否是好友
-    a_friend = db.session.query(AFriend).filter(AFriend.from_username == bot_info.username,
-                                                AFriend.to_username == user_username).first()
+    a_friend = AFriend.get_a_friend(from_username = bot_info.username,
+                                    to_username = user_username)
     if not a_friend:
         logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
