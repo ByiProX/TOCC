@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
+from datetime import datetime
 from flask import request
 from sqlalchemy import func
 
@@ -51,6 +53,7 @@ def member_get_member_list():
         .offset(page * page_size)\
         .all()
 
+    last_update_time = datetime.now()
     member_json_list = list()
     for row in rows:
         member_overview = row[0]
@@ -63,8 +66,9 @@ def member_get_member_list():
         member_json.update(member_info.to_json())
         member_json.update(member_overview.to_json())
         member_json_list.append(member_json)
+        last_update_time = member_overview.update_time
 
-    return make_response(SUCCESS, member_list = member_json_list)
+    return make_response(SUCCESS, member_list = member_json_list, last_update_time = last_update_time)
 
 
 @main_api.route('/member/get_member_info', methods=['POST'])

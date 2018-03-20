@@ -3,6 +3,8 @@
 import logging
 
 from decimal import Decimal
+
+from datetime import datetime
 from flask import request
 from sqlalchemy import func, and_
 
@@ -13,7 +15,7 @@ from models.chatroom_member_models import ChatroomInfo, UserChatroomR, ChatroomO
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 from configs.config import SUCCESS, main_api, db, DEFAULT_PAGE, DEFAULT_PAGE_SIZE, ERR_INVALID_PARAMS, ERR_WRONG_ITEM, \
-    SCOPE_WEEK
+    SCOPE_WEEK, SCOPE_ALL
 from utils.u_time import get_time_window_by_scope, datetime_to_timestamp_utc_8
 
 logger = logging.getLogger('main')
@@ -59,7 +61,11 @@ def chatroom_get_chatroom_list():
         chatroom_json.update(chatroom_overview.to_json())
         chatroom_json_list.append(chatroom_json)
 
-    return make_response(SUCCESS, chatroom_list = chatroom_json_list)
+    last_update_time = datetime.now()
+    if chatroom_overview_list:
+        last_update_time = chatroom_overview_list[0].update_time
+
+    return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
 
 
 @main_api.route('/chatroom/get_chatroom_info', methods = ['POST'])
@@ -80,7 +86,16 @@ def chatroom_get_chatroom_info():
     a_contact_chatroom_json = a_contact_chatroom.to_json()
     a_contact_chatroom_json.update(chatroom_json)
 
-    return make_response(SUCCESS, chatroom_info = a_contact_chatroom_json)
+    chatroom_overview = db.session.query(ChatroomOverview).filter(ChatroomOverview.chatroom_id == chatroom_id,
+                                                                  ChatroomOverview.scope == SCOPE_ALL)
+    if not chatroom_overview:
+        ChatroomOverview.init_all_scope(chatroom_id == chatroom, chatroomname = chatroom.chatroomname, save_flag = True)
+        chatroom_overview = db.session.query(ChatroomOverview).filter(ChatroomOverview.chatroom_id == chatroom_id,
+                                                                      ChatroomOverview.scope == SCOPE_ALL)
+    last_update_time = chatroom_overview.update_time
+    a_contact_chatroom_json.update(chatroom_overview.to_json())
+
+    return make_response(SUCCESS, chatroom_info = a_contact_chatroom_json, last_update_time = last_update_time)
 
 
 @main_api.route('/chatroom/get_chatroom_tendency', methods=['POST'])
