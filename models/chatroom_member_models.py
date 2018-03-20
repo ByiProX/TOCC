@@ -420,12 +420,15 @@ class ChatroomStatistic(db.Model):
 
     update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
 
-    def __init__(self, chatroom_id, time_to_day, member_count = 0, speak_count = 0, at_count = 0):
+    def __init__(self, chatroom_id, time_to_day, member_count = 0, speak_count = 0, at_count = 0,
+                 in_count = 0, out_count = 0):
         self.chatroom_id = chatroom_id
         self.time_to_day = time_to_day
         self.speak_count = speak_count
         self.at_count = at_count
         self.member_count = member_count
+        self.in_count = in_count
+        self.out_count = out_count
 
     @staticmethod
     def get_filter_list(filter_list = None, chatroom_id = None, start_time = None, end_time = None):
