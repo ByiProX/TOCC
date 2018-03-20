@@ -18,16 +18,16 @@ from models.message_ext_models import MessageAnalysis
 #     logger.info('wechat_id: ' + str(wechat_id) + ' | ' + str(i) + ' / ' + str(len_wechats))
 #     i += 1
 
-chatroom_list = db.session.query(ChatroomInfo).all()
-for chatroom in chatroom_list:
-    member_list = db.session.query(MemberInfo)\
-        .filter(MemberInfo.chatroom_id == chatroom.chatroom_id,
-                MemberInfo.create_time < (chatroom.create_time + timedelta(minutes = 10))).all()
-
-    for member in member_list:
-        member.create_time = chatroom.create_time
-
-db.session.commit()
+# chatroom_list = db.session.query(ChatroomInfo).all()
+# for chatroom in chatroom_list:
+#     member_list = db.session.query(MemberInfo)\
+#         .filter(MemberInfo.chatroom_id == chatroom.chatroom_id,
+#                 MemberInfo.create_time < (chatroom.create_time + timedelta(minutes = 10))).all()
+#
+#     for member in member_list:
+#         member.create_time = chatroom.create_time
+#
+# db.session.commit()
 
 chatroom_overview_list = db.session.query(ChatroomOverview, ChatroomInfo.chatroomname, ChatroomInfo.create_time).\
     outerjoin(ChatroomInfo, ChatroomOverview.chatroom_id == ChatroomInfo.chatroom_id).all()
