@@ -579,7 +579,7 @@ class MessageAnalysis(db.Model):
 
     @staticmethod
     def invite_bot(msg, chatroom):
-        content = str_to_unicode(msg.content)
+        content = str_to_unicode(msg.real_content)
         content_tmp = copy.deepcopy(content)
         print u''
         invitor_nick_name = content_tmp.split(u'邀请')[0][1:-1]
@@ -619,7 +619,7 @@ class MessageAnalysis(db.Model):
 
     @staticmethod
     def invite_other(msg, chatroom):
-        content = msg.content
+        content = str_to_unicode(msg.real_content)
         content_tmp = copy.deepcopy(content)
         print u''
         if content_tmp.find(u'邀请') != -1:
