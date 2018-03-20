@@ -385,11 +385,11 @@ class MessageAnalysis(db.Model):
 
                 # calc chatroom statics
                 logger.info('calc chatroom statistics')
-                chatroom_statics = ChatroomStatistic.fetch_chatroom_statistics(chatroom_id = chatroom_id,
-                                                                               time_to_day = today)
+                chatroom_statistic = ChatroomStatistic.fetch_chatroom_statistics(chatroom_id = chatroom_id,
+                                                                                 time_to_day = today)
                 logger.info('| speak_count')
                 if msg_type != CONTENT_TYPE_SYS:
-                    chatroom_statics.speak_count += 1
+                    chatroom_statistic.speak_count += 1
                     chatroom.total_speak_count += 1
                     member = MemberInfo.fetch_member_by_username(chatroomname, username)
                     if not member:
@@ -399,20 +399,41 @@ class MessageAnalysis(db.Model):
 
                     # calc member statics
                     logger.info('calc member   statistics')
-                    member_statics = MemberStatistic.fetch_member_statistics(member_id = talker_id,
-                                                                             time_to_day = today,
-                                                                             chatroom_id = chatroom_id)
+                    member_statistic = MemberStatistic.fetch_member_statistics(member_id = talker_id,
+                                                                               time_to_day = today,
+                                                                               chatroom_id = chatroom_id)
                     logger.info('| speak_count')
-                    member_statics.speak_count += 1
+                    member_statistic.speak_count += 1
                     member.speak_count += 1
+
+                    chatroom_active = ChatroomActive(member_id = member.member_id, chatroom_id = chatroom.chatroom_id,
+                                                     time_to_day = today, create_time = msg.create_time)
+                    db.session.merge(chatroom_active)
 
                     if msg_type == CONTENT_TYPE_TXT:
                         if content.find(u'@') != -1:
                             logger.info('| be_at_count')
                             at_count = MessageAnalysis.extract_msg_be_at(msg, chatroom)
                             if msg.is_at:
-                                chatroom_statics.at_count += at_count
+                                chatroom_statistic.at_count += at_count
                                 chatroom.total_at_count += at_count
+
+                db.session.commit()
+
+                if msg_type == CONTENT_TYPE_SYS:
+                    # 被邀请入群
+                    # Content="frank5433"邀请你和"秦思语-Doodod、磊"加入了群聊
+                    # "Sw-fQ"邀请你加入了群聊，群聊参与人还有：qiezi、Hugh、蒋郁、123
+                    if content.find(u'邀请你') != -1:
+                        logger.info(u'invite_bot')
+                        MessageAnalysis.invite_bot(msg, chatroom)
+                    # 其他人入群：邀请、扫码
+                    # "斗西"邀请"陈若曦"加入了群聊
+                    # " BILL"通过扫描"谢工@GitChat&图灵工作用"分享的二维码加入群聊
+                    # "風中落葉🍂"邀请"大冬天的、追忆那年的似水年华、往事随风去、搁浅、陈梁～HILTI"加入了群聊
+                    elif content.find(u'加入了群聊') != -1 or content.find(u'加入群聊') != -1:
+                        logger.info(u'invite_other')
+                        MessageAnalysis.invite_other(msg, chatroom)
 
                 db.session.commit()
 
@@ -534,6 +555,11 @@ class MessageAnalysis(db.Model):
                                                                                        time_to_day = today,
                                                                                        chatroom_id = chatroom_id)
                         member_statics_be_at.be_at_count += 1
+                        mam = MemberAtMember(from_member_id = member.member_id, from_username = member.username,
+                                             to_member_id = member_be_at_id, to_username = member_be_at.username,
+                                             create_time = msg.create_time)
+                        db.session.merge(mam)
+                        db.session.commit()
 
                         at_count += 1
                         break
@@ -551,100 +577,88 @@ class MessageAnalysis(db.Model):
                 content_index = offset
         return at_count
 
-    # @staticmethod
-    # def invite_bot(msg, chatroom):
-    #     content = str_to_unicode(msg.content)
-    #     content_tmp = copy.deepcopy(content)
-    #     print u''
-    #     chatroom_id = chatroom.id
-    #     invitor_nick_name = content_tmp.split(u'邀请')[0][1:-1]
-    #     logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
-    #
-    #     invited_nick_name_list = list()
-    #     if content_tmp.find(u'邀请你和') != -1:
-    #         start_index = content_tmp.find(u'邀请你和')
-    #         end_index = content_tmp.rfind(u'"加入')
-    #         invited_nick_names = content_tmp[start_index + 5:end_index]
-    #         invited_nick_name_list = invited_nick_names.split(u'、')
-    #
-    #     invitor = Member.get_member(chatroom_id = chatroom_id, nick_name = invitor_nick_name)
-    #     if invitor:
-    #         filter_list_wechat = Wechat.get_filter_list()
-    #         filter_list_wechat.append(Wechat.nick_name == invitor.nick_name)
-    #         filter_list_wechat.append(Wechat.sex == invitor.sex)
-    #         filter_list_wechat.append(Wechat.city == invitor.city)
-    #         filter_list_wechat.append(Wechat.province == invitor.province)
-    #         invitor_wechat = db.session.query(Wechat).filter(*filter_list_wechat).first()
-    #         if invitor_wechat:
-    #             logger.info('invitor_wechat: ' + str(invitor_wechat.id))
-    #             observer = Observer(wechat_id = invitor_wechat.id, chatroom_id = chatroom_id,
-    #                                 is_on = True).generate_create_time()
-    #             db.session.merge(observer)
-    #         for invited_nick_name in invited_nick_name_list:
-    #             logger.debug(u'invited_nick_name: ' + invited_nick_name)
-    #             invited = Member.get_member(chatroom_id = chatroom_id, nick_name = invited_nick_name)
-    #             times_tmp = 2
-    #             while not invited and times_tmp > 0:
-    #                 times_tmp -= 1
-    #                 # check
-    #                 MessageAnalysis.check_chatroom(chatroom)
-    #                 invited = Member.get_member(chatroom_id = chatroom_id, nick_name = invited_nick_name)
-    #             if invited:
-    #                 m_i_m = MemberInviteMember(invitor_id = invitor.id, invited_id = invited.id,
-    #                                            create_time = msg.create_time, invited_name = invited.nick_name,
-    #                                            invitor_name = invitor.nick_name)
-    #                 db.session.merge(m_i_m)
-    #
-    # @staticmethod
-    # def invite_other(msg, chatroom):
-    #     content = msg.content
-    #     content_tmp = copy.deepcopy(content)
-    #     print u''
-    #     chatroom_id = chatroom.id
-    #     # check
-    #     MessageAnalysis.check_chatroom(chatroom)
-    #     if content_tmp.find(u'邀请') != -1:
-    #         invitor_nick_name = content_tmp.split(u'邀请')[0][1:-1]
-    #         logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
-    #         # "斗西"邀请"陈若曦"加入了群聊
-    #         # "風中落葉🍂"邀请"大冬天的、追忆那年的似水年华、往事随风去、搁浅、陈梁～HILTI"加入了群聊
-    #         start_index = content_tmp.find(u'邀请')
-    #         end_index = content_tmp.rfind(u'"加入')
-    #         invited_nick_names = content_tmp[start_index + 3:end_index]
-    #         invited_nick_name_list = invited_nick_names.split(u'、')
-    #
-    #     # " BILL"通过扫描"谢工@GitChat&图灵工作用"分享的二维码加入群聊
-    #     elif content_tmp.find(u'通过扫描') != -1:
-    #         nick_names = content_tmp.split(u'通过扫描')
-    #         invited_nick_name = nick_names[0][2:-1]
-    #         end_index = nick_names[1].rfind(u'"分享')
-    #         invitor_nick_name = nick_names[1][1:end_index]
-    #         logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
-    #         invited_nick_name_list = [invited_nick_name]
-    #     else:
-    #         logger.info(u'unknown invite type: ')
-    #         logger.info(msg.content)
-    #         return
-    #
-    #     invitor = Member.get_member(chatroom_id = chatroom_id, nick_name = invitor_nick_name)
-    #     if invitor:
-    #         for invited_nick_name in invited_nick_name_list:
-    #             logger.debug(u'invited_nick_name: ' + invited_nick_name)
-    #             invited = Member.get_member(chatroom_id = chatroom_id, nick_name = invited_nick_name)
-    #             times_tmp = 2
-    #             while not invited and times_tmp > 0:
-    #                 times_tmp -= 1
-    #                 # check
-    #                 MessageAnalysis.check_chatroom(chatroom)
-    #                 invited = Member.get_member(chatroom_id = chatroom_id, nick_name = invited_nick_name)
-    #
-    #             if invited:
-    #                 m_i_m = MemberInviteMember(invitor_id = invitor.id, invited_id = invited.id,
-    #                                            create_time = msg.create_time,
-    #                                            invited_name = invited.nick_name,
-    #                                            invitor_name = invitor.nick_name)
-    #                 db.session.merge(m_i_m)
-    #
+    @staticmethod
+    def invite_bot(msg, chatroom):
+        content = str_to_unicode(msg.content)
+        content_tmp = copy.deepcopy(content)
+        print u''
+        invitor_nick_name = content_tmp.split(u'邀请')[0][1:-1]
+        logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
+
+        invited_nick_name_list = list()
+        if content_tmp.find(u'邀请你和') != -1:
+            start_index = content_tmp.find(u'邀请你和')
+            end_index = content_tmp.rfind(u'"加入')
+            invited_nick_names = content_tmp[start_index + 5:end_index]
+            invited_nick_name_list = invited_nick_names.split(u'、')
+
+        invitor = MemberInfo.fetch_member_by_nickname(chatroomname = chatroom.chatroomname,
+                                                      nickname = invitor_nick_name)
+        if invitor:
+            # filter_list_wechat = Wechat.get_filter_list()
+            # filter_list_wechat.append(Wechat.nick_name == invitor.nick_name)
+            # filter_list_wechat.append(Wechat.sex == invitor.sex)
+            # filter_list_wechat.append(Wechat.city == invitor.city)
+            # filter_list_wechat.append(Wechat.province == invitor.province)
+            # invitor_wechat = db.session.query(Wechat).filter(*filter_list_wechat).first()
+            # if invitor_wechat:
+            #     logger.info('invitor_wechat: ' + str(invitor_wechat.id))
+            #     observer = Observer(wechat_id = invitor_wechat.id, chatroom_id = chatroom_id,
+            #                         is_on = True).generate_create_time()
+            #     db.session.merge(observer)
+            for invited_nick_name in invited_nick_name_list:
+                logger.debug(u'invited_nick_name: ' + invited_nick_name)
+                invited = MemberInfo.fetch_member_by_nickname(chatroomname = chatroom.chatroomname,
+                                                              nickname = invited_nick_name)
+                if invited:
+                    m_i_m = MemberInviteMember(invitor_id = invitor.member_id, invited_id = invited.member_id,
+                                               create_time = msg.create_time, invited_username = invited.username,
+                                               invitor_username = invitor.username)
+                    db.session.merge(m_i_m)
+        db.session.commit()
+
+    @staticmethod
+    def invite_other(msg, chatroom):
+        content = msg.content
+        content_tmp = copy.deepcopy(content)
+        print u''
+        if content_tmp.find(u'邀请') != -1:
+            invitor_nick_name = content_tmp.split(u'邀请')[0][1:-1]
+            logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
+            # "斗西"邀请"陈若曦"加入了群聊
+            # "風中落葉🍂"邀请"大冬天的、追忆那年的似水年华、往事随风去、搁浅、陈梁～HILTI"加入了群聊
+            start_index = content_tmp.find(u'邀请')
+            end_index = content_tmp.rfind(u'"加入')
+            invited_nick_names = content_tmp[start_index + 3:end_index]
+            invited_nick_name_list = invited_nick_names.split(u'、')
+
+        # " BILL"通过扫描"谢工@GitChat&图灵工作用"分享的二维码加入群聊
+        elif content_tmp.find(u'通过扫描') != -1:
+            nick_names = content_tmp.split(u'通过扫描')
+            invited_nick_name = nick_names[0][2:-1]
+            end_index = nick_names[1].rfind(u'"分享')
+            invitor_nick_name = nick_names[1][1:end_index]
+            logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
+            invited_nick_name_list = [invited_nick_name]
+        else:
+            logger.info(u'unknown invite type: ')
+            logger.info(msg.content)
+            return
+
+        invitor = MemberInfo.fetch_member_by_nickname(chatroomname = chatroom.chatroomname,
+                                                      nickname = invitor_nick_name)
+        if invitor:
+            for invited_nick_name in invited_nick_name_list:
+                logger.debug(u'invited_nick_name: ' + invited_nick_name)
+                invited = MemberInfo.fetch_member_by_nickname(chatroomname = chatroom.chatroomname,
+                                                              nickname = invited_nick_name)
+                if invited:
+                    m_i_m = MemberInviteMember(invitor_id = invitor.member_id, invited_id = invited.member_id,
+                                               create_time = msg.create_time, invited_username = invited.username,
+                                               invitor_username = invitor.username)
+                    db.session.merge(m_i_m)
+        db.session.commit()
+
     # @staticmethod
     # def check_chatroom(chatroom):
     #     bot = db.session.query(Bot).filter(Bot.id == chatroom.bot_id).first()
@@ -664,5 +678,5 @@ class MessageAnalysis(db.Model):
 # Mark
 from models.android_db_models import AContact, AMember, AChatroomR, AFriend, AMessage
 from models.chatroom_member_models import ChatroomInfo, BotChatroomR, UserChatroomR, ChatroomStatistic, \
-    MemberStatistic, MemberInfo, ChatroomOverview
+    MemberStatistic, MemberInfo, ChatroomOverview, MemberAtMember, MemberInviteMember, ChatroomActive
 from models.user_bot_models import BotInfo, UserInfo, UserBotRelateInfo

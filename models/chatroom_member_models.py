@@ -380,6 +380,12 @@ class ChatroomActive(db.Model):
     create_time = db.Column(db.DateTime, index=True, nullable=False)
     update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
 
+    def __init__(self, member_id, time_to_day, chatroom_id, create_time):
+        self.member_id = member_id
+        self.time_to_day = time_to_day
+        self.chatroom_id = chatroom_id
+        self.create_time = create_time
+
     @staticmethod
     def get_filter_list(filter_list = None, chatroom_id = None, start_time = None, end_time = None):
         if filter_list is None:
@@ -674,6 +680,21 @@ class MemberInviteMember(db.Model):
             filter_list.append(MemberInviteMember.create_time < end_time)
 
         return filter_list
+
+
+class MemberAtMember(db.Model):
+    from_member_id = db.Column(db.BigInteger, primary_key=True)
+    from_username = db.Column(db.String(32), index = True, nullable = False)
+    to_member_id = db.Column(db.BigInteger, primary_key=True)
+    to_username = db.Column(db.String(32), index = True, nullable = False)
+    create_time = db.Column(db.DateTime, primary_key=True)
+
+    def __init__(self, from_member_id, from_username, to_member_id, to_username, create_time):
+        self.from_member_id = from_member_id
+        self.from_username = from_username
+        self.to_member_id = to_member_id
+        self.to_username = to_username
+        self.create_time = create_time
 
 
 from models.android_db_models import AMember, AContact
