@@ -2,13 +2,14 @@
 
 import logging
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import request
 from sqlalchemy import func
 
 from core.user_core import UserLogin
 from models.android_db_models import AMember, AContact
-from models.chatroom_member_models import MemberInfo, MemberOverview, MemberInviteMember, MemberAtMember
+from models.chatroom_member_models import MemberInfo, MemberOverview, MemberInviteMember, MemberAtMember, ChatroomInfo
+from models.message_ext_models import MessageAnalysis
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 from configs.config import SUCCESS, main_api, db, DEFAULT_PAGE, DEFAULT_PAGE_SIZE, ERR_INVALID_PARAMS, \
@@ -153,7 +154,8 @@ def member_get_at_list():
 
     filter_list_mam = MemberAtMember.get_filter_list(to_member_id = member_id)
     mam_list = db.session.query(func.count(MemberAtMember.create_time), AContact)\
-        .outerjoin(AContact, MemberAtMember.from_username == AContact.username)\
+        .outerjoin(MemberInfo, MemberAtMember.from_member_id == MemberInfo.member_id) \
+        .outerjoin(AContact, MemberInfo.username == AContact.username)\
         .filter(*filter_list_mam)\
         .group_by(MemberAtMember.from_username)\
         .order_by(func.count(MemberAtMember.create_time))\
@@ -170,3 +172,35 @@ def member_get_at_list():
         member_list.append(member_json)
 
     return make_response(SUCCESS, member_list = member_list)
+
+
+@main_api.route('/member/get_active_period', methods=['POST'])
+def member_get_active_period():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    limit = 3
+    chatroom_id = request.json.get('chatroom_id')
+    member_id = request.json.get('member_id')
+    if not member_id:
+        return make_response(ERR_INVALID_PARAMS)
+    if not chatroom_id:
+        return make_response(ERR_INVALID_PARAMS)
+    member = db.session.query(MemberInfo).filter(MemberInfo.member_id == member_id).first()
+    if not member:
+        return make_response(ERR_WRONG_ITEM)
+
+    active_period_list = [0] * 24
+    now = datetime.now()
+    filter_list_msg = MessageAnalysis.get_filter_list(start_time = now - timedelta(days = 7), end_time = now,
+                                                      is_to_friend = False)
+    filter_list_msg.append(MessageAnalysis.real_talker == member.username)
+    filter_list_msg.append(MessageAnalysis.talker == member.chatroomname)
+    msg_list = db.session.query(MessageAnalysis).filter(*filter_list_msg).all()
+
+    for msg in msg_list:
+        active_period_list[msg.create_time.hour] += 1
+
+    return make_response(SUCCESS, active_period_list = active_period_list)

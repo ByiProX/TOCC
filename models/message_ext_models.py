@@ -60,7 +60,7 @@ class MessageAnalysis(db.Model):
         self.name_be_at = u""
 
     @staticmethod
-    def get_filter_list(filter_list = None, start_time = None, end_time = None):
+    def get_filter_list(filter_list = None, start_time = None, end_time = None, is_to_friend = None):
         if filter_list is None:
             filter_list = list()
 
@@ -68,6 +68,9 @@ class MessageAnalysis(db.Model):
             filter_list.append(MessageAnalysis.create_time >= start_time)
         if end_time is not None:
             filter_list.append(MessageAnalysis.create_time < end_time)
+
+        if is_to_friend is not None:
+            filter_list.append(MessageAnalysis.is_to_friend == is_to_friend)
 
         return filter_list
 
