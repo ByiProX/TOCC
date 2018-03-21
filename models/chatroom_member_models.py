@@ -249,11 +249,13 @@ class ChatroomOverview(db.Model):
     incre_count = db.Column(db.BigInteger, index = True)
     active_count = db.Column(db.BigInteger, index = True)
     active_rate = db.Column(db.DECIMAL(6, 3), index = True)
+    active_class = db.Column(db.Integer, index = True)
+    member_change = db.Column(db.Integer, index = True)
 
     update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
 
     def __init__(self, chatroom_id, chatroomname, scope, speak_count = 0, incre_count = 0, active_count = 0,
-                 active_rate = Decimal('0')):
+                 active_rate = Decimal('0'), active_class = 0, member_change = 0):
         self.chatroom_id = chatroom_id
         self.chatroomname = chatroomname
         self.scope = scope
@@ -261,6 +263,8 @@ class ChatroomOverview(db.Model):
         self.incre_count = incre_count
         self.active_count = active_count
         self.active_rate = active_rate
+        self.active_class = active_class
+        self.member_change = member_change
 
     def to_json(self):
         res = model_to_dict(self, self.__class__)
@@ -288,6 +292,8 @@ class ChatroomOverview(db.Model):
         self.update_incre_count(chatroom_create_time)
         self.update_active_count()
         self.update_active_rate()
+        self.update_active_class()
+        self.update_member_change()
         if save_flag:
             db.session.commit()
         return self
@@ -366,6 +372,13 @@ class ChatroomOverview(db.Model):
         if save_flag:
             db.session.commit()
         return self
+
+    def update_member_change(self):
+        pass
+
+    # TODO: update_active_class
+    def update_active_class(self):
+        pass
 
 
 class ChatroomActive(db.Model):

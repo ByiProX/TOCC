@@ -66,7 +66,7 @@ def member_get_member_list():
         member_json.update(member_info.to_json())
         member_json.update(member_overview.to_json())
         member_json_list.append(member_json)
-        last_update_time = member_overview.update_time
+        last_update_time = datetime_to_timestamp_utc_8(member_overview.update_time)
 
     return make_response(SUCCESS, member_list = member_json_list, last_update_time = last_update_time)
 

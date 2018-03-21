@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import time
 
 from decimal import Decimal
 
@@ -61,7 +62,7 @@ def chatroom_get_chatroom_list():
         chatroom_json.update(chatroom_overview.to_json())
         chatroom_json_list.append(chatroom_json)
 
-    last_update_time = datetime.now()
+    last_update_time = time.time()
     if chatroom_overview_list:
         last_update_time = chatroom_overview_list[0].update_time
 
@@ -92,7 +93,7 @@ def chatroom_get_chatroom_info():
         ChatroomOverview.init_all_scope(chatroom_id == chatroom, chatroomname = chatroom.chatroomname, save_flag = True)
         chatroom_overview = db.session.query(ChatroomOverview).filter(ChatroomOverview.chatroom_id == chatroom_id,
                                                                       ChatroomOverview.scope == SCOPE_ALL)
-    last_update_time = chatroom_overview.update_time
+    last_update_time = datetime_to_timestamp_utc_8(chatroom_overview.update_time)
     a_contact_chatroom_json.update(chatroom_overview.to_json())
 
     return make_response(SUCCESS, chatroom_info = a_contact_chatroom_json, last_update_time = last_update_time)
