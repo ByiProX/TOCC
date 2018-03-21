@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import time
 
 from datetime import datetime, timedelta
 from flask import request
@@ -54,7 +55,7 @@ def member_get_member_list():
         .offset(page * page_size)\
         .all()
 
-    last_update_time = datetime.now()
+    last_update_time = time.time()
     member_json_list = list()
     for row in rows:
         member_overview = row[0]
@@ -181,7 +182,6 @@ def member_get_active_period():
     if status != SUCCESS:
         return make_response(status)
 
-    limit = 3
     chatroom_id = request.json.get('chatroom_id')
     member_id = request.json.get('member_id')
     if not member_id:
