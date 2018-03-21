@@ -16,7 +16,7 @@ from models.chatroom_member_models import ChatroomInfo, UserChatroomR, ChatroomO
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 from configs.config import SUCCESS, main_api, db, DEFAULT_PAGE, DEFAULT_PAGE_SIZE, ERR_INVALID_PARAMS, ERR_WRONG_ITEM, \
-    SCOPE_WEEK, SCOPE_ALL
+    SCOPE_WEEK, SCOPE_ALL, USER_CHATROOM_R_PERMISSION_1
 from utils.u_time import get_time_window_by_scope, datetime_to_timestamp_utc_8
 
 logger = logging.getLogger('main')
@@ -35,14 +35,14 @@ def chatroom_get_chatroom_list():
 
     order = [ChatroomOverview.speak_count.desc(), ChatroomOverview.chatroom_id.asc()]
 
-    chatroom_overview_list = db.session.query(ChatroomOverview) \
+    chatroom_overview_list = db.session.query(ChatroomOverview, UserChatroomR.permission) \
         .outerjoin(UserChatroomR, UserChatroomR.chatroom_id == ChatroomOverview.chatroom_id) \
         .filter(UserChatroomR.user_id == user_info.user_id,
                 ChatroomOverview.scope == scope) \
         .order_by(*order).limit(page_size).offset(page * page_size)\
         .all()
 
-    chatroom_ids_in_order = [r.chatroom_id for r in chatroom_overview_list]
+    chatroom_ids_in_order = [r[0].chatroom_id for r in chatroom_overview_list]
 
     rows = db.session.query(ChatroomInfo, AContact).outerjoin(AContact, ChatroomInfo.chatroom_id == AContact.id) \
         .filter(ChatroomInfo.chatroom_id.in_(chatroom_ids_in_order)).all()
@@ -57,14 +57,20 @@ def chatroom_get_chatroom_list():
         chatroom_json_dict[chatroom.chatroom_id] = chatroom_json
 
     chatroom_json_list = list()
-    for chatroom_overview in chatroom_overview_list:
+    for chatroom_overview_row in chatroom_overview_list:
+        chatroom_overview = chatroom_overview_row[0]
+        permission = chatroom_overview_row[1]
         chatroom_json = chatroom_json_dict[chatroom_overview.chatroom_id]
         chatroom_json.update(chatroom_overview.to_json())
+        if permission == USER_CHATROOM_R_PERMISSION_1:
+            chatroom_json['is_owner'] = True
+        else:
+            chatroom_json['is_owner'] = False
         chatroom_json_list.append(chatroom_json)
 
     last_update_time = time.time()
     if chatroom_overview_list:
-        last_update_time = chatroom_overview_list[0].update_time
+        last_update_time = chatroom_overview_list[0][0].update_time
 
     return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
 
