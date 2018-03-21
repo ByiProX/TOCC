@@ -728,6 +728,26 @@ class MemberAtMember(db.Model):
         self.to_username = to_username
         self.create_time = create_time
 
+    @staticmethod
+    def get_filter_list(filter_list = None, from_member_id = None, from_username = None, to_member_id = None,
+                        to_username = None):
+        if filter_list is None:
+            filter_list = list()
+
+        if from_member_id is not None:
+            filter_list.append(MemberAtMember.from_member_id == from_member_id)
+
+        if from_username is not None:
+            filter_list.append(MemberAtMember.from_username == from_username)
+
+        if to_member_id is not None:
+            filter_list.append(MemberAtMember.to_member_id == to_member_id)
+
+        if to_username is not None:
+            filter_list.append(MemberAtMember.to_username == to_username)
+
+        return filter_list
+
 
 from models.android_db_models import AMember, AContact
 from models.message_ext_models import MessageAnalysis

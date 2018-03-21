@@ -8,7 +8,7 @@ from sqlalchemy import func
 
 from core.user_core import UserLogin
 from models.android_db_models import AMember, AContact
-from models.chatroom_member_models import MemberInfo, MemberOverview, MemberInviteMember
+from models.chatroom_member_models import MemberInfo, MemberOverview, MemberInviteMember, MemberAtMember
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 from configs.config import SUCCESS, main_api, db, DEFAULT_PAGE, DEFAULT_PAGE_SIZE, ERR_INVALID_PARAMS, \
@@ -137,3 +137,36 @@ def member_get_invitation_list():
         invitation_list.append(member_json)
 
     return make_response(SUCCESS, invitation_list = invitation_list, total_num = total_num)
+
+
+@main_api.route('/member/get_at_list', methods=['POST'])
+def member_get_at_list():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    limit = 3
+    member_id = request.json.get('member_id')
+    if not member_id:
+        return make_response(ERR_INVALID_PARAMS)
+
+    filter_list_mam = MemberAtMember.get_filter_list(to_member_id = member_id)
+    mam_list = db.session.query(func.count(MemberAtMember.create_time), AContact)\
+        .outerjoin(AContact, MemberAtMember.from_username == AContact.username)\
+        .filter(*filter_list_mam)\
+        .group_by(MemberAtMember.from_username)\
+        .order_by(func.count(MemberAtMember.create_time))\
+        .limit(limit)\
+        .all()
+
+    member_list = list()
+    for row in mam_list:
+        at_count = row[0]
+        a_contact = row[1]
+        member_json = dict()
+        member_json.update(a_contact.to_json())
+        member_json['at_count'] = at_count
+        member_list.append(member_json)
+
+    return make_response(SUCCESS, member_list = member_list)
