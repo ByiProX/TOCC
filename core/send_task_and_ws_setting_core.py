@@ -62,3 +62,17 @@ def send_task_content_to_ws(bot_username, target_username, task_send_type, conte
     #
     # message_received_time = db.Column(db.DateTime, index=True, nullable=False)
     # task_create_time = db.Column(db.DateTime, index=True, nullable=False)
+
+
+# def update_members_info(bot_username):
+#     ws = WS_MAP.get(bot_username)
+#     if ws:
+#         text_json = dict()
+#         text_json['username'] = target_username
+#         text_json['content'] = content
+#         text_json['type'] = task_send_type
+#         text = json.dumps(text_json)
+#         print 'text', text
+#         ws.send(text)
+#     else:
+#         logger.error(u"websocket error, username: " + bot_username)

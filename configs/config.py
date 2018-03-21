@@ -234,7 +234,8 @@ TASK_SEND_TYPE = {
     "mini_programs": 5,
     "massive_platform": 6,
     "video": 7,
-    "voice": 8
+    "voice": 8,
+    "update_members_info": 950701
 }
 
 # 全局匹配规则更新标记，每次更新规则库需将锁打开
