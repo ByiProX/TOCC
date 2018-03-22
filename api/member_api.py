@@ -55,7 +55,7 @@ def member_get_member_list():
         .offset(page * page_size)\
         .all()
 
-    last_update_time = time.time()
+    last_update_time = time.time() * 1000
     member_json_list = list()
     for row in rows:
         member_overview = row[0]
