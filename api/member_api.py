@@ -3,6 +3,7 @@
 import logging
 import threading
 import time
+from copy import copy
 
 from datetime import datetime, timedelta
 from flask import request
@@ -75,7 +76,7 @@ def member_get_member_list():
         member_json_list.append(member_json)
         last_update_time = datetime_to_timestamp_utc_8(member_overview.update_time)
 
-    check_thread = threading.Thread(target = check_chatroom_members_info, args = (chatroom.chatroomname, ))
+    check_thread = threading.Thread(target = check_chatroom_members_info, args = (copy(chatroom.chatroomname), ))
     check_thread.setDaemon(True)
     check_thread.start()
 
