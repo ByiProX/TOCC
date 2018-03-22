@@ -8,7 +8,7 @@ from datetime import datetime
 from flask import request
 from flask_uwsgi_websocket import GeventWebSocket
 
-from configs.config import app, WS_MAP
+from configs.config import app, WS_MAP, main_api
 from core.consumption_core import ConsumptionThread
 
 websocket = GeventWebSocket(app)
@@ -20,14 +20,14 @@ def echo(ws):
         username = request.args.get('username')
         WS_MAP[username] = ws
 
-        threading_list = threading.enumerate()
-        for t in threading_list:
-            if t.name == (u'bot_consumption' + username):
-                t.stop()
-                time.sleep(2)
-                break
-        consumption_thread = ConsumptionThread(thread_id=(u'bot_consumption' + username))
-        consumption_thread.start()
+        # threading_list = threading.enumerate()
+        # for t in threading_list:
+        #     if t.name == (u'bot_consumption' + username):
+        #         t.stop()
+        #         time.sleep(2)
+        #         break
+        # consumption_thread = ConsumptionThread(thread_id=(u'bot_consumption' + username))
+        # consumption_thread.start()
         print 'username', username
         while True:
             msg = ws.receive()
@@ -47,13 +47,13 @@ def echo(ws):
                 text = json.dumps(text_json)
                 ws.send(text)
                 print 'text', text
-                text_json['username'] = "wxid_1xn3vv67x4fk12"
-                text = json.dumps(text_json)
-                ws.send(text)
             if not ws.connected:
                 # TODO-zwf 退出逻辑待完善
                 print 'ws.connected', str(ws.connected)
                 print 'quit'
                 WS_MAP.pop(username)
                 break
-        consumption_thread.stop()
+        # consumption_thread.stop()
+
+
+@main_api

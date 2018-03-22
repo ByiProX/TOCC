@@ -235,7 +235,8 @@ TASK_SEND_TYPE = {
     "massive_platform": 6,
     "video": 7,
     "voice": 8,
-    "update_members_info": 950701
+    "update_chatroom_members_info": 950701,
+    "update_members_info": 950702
 }
 
 # 全局匹配规则更新标记，每次更新规则库需将锁打开

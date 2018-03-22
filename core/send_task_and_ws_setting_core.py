@@ -6,7 +6,7 @@ ws的建立、释放、检测
 """
 import json
 
-from configs.config import WS_MAP
+from configs.config import WS_MAP, TASK_SEND_TYPE
 import logging
 from models.production_consumption_models import ConsumptionTask
 
@@ -64,15 +64,28 @@ def send_task_content_to_ws(bot_username, target_username, task_send_type, conte
     # task_create_time = db.Column(db.DateTime, index=True, nullable=False)
 
 
-# def update_members_info(bot_username):
-#     ws = WS_MAP.get(bot_username)
-#     if ws:
-#         text_json = dict()
-#         text_json['username'] = target_username
-#         text_json['content'] = content
-#         text_json['type'] = task_send_type
-#         text = json.dumps(text_json)
-#         print 'text', text
-#         ws.send(text)
-#     else:
-#         logger.error(u"websocket error, username: " + bot_username)
+def update_chatroom_members_info(bot_username, chatroomname):
+    ws = WS_MAP.get(bot_username)
+    if ws:
+        text_json = dict()
+        text_json['chatroomname'] = chatroomname
+        text_json['type'] = TASK_SEND_TYPE['update_chatroom_members_info']
+        text = json.dumps(text_json)
+        print 'text', text
+        ws.send(text)
+    else:
+        logger.error(u"websocket error, username: " + bot_username)
+
+
+def update_members_info(bot_username, member_usernames):
+    # member_usernames split(';')
+    ws = WS_MAP.get(bot_username)
+    if ws:
+        text_json = dict()
+        text_json['member_usernames'] = member_usernames
+        text_json['type'] = TASK_SEND_TYPE['update_members_info']
+        text = json.dumps(text_json)
+        print 'text', text
+        ws.send(text)
+    else:
+        logger.error(u"websocket error, username: " + bot_username)
