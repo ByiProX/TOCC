@@ -75,6 +75,24 @@ def chatroom_get_chatroom_list():
     return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
 
 
+@main_api.route('/chatroom/get_24_count', methods=['POST'])
+def chatroom_get_24_count():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+    chatroom_id = request.json.get('chatroom_id')
+    if not chatroom_id:
+        return make_response(ERR_INVALID_PARAMS)
+
+    scope = 24
+    chatroom_overview = db.session.query(ChatroomOverview).filter(ChatroomOverview.scope == scope,
+                                                                  ChatroomOverview.chatroom_id == chatroom_id).first()
+    chatroom_overview_json = chatroom_overview.to_json()
+
+    return make_response(SUCCESS, chatroom_overview = chatroom_overview_json)
+
+
 @main_api.route('/chatroom/get_chatroom_info', methods = ['POST'])
 def chatroom_get_chatroom_info():
     verify_json()
