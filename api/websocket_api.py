@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 import json
-import threading
 
 import time
 
-from datetime import datetime
 from flask import request
 from flask_uwsgi_websocket import GeventWebSocket
 
-from configs.config import app, WS_MAP, main_api
-from core.consumption_core import ConsumptionThread
+from configs.config import app, WS_MAP, main_api, SUCCESS, ERR_WRONG_ITEM
+from core.send_task_and_ws_setting_core import update_chatroom_members_info, update_members_info
+from core.user_core import UserLogin
+from utils.u_model_json_str import verify_json
+from utils.u_response import make_response
 
 websocket = GeventWebSocket(app)
 
 
-@websocket.route('/yaca_api/yaca_ws')
+@websocket.route('/cia_api/cia_ws')
 def echo(ws):
     with app.request_context(ws.environ), app.app_context():
         username = request.args.get('username')
@@ -56,4 +57,32 @@ def echo(ws):
         # consumption_thread.stop()
 
 
-@main_api
+@main_api.route('/websocket/update_chatroom_members_info', methods=['POST'])
+def websocket_update_chatroom_members_info():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    chatroomname = request.json.get('chatroomname')
+    if not chatroomname:
+        return make_response(ERR_WRONG_ITEM)
+    update_chatroom_members_info(chatroomname)
+
+    return make_response(SUCCESS)
+
+
+@main_api.route('/websocket/update_members_info', methods=['POST'])
+def websocket_update_members_info():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    member_usernames = request.json.get('member_usernames')
+    if not member_usernames:
+        return make_response(ERR_WRONG_ITEM)
+
+    update_members_info(member_usernames = member_usernames)
+
+    return make_response(SUCCESS)

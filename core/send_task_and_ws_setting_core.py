@@ -6,8 +6,10 @@ ws的建立、释放、检测
 """
 import json
 
-from configs.config import WS_MAP, TASK_SEND_TYPE
+from configs.config import WS_MAP, TASK_SEND_TYPE, db
 import logging
+
+from models.android_db_models import AFriend, AChatroomR
 from models.production_consumption_models import ConsumptionTask
 
 logger = logging.getLogger('main')
@@ -64,7 +66,17 @@ def send_task_content_to_ws(bot_username, target_username, task_send_type, conte
     # task_create_time = db.Column(db.DateTime, index=True, nullable=False)
 
 
-def update_chatroom_members_info(bot_username, chatroomname):
+def update_chatroom_members_info(chatroomname):
+    a_chatroom_r_list = db.session.query(AChatroomR).filter(AChatroomR.chatroomname == chatroomname).all()
+    for a_chatroom_r in a_chatroom_r_list:
+        bot_username = a_chatroom_r.username
+        ws = WS_MAP.get(bot_username)
+        if ws:
+            update_chatroom_members_info_core(bot_username = bot_username, chatroomname = chatroomname)
+            break
+
+
+def update_chatroom_members_info_core(bot_username, chatroomname):
     ws = WS_MAP.get(bot_username)
     if ws:
         text_json = dict()
@@ -77,8 +89,17 @@ def update_chatroom_members_info(bot_username, chatroomname):
         logger.error(u"websocket error, username: " + bot_username)
 
 
-def update_members_info(bot_username, member_usernames):
-    # member_usernames split(';')
+def update_members_info(member_usernames):
+    a_friend_list = db.session.query(AFriend).filter(AFriend.to_username.in_(member_usernames.split(';'))).all()
+    for a_friend in a_friend_list:
+        bot_username = a_friend.from_username
+        ws = WS_MAP.get(bot_username)
+        if ws:
+            update_members_info_core(bot_username = bot_username, member_usernames = member_usernames)
+            break
+
+
+def update_members_info_core(bot_username, member_usernames):
     ws = WS_MAP.get(bot_username)
     if ws:
         text_json = dict()
