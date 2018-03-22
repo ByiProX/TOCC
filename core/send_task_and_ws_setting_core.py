@@ -8,7 +8,7 @@ import json
 
 from sqlalchemy import or_
 
-from configs.config import WS_MAP, TASK_SEND_TYPE, db
+from configs.config import WS_MAP, TASK_SEND_TYPE, db, app
 import logging
 
 from models.android_db_models import AFriend, AChatroomR, AMember, AContact
@@ -115,19 +115,20 @@ def update_members_info_core(bot_username, member_usernames):
 
 
 def check_chatroom_members_info(chatroomname):
-    logger.info(u"check_chatroom_members_info, chatroomname: %s." % chatroomname)
-    a_chatroom_r_list = db.session.query(AChatroomR).filter(AChatroomR.chatroomname == chatroomname).all()
-    for a_chatroom_r in a_chatroom_r_list:
-        bot_username = a_chatroom_r.username
-        ws = WS_MAP.get(bot_username)
-        if ws:
-            member_usernames = ""
-            member_list = db.session.query(AMember)\
-                .outerjoin(AContact, AMember.username == AContact.username)\
-                .filter(AMember.chatroomname == chatroomname,
-                        or_(AContact.nickname < "",
-                            AContact.nickname == None)).all()
-            for member in member_list:
-                member_usernames += member.username
-            update_members_info_core(bot_username = bot_username, member_usernames = member_usernames)
-            break
+    with app.app_context():
+        logger.info(u"check_chatroom_members_info, chatroomname: %s." % chatroomname)
+        a_chatroom_r_list = db.session.query(AChatroomR).filter(AChatroomR.chatroomname == chatroomname).all()
+        for a_chatroom_r in a_chatroom_r_list:
+            bot_username = a_chatroom_r.username
+            ws = WS_MAP.get(bot_username)
+            if ws:
+                member_usernames = ""
+                member_list = db.session.query(AMember)\
+                    .outerjoin(AContact, AMember.username == AContact.username)\
+                    .filter(AMember.chatroomname == chatroomname,
+                            or_(AContact.nickname < "",
+                                AContact.nickname == None)).all()
+                for member in member_list:
+                    member_usernames += member.username
+                update_members_info_core(bot_username = bot_username, member_usernames = member_usernames)
+                break
