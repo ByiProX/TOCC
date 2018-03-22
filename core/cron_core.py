@@ -38,3 +38,6 @@ def update_chatroom_statistics():
 
     db.session.commit()
     del chatroom_statistics_list
+
+
+update_chatroom_overview()

@@ -7,9 +7,9 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import func, distinct
 
-from configs.config import db, MAX_MEMBER_COUNT_DECIMAL, DEFAULT_SCOPE_LIST, SCOPE_24_HOUR
+from configs.config import db, MAX_MEMBER_COUNT_DECIMAL, DEFAULT_SCOPE_LIST, SCOPE_24_HOUR, LEVEL_CLASS
 from utils.u_model_json_str import model_to_dict
-from utils.u_time import get_time_window_by_scope
+from utils.u_time import get_time_window_by_scope, get_today_0
 from utils.u_transformat import unicode_to_str
 
 logger = logging.getLogger("main")
@@ -268,6 +268,10 @@ class ChatroomOverview(db.Model):
 
     def to_json(self):
         res = model_to_dict(self, self.__class__)
+        res.pop('chatroomname')
+        member_change = res['member_change']
+        res['member_change'] = str(member_change) if member_change <= 0 else '+' + str(member_change)
+        res['active_class'] = LEVEL_CLASS[res['active_class']]
         return res
 
     def to_json_ext(self):
@@ -373,12 +377,29 @@ class ChatroomOverview(db.Model):
             db.session.commit()
         return self
 
-    def update_member_change(self):
-        pass
+    def update_member_change(self, save_flag = False):
+        today = get_today_0()
+        chatroom_statistic = db.session.query(ChatroomStatistic).filter(ChatroomStatistic.time_to_day == today).first()
+        if chatroom_statistic:
+            self.member_change = chatroom_statistic.in_count - chatroom_statistic.out_count
+        else:
+            self.member_change = 0
+        if save_flag:
+            db.session.commit()
+        return self
 
-    # TODO: update_active_class
-    def update_active_class(self):
-        pass
+    def update_active_class(self, save_flag = False):
+        if self.speak_count > 1000 or self.active_count > 50 or self.active_rate > 0.9:
+            self.active_class = 1
+        elif self.speak_count > 500 or self.active_count > 30 or self.active_rate > 0.8:
+            self.active_class = 2
+        elif self.speak_count > 200 or self.active_count > 10 or self.active_rate > 0.6:
+            self.active_class = 3
+        else:
+            self.active_class = 4
+        if save_flag:
+            db.session.commit()
+        return self
 
 
 class ChatroomActive(db.Model):
@@ -479,8 +500,12 @@ class ChatroomStatistic(db.Model):
         filter_list_in.append(AContact.id > 0)
         filter_list_out = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = True)
         filter_list_out.append(AContact.id > 0)
-        members_in = db.session.query(func.count(AMember.id)).filter(*filter_list_in).first()[0] or 0
-        members_out = db.session.query(func.count(AMember.id)).filter(*filter_list_out).first()[0] or 0
+        members_in = db.session.query(func.count(AMember.id)) \
+            .outerjoin(AContact, AMember.username == AContact.username) \
+            .filter(*filter_list_in).first()[0] or 0
+        members_out = db.session.query(func.count(AMember.id)) \
+            .outerjoin(AContact, AMember.username == AContact.username) \
+            .filter(*filter_list_out).first()[0] or 0
         member_count = a_contact_chatroom.member_count
         self.in_count = members_in
         self.out_count = members_out
@@ -503,7 +528,7 @@ class MemberOverview(db.Model):
     invitation_count = db.Column(db.Integer, index=True, nullable=False)
 
     red_package_count = db.Column(db.Integer, index=True, nullable=False)
-    effect_num = db.Column(db.DECIMAL(5, 2), index=True, nullable=False)
+    effect_num = db.Column(db.DECIMAL(6, 3), index=True, nullable=False)
 
     # active_index = db.Column(db.Float, index = True)
     # importance_index = db.Column(db.Float, index = True)
@@ -527,6 +552,7 @@ class MemberOverview(db.Model):
         res = model_to_dict(self, self.__class__)
         res.pop('username')
         res.pop('chatroomname')
+        res['effect_num'] = LEVEL_CLASS[res['effect_num']]
         return res
 
     def to_json_ext(self):
@@ -605,9 +631,18 @@ class MemberOverview(db.Model):
             db.session.commit()
         return self
 
-    # TODO: effect_num
     def update_effect_num(self, save_flag = False):
-        pass
+        if self.speak_count > 100 or self.be_at_count > 30 or self.invitation_count > 10:
+            self.effect_num = 1
+        elif self.speak_count > 50 or self.be_at_count > 10 or self.invitation_count > 5:
+            self.effect_num = 2
+        elif self.speak_count > 20 or self.be_at_count > 5 or self.invitation_count > 2:
+            self.effect_num = 3
+        else:
+            self.effect_num = 4
+        if save_flag:
+            db.session.commit()
+        return self
 
 
 class MemberStatistic(db.Model):
@@ -622,12 +657,11 @@ class MemberStatistic(db.Model):
     invitation_count = db.Column(db.Integer, index=True, nullable=False)
 
     red_package_count = db.Column(db.Integer, index=True, nullable=False)
-    effect_num = db.Column(db.DECIMAL(5, 2), index=True, nullable=False)
 
     update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
 
     def __init__(self, member_id, time_to_day, chatroom_id, be_at_count = 0, speak_count = 0, invitation_count = 0,
-                 red_package_count = 0, effect_num = Decimal(u"0")):
+                 red_package_count = 0):
         self.member_id = member_id
         self.time_to_day = time_to_day
         self.chatroom_id = chatroom_id
@@ -636,7 +670,6 @@ class MemberStatistic(db.Model):
         self.speak_count = speak_count
         self.invitation_count = invitation_count
         self.red_package_count = red_package_count
-        self.effect_num = effect_num
 
     @staticmethod
     def fetch_member_statistics(member_id, time_to_day, chatroom_id, create_flag = True, save_flag = True):
