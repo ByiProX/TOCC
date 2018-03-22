@@ -6,7 +6,7 @@ import time
 from flask import request
 from flask_uwsgi_websocket import GeventWebSocket
 
-from configs.config import app, WS_MAP, main_api, SUCCESS, ERR_WRONG_ITEM
+from configs.config import app, WS_MAP, main_api, SUCCESS, ERR_WRONG_ITEM, TASK_SEND_TYPE
 from core.send_task_and_ws_setting_core import update_chatroom_members_info, update_members_info
 from core.user_core import UserLogin
 from utils.u_model_json_str import verify_json
@@ -45,6 +45,7 @@ def echo(ws):
                 text_json = dict()
                 text_json['username'] = "wxid_u391xytt57gc21"
                 text_json['content'] = "是小智呀"
+                text_json['type'] = TASK_SEND_TYPE['text']
                 text = json.dumps(text_json)
                 ws.send(text)
                 print 'text', text
