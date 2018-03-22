@@ -155,7 +155,7 @@ def update_coin_all():
 
         coin_name_cn = u""
 
-        if symbol in new_coin_dict.keys() and new_coin_dict[symbol].priority < priority:
+        if symbol in new_coin_dict.keys() and new_coin_dict[symbol].rank < priority:
             pass
         else:
             coin = RealTimeQuotesDefaultSettingInfo(symbol, coin_name, coin_name_cn, coin_icon, available_supply, change1d,
