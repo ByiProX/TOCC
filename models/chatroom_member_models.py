@@ -390,13 +390,13 @@ class ChatroomOverview(db.Model):
 
     def update_active_class(self, save_flag = False):
         if self.speak_count > 1000 or self.active_count > 50 or self.active_rate > 0.9:
-            self.active_class = 1
+            self.active_class = 3
         elif self.speak_count > 500 or self.active_count > 30 or self.active_rate > 0.8:
             self.active_class = 2
         elif self.speak_count > 200 or self.active_count > 10 or self.active_rate > 0.6:
-            self.active_class = 3
+            self.active_class = 1
         else:
-            self.active_class = 4
+            self.active_class = 0
         if save_flag:
             db.session.commit()
         return self
@@ -528,7 +528,7 @@ class MemberOverview(db.Model):
     invitation_count = db.Column(db.Integer, index=True, nullable=False)
 
     red_package_count = db.Column(db.Integer, index=True, nullable=False)
-    effect_num = db.Column(db.DECIMAL(6, 3), index=True, nullable=False)
+    effect_num = db.Column(db.Integer, index=True, nullable=False)
 
     # active_index = db.Column(db.Float, index = True)
     # importance_index = db.Column(db.Float, index = True)
@@ -633,13 +633,13 @@ class MemberOverview(db.Model):
 
     def update_effect_num(self, save_flag = False):
         if self.speak_count > 100 or self.be_at_count > 30 or self.invitation_count > 10:
-            self.effect_num = 1
+            self.effect_num = 3
         elif self.speak_count > 50 or self.be_at_count > 10 or self.invitation_count > 5:
             self.effect_num = 2
         elif self.speak_count > 20 or self.be_at_count > 5 or self.invitation_count > 2:
-            self.effect_num = 3
+            self.effect_num = 1
         else:
-            self.effect_num = 4
+            self.effect_num = 0
         if save_flag:
             db.session.commit()
         return self

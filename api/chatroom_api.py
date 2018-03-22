@@ -30,16 +30,30 @@ def chatroom_get_chatroom_list():
         return make_response(status)
 
     scope = request.json.get('scope', 0)
+    order = request.json.get('order', 1)
     page = request.json.get('page', DEFAULT_PAGE)
     page_size = request.json.get('page_size', DEFAULT_PAGE_SIZE)
 
-    order = [ChatroomOverview.speak_count.desc(), ChatroomOverview.chatroom_id.asc()]
+    ORDER_LIST = [ChatroomOverview.chatroom_id.asc(),
+                  ChatroomOverview.active_class.asc(),
+                  ChatroomOverview.chatroom_id.asc(),
+                  ChatroomOverview.speak_count.desc(),
+                  ChatroomOverview.active_rate.desc(),
+                  ChatroomOverview.member_change.desc(),
+                  ChatroomOverview.member_change.asc(),
+                  ChatroomOverview.active_rate.asc(),
+                  ChatroomOverview.speak_count.asc(),
+                  ChatroomOverview.chatroom_id.desc(),
+                  ChatroomOverview.active_class.desc()]
+
+    chatroom_order = [ORDER_LIST[order]]
+    chatroom_order += [ChatroomOverview.chatroom_id.asc()]
 
     chatroom_overview_list = db.session.query(ChatroomOverview, UserChatroomR.permission) \
         .outerjoin(UserChatroomR, UserChatroomR.chatroom_id == ChatroomOverview.chatroom_id) \
         .filter(UserChatroomR.user_id == user_info.user_id,
                 ChatroomOverview.scope == scope) \
-        .order_by(*order).limit(page_size).offset(page * page_size)\
+        .order_by(*chatroom_order).limit(page_size).offset(page * page_size)\
         .all()
 
     chatroom_ids_in_order = [r[0].chatroom_id for r in chatroom_overview_list]

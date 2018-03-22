@@ -31,6 +31,7 @@ def member_get_member_list():
         return make_response(status)
 
     scope = request.json.get('scope', 0)
+    order = request.json.get('order', 1)
     page = request.json.get('page', DEFAULT_PAGE)
     page_size = request.json.get('page_size', DEFAULT_PAGE_SIZE)
 
@@ -45,7 +46,19 @@ def member_get_member_list():
     # 被删除成员是否要显示出来
     # AContact 可能不存在
     # AContact 信息可能下载不下来
-    order = [MemberOverview.speak_count.desc(), MemberOverview.member_id.asc()]
+    ORDER_LIST = [MemberOverview.member_id.asc(),
+                  MemberOverview.effect_num.asc(),
+                  MemberOverview.speak_count.desc(),
+                  MemberOverview.be_at_count.desc(),
+                  MemberOverview.invitation_count.desc(),
+                  MemberOverview.invitation_count.asc(),
+                  MemberOverview.be_at_count.asc(),
+                  MemberOverview.speak_count.asc(),
+                  MemberOverview.effect_num.desc()]
+
+    member_order = [ORDER_LIST[order]]
+    member_order += [MemberOverview.member_id.asc()]
+
     rows = db.session.query(MemberOverview, MemberInfo, AMember, AContact) \
         .filter(MemberOverview.chatroom_id == chatroom_id,
                 MemberOverview.scope == scope)\
@@ -56,7 +69,7 @@ def member_get_member_list():
                 MemberOverview.scope == scope,
                 AContact.id > 0
                 )\
-        .order_by(*order)\
+        .order_by(*member_order)\
         .limit(page_size)\
         .offset(page * page_size)\
         .all()
