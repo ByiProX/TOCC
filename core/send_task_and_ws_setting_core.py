@@ -129,6 +129,6 @@ def check_chatroom_members_info(chatroomname):
                             or_(AContact.nickname < "",
                                 AContact.nickname == None)).all()
                 for member in member_list:
-                    member_usernames += member.username
+                    member_usernames += member.username + ';'
                 update_members_info_core(bot_username = bot_username, member_usernames = member_usernames)
                 break
