@@ -155,9 +155,12 @@ def update_coin_all():
 
         coin_name_cn = u""
 
-        coin = RealTimeQuotesDefaultSettingInfo(symbol, coin_name, coin_name_cn, coin_icon, available_supply, change1d,
-                                                change7d, change1h, price, volume_ex, marketcap, priority, is_integral)
-        new_coin_dict[symbol] = coin
+        if symbol in new_coin_dict.keys() and new_coin_dict[symbol].priority < priority:
+            pass
+        else:
+            coin = RealTimeQuotesDefaultSettingInfo(symbol, coin_name, coin_name_cn, coin_icon, available_supply, change1d,
+                                                    change7d, change1h, price, volume_ex, marketcap, priority, is_integral)
+            new_coin_dict[symbol] = coin
 
     # 去重插新
     old_coin_list = db.session.query(RealTimeQuotesDefaultSettingInfo).all()
