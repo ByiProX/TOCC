@@ -16,6 +16,7 @@ def update_chatroom_overview():
         # print '---'
 
     db.session.commit()
+    del chatroom_overview_list
 
 
 def update_member_overview():
@@ -27,9 +28,13 @@ def update_member_overview():
         # print '---'
 
     db.session.commit()
+    del member_overview_list
 
 
 def update_chatroom_statistics():
     chatroom_statistics_list = db.session.query(ChatroomStatistic).all()
     for chatroom_statistics in chatroom_statistics_list:
         chatroom_statistics.update_all_member_count()
+
+    db.session.commit()
+    del chatroom_statistics_list

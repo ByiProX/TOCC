@@ -68,9 +68,9 @@ def chatroom_get_chatroom_list():
             chatroom_json['is_owner'] = False
         chatroom_json_list.append(chatroom_json)
 
-    last_update_time = time.time()
+    last_update_time = time.time() * 1000
     if chatroom_overview_list:
-        last_update_time = chatroom_overview_list[0][0].update_time
+        last_update_time = datetime_to_timestamp_utc_8(chatroom_overview_list[0][0].update_time)
 
     return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
 
