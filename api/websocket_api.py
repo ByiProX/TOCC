@@ -6,9 +6,10 @@ import time
 from flask import request
 from flask_uwsgi_websocket import GeventWebSocket
 
-from configs.config import app, WS_MAP, main_api, SUCCESS, ERR_WRONG_ITEM, TASK_SEND_TYPE
+from configs.config import app, WS_MAP, main_api, SUCCESS, ERR_WRONG_ITEM, TASK_SEND_TYPE, db
 from core.send_task_and_ws_setting_core import update_chatroom_members_info, update_members_info
 from core.user_core import UserLogin
+from models.chatroom_member_models import ChatroomInfo
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 
@@ -65,10 +66,13 @@ def websocket_update_chatroom_members_info():
     if status != SUCCESS:
         return make_response(status)
 
-    chatroomname = request.json.get('chatroomname')
-    if not chatroomname:
+    chatroom_id = request.json.get('chatroom_id')
+    if not chatroom_id:
         return make_response(ERR_WRONG_ITEM)
-    update_chatroom_members_info(chatroomname)
+    chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == chatroom_id).first()
+    if not chatroom:
+        return make_response(ERR_WRONG_ITEM)
+    update_chatroom_members_info(chatroom.chatroomname)
 
     return make_response(SUCCESS)
 

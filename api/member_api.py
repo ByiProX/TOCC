@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import threading
 import time
 
 from datetime import datetime, timedelta
 from flask import request
 from sqlalchemy import func
 
+from core.send_task_and_ws_setting_core import check_chatroom_members_info
 from core.user_core import UserLogin
 from models.android_db_models import AMember, AContact
 from models.chatroom_member_models import MemberInfo, MemberOverview, MemberInviteMember, MemberAtMember, ChatroomInfo
@@ -33,6 +35,9 @@ def member_get_member_list():
 
     chatroom_id = request.json.get('chatroom_id')
     if not chatroom_id:
+        return make_response(ERR_INVALID_PARAMS)
+    chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == chatroom_id).first()
+    if not chatroom:
         return make_response(ERR_INVALID_PARAMS)
 
     # Mark
@@ -69,6 +74,10 @@ def member_get_member_list():
         member_json.update(member_overview.to_json())
         member_json_list.append(member_json)
         last_update_time = datetime_to_timestamp_utc_8(member_overview.update_time)
+
+    check_thread = threading.Thread(target = check_chatroom_members_info, args = (chatroom.chatroomname, ))
+    check_thread.setDaemon(True)
+    check_thread.start()
 
     return make_response(SUCCESS, member_list = member_json_list, last_update_time = last_update_time)
 
