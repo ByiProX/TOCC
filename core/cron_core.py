@@ -40,4 +40,4 @@ def update_chatroom_statistics():
     del chatroom_statistics_list
 
 
-update_chatroom_overview()
+# update_chatroom_overview()
