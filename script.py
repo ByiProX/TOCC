@@ -43,16 +43,18 @@ from models.message_ext_models import MessageAnalysis
 #     print '---'
 #
 # db.session.commit()
-#
-# member_overview_list = db.session.query(MemberOverview).all()
+
+
+# member_overview_list = db.session.query(MemberOverview).filter(MemberOverview.member_id == 4596619).all()
 # for member_overview_row in member_overview_list:
-#     member_overview = member_overview_row[0]
+#     member_overview = member_overview_row
 #     print json.dumps(member_overview.to_json())
 #     member_overview.update_batch()
 #     print json.dumps(member_overview.to_json())
 #     print '---'
 #
 # db.session.commit()
+
 from utils.u_time import get_today_0
 
 # chatroom_statistics_list = db.session.query(ChatroomStatistic).all()
@@ -86,5 +88,21 @@ from utils.u_time import get_today_0
 #     chatroom_statistics.member_count = member_count
 
 # db.session.commit()
+
+
+def update_member_overview():
+    member_overview_list = db.session.query(MemberOverview).all()
+    for member_overview in member_overview_list:
+        print json.dumps(member_overview.to_json())
+        member_overview.update_batch()
+        print json.dumps(member_overview.to_json())
+        print '---'
+
+    db.session.commit()
+    del member_overview_list
+
+
+if __name__ == '__main__':
+    update_member_overview()
 
 pass
