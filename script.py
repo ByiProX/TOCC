@@ -91,14 +91,14 @@ from utils.u_time import get_today_0
 
 
 def update_member_overview():
-    member_overview_list = db.session.query(MemberOverview).all()
+    member_overview_list = db.session.query(MemberOverview).order_by(MemberOverview.member_id.desc()).all()
     for member_overview in member_overview_list:
         print json.dumps(member_overview.to_json())
         member_overview.update_batch()
         print json.dumps(member_overview.to_json())
         print '---'
 
-    db.session.commit()
+        db.session.commit()
     del member_overview_list
 
 
