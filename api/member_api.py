@@ -136,7 +136,7 @@ def member_get_invitation_list():
         return make_response(status)
 
     page = request.json.get('page', DEFAULT_PAGE)
-    page_size = request.json.get('page', DEFAULT_PAGE_SIZE)
+    page_size = request.json.get('page_size', DEFAULT_PAGE_SIZE)
     member_id = request.json.get('member_id')
     if not member_id:
         return make_response(ERR_INVALID_PARAMS)
