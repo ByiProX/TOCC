@@ -55,36 +55,36 @@ from models.message_ext_models import MessageAnalysis
 # db.session.commit()
 from utils.u_time import get_today_0
 
-chatroom_statistics_list = db.session.query(ChatroomStatistic).all()
-for chatroom_statistics in chatroom_statistics_list:
-    chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == chatroom_statistics.chatroom_id).first()
-    chatroom_create_time = chatroom.create_time
-    start_time = chatroom_statistics.time_to_day
-    time_gap = timedelta(days = 1)
-    end_time = start_time + time_gap
-    filter_list_total = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = False,
-                                                end_time = end_time)
-    filter_list_total.append(AContact.id > 0)
-    filter_list_in = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = False,
-                                             start_time = start_time, end_time = end_time)
-    filter_list_in.append(AMember.create_time > chatroom.create_time)
-    filter_list_in.append(AContact.id > 0)
-    filter_list_out = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = True,
-                                              start_time = start_time, end_time = end_time)
-    filter_list_out.append(AContact.id > 0)
-    members_in = db.session.query(func.count(AMember.id)) \
-                     .outerjoin(AContact, AMember.username == AContact.username) \
-                     .filter(*filter_list_in).first()[0] or 0
-    members_out = db.session.query(func.count(AMember.id)) \
-                      .outerjoin(AContact, AMember.username == AContact.username) \
-                      .filter(*filter_list_out).first()[0] or 0
-    member_count = db.session.query(func.count(AMember.id)) \
-                       .outerjoin(AContact, AMember.username == AContact.username) \
-                       .filter(*filter_list_total).first()[0] or 0
-    chatroom_statistics.in_count = members_in
-    chatroom_statistics.out_count = members_out
-    chatroom_statistics.member_count = member_count
+# chatroom_statistics_list = db.session.query(ChatroomStatistic).all()
+# for chatroom_statistics in chatroom_statistics_list:
+#     chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == chatroom_statistics.chatroom_id).first()
+#     chatroom_create_time = chatroom.create_time
+#     start_time = chatroom_statistics.time_to_day
+#     time_gap = timedelta(days = 1)
+#     end_time = start_time + time_gap
+#     filter_list_total = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = False,
+#                                                 end_time = end_time)
+#     filter_list_total.append(AContact.id > 0)
+#     filter_list_in = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = False,
+#                                              start_time = start_time, end_time = end_time)
+#     filter_list_in.append(AMember.create_time > chatroom.create_time)
+#     filter_list_in.append(AContact.id > 0)
+#     filter_list_out = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = True,
+#                                               start_time = start_time, end_time = end_time)
+#     filter_list_out.append(AContact.id > 0)
+#     members_in = db.session.query(func.count(AMember.id)) \
+#                      .outerjoin(AContact, AMember.username == AContact.username) \
+#                      .filter(*filter_list_in).first()[0] or 0
+#     members_out = db.session.query(func.count(AMember.id)) \
+#                       .outerjoin(AContact, AMember.username == AContact.username) \
+#                       .filter(*filter_list_out).first()[0] or 0
+#     member_count = db.session.query(func.count(AMember.id)) \
+#                        .outerjoin(AContact, AMember.username == AContact.username) \
+#                        .filter(*filter_list_total).first()[0] or 0
+#     chatroom_statistics.in_count = members_in
+#     chatroom_statistics.out_count = members_out
+#     chatroom_statistics.member_count = member_count
 
-db.session.commit()
+# db.session.commit()
 
 pass

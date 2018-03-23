@@ -266,6 +266,10 @@ class ChatroomOverview(db.Model):
         self.active_class = active_class
         self.member_change = member_change
 
+    def generate_update_time(self):
+        self.update_time = datetime.now()
+        return self
+
     def to_json(self):
         res = model_to_dict(self, self.__class__)
         res.pop('chatroomname')
@@ -300,6 +304,7 @@ class ChatroomOverview(db.Model):
         self.update_member_change()
         if save_flag:
             db.session.commit()
+        self.generate_update_time()
         return self
 
     def update_speak_count(self, save_flag = False):
@@ -324,6 +329,7 @@ class ChatroomOverview(db.Model):
         self.speak_count = speak_count
         if save_flag:
             db.session.commit()
+        self.generate_update_time()
         return self
 
     def update_incre_count(self, chatroom_create_time, save_flag = False):
@@ -341,6 +347,7 @@ class ChatroomOverview(db.Model):
         self.incre_count = incre_count
         if save_flag:
             db.session.commit()
+        self.generate_update_time()
         return self
 
     def update_active_count(self, save_flag = False):
@@ -359,6 +366,7 @@ class ChatroomOverview(db.Model):
         self.active_count = active_count
         if save_flag:
             db.session.commit()
+        self.generate_update_time()
         return self
 
     def update_active_rate(self, member_count = None, save_flag = False):
@@ -375,6 +383,7 @@ class ChatroomOverview(db.Model):
         self.active_rate = Decimal(self.active_count) / Decimal(member_count)
         if save_flag:
             db.session.commit()
+        self.generate_update_time()
         return self
 
     def update_member_change(self, save_flag = False):
@@ -386,6 +395,7 @@ class ChatroomOverview(db.Model):
             self.member_change = 0
         if save_flag:
             db.session.commit()
+        self.generate_update_time()
         return self
 
     def update_active_class(self, save_flag = False):
@@ -399,6 +409,7 @@ class ChatroomOverview(db.Model):
             self.active_class = 0
         if save_flag:
             db.session.commit()
+        self.generate_update_time()
         return self
 
 
@@ -515,6 +526,7 @@ class ChatroomStatistic(db.Model):
         self.in_count = members_in
         self.out_count = members_out
         self.member_count = member_count
+        self.generate_update_time()
         return self
 
 
@@ -583,6 +595,7 @@ class MemberOverview(db.Model):
         self.update_effect_num()
         if save_flag:
             db.session.commit()
+        self.generate_update_time()
         return self
 
     def update_speak_count_and_be_at_count(self, save_flag = False):
@@ -617,6 +630,7 @@ class MemberOverview(db.Model):
         self.be_at_count = be_at_count
         if save_flag:
             db.session.commit()
+        self.generate_update_time()
         return self
 
     def update_invitation_count(self, save_flag = False):
@@ -634,6 +648,7 @@ class MemberOverview(db.Model):
         self.invitation_count = invitation_count
         if save_flag:
             db.session.commit()
+        self.generate_update_time()
         return self
 
     def update_effect_num(self, save_flag = False):
@@ -647,6 +662,7 @@ class MemberOverview(db.Model):
             self.effect_num = 0
         if save_flag:
             db.session.commit()
+        self.generate_update_time()
         return self
 
 
