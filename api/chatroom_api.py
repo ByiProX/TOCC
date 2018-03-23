@@ -5,7 +5,7 @@ import time
 
 from decimal import Decimal
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import request
 from sqlalchemy import func, and_
 
@@ -213,12 +213,19 @@ def chatroom_get_in_out_members():
     if status != SUCCESS:
         return make_response(status)
 
+    scope = request.json.get('scope', 24)
     page = request.json.get('page', DEFAULT_PAGE)
     page_size = request.json.get('page_size', DEFAULT_PAGE_SIZE)
     chatroom_id = request.json.get("chatroom_id")
     if not chatroom_id:
         return make_response(ERR_INVALID_PARAMS)
 
+    if scope == 24:
+        end_time = datetime.now()
+        start_time = end_time - timedelta(days = 1)
+    else:
+        start_time, end_time = get_time_window_by_scope(scope)
+    get_time_window_by_scope(scope)
     chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == chatroom_id).first()
     if not chatroom:
         return make_response(ERR_WRONG_ITEM)

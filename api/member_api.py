@@ -47,14 +47,14 @@ def member_get_member_list():
     # AContact 可能不存在
     # AContact 信息可能下载不下来
     ORDER_LIST = [MemberOverview.member_id.asc(),
-                  MemberOverview.effect_num.asc(),
+                  MemberOverview.effect_num.desc(),
                   MemberOverview.speak_count.desc(),
                   MemberOverview.be_at_count.desc(),
                   MemberOverview.invitation_count.desc(),
                   MemberOverview.invitation_count.asc(),
                   MemberOverview.be_at_count.asc(),
                   MemberOverview.speak_count.asc(),
-                  MemberOverview.effect_num.desc()]
+                  MemberOverview.effect_num.asc()]
 
     member_order = [ORDER_LIST[order]]
     member_order += [MemberOverview.member_id.asc()]
