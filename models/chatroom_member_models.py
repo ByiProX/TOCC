@@ -465,6 +465,10 @@ class ChatroomStatistic(db.Model):
 
     update_time = db.Column(db.TIMESTAMP, index=True, nullable=False)
 
+    def generate_update_time(self):
+        self.update_time = datetime.now()
+        return self
+
     def __init__(self, chatroom_id, time_to_day, member_count = 0, speak_count = 0, at_count = 0,
                  in_count = 0, out_count = 0):
         self.chatroom_id = chatroom_id
@@ -575,6 +579,10 @@ class MemberOverview(db.Model):
     def to_json_ext(self):
         res = self.to_json()
         return res
+
+    def generate_update_time(self):
+        self.update_time = datetime.now()
+        return self
 
     @staticmethod
     def init_all_scope(member_id, chatroom_id, chatroomname, username, be_at_count = 0, speak_count = 0,
