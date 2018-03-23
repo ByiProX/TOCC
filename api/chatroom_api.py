@@ -35,7 +35,7 @@ def chatroom_get_chatroom_list():
     page_size = request.json.get('page_size', DEFAULT_PAGE_SIZE)
 
     ORDER_LIST = [ChatroomOverview.chatroom_id.asc(),
-                  ChatroomOverview.active_class.asc(),
+                  ChatroomOverview.active_class.desc(),
                   ChatroomOverview.chatroom_id.asc(),
                   ChatroomOverview.speak_count.desc(),
                   ChatroomOverview.active_rate.desc(),
@@ -44,7 +44,7 @@ def chatroom_get_chatroom_list():
                   ChatroomOverview.active_rate.asc(),
                   ChatroomOverview.speak_count.asc(),
                   ChatroomOverview.chatroom_id.desc(),
-                  ChatroomOverview.active_class.desc()]
+                  ChatroomOverview.active_class.asc()]
 
     chatroom_order = [ORDER_LIST[order]]
     chatroom_order += [ChatroomOverview.chatroom_id.asc()]
