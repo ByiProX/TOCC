@@ -135,8 +135,8 @@ def member_get_invitation_list():
     if status != SUCCESS:
         return make_response(status)
 
-    page = request.json.get('page', DEFAULT_PAGE)
-    page_size = request.json.get('page_size', DEFAULT_PAGE_SIZE)
+    # page = request.json.get('page', DEFAULT_PAGE)
+    # page_size = request.json.get('page_size', DEFAULT_PAGE_SIZE)
     member_id = request.json.get('member_id')
     if not member_id:
         return make_response(ERR_INVALID_PARAMS)
@@ -147,7 +147,8 @@ def member_get_invitation_list():
     mim_list = db.session.query(MemberInviteMember, AContact)\
         .outerjoin(AContact, MemberInviteMember.invited_username == AContact.username) \
         .filter(*filter_list_mim).order_by(MemberInviteMember.create_time.desc())\
-        .limit(page_size).offset(page * page_size).all()
+        .all()
+    # .limit(page_size).offset(page * page_size)\
 
     for row in mim_list:
         mim = row[0]
@@ -157,7 +158,7 @@ def member_get_invitation_list():
         member_json['create_time'] = datetime_to_timestamp_utc_8(mim.create_time)
         member_json['nickname'] = ""
         member_json['avatar_url2'] = ""
-        if not a_contact:
+        if a_contact:
             member_json['nickname'] = a_contact.nickname
             member_json['avatar_url2'] = a_contact.avatar_url2
         invitation_list.append(member_json)
