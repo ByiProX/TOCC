@@ -20,13 +20,16 @@ def update_chatroom_overview():
 
 
 def update_member_overview():
-    member_overview_list = db.session.query(MemberOverview).all()
+    i = 0
+    member_overview_list = db.session.query(MemberOverview).order_by(MemberOverview.member_id.desc()).all()
     for member_overview in member_overview_list:
         # print json.dumps(member_overview.to_json())
         member_overview.update_batch()
         # print json.dumps(member_overview.to_json())
         # print '---'
-
+        i += 1
+        if i % 5000 == 0:
+            db.session.commit()
     db.session.commit()
     del member_overview_list
 
