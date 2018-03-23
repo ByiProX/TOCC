@@ -493,12 +493,15 @@ class ChatroomStatistic(db.Model):
         return chatroom_statistics
 
     def update_all_member_count(self):
-        a_contact_chatroom = db.session.query(AContact).filter(AContact.id == self.chatroom_id).first()
+        start_time = self.time_to_day
+        end_time = start_time + timedelta(days = 1)
         chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == self.chatroom_id).first()
-        filter_list_in = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = False)
+        filter_list_total = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = False, end_time = end_time)
+        filter_list_total.append(AContact.id > 0)
+        filter_list_in = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = False, start_time = start_time, end_time = end_time)
         filter_list_in.append(AMember.create_time > chatroom.create_time)
         filter_list_in.append(AContact.id > 0)
-        filter_list_out = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = True)
+        filter_list_out = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = True, start_time = start_time, end_time = end_time)
         filter_list_out.append(AContact.id > 0)
         members_in = db.session.query(func.count(AMember.id)) \
             .outerjoin(AContact, AMember.username == AContact.username) \
@@ -506,7 +509,9 @@ class ChatroomStatistic(db.Model):
         members_out = db.session.query(func.count(AMember.id)) \
             .outerjoin(AContact, AMember.username == AContact.username) \
             .filter(*filter_list_out).first()[0] or 0
-        member_count = a_contact_chatroom.member_count
+        member_count = db.session.query(func.count(AMember.id)) \
+            .outerjoin(AContact, AMember.username == AContact.username) \
+            .filter(*filter_list_total).first()[0] or 0
         self.in_count = members_in
         self.out_count = members_out
         self.member_count = member_count
