@@ -68,11 +68,11 @@ def analysis_and_save_a_message(a_message):
     return msg_ext
 
 
-def count_msg_by_ids(start_id, end_id):
-    print 'start', start_id, 'end', end_id
+def count_msg_by_create_time(start_create_time, end_create_time):
+    print start_create_time, '-', end_create_time
     try:
-        msg_list = db.session.query(MessageAnalysis).filter(MessageAnalysis.msg_id >= start_id,
-                                                            MessageAnalysis.msg_id <= end_id).all()
+        msg_list = db.session.query(MessageAnalysis).filter(MessageAnalysis.create_time >= start_create_time,
+                                                            MessageAnalysis.msg_id <= end_create_time).all()
         for msg in msg_list:
             count_msg(msg)
     except Exception:
