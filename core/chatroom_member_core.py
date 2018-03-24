@@ -6,7 +6,7 @@ from datetime import timedelta, datetime
 from decimal import Decimal
 from sqlalchemy import func, distinct
 
-from configs.config import db, SCOPE_24_HOUR, MSG_TYPE_SYS
+from configs.config import db, SCOPE_24_HOUR, MSG_TYPE_TXT
 from models.android_db_models import AMember, AContact
 from models.chatroom_member_models import ChatroomInfo, ChatroomStatistic, ChatroomOverview, ChatroomActive, \
     MemberStatistic, MemberOverview, MemberInviteMember
@@ -78,7 +78,7 @@ def update_speak_count(chatroom_overview, save_flag = False):
         start_time = end_time - timedelta(days = 1)
         # MessageAnalysis
         filter_list_ma = MessageAnalysis.get_filter_list(start_time = start_time, end_time = end_time)
-        filter_list_ma.append(MessageAnalysis.type == MSG_TYPE_SYS)
+        filter_list_ma.append(MessageAnalysis.type == MSG_TYPE_TXT)
         filter_list_ma.append(MessageAnalysis.talker == chatroom_overview.chatroomname)
         speak_count = db.session.query(func.count(MessageAnalysis.msg_id))\
             .filter(*filter_list_ma).first()[0] or 0
