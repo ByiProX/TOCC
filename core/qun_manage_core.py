@@ -8,6 +8,7 @@ from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE, USER_CHATROOM_R_PERMISSION_1
+from core.message_core import update_members
 from core.wechat_core import WechatConn
 from core.welcome_message_core import generate_welcome_message_c_task_into_new_qun
 from models.android_db_models import AContact, AChatroom, AMember, AChatroomR
@@ -308,7 +309,7 @@ def _process_is_add_qun(message_analysis):
         db.session.merge(bot_chatroom_r)
 
         # 初始化 MemberInfo 和 MemberOverview
-        MemberInfo.update_members(chatroomname, create_time = now)
+        update_members(chatroomname, create_time = now)
 
         # 初始化 ChatroomOverview
         ChatroomOverview.init_all_scope(chatroom_id = a_contact_chatroom.id,
@@ -357,6 +358,12 @@ def _remove_bot_process(bot_username, chatroomname):
                 continue
             uqbr_info.is_error = True
             db.session.merge(uqbr_info)
+    filter_list_bcr = BotChatroomR.get_filter_list(chatroomname = chatroomname, username = username, is_on = True)
+    bot_chatroom_r_list = db.session.query(BotChatroomR).filter(*filter_list_bcr).all()
+    # 理论上只有一个
+    for bcr in bot_chatroom_r_list:
+        bcr.is_on = False
+
     db.session.commit()
     logger.info(u"已将该bot所有相关群设置为异常")
     return SUCCESS

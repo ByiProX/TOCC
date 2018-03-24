@@ -4,9 +4,11 @@ from datetime import timedelta, datetime
 
 from sqlalchemy import func
 
-from configs.config import db
-from models.android_db_models import AMember, AContact
-from models.chatroom_member_models import ChatroomInfo, MemberInfo, ChatroomOverview, MemberOverview, ChatroomStatistic
+from configs.config import db, USER_CHATROOM_R_PERMISSION_1
+from core.message_core import update_members
+from models.android_db_models import AMember, AContact, AChatroomR
+from models.chatroom_member_models import ChatroomInfo, MemberInfo, ChatroomOverview, MemberOverview, ChatroomStatistic, \
+    UserChatroomR, BotChatroomR
 from models.message_ext_models import MessageAnalysis
 
 # i = 300
@@ -54,6 +56,8 @@ from models.message_ext_models import MessageAnalysis
 #     print '---'
 #
 # db.session.commit()
+from models.qun_friend_models import UserQunBotRelateInfo, UserQunRelateInfo
+from models.user_bot_models import UserBotRelateInfo, BotInfo
 
 from utils.u_time import get_today_0
 
@@ -105,7 +109,53 @@ def update_member_overview():
     del member_overview_list
 
 
+def init_cia():
+    uqb_r_list = db.session.query(UserQunBotRelateInfo).filter(UserQunBotRelateInfo.is_error == False).all()
+    for uqb_r in uqb_r_list:
+        uqun_r = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.uqun_id == uqb_r.uqun_id).first()
+        a_contact_chatroom = db.session.query(AContact).filter(AContact.username == uqun_r.chatroomname).first()
+        user_bot_r = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_bot_rid == uqb_r.user_bot_rid).first()
+        bot = db.session.query(BotInfo).filter(BotInfo.bot_id == user_bot_r.bot_id).first()
+        a_chatroom_r = db.session.query(AChatroomR).filter(AChatroomR.username == bot.username,
+                                                           AChatroomR.chatroomname == a_contact_chatroom.username).first()
+
+        now = datetime.now()
+        user_id = user_bot_r.user_id
+        chatroomname = a_contact_chatroom.username
+        # chatroom
+        chatroom = ChatroomInfo(chatroom_id = a_contact_chatroom.id, chatroomname = chatroomname,
+                                member_count = a_contact_chatroom.member_count).generate_create_time(now)
+        db.session.merge(chatroom)
+
+        # user_chatroom_r
+        user_chatroom_r = UserChatroomR(user_id = user_id, chatroom_id = a_contact_chatroom.id,
+                                        permission = USER_CHATROOM_R_PERMISSION_1) \
+            .generate_create_time(now)
+        db.session.add(user_chatroom_r)
+
+        # bot_chatroom_r
+        # 判断是否已经有 is_on 状态的其他 bot
+        is_on = True
+        bot_chatroom_r_is_on = db.session.query(BotChatroomR).filter(BotChatroomR.chatroomname == chatroomname,
+                                                                     BotChatroomR.is_on == 1).first()
+        if bot_chatroom_r_is_on:
+            is_on = False
+        bot_chatroom_r = BotChatroomR(a_chatroom_r_id = a_chatroom_r.id, chatroomname = a_chatroom_r.chatroomname,
+                                      username = a_chatroom_r.username, is_on = is_on).generate_create_time(now)
+        db.session.merge(bot_chatroom_r)
+
+        # 初始化 MemberInfo 和 MemberOverview
+        update_members(chatroomname, create_time = now)
+
+        # 初始化 ChatroomOverview
+        ChatroomOverview.init_all_scope(chatroom_id = a_contact_chatroom.id,
+                                        chatroomname = a_contact_chatroom.username)
+
+        db.session.commit()
+
+
 if __name__ == '__main__':
-    update_member_overview()
+    # update_member_overview()
+    init_cia()
 
 pass

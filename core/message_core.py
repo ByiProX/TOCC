@@ -404,7 +404,7 @@ def fetch_member_by_username(chatroomname, username):
     member = db.session.query(MemberInfo).filter(MemberInfo.chatroomname == chatroomname,
                                                  MemberInfo.username == username).first()
     if not member:
-        MemberInfo.update_members(chatroomname, save_flag = True)
+        update_members(chatroomname, save_flag = True)
         # 更新信息之后再查不到就不管了
         member = db.session.query(MemberInfo).filter(MemberInfo.chatroomname == chatroomname,
                                                      MemberInfo.username == username).first()

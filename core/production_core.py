@@ -15,10 +15,10 @@ from configs.config import GLOBAL_RULES_UPDATE_FLAG, GLOBAL_USER_MATCHING_RULES_
 from core.coin_wallet_core import check_whether_message_is_a_coin_wallet
 from core.matching_rule_core import get_gm_rule_dict, match_message_by_rule, get_gm_default_rule_dict
 from core.message_core import analysis_and_save_a_message
-from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
+from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed, check_whether_message_is_add_qun_v2
 from core.real_time_quotes_core import match_message_by_coin_keyword
 from core.synchronous_announcement_core import match_which_user_should_get_notice
-from core.user_core import check_whether_message_is_add_friend
+from core.user_core import check_whether_message_is_add_friend, check_whether_message_is_add_friend_v2
 from core.welcome_message_core import check_whether_message_is_friend_into_qun
 from configs.config import PRODUCTION_CIRCLE_INTERVAL, db, MSG_TYPE_TXT, MSG_TYPE_SYS
 from models.android_db_models import AMessage
@@ -111,12 +111,12 @@ class ProductionThread(threading.Thread):
                             continue
 
                         # is_add_friend
-                        is_add_friend = check_whether_message_is_add_friend(message_analysis)
+                        is_add_friend = check_whether_message_is_add_friend_v2(message_analysis)
                         if is_add_friend:
                             continue
 
                         # 检查信息是否为加了一个群
-                        is_add_qun = check_whether_message_is_add_qun(message_analysis)
+                        is_add_qun = check_whether_message_is_add_qun_v2(message_analysis)
                         if is_add_qun:
                             continue
 
