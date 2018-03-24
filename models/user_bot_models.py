@@ -56,6 +56,19 @@ class UserInfo(db.Model):
         res.pop('token_expired_time')
         return res
 
+    @staticmethod
+    def get_filter_list(filter_list = None, nickname = None, username = None):
+        if filter_list is None:
+            filter_list = list()
+
+        if nickname is not None:
+            filter_list.append(UserInfo.nick_name == nickname)
+
+        if username is not None:
+            filter_list.append(UserInfo.username == username)
+
+        return filter_list
+
 
 class UserPermission(db.Model):
     """
@@ -88,7 +101,15 @@ class UserBotRelateInfo(db.Model):
     is_setted = db.Column(db.Boolean, index=True, nullable=False)
     is_being_used = db.Column(db.Boolean, index=True, nullable=False)
 
+    create_time = db.Column(db.DateTime, index=True, nullable=False)
+
     db.UniqueConstraint(user_id, bot_id, name='ix_user_bot_relate_user_id_wechat_two_id')
+
+    def generate_create_time(self, create_time = None):
+        if create_time is None:
+            create_time = datetime.now()
+        self.create_time = create_time
+        return self
 
     def to_dict(self):
         res = model_to_dict(self, self.__class__)
@@ -119,7 +140,7 @@ class AccessToken(db.Model):
     存整个公众号的access_token
     """
     __tablename = 'access_token'
-    token = db.Column(db.String(256), primary_key=True)
+    token = db.Column(db.String(191), primary_key=True)  # 256
     expired_time = db.Column(db.DateTime)
 
     def load_from_json(self, access_token_json):

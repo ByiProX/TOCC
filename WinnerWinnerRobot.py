@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 # 开启gevent
-from gevent import monkey, sleep
+from gevent import monkey
 
 from core.crawler_core import crawler_thread
 from maintenance.database_rel import create_all_databases
-from maintenance.environment import environment_client_info
-
-monkey.patch_all()
 
 import logging
 
-from configs.config import app, main_api, config_name_s
+from configs.config import app, main_api
 from core.production_core import production_thread
 
 from utils import u_log
@@ -18,6 +15,7 @@ import models
 import api
 import configs
 
+monkey.patch_all()
 app.register_blueprint(main_api, url_prefix='/yaca_api')
 
 models.import_str = ""
@@ -29,6 +27,12 @@ __version__ = "0.0.1a1"
 
 @app.route('/hello')
 def hello():
+    return "hello"
+    # return make_response(SUCCESS, str = "hello")
+
+
+@app.route('/yaca_api/hello')
+def cia_api_hello():
     return "hello"
     # return make_response(SUCCESS, str = "hello")
 
@@ -46,8 +50,8 @@ production_thread.start()
 crawler_thread.start()
 
 # 开启环境监测线程
-if config_name_s == 'p':
-    environment_client_info.start()
+# if config_name_s == 'p':
+#     environment_client_info.start()
 
 if __name__ == '__main__':
     logger.debug("开始程序")

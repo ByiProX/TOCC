@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+from decimal import Decimal
 
 from flask import Flask, Blueprint
 from flask_sqlalchemy import SQLAlchemy
@@ -196,6 +197,10 @@ ERROR_CODE[ERR_WRONG_FUNC_STATUS] = {'discription': '功能未开启，无法使
 ERR_NOT_IMPLEMENTED = 'err_not_implemented'
 ERROR_CODE[ERR_NOT_IMPLEMENTED] = {'discription': '功能未实现，先留出口', 'status_code': -16}
 
+# 成员不存在
+ERR_INVALID_MEMBER = 'err_invalid_member'
+ERROR_CODE[ERR_NOT_IMPLEMENTED] = {'discription': '成员不存在', 'status_code': -17}
+
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
 ERROR_CODE[WARN_HAS_DEFAULT_QUN] = {'discription': '建立默认分组时已有默认分组', 'status_code': 1}
@@ -229,7 +234,9 @@ TASK_SEND_TYPE = {
     "mini_programs": 5,
     "massive_platform": 6,
     "video": 7,
-    "voice": 8
+    "voice": 8,
+    "update_chatroom_members_info": 950701,
+    "update_members_info": 950702
 }
 
 # 全局匹配规则更新标记，每次更新规则库需将锁打开
@@ -253,4 +260,54 @@ MSG_TYPE_VIDEO = 62
 MSG_TYPE_SHARE = 49
 MSG_TYPE_SYS = 10000
 
+CONTENT_TYPE_UNKNOWN = -1
+CONTENT_TYPE_TXT = 1
+CONTENT_TYPE_PIC = 3
+CONTENT_TYPE_MP3 = 34
+CONTENT_TYPE_NAME_CARD = 42
+CONTENT_TYPE_MP4 = 43
+CONTENT_TYPE_GIF = 47
+CONTENT_TYPE_VIDEO = 62
+CONTENT_TYPE_SHARE = 49
+CONTENT_TYPE_SYS = 10000
+CONTENT_TYPE_RED = -10001
+
+CONTENT_TYPE_NAMES = {
+    CONTENT_TYPE_TXT: u'文本',
+    CONTENT_TYPE_PIC: u'图片',
+    CONTENT_TYPE_MP3: u'语音',
+    CONTENT_TYPE_NAME_CARD: u'名片',
+    CONTENT_TYPE_MP4: u'视频',
+    CONTENT_TYPE_GIF: u'表情',
+    CONTENT_TYPE_VIDEO: u'视频',
+    CONTENT_TYPE_SHARE: u'分享',
+    CONTENT_TYPE_SYS: u'系统消息',
+    CONTENT_TYPE_RED: u'红包',
+}
+
 WS_MAP = dict()
+
+MAX_MEMBER_COUNT_DECIMAL = Decimal(500)
+
+SCOPE_YES = -1
+SCOPE_MINUTE = 60
+SCOPE_HOUR = 3600
+SCOPE_TODAY = 1
+SCOPE_24_HOUR = 24
+SCOPE_WEEK = 7
+SCOPE_MONTH = 30
+SCOPE_ALL = 0
+
+DEFAULT_SCOPE_LIST = [SCOPE_ALL, SCOPE_24_HOUR, SCOPE_WEEK, SCOPE_MONTH]
+
+DEFAULT_PAGE = 0
+DEFAULT_PAGE_SIZE = 2
+
+USER_CHATROOM_R_PERMISSION_1 = 1  # 管理员
+USER_CHATROOM_R_PERMISSION_2 = 2  # 非管理员
+
+CRON_TYPE_CHATROOM_OVERVIEW = 1
+CRON_TYPE_CHATROOM_STATISTIC = 2
+CRON_TYPE_MEMBER_OVERVIEW = 3
+
+LEVEL_CLASS = ['D', 'C', 'B', 'A']

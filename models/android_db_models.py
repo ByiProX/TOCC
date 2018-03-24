@@ -176,7 +176,10 @@ class AFriend(db.Model):
             a_friend = db.session.query(AFriend).filter(AFriend.from_username == from_username,
                                                         AFriend.to_username == to_username).first()
             if a_friend:
+                logger.info(u'获取到 a_friend 信息, times = ' + unicode(times))
                 break
+            logger.info(u'尝试获取 a_friend 信息, from_username = ' + unicode(from_username) +
+                        u', to_username = ' + unicode(to_username) + u', times = ' + unicode(times))
             sleep(5)
             times -= 1
 

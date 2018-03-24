@@ -4,10 +4,15 @@ import threading
 
 import time
 
-from datetime import datetime
 from flask import request
 from flask_uwsgi_websocket import GeventWebSocket
 
+from configs.config import main_api, SUCCESS, ERR_WRONG_ITEM, db
+from core.send_task_and_ws_setting_core import update_chatroom_members_info, update_members_info
+from core.user_core import UserLogin
+from models.chatroom_member_models import ChatroomInfo
+from utils.u_model_json_str import verify_json
+from utils.u_response import make_response
 from configs.config import app, WS_MAP, TASK_SEND_TYPE
 from core.consumption_core import ConsumptionThread
 
@@ -48,6 +53,9 @@ def echo(ws):
                 text = json.dumps(text_json)
                 ws.send(text)
                 print 'text', text
+                text_json['username'] = "wxid_1xn3vv67x4fk12"
+                text = json.dumps(text_json)
+                ws.send(text)
             if not ws.connected:
                 # TODO-zwf 退出逻辑待完善
                 print 'ws.connected', str(ws.connected)
@@ -55,3 +63,37 @@ def echo(ws):
                 WS_MAP.pop(username)
                 break
         consumption_thread.stop()
+
+
+@main_api.route('/websocket/update_chatroom_members_info', methods=['POST'])
+def websocket_update_chatroom_members_info():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    chatroom_id = request.json.get('chatroom_id')
+    if not chatroom_id:
+        return make_response(ERR_WRONG_ITEM)
+    chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == chatroom_id).first()
+    if not chatroom:
+        return make_response(ERR_WRONG_ITEM)
+    update_chatroom_members_info(chatroom.chatroomname)
+
+    return make_response(SUCCESS)
+
+
+@main_api.route('/websocket/update_members_info', methods=['POST'])
+def websocket_update_members_info():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    member_usernames = request.json.get('member_usernames')
+    if not member_usernames:
+        return make_response(ERR_WRONG_ITEM)
+
+    update_members_info(member_usernames = member_usernames)
+
+    return make_response(SUCCESS)

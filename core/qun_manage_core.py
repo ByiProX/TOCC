@@ -7,10 +7,11 @@ from datetime import datetime
 from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
-    ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE
+    ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE, USER_CHATROOM_R_PERMISSION_1
 from core.wechat_core import WechatConn
 from core.welcome_message_core import generate_welcome_message_c_task_into_new_qun
-from models.android_db_models import AContact, AChatroom, AMember
+from models.android_db_models import AContact, AChatroom, AMember, AChatroomR
+from models.chatroom_member_models import ChatroomInfo, UserChatroomR, BotChatroomR, MemberInfo, ChatroomOverview
 from models.qun_friend_models import GroupInfo, UserQunRelateInfo, UserQunBotRelateInfo
 from models.user_bot_models import UserInfo, UserBotRelateInfo, BotInfo
 from utils.u_email import EmailAlert
@@ -201,6 +202,121 @@ def check_whether_message_is_add_qun(message_analysis):
             EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
                                      u"user_nickname: %s." % user_nickname)
     return is_add_qun
+
+
+def check_whether_message_is_add_qun_v2(message_analysis):
+    """
+    根据一条Message，返回是否为加群，如果是，则完成加群动作
+    :return:
+    """
+    is_add_qun = False
+    msg_type = message_analysis.type
+    content = str_to_unicode(message_analysis.content)
+
+    if msg_type == MSG_TYPE_SYS and content.find(u'邀请你') != -1:
+        is_add_qun = True
+        _process_is_add_qun(message_analysis)
+
+    return is_add_qun
+
+
+def _process_is_add_qun(message_analysis):
+    content = str_to_unicode(message_analysis.content)
+    bot_username = message_analysis.username
+    bot = db.session.query(BotInfo).filter(BotInfo.username == bot_username).first()
+    if not bot:
+        logger.error(u"找不到 bot: " + str_to_unicode(message_analysis.username))
+        return
+    chatroomname = message_analysis.talker
+    a_contact_chatroom = AContact.get_a_contact(username = chatroomname)
+    if a_contact_chatroom:
+        a_chatroom_r = AChatroomR.get_a_chatroom_r(chatroomname = chatroomname, username = bot.username)
+        if not a_chatroom_r:
+            a_chatroom_r = AChatroomR()
+            a_chatroom_r.chatroomname = chatroomname
+            a_chatroom_r.username = bot_username
+            a_chatroom_r.create_time = datetime.now()
+            db.session.merge(a_chatroom_r)
+            db.session.commit()
+        user_nickname = content.split(u'邀请')[0][1:-1]
+        if not user_nickname:
+            logger.error(u"发现加群，但是获取不到邀请人 nickname, content: %s" % content)
+
+        logger.info(u"发现加群. user_nickname: %s. chatroomname: %s." % (user_nickname, chatroomname))
+
+        # 标记是否找到member_flag
+        filter_list_a_member = AMember.get_filter_list(chatroomname = chatroomname, displayname = user_nickname,
+                                                       is_deleted = 0)
+        a_member_list = db.session.query(AMember).filter(*filter_list_a_member).all()
+        if len(a_member_list) > 1:
+            logger.error(u"一个群中出现两个相同的群备注名，无法确定身份. chatroomname: %s. user_nickname: %s." %
+                         (chatroomname, user_nickname))
+            return
+        elif len(a_member_list) == 0:
+            member_flag = False
+        else:
+            member_flag = True
+
+        # 标记是否找到user_info
+        user_list = db.session.query(UserInfo).filter(UserInfo.nick_name == user_nickname).all()
+        if len(user_list) > 1:
+            logger.error(u"根据nickname无法确定其身份. user_nickname: %s." % user_nickname)
+            return
+        elif len(user_list) == 0:
+            user_flag = False
+        else:
+            user_flag = True
+
+        if member_flag is True and user_flag is True:
+            logger.error(u"同时匹配到群备注和用户昵称，无法识别用户身份. chatroomname: %s. user_nickname: %s." %
+                         (chatroomname, user_nickname))
+            return
+        elif member_flag is False and user_flag is False:
+            logger.error(u"没有找到群备注也没有找到用户昵称.没有找到该用户. chatroomname: %s. user_nickname: %s." %
+                         (chatroomname, user_nickname))
+            return
+        elif user_flag is True:
+            user = user_list[0]
+        else:
+            user = db.session.query(UserInfo).filter(UserInfo.username == a_member_list[0].username).first()
+            if not user:
+                logger.error(u"没有找到对应的用户信息. user_username: %s." % a_member_list[0].username)
+                return
+        user_id = user.user_id
+
+        now = datetime.now()
+        # chatroom
+        chatroom = ChatroomInfo(chatroom_id = a_contact_chatroom.id, chatroomname = chatroomname,
+                                member_count = a_contact_chatroom.member_count).generate_create_time(now)
+        db.session.merge(chatroom)
+
+        # user_chatroom_r
+        user_chatroom_r = UserChatroomR(user_id = user_id, chatroom_id = a_contact_chatroom.id,
+                                        permission = USER_CHATROOM_R_PERMISSION_1)\
+            .generate_create_time(now)
+        db.session.add(user_chatroom_r)
+
+        # bot_chatroom_r
+        # 判断是否已经有 is_on 状态的其他 bot
+        is_on = True
+        bot_chatroom_r_is_on = db.session.query(BotChatroomR).filter(BotChatroomR.chatroomname == chatroomname,
+                                                                     BotChatroomR.is_on == 1).first()
+        if bot_chatroom_r_is_on:
+            is_on = False
+        bot_chatroom_r = BotChatroomR(a_chatroom_r_id = a_chatroom_r.id, chatroomname = a_chatroom_r.chatroomname,
+                                      username = a_chatroom_r.username, is_on = is_on).generate_create_time(now)
+        db.session.merge(bot_chatroom_r)
+
+        # 初始化 MemberInfo 和 MemberOverview
+        MemberInfo.update_members(chatroomname, create_time = now)
+
+        # 初始化 ChatroomOverview
+        ChatroomOverview.init_all_scope(chatroom_id = a_contact_chatroom.id,
+                                        chatroomname = a_contact_chatroom.username)
+
+        db.session.commit()
+    else:
+        logger.error(u"找不到 a_contact_chatroom: " + str_to_unicode(chatroomname))
 
 
 def check_is_removed(message_analysis):

@@ -30,6 +30,8 @@ def model_to_dict(inst, cls):
                 pass
                 # d[c.name] = "Error:  Failed to covert using ", unicode(convert[c.type])
                 d[c.name] = "Error: Failed to covert DATETIME"
+        elif current_type.startswith('DECIMAL') and v is not None:
+            d[c.name] = v.to_eng_string()
         elif v is None:
             d[c.name] = unicode()
         else:
@@ -66,13 +68,15 @@ def model_to_dict(inst, cls):
             continue
         v = getattr(inst, c.name)
         current_type = str(c.type)
-        if current_type == "DATETIME" and v is not None:
+        if current_type == "DATETIME" or current_type == "TIMESTAMP" and v is not None:
             try:
                 d[c.name] = (v - datetime(1970, 1, 1, hour=8)).total_seconds() * 1000
             except:
                 pass
                 # d[c.name] = "Error:  Failed to covert using ", unicode(convert[c.type])
                 d[c.name] = "Error: Failed to covert DATETIME"
+        elif current_type.startswith('DECIMAL') and v is not None:
+            d[c.name] = v.to_eng_string()
         elif v is None:
             d[c.name] = unicode()
         else:
