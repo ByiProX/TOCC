@@ -71,7 +71,7 @@ class ProductionThread(threading.Thread):
                 circle_start_time = time.time()
                 message_list = db.session.query(AMessage). \
                     filter(AMessage.create_time > self.last_a_message_create_time). \
-                    order_by(AMessage.id).all()
+                    order_by(AMessage.create_time.asc()).all()
                 # filter(AMessage.id > self.last_a_message_id). \
 
                 # 每次循环时，如果全局锁发生变更，则重新读取规则

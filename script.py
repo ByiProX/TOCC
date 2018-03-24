@@ -5,7 +5,7 @@ from datetime import timedelta, datetime
 from sqlalchemy import func
 
 from configs.config import db, USER_CHATROOM_R_PERMISSION_1
-from core.message_core import update_members
+from core.message_core import update_members, count_msg_by_create_time
 from models.android_db_models import AMember, AContact, AChatroomR
 from models.chatroom_member_models import ChatroomInfo, MemberInfo, ChatroomOverview, MemberOverview, ChatroomStatistic, \
     UserChatroomR, BotChatroomR
@@ -159,8 +159,14 @@ def init_cia():
         db.session.commit()
 
 
+def init_count_msg():
+    start_time = datetime(year = 2017, month = 3, day = 24, hour = 14, minute = 19, second = 1)
+    end_time = datetime(year = 2018, month = 3, day = 24, hour = 14, minute = 19, second = 1)
+    count_msg_by_create_time(start_time, end_time)
+
 if __name__ == '__main__':
     # update_member_overview()
-    init_cia()
+    # init_cia()
+
 
 pass
