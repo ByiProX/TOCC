@@ -2,6 +2,7 @@
 import copy
 
 from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, db, CONTENT_TYPE_SYS, CONTENT_TYPE_TXT
+from core.send_task_and_ws_setting_core import update_chatroom_members_info
 from models.android_db_models import AMessage, AMember, AContact
 from models.chatroom_member_models import BotChatroomR, ChatroomInfo, ChatroomStatistic, MemberInfo, MemberStatistic, \
     ChatroomActive, MemberAtMember, MemberInviteMember, MemberOverview
@@ -436,5 +437,6 @@ def update_members(chatroomname, create_time = None, save_flag = False):
                                           chatroomname = chatroomname, username = a_member.username)
             db.session.merge(new_member_info)
 
+    update_chatroom_members_info(chatroomname)
     if save_flag:
         db.session.commit()
