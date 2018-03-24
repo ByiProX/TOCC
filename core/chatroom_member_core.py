@@ -6,7 +6,7 @@ from datetime import timedelta, datetime
 from decimal import Decimal
 from sqlalchemy import func, distinct
 
-from configs.config import db, SCOPE_24_HOUR, MSG_TYPE_TXT
+from configs.config import db, SCOPE_24_HOUR, MSG_TYPE_TXT, MSG_TYPE_SYS
 from models.android_db_models import AMember, AContact
 from models.chatroom_member_models import ChatroomInfo, ChatroomStatistic, ChatroomOverview, ChatroomActive, \
     MemberStatistic, MemberOverview, MemberInviteMember
@@ -78,7 +78,7 @@ def update_speak_count(chatroom_overview, save_flag = False):
         start_time = end_time - timedelta(days = 1)
         # MessageAnalysis
         filter_list_ma = MessageAnalysis.get_filter_list(start_time = start_time, end_time = end_time)
-        filter_list_ma.append(MessageAnalysis.type == MSG_TYPE_TXT)
+        filter_list_ma.append(MessageAnalysis.type < MSG_TYPE_SYS)
         filter_list_ma.append(MessageAnalysis.talker == chatroom_overview.chatroomname)
         speak_count = db.session.query(func.count(MessageAnalysis.msg_id))\
             .filter(*filter_list_ma).first()[0] or 0
@@ -236,12 +236,14 @@ def update_speak_count_and_be_at_count(member_overview, save_flag = False):
         filter_list_ma = MessageAnalysis.get_filter_list(start_time = start_time, end_time = end_time)
         filter_list_ma.append(MessageAnalysis.real_talker == member_overview.username)
         filter_list_ma.append(MessageAnalysis.talker == member_overview.chatroomname)
+        filter_list_ma.append(MessageAnalysis.type < MSG_TYPE_SYS)
         speak_count = db.session.query(func.count(MessageAnalysis.msg_id))\
             .filter(*filter_list_ma).first()[0] or 0
 
         filter_list_ma = MessageAnalysis.get_filter_list(start_time = start_time, end_time = end_time)
         filter_list_ma.append(MessageAnalysis.member_id_be_at == member_overview.member_id)
         filter_list_ma.append(MessageAnalysis.talker == member_overview.chatroomname)
+        filter_list_ma.append(MessageAnalysis.type == MSG_TYPE_TXT)
         be_at_count = db.session.query(func.count(MessageAnalysis.msg_id))\
             .filter(*filter_list_ma).first()[0] or 0
     else:
