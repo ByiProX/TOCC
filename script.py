@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
 from datetime import timedelta, datetime
 
 from sqlalchemy import func
@@ -10,6 +11,8 @@ from models.android_db_models import AMember, AContact, AChatroomR
 from models.chatroom_member_models import ChatroomInfo, MemberInfo, ChatroomOverview, MemberOverview, ChatroomStatistic, \
     UserChatroomR, BotChatroomR
 from models.message_ext_models import MessageAnalysis
+
+logger = logging.getLogger('main')
 
 # i = 300
 # while i < 67240:
