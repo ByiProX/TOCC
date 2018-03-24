@@ -84,7 +84,7 @@ def count_msg_by_create_time(start_create_time, end_create_time):
 
 
 def count_msg(msg):
-    today = get_today_0()
+    today = get_today_0(msg.create_time)
 
     if msg.is_to_friend:
         pass
