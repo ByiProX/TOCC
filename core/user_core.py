@@ -462,10 +462,16 @@ def _process_is_add_friend(message_analysis):
 
         # 验证是否是唯一的friend
         a_friend = AFriend.get_a_friend(from_username = bot.username, to_username = user_username)
-        if a_friend.type % 2 != 1:
+        if not a_friend:
             logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
                          (bot.username, user_username))
-            return
+            return ERR_WRONG_ITEM, None
+
+        if a_friend.type % 2 != 1:
+            logger.error(u"用户与bot不是好友. bot_username: %s. user_username: %s" %
+                         (bot.username, user_username))
+            logger.info(u'但是放宽限制，暂时给予通过')
+            # return ERR_WRONG_ITEM, None
 
         filter_list_user = UserInfo.get_filter_list(nickname = user_nickname)
         filter_list_user.append(UserInfo.username == u"")
