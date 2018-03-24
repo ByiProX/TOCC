@@ -167,6 +167,7 @@ def init_count_msg():
 if __name__ == '__main__':
     # update_member_overview()
     # init_cia()
+    init_count_msg()
 
 
 pass
