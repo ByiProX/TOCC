@@ -72,7 +72,8 @@ def count_msg_by_create_time(start_create_time, end_create_time):
     print start_create_time, '-', end_create_time
     try:
         msg_list = db.session.query(MessageAnalysis).filter(MessageAnalysis.create_time >= start_create_time,
-                                                            MessageAnalysis.create_time <= end_create_time).all()
+                                                            MessageAnalysis.create_time <= end_create_time)\
+            .order_by(MessageAnalysis.create_time.asc()).all()
         for msg in msg_list:
             count_msg(msg)
     except Exception:
