@@ -90,7 +90,10 @@ def count_msg(msg):
     else:
         content = str_to_unicode(msg.content)
         chatroomname = msg.talker
-        username = msg.real_talker
+        if msg.is_send:
+            username = msg.username
+        else:
+            username = msg.real_talker
         # is_send = msg.is_send
         msg_type = msg.type
 
