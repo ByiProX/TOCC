@@ -14,7 +14,7 @@ from configs.config import GLOBAL_RULES_UPDATE_FLAG, GLOBAL_USER_MATCHING_RULES_
     GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, GLOBAL_NOTICE_UPDATE_FLAG
 from core.coin_wallet_core import check_whether_message_is_a_coin_wallet
 from core.matching_rule_core import get_gm_rule_dict, match_message_by_rule, get_gm_default_rule_dict
-from core.message_core import analysis_and_save_a_message
+from core.message_core import analysis_and_save_a_message, count_msg_by_ids
 from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed, check_whether_message_is_add_qun_v2
 from core.real_time_quotes_core import match_message_by_coin_keyword
 from core.synchronous_announcement_core import match_which_user_should_get_notice
@@ -163,7 +163,7 @@ class ProductionThread(threading.Thread):
                 db.session.commit()
 
                 if message_analysis_list:
-                    msg_count_thread = threading.Thread(target = MessageAnalysis.count_msg_by_ids,
+                    msg_count_thread = threading.Thread(target = count_msg_by_ids,
                                                         name = u'MsgCountThread',
                                                         args = (message_analysis_list[0].msg_id,
                                                                 message_analysis_list[-1].msg_id))
