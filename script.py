@@ -128,10 +128,15 @@ def init_cia():
         db.session.merge(chatroom)
 
         # user_chatroom_r
-        user_chatroom_r = UserChatroomR(user_id = user_id, chatroom_id = a_contact_chatroom.id,
-                                        permission = USER_CHATROOM_R_PERMISSION_1) \
-            .generate_create_time(now)
-        db.session.add(user_chatroom_r)
+        user_chatroom_r = db.session.query(UserChatroomR).filter(UserChatroomR.user_id == user_id,
+                                                                 UserChatroomR.chatroom_id == a_contact_chatroom.id).first()
+        if user_chatroom_r:
+            user_chatroom_r.permission = USER_CHATROOM_R_PERMISSION_1
+        else:
+            user_chatroom_r = UserChatroomR(user_id = user_id, chatroom_id = a_contact_chatroom.id,
+                                            permission = USER_CHATROOM_R_PERMISSION_1) \
+                .generate_create_time(now)
+            db.session.add(user_chatroom_r)
 
         # bot_chatroom_r
         # 判断是否已经有 is_on 状态的其他 bot
