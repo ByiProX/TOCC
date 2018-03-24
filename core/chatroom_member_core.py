@@ -6,7 +6,7 @@ from datetime import timedelta, datetime
 from decimal import Decimal
 from sqlalchemy import func, distinct
 
-from configs.config import db, SCOPE_24_HOUR
+from configs.config import db, SCOPE_24_HOUR, MSG_TYPE_SYS
 from models.android_db_models import AMember, AContact
 from models.chatroom_member_models import ChatroomInfo, ChatroomStatistic, ChatroomOverview, ChatroomActive, \
     MemberStatistic, MemberOverview, MemberInviteMember
@@ -56,12 +56,12 @@ def batch_update_chatroom_overview(chatroom_overview, chatroom_create_time, save
         logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
         logger.error(u'type: ', type(chatroom_overview))
         return chatroom_overview
-    chatroom_overview.update_speak_count()
-    chatroom_overview.update_incre_count(chatroom_create_time)
-    chatroom_overview.update_active_count()
-    chatroom_overview.update_active_rate()
-    chatroom_overview.update_active_class()
-    chatroom_overview.update_member_change()
+    update_speak_count(chatroom_overview)
+    update_incre_count(chatroom_overview, chatroom_create_time)
+    update_active_count(chatroom_overview)
+    update_active_rate(chatroom_overview)
+    update_active_class(chatroom_overview)
+    update_member_change(chatroom_overview)
     if save_flag:
         db.session.commit()
     chatroom_overview.generate_update_time()
@@ -78,6 +78,7 @@ def update_speak_count(chatroom_overview, save_flag = False):
         start_time = end_time - timedelta(days = 1)
         # MessageAnalysis
         filter_list_ma = MessageAnalysis.get_filter_list(start_time = start_time, end_time = end_time)
+        filter_list_ma.append(MessageAnalysis.type == MSG_TYPE_SYS)
         filter_list_ma.append(MessageAnalysis.talker == chatroom_overview.chatroomname)
         speak_count = db.session.query(func.count(MessageAnalysis.msg_id))\
             .filter(*filter_list_ma).first()[0] or 0
@@ -214,9 +215,9 @@ def batch_update_member_overview(member_overview, save_flag = False):
         logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
         logger.error(u'type: ', type(member_overview))
         return member_overview
-    member_overview.update_speak_count_and_be_at_count()
-    member_overview.update_invitation_count()
-    member_overview.update_effect_num()
+    update_speak_count_and_be_at_count(member_overview)
+    update_invitation_count(member_overview)
+    update_effect_num(member_overview)
     if save_flag:
         db.session.commit()
     member_overview.generate_update_time()
