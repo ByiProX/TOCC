@@ -56,7 +56,7 @@ def batch_update_chatroom_overview(chatroom_overview, chatroom_create_time, save
         logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
         logger.error(u'type: ', type(chatroom_overview))
         return chatroom_overview
-    update_speak_count(chatroom_overview)
+    update_speak_count(chatroom_overview, chatroom_create_time)
     update_incre_count(chatroom_overview, chatroom_create_time)
     update_active_count(chatroom_overview)
     update_active_rate(chatroom_overview)
@@ -68,7 +68,7 @@ def batch_update_chatroom_overview(chatroom_overview, chatroom_create_time, save
     return chatroom_overview
 
 
-def update_speak_count(chatroom_overview, save_flag = False):
+def update_speak_count(chatroom_overview, chatroom_create_time, save_flag = False):
     if not isinstance(chatroom_overview, ChatroomOverview):
         logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
         logger.error(u'type: ', type(chatroom_overview))
@@ -80,6 +80,7 @@ def update_speak_count(chatroom_overview, save_flag = False):
         filter_list_ma = MessageAnalysis.get_filter_list(start_time = start_time, end_time = end_time)
         filter_list_ma.append(MessageAnalysis.type < MSG_TYPE_SYS)
         filter_list_ma.append(MessageAnalysis.talker == chatroom_overview.chatroomname)
+        filter_list_ma.append(MessageAnalysis.create_time >= chatroom_create_time)
         speak_count = db.session.query(func.count(MessageAnalysis.msg_id))\
             .filter(*filter_list_ma).first()[0] or 0
     else:
@@ -210,7 +211,7 @@ def update_active_class(chatroom_overview, save_flag = False):
     return chatroom_overview
 
 
-def batch_update_member_overview(member_overview, save_flag = False):
+def batch_update_member_overview(member_overview, chatroom_create_time, save_flag = False):
     if not isinstance(member_overview, MemberOverview):
         logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
         logger.error(u'type: ', type(member_overview))

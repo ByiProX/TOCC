@@ -25,8 +25,10 @@ def update_member_overview():
     i = 0
     member_overview_list = db.session.query(MemberOverview).order_by(MemberOverview.member_id.desc()).all()
     for member_overview in member_overview_list:
+        chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == member_overview.chatroom_id)\
+            .first()
         # print json.dumps(member_overview.to_json())
-        batch_update_member_overview(member_overview)
+        batch_update_member_overview(member_overview, chatroom.create_time)
         # print json.dumps(member_overview.to_json())
         # print '---'
         i += 1
