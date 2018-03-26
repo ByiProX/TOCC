@@ -161,10 +161,10 @@ def chatroom_get_msg_tendency():
     out_count_list = [0] * scope
     total_count_list = [0] * scope
     for cs in cs_list:
-        msg_tendency[ChatroomStatistic.time_to_day.day - start_time.day] = cs.speak_count
-        in_count_list[ChatroomStatistic.time_to_day.day - start_time.day] = cs.in_count
-        out_count_list[ChatroomStatistic.time_to_day.day - start_time.day] = cs.out_count
-        total_count_list[ChatroomStatistic.time_to_day.day - start_time.day] = cs.member_count
+        msg_tendency[cs.time_to_day.day - start_time.day] = cs.speak_count
+        in_count_list[cs.time_to_day.day - start_time.day] = cs.in_count
+        out_count_list[cs.time_to_day.day - start_time.day] = cs.out_count
+        total_count_list[cs.time_to_day.day - start_time.day] = cs.member_count
 
     return make_response(SUCCESS, msg_count_list = msg_tendency, in_count_list = in_count_list, out_count_list = out_count_list,
                          total_count_list = total_count_list)
