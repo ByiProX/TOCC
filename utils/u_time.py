@@ -22,8 +22,8 @@ def get_today_0(time = None):
 
 
 def get_time_window_by_scope(scope):
-    start_time = None
-    end_time = None
+    start_time = datetime(year = 1970, month = 1, day = 1)
+    end_time = datetime(year = 2099, month = 1, day = 1)
     if scope:  # scope == 0
         if scope == SCOPE_YES:
             end_time = get_today_0()
