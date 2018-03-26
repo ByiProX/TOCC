@@ -267,3 +267,7 @@ class SetRealTimeQuoteSettingByManual:
         # rt_quotes_ds_ml_rel.send_seq = 0
         # db.session.add(rt_quotes_ds_ml_rel)
         # db.session.commit()
+
+
+if __name__ == '__main__':
+    SetBotRelSettingByManual.bind_user_bot_relate_by_manual_confirmed(44)
