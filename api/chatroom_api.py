@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from datetime import datetime, timedelta
 from flask import request
-from sqlalchemy import func, and_
+from sqlalchemy import func, and_, distinct
 
 from core.user_core import UserLogin
 from models.android_db_models import AContact, AMember
@@ -156,18 +156,18 @@ def chatroom_get_msg_tendency():
                 ChatroomStatistic.time_to_day < end_time)\
         .order_by(ChatroomStatistic.time_to_day.asc()).all()
 
-    msg_tendency = [0] * (scope - len(cs_list))
-    in_count_list = [0] * (scope - len(cs_list))
-    out_count_list = [0] * (scope - len(cs_list))
-    total_count_list = [0] * (scope - len(cs_list))
+    msg_tendency = [0] * scope
+    in_count_list = [0] * scope
+    out_count_list = [0] * scope
+    total_count_list = [0] * scope
     for cs in cs_list:
-        msg_tendency.append(cs.speak_count)
-        in_count_list.append(cs.in_count)
-        out_count_list.append(cs.out_count)
-        total_count_list.append(cs.member_count)
+        msg_tendency[ChatroomStatistic.time_to_day.day - start_time.day] = cs.speak_count
+        in_count_list[ChatroomStatistic.time_to_day.day - start_time.day] = cs.in_count
+        out_count_list[ChatroomStatistic.time_to_day.day - start_time.day] = cs.out_count
+        total_count_list[ChatroomStatistic.time_to_day.day - start_time.day] = cs.member_count
 
-    return make_response(SUCCESS, msg_count_list = msg_tendency, in_count_list = in_count_list,
-                         out_count_list = out_count_list, total_count_list = total_count_list)
+    return make_response(SUCCESS, msg_count_list = msg_tendency, in_count_list = in_count_list, out_count_list = out_count_list,
+                         total_count_list = total_count_list)
 
 
 @main_api.route('/chatroom/get_active_tendency', methods=['POST'])
@@ -183,24 +183,24 @@ def chatroom_get_active_tendency():
         return make_response(ERR_INVALID_PARAMS)
 
     start_time, end_time = get_time_window_by_scope(scope = scope)
-    rows = db.session.query(func.count(ChatroomActive.member_id), ChatroomStatistic.member_count)\
-        .outerjoin(ChatroomStatistic, and_(ChatroomActive.chatroom_id == ChatroomStatistic.chatroom_id)) \
+    rows = db.session.query(func.count(distinct(ChatroomActive.member_id)), ChatroomStatistic.member_count, ChatroomStatistic.time_to_day)\
+        .outerjoin(ChatroomStatistic, and_(ChatroomActive.chatroom_id == ChatroomStatistic.chatroom_id,
+                                           ChatroomActive.time_to_day == ChatroomStatistic.time_to_day)) \
         .filter(ChatroomActive.chatroom_id == chatroom_id,
                 ChatroomActive.time_to_day >= start_time,
                 ChatroomActive.time_to_day < end_time).group_by(ChatroomActive.time_to_day).all()
 
-    active_count_list = [0] * (scope - len(rows))
-    active_rate_list = ['0'] * (scope - len(rows))
-    member_count_list = [0] * (scope - len(rows))
+    active_count_list = [0] * scope
+    active_rate_list = ['0'] * scope
+    member_count_list = [0] * scope
     for row in rows:
         active_count = row[0]
         member_count = row[1]
+        time_to_day = row[2]
         if member_count:
-            active_rate_list.append((Decimal(active_count) / Decimal(member_count)).to_eng_string())
-        else:
-            active_rate_list.append('0')
-        active_count_list.append(active_count)
-        member_count_list.append(member_count)
+            active_rate_list[time_to_day.day - start_time.day] = (Decimal(active_count) / Decimal(member_count)).to_eng_string()
+        active_count_list[time_to_day.day - start_time.day] = active_count
+        member_count_list[time_to_day.day - start_time.day] = member_count
 
     return make_response(SUCCESS, active_count_list = active_count_list, active_rate_list = active_rate_list,
                          member_count_list = member_count_list)
