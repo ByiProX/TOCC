@@ -57,7 +57,7 @@ def batch_update_chatroom_overview(chatroom_overview, chatroom_create_time, save
         logger.error(u'type: ', type(chatroom_overview))
         return chatroom_overview
     today = get_today_0()
-    chatroom_statistic = ChatroomStatistic.fetch_chatroom_statistics(chatroom_id = self.chatroom_id,
+    chatroom_statistic = ChatroomStatistic.fetch_chatroom_statistics(chatroom_id = chatroom_overview.chatroom_id,
                                                                      time_to_day = today)
 
     update_all_member_count(chatroom_statistic)
