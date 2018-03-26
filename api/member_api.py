@@ -81,6 +81,8 @@ def member_get_member_list():
         member_info = row[1]
         a_member = row[2]
         a_contact = row[3]
+        if not a_contact:
+            continue
         member_json = dict()
         member_json.update(a_contact.to_json())
         member_json.update(a_member.to_json())
@@ -192,6 +194,8 @@ def member_get_at_list():
     for row in mam_list:
         at_count = row[0]
         a_contact = row[1]
+        if not a_contact:
+            continue
         member_json = dict()
         member_json.update(a_contact.to_json())
         member_json['at_count'] = at_count
