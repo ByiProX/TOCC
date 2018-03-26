@@ -56,12 +56,16 @@ def batch_update_chatroom_overview(chatroom_overview, chatroom_create_time, save
         logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
         logger.error(u'type: ', type(chatroom_overview))
         return chatroom_overview
+    today = get_today_0()
+    chatroom_statistic = db.session.query(ChatroomStatistic).filter(ChatroomStatistic.time_to_day == today).first()
+    if chatroom_statistic:
+        update_all_member_count(chatroom_statistic)
     update_speak_count(chatroom_overview, chatroom_create_time)
     update_incre_count(chatroom_overview, chatroom_create_time)
-    update_active_count(chatroom_overview)
-    update_active_rate(chatroom_overview)
+    update_active_count(chatroom_overview, chatroom_create_time)
+    update_active_rate(chatroom_overview, chatroom_statistic.member_count)
     update_active_class(chatroom_overview)
-    update_member_change(chatroom_overview)
+    update_member_change(chatroom_overview, chatroom_statistic.in_count, chatroom_statistic.out_count)
     if save_flag:
         db.session.commit()
     chatroom_overview.generate_update_time()
@@ -123,7 +127,7 @@ def update_incre_count(chatroom_overview, chatroom_create_time, save_flag = Fals
     return chatroom_overview
 
 
-def update_active_count(chatroom_overview, save_flag = False):
+def update_active_count(chatroom_overview, chatroom_create_time, save_flag = False):
     if not isinstance(chatroom_overview, ChatroomOverview):
         logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
         logger.error(u'type: ', type(chatroom_overview))
@@ -137,6 +141,7 @@ def update_active_count(chatroom_overview, save_flag = False):
     filter_list_ca = ChatroomActive.get_filter_list(chatroom_id = chatroom_overview.chatroom_id,
                                                     start_time = start_time,
                                                     end_time = end_time)
+    filter_list_ca.append(ChatroomActive.create_time >= chatroom_create_time)
     active_count = db.session.query(func.count(distinct(ChatroomActive.member_id)))\
         .filter(*filter_list_ca).first()[0] or 0
 
@@ -169,17 +174,13 @@ def update_active_rate(chatroom_overview, member_count = None, save_flag = False
     return chatroom_overview
 
 
-def update_member_change(chatroom_overview, save_flag = False):
+def update_member_change(chatroom_overview, in_count, out_count, save_flag = False):
     if not isinstance(chatroom_overview, ChatroomOverview):
         logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
         logger.error(u'type: ', type(chatroom_overview))
         return chatroom_overview
-    today = get_today_0()
-    chatroom_statistic = db.session.query(ChatroomStatistic).filter(ChatroomStatistic.time_to_day == today).first()
-    if chatroom_statistic:
-        chatroom_overview.member_change = chatroom_statistic.in_count - chatroom_statistic.out_count
-    else:
-        chatroom_overview.member_change = 0
+
+    chatroom_overview.member_change = in_count - out_count
     if save_flag:
         db.session.commit()
     chatroom_overview.generate_update_time()
@@ -216,8 +217,8 @@ def batch_update_member_overview(member_overview, chatroom_create_time, save_fla
         logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
         logger.error(u'type: ', type(member_overview))
         return member_overview
-    update_speak_count_and_be_at_count(member_overview)
-    update_invitation_count(member_overview)
+    update_speak_count_and_be_at_count(member_overview, chatroom_create_time)
+    update_invitation_count(member_overview, chatroom_create_time)
     update_effect_num(member_overview)
     if save_flag:
         db.session.commit()
@@ -225,7 +226,7 @@ def batch_update_member_overview(member_overview, chatroom_create_time, save_fla
     return member_overview
 
 
-def update_speak_count_and_be_at_count(member_overview, save_flag = False):
+def update_speak_count_and_be_at_count(member_overview, chatroom_create_time, save_flag = False):
     if not isinstance(member_overview, MemberOverview):
         logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
         logger.error(u'type: ', type(member_overview))
@@ -238,6 +239,7 @@ def update_speak_count_and_be_at_count(member_overview, save_flag = False):
         filter_list_ma.append(MessageAnalysis.real_talker == member_overview.username)
         filter_list_ma.append(MessageAnalysis.talker == member_overview.chatroomname)
         filter_list_ma.append(MessageAnalysis.type < MSG_TYPE_SYS)
+        filter_list_ma.append(MessageAnalysis.create_time >= chatroom_create_time)
         speak_count = db.session.query(func.count(MessageAnalysis.msg_id))\
             .filter(*filter_list_ma).first()[0] or 0
 
@@ -245,6 +247,7 @@ def update_speak_count_and_be_at_count(member_overview, save_flag = False):
         filter_list_ma.append(MessageAnalysis.member_id_be_at == member_overview.member_id)
         filter_list_ma.append(MessageAnalysis.talker == member_overview.chatroomname)
         filter_list_ma.append(MessageAnalysis.type == MSG_TYPE_TXT)
+        filter_list_ma.append(MessageAnalysis.create_time >= chatroom_create_time)
         be_at_count = db.session.query(func.count(MessageAnalysis.msg_id))\
             .filter(*filter_list_ma).first()[0] or 0
     else:
@@ -268,7 +271,7 @@ def update_speak_count_and_be_at_count(member_overview, save_flag = False):
     return member_overview
 
 
-def update_invitation_count(member_overview, save_flag = False):
+def update_invitation_count(member_overview, chatroom_create_time, save_flag = False):
     if not isinstance(member_overview, MemberOverview):
         logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
         logger.error(u'type: ', type(member_overview))
@@ -281,6 +284,7 @@ def update_invitation_count(member_overview, save_flag = False):
     # MemberInviteMember
     filter_list_mim = MemberInviteMember.get_filter_list(invitor_id = member_overview.member_id,
                                                          start_time = start_time, end_time = end_time)
+    filter_list_mim.append(MemberInviteMember.create_time >= chatroom_create_time)
     invitation_count = db.session.query(func.count(distinct(MemberInviteMember.invited_id))) \
         .filter(*filter_list_mim).first()[0] or 0
 
