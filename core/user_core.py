@@ -372,20 +372,23 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     # time.sleep(5)
 
     # 验证是否是好友
-    a_friend = AFriend.get_a_friend(from_username = bot_info.username,
-                                    to_username = user_username)
-    if not a_friend:
-        logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
-                     (bot_info.username, user_username))
-        return ERR_WRONG_ITEM, None
+    # a_friend = AFriend.get_a_friend(from_username = bot_info.username,
+    #                                 to_username = user_username)
+    # if not a_friend:
+    #     logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
+    #                  (bot_info.username, user_username))
+    #     return ERR_WRONG_ITEM, None
+    #
+    # if a_friend.type % 2 != 1:
+    #     logger.error(u"用户与bot不是好友. bot_username: %s. user_username: %s" %
+    #                  (bot_info.username, user_username))
+    #     logger.info(u'但是放宽限制，暂时给予通过')
+    #     # return ERR_WRONG_ITEM, None
 
-    if a_friend.type % 2 != 1:
-        logger.error(u"用户与bot不是好友. bot_username: %s. user_username: %s" %
-                     (bot_info.username, user_username))
-        logger.info(u'但是放宽限制，暂时给予通过')
-        # return ERR_WRONG_ITEM, None
-
-    user_info_list = db.session.query(UserInfo).filter(UserInfo.nick_name == user_nickname).all()
+    filter_list_user = UserInfo.get_filter_list(nickname = user_nickname)
+    filter_list_user.append(UserInfo.username == u"")
+    user_info_list = db.session.query(UserInfo).filter(*filter_list_user) \
+        .order_by(UserInfo.create_time.desc()).all()
     if len(user_info_list) > 1:
         logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
@@ -395,11 +398,11 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
                      (bot_info.username, user_username))
         return ERR_WRONG_ITEM, None
 
-    user_info_list_2 = db.session.query(UserInfo).filter(UserInfo.username == user_username).all()
-    if user_info_list_2:
-        logger.error(u"已绑定username与user关系. bot_username: %s. user_username: %s" %
-                     (bot_info.username, user_username))
-        return ERR_HAVE_SAME_PEOPLE, None
+    # user_info_list_2 = db.session.query(UserInfo).filter(UserInfo.username == user_username).all()
+    # if user_info_list_2:
+    #     logger.error(u"已绑定username与user关系. bot_username: %s. user_username: %s" %
+    #                  (bot_info.username, user_username))
+    #     return ERR_HAVE_SAME_PEOPLE, None
 
     user_info = user_info_list[0]
     user_info.username = user_username
@@ -461,17 +464,17 @@ def _process_is_add_friend(message_analysis):
         logger.info(u"发现加bot好友用户. username: %s, nickname: %s" % (user_username, user_nickname))
 
         # 验证是否是唯一的friend
-        a_friend = AFriend.get_a_friend(from_username = bot.username, to_username = user_username)
-        if not a_friend:
-            logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
-                         (bot.username, user_username))
-            return ERR_WRONG_ITEM, None
-
-        if a_friend.type % 2 != 1:
-            logger.error(u"用户与bot不是好友. bot_username: %s. user_username: %s" %
-                         (bot.username, user_username))
-            logger.info(u'但是放宽限制，暂时给予通过')
-            # return ERR_WRONG_ITEM, None
+        # a_friend = AFriend.get_a_friend(from_username = bot.username, to_username = user_username)
+        # if not a_friend:
+        #     logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
+        #                  (bot.username, user_username))
+        #     return ERR_WRONG_ITEM, None
+        #
+        # if a_friend.type % 2 != 1:
+        #     logger.error(u"用户与bot不是好友. bot_username: %s. user_username: %s" %
+        #                  (bot.username, user_username))
+        #     logger.info(u'但是放宽限制，暂时给予通过')
+        #     # return ERR_WRONG_ITEM, None
 
         filter_list_user = UserInfo.get_filter_list(nickname = user_nickname)
         filter_list_user.append(UserInfo.username == u"")
