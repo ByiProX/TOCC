@@ -3,14 +3,22 @@ import json
 import logging
 from datetime import timedelta, datetime
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from configs.config import db, USER_CHATROOM_R_PERMISSION_1
 from core.message_core import update_members, count_msg_by_create_time
 from models.android_db_models import AMember, AContact, AChatroomR
+from models.auto_reply_models import AutoReplySettingInfo, AutoReplyKeywordRelateInfo, AutoReplyMaterialRelate, \
+    AutoReplyTargetRelate
+from models.batch_sending_models import BatchSendingTaskInfo, BatchSendingTaskMaterialRelate, \
+    BatchSendingTaskTargetRelate
 from models.chatroom_member_models import ChatroomInfo, MemberInfo, ChatroomOverview, MemberOverview, ChatroomStatistic, \
     UserChatroomR, BotChatroomR
+from models.coin_wallet_models import CoinWalletQunMemberRelate, CoinWalletMemberAddressRelate
+from models.matching_rule_models import GlobalMatchingRule
+from models.material_library_models import MaterialLibraryUser
 from models.message_ext_models import MessageAnalysis
+from models.synchronous_announcement_models import SynchronousAnnouncementDSUserRelate
 
 logger = logging.getLogger('main')
 
@@ -59,8 +67,8 @@ logger = logging.getLogger('main')
 #     print '---'
 #
 # db.session.commit()
-from models.qun_friend_models import UserQunBotRelateInfo, UserQunRelateInfo
-from models.user_bot_models import UserBotRelateInfo, BotInfo
+from models.qun_friend_models import UserQunBotRelateInfo, UserQunRelateInfo, GroupInfo
+from models.user_bot_models import UserBotRelateInfo, BotInfo, UserInfo
 
 from utils.u_time import get_today_0
 
@@ -167,10 +175,101 @@ def init_count_msg():
     end_time = datetime(year = 2018, month = 3, day = 24, hour = 14, minute = 19, second = 1)
     count_msg_by_create_time(start_time, end_time)
 
+
+def clear_all_user_data():
+    user_id_list = [3]
+    for user_id in user_id_list:
+        print user_id
+        # user_info
+        user_info_list = db.session.query(UserInfo).filter(UserInfo.user_id == user_id).all()
+
+        # user_qun_relate_info
+        uqr_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == user_id).all()
+        uqun_ids = [r.uqun_id for r in uqr_list]
+
+        # user_bot_relate_info
+        ubr_list = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_id).all()
+        user_bot_rids = [r.user_bot_rid for r in ubr_list]
+
+        # user_qun_bot_relate_info
+        uqbr_list = db.session.query(UserQunBotRelateInfo).filter(or_(UserQunBotRelateInfo.uqun_id.in_(uqun_ids),
+                                                                      UserQunBotRelateInfo.user_bot_rid.in_(user_bot_rids)))
+
+        # user_chatroom_r
+        ucr_list = db.session.query(UserChatroomR).filter(UserChatroomR.user_id == user_id).all()
+
+        # synchronous_announcement_ds_user_relate
+        sadsur_list = db.session.query(SynchronousAnnouncementDSUserRelate).filter(SynchronousAnnouncementDSUserRelate.user_id == user_id).all()
+
+        # material_library_user
+        mlu_list = db.session.query(MaterialLibraryUser).filter(MaterialLibraryUser.user_id == user_id).all()
+
+        # group_info
+        gi_list = db.session.query(GroupInfo).filter(GroupInfo.user_id == user_id).all()
+
+        # global_matching_rule
+        gmr_list = db.session.query(GlobalMatchingRule).filter(GlobalMatchingRule.user_id == user_id).all()
+
+        # coin_wallet_qun_member_relate
+        cwqmr_list = db.session.query(CoinWalletQunMemberRelate).filter(CoinWalletQunMemberRelate.user_id == user_id).all()
+        uqun_member_ids = [r.uqun_member_id for r in cwqmr_list]
+
+        # coin_wallet_member_address_relate
+        cwmar_list = db.session.query(CoinWalletMemberAddressRelate).filter(CoinWalletMemberAddressRelate.uqun_member_id.in_(uqun_member_ids)).all()
+
+        # batch_sending_task_info
+        bsti_list = db.session.query(BatchSendingTaskInfo).filter(BatchSendingTaskInfo.user_id == user_id).all()
+        sending_task_ids = [r.sending_task_id for r in bsti_list]
+
+        # batch_sending_task_material_relate
+        bstmr_list = db.session.query(BatchSendingTaskMaterialRelate).filter(BatchSendingTaskMaterialRelate.sending_task_id.in_(sending_task_ids)).all()
+
+        # batch_sending_task_target_relate
+        bsttr_list = db.session.query(BatchSendingTaskTargetRelate).filter(BatchSendingTaskTargetRelate.sending_task_id.in_(sending_task_ids)).all()
+
+        # auto_reply_setting_info
+        arsi_list = db.session.query(AutoReplySettingInfo).filter(AutoReplySettingInfo.user_id == user_id).all()
+        setting_ids = [r.setting_id for r in arsi_list]
+
+        # auto_reply_keyword_relate_Info
+        arkri_list = db.session.query(AutoReplyKeywordRelateInfo).filter(AutoReplyKeywordRelateInfo.setting_id.in_(setting_ids)).all()
+
+        # auto_reply_material_relate
+        armr_list = db.session.query(AutoReplyMaterialRelate).filter(AutoReplyMaterialRelate.setting_id.in_(setting_ids)).all()
+
+        # auto_reply_target_relate
+        artr_list = db.session.query(AutoReplyTargetRelate).filter(AutoReplyTargetRelate.setting_id.in_(setting_ids)).all()
+
+        session_delete(user_info_list)
+        session_delete(uqr_list)
+        session_delete(ubr_list)
+        session_delete(uqbr_list)
+        session_delete(ucr_list)
+        session_delete(sadsur_list)
+        session_delete(mlu_list)
+        session_delete(gi_list)
+        session_delete(gmr_list)
+        session_delete(cwqmr_list)
+        session_delete(cwmar_list)
+        session_delete(bsti_list)
+        session_delete(bstmr_list)
+        session_delete(bsttr_list)
+        session_delete(arsi_list)
+        session_delete(arkri_list)
+        session_delete(armr_list)
+        session_delete(artr_list)
+        db.session.commit()
+
+
+def session_delete(li):
+    for l in li:
+        db.session.delete(l)
+
+
 if __name__ == '__main__':
     # update_member_overview()
     # init_cia()
-    init_count_msg()
-
+    # init_count_msg()
+    clear_all_user_data()
 
 pass
