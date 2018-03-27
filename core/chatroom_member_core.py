@@ -32,9 +32,9 @@ def update_all_member_count(chatroom_statistics):
                                              start_time = start_time, end_time = end_time)
     filter_list_in.append(AMember.create_time > chatroom.create_time)
     filter_list_in.append(AContact.id > 0)
-    filter_list_out = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = True,
-                                              start_time = start_time, end_time = end_time)
-    filter_list_out.append(AContact.id > 0)
+    filter_list_out = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = True)
+    filter_list_out.append(AMember.update_time >= start_time)
+    filter_list_out.append(AMember.update_time < end_time)
     members_in = db.session.query(func.count(AMember.id)) \
         .outerjoin(AContact, AMember.username == AContact.username) \
         .filter(*filter_list_in).first()[0] or 0
