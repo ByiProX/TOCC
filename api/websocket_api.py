@@ -53,9 +53,6 @@ def echo(ws):
                 text = json.dumps(text_json)
                 ws.send(text)
                 print 'text', text
-                text_json['username'] = "wxid_1xn3vv67x4fk12"
-                text = json.dumps(text_json)
-                ws.send(text)
             if not ws.connected:
                 # TODO-zwf 退出逻辑待完善
                 print 'ws.connected', str(ws.connected)
