@@ -617,7 +617,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
         db.session.add(uqbr_info)
         db.session.commit()
         logger.info(u"绑定群的四个关系. uqbr_id: %s." % uqbr_info.rid)
-        generate_welcome_message_c_task_into_new_qun(uqr_info, user_id, bot_info.username)
+        # generate_welcome_message_c_task_into_new_qun(uqr_info, user_id, bot_info.username)
 
     # 紫豆分析初始化
     a_contact_chatroom = AContact.get_a_contact(username = chatroomname)
