@@ -11,7 +11,8 @@ def str_to_unicode(txt):
     elif isinstance(txt, unicode):
         pass
     else:
-        raise TypeError(u'param is not (str and unicode)')
+        logger.debug(u'type: ' + unicode(type(txt)))
+        raise TypeError(u'param is not (str or unicode)')
     return txt
 
 
@@ -21,7 +22,8 @@ def unicode_to_str(txt):
     elif isinstance(txt, str):
         pass
     else:
-        raise TypeError(u'param is not (str and unicode)')
+        logger.debug(u'type: ' + unicode(type(txt)))
+        raise TypeError(u'param is not (str or unicode)')
     return txt
 
 
