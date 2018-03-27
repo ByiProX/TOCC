@@ -430,6 +430,7 @@ def update_members(chatroomname, create_time = None, save_flag = False):
         if a_member.username in old_member_username_set:
             pass
         else:
+            old_member_username_set.remove(a_member.username)
             new_member_info = MemberInfo(member_id = a_member.id, chatroomname = chatroomname,
                                          username = a_member.username, chatroom_id = a_contact_chatroom.id) \
                 .generate_create_time(create_time)
