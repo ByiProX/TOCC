@@ -117,7 +117,6 @@ class ProductionThread(threading.Thread):
 
                         # 检查信息是否为加了一个群
                         is_add_qun = check_whether_message_is_add_qun(message_analysis)
-                        is_add_qun = check_whether_message_is_add_qun_v2(message_analysis)
                         if is_add_qun:
                             continue
 
