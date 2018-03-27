@@ -418,8 +418,18 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
                                                           UserBotRelateInfo.bot_id == bot_info.bot_id).first()
     if not ubr_info:
-        logger.error(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.user_id)
-        return ERR_WRONG_ITEM, None
+        logger.debug(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.user_id)
+        if not ubr_info:
+            ubr_info = UserBotRelateInfo()
+            ubr_info.user_id = user_info.user_id
+            ubr_info.bot_id = bot_info.bot_id
+            ubr_info.preset_time = datetime.now()
+            ubr_info.set_time = 0
+            ubr_info.create_time = datetime.now()
+        ubr_info.is_setted = True
+        ubr_info.is_being_used = True
+        db.session.merge(ubr_info)
+        # return ERR_WRONG_ITEM, None
 
     ubr_info.is_setted = True
     ubr_info.is_being_used = True
@@ -497,8 +507,11 @@ def _process_is_add_friend(message_analysis):
                                                               UserBotRelateInfo.bot_id == bot.bot_id).first()
         if not ubr_info:
             ubr_info = UserBotRelateInfo()
+            ubr_info.user_id = user.user_id
+            ubr_info.bot_id = bot.bot_id
             ubr_info.preset_time = datetime.now()
             ubr_info.set_time = 0
+            ubr_info.create_time = datetime.now()
         ubr_info.is_setted = True
         ubr_info.is_being_used = True
         db.session.merge(ubr_info)
