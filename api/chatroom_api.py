@@ -126,7 +126,7 @@ def chatroom_get_chatroom_info():
     a_contact_chatroom_json.update(chatroom_json)
 
     chatroom_overview = db.session.query(ChatroomOverview).filter(ChatroomOverview.chatroom_id == chatroom_id,
-                                                                  ChatroomOverview.scope == SCOPE_ALL)
+                                                                  ChatroomOverview.scope == SCOPE_ALL).first()
     if not chatroom_overview:
         ChatroomOverview.init_all_scope(chatroom_id == chatroom, chatroomname = chatroom.chatroomname, save_flag = True)
         chatroom_overview = db.session.query(ChatroomOverview).filter(ChatroomOverview.chatroom_id == chatroom_id,
