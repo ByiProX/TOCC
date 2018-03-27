@@ -130,7 +130,7 @@ def chatroom_get_chatroom_info():
     if not chatroom_overview:
         ChatroomOverview.init_all_scope(chatroom_id == chatroom, chatroomname = chatroom.chatroomname, save_flag = True)
         chatroom_overview = db.session.query(ChatroomOverview).filter(ChatroomOverview.chatroom_id == chatroom_id,
-                                                                      ChatroomOverview.scope == SCOPE_ALL)
+                                                                      ChatroomOverview.scope == SCOPE_ALL).first()
     last_update_time = datetime_to_timestamp_utc_8(chatroom_overview.update_time)
     a_contact_chatroom_json.update(chatroom_overview.to_json())
 
