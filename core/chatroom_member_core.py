@@ -66,7 +66,7 @@ def batch_update_chatroom_overview(chatroom_overview, chatroom_create_time, save
     update_active_count(chatroom_overview, chatroom_create_time)
     update_active_rate(chatroom_overview, chatroom_statistic.member_count)
     update_active_class(chatroom_overview)
-    update_member_change(chatroom_overview, chatroom_statistic.in_count, chatroom_statistic.out_count)
+    update_member_change(chatroom_overview, chatroom_create_time)
     if save_flag:
         db.session.commit()
     chatroom_overview.generate_update_time()
@@ -175,13 +175,31 @@ def update_active_rate(chatroom_overview, member_count = None, save_flag = False
     return chatroom_overview
 
 
-def update_member_change(chatroom_overview, in_count, out_count, save_flag = False):
-    if not isinstance(chatroom_overview, ChatroomOverview):
-        logger.error(u'batch_update_chatroom_overview: not a entity of ChatroomOverview')
-        logger.error(u'type: ', type(chatroom_overview))
-        return chatroom_overview
-
-    chatroom_overview.member_change = in_count - out_count
+def update_member_change(chatroom_overview, chatroom_create_time, save_flag = False):
+    if chatroom_overview.scope == 24:
+        end_time = datetime.now()
+        start_time = end_time - timedelta(days = 1)
+    else:
+        start_time, end_time = get_time_window_by_scope(chatroom_overview.scope)
+    chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == chatroom_overview.chatroom_id).first()
+    filter_list_total = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = False,
+                                                end_time = end_time)
+    filter_list_total.append(AContact.id > 0)
+    filter_list_in = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = False,
+                                             start_time = start_time, end_time = end_time)
+    filter_list_in.append(AMember.create_time > chatroom_create_time)
+    filter_list_in.append(AContact.id > 0)
+    filter_list_out = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = True)
+    filter_list_out.append(AMember.update_time >= start_time)
+    filter_list_out.append(AMember.update_time < end_time)
+    filter_list_out.append(AContact.id > 0)
+    members_in = db.session.query(func.count(AMember.id)) \
+        .outerjoin(AContact, AMember.username == AContact.username) \
+        .filter(*filter_list_in).first()[0] or 0
+    members_out = db.session.query(func.count(AMember.id)) \
+        .outerjoin(AContact, AMember.username == AContact.username) \
+        .filter(*filter_list_out).first()[0] or 0
+    chatroom_overview.member_change = members_in - members_out
     if save_flag:
         db.session.commit()
     chatroom_overview.generate_update_time()
