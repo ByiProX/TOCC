@@ -112,7 +112,6 @@ class ProductionThread(threading.Thread):
 
                         # is_add_friend
                         is_add_friend = check_whether_message_is_add_friend(message_analysis)
-                        is_add_friend = check_whether_message_is_add_friend_v2(message_analysis)
                         if is_add_friend:
                             continue
 

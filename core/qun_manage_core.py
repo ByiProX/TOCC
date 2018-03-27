@@ -325,6 +325,128 @@ def _process_is_add_qun(message_analysis):
         logger.error(u"找不到 a_contact_chatroom: " + str_to_unicode(chatroomname))
 
 
+def _bind_qun_success_v2(chatroomname, username, bot_username):
+    user_info = db.session.query(UserInfo).filter(UserInfo.username == username).first()
+    if not user_info:
+        logger.error(u"该用户未绑定 user, 疑似没有完成注册流程. username: %s." % username)
+        return ERR_WRONG_USER_ITEM, None
+    user_id = user_info.user_id
+
+    bot_info = db.session.query(BotInfo).filter(BotInfo.username == bot_username).first()
+    if not bot_info:
+        logger.error(u"bot信息出错. bot_username: %s" % bot_username)
+        return ERR_WRONG_ITEM, None
+    bot_id = bot_info.bot_id
+
+    ubr_info_list = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_id,
+                                                               UserBotRelateInfo.bot_id == bot_id).all()
+    if len(ubr_info_list) > 1:
+        logger.error(u"找到多个bot关系. user_id: %s." % user_id)
+        return ERR_WRONG_ITEM, None
+    elif len(ubr_info_list) == 0:
+        logger.error(u"没有找到bot关系. user_id: %s." % user_id)
+        return ERR_WRONG_ITEM, None
+    else:
+        ubr_info = ubr_info_list[0]
+    user_bot_rid = ubr_info.user_bot_rid
+
+    group_info_list = db.session.query(GroupInfo).filter(GroupInfo.user_id == user_id, GroupInfo.is_default == 1).all()
+    if len(group_info_list) > 1:
+        logger.error(u"发现多个默认分组. username: %s." % username)
+        return ERR_WRONG_ITEM, None
+    elif len(group_info_list) == 0:
+        logger.error(u"无默认分组. username: %s." % username)
+        return ERR_WRONG_ITEM, None
+    else:
+        group_info = group_info_list[0]
+
+    # 检查该群是否已经被记录过
+    exist_uqr_info = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == user_id,
+                                                                UserQunRelateInfo.chatroomname == chatroomname).first()
+    # 该群被记录过
+    if exist_uqr_info:
+        exist_uqbr_info = db.session.query(UserQunBotRelateInfo).filter(
+            UserQunBotRelateInfo.uqun_id == exist_uqr_info.uqun_id,
+            UserQunBotRelateInfo.user_bot_rid == user_bot_rid).first()
+        if exist_uqbr_info:
+            if exist_uqbr_info.is_error:
+                exist_uqbr_info.is_error = False
+                db.session.merge(exist_uqbr_info)
+                db.session.commit()
+                logger.info("将已经有过的群激活. uqbr_id: %s." % exist_uqbr_info.rid)
+            else:
+                logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. uqbr_rid: %s." % exist_uqbr_info.rid)
+        else:
+            logger.error(u"有uqr但却没有uqbr，关系出错. uqun_id: %s." % exist_uqr_info.uqun_id)
+            return ERR_WRONG_ITEM, None
+    else:
+        uqr_info = UserQunRelateInfo()
+        uqr_info.user_id = user_id
+        uqr_info.chatroomname = chatroomname
+        uqr_info.group_id = group_info.group_id
+        uqr_info.create_time = datetime.now()
+        uqr_info.is_deleted = False
+
+        db.session.add(uqr_info)
+        db.session.commit()
+        logger.debug(u"user与群关系已绑定. uqun_id: %s." % uqr_info.uqun_id)
+
+        uqbr_info = UserQunBotRelateInfo()
+        uqbr_info.uqun_id = uqr_info.uqun_id
+        uqbr_info.user_bot_rid = ubr_info.user_bot_rid
+        uqbr_info.is_error = False
+
+        db.session.add(uqbr_info)
+        db.session.commit()
+        logger.info(u"绑定群的四个关系. uqbr_id: %s." % uqbr_info.rid)
+        # 入群功能介绍
+        # generate_welcome_message_c_task_into_new_qun(uqr_info, user_id, bot_info.username)
+
+    # 紫豆分析初始化
+    a_chatroom_r = AChatroomR()
+    a_chatroom_r.chatroomname = chatroomname
+    a_chatroom_r.username = bot_username
+    a_chatroom_r.create_time = datetime.now()
+    db.session.merge(a_chatroom_r)
+    db.session.commit()
+    now = datetime.now()
+    # chatroom
+    chatroom = ChatroomInfo(chatroom_id = a_contact_chatroom.id, chatroomname = chatroomname,
+                            member_count = a_contact_chatroom.member_count).generate_create_time(now)
+    db.session.merge(chatroom)
+
+    # user_chatroom_r
+    user_chatroom_r = db.session.query(UserChatroomR).filter(UserChatroomR.user_id == user_id,
+                                                             UserChatroomR.chatroom_id == a_contact_chatroom.id).first()
+    if user_chatroom_r:
+        user_chatroom_r.permission = USER_CHATROOM_R_PERMISSION_1
+    else:
+        user_chatroom_r = UserChatroomR(user_id = user_id, chatroom_id = a_contact_chatroom.id,
+                                        permission = USER_CHATROOM_R_PERMISSION_1) \
+            .generate_create_time(now)
+        db.session.add(user_chatroom_r)
+
+    # bot_chatroom_r
+    # 判断是否已经有 is_on 状态的其他 bot
+    is_on = True
+    bot_chatroom_r_is_on = db.session.query(BotChatroomR).filter(BotChatroomR.chatroomname == chatroomname,
+                                                                 BotChatroomR.is_on == 1).first()
+    if bot_chatroom_r_is_on:
+        is_on = False
+    bot_chatroom_r = BotChatroomR(a_chatroom_r_id = a_chatroom_r.id, chatroomname = a_chatroom_r.chatroomname,
+                                  username = a_chatroom_r.username, is_on = is_on).generate_create_time(now)
+    db.session.merge(bot_chatroom_r)
+
+    # 初始化 MemberInfo 和 MemberOverview
+    update_members(chatroomname, create_time = now)
+
+    # 初始化 ChatroomOverview
+    ChatroomOverview.init_all_scope(chatroom_id = a_contact_chatroom.id,
+                                    chatroomname = a_contact_chatroom.username)
+
+    db.session.commit()
+
+
 def check_is_removed(message_analysis):
     """
     根据一条Message，返回是否为被移除群聊，如果是，则完成相关动作
@@ -496,6 +618,55 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
         db.session.commit()
         logger.info(u"绑定群的四个关系. uqbr_id: %s." % uqbr_info.rid)
         generate_welcome_message_c_task_into_new_qun(uqr_info, user_id, bot_info.username)
+
+    # 紫豆分析初始化
+    a_contact_chatroom = AContact.get_a_contact(username = chatroomname)
+    if a_contact_chatroom:
+        a_chatroom_r = AChatroomR.get_a_chatroom_r(chatroomname = chatroomname, username = bot_username)
+        if not a_chatroom_r:
+            a_chatroom_r = AChatroomR()
+            a_chatroom_r.chatroomname = chatroomname
+            a_chatroom_r.username = bot_username
+            a_chatroom_r.create_time = datetime.now()
+            db.session.merge(a_chatroom_r)
+            db.session.commit()
+
+        now = datetime.now()
+        # chatroom
+        chatroom = ChatroomInfo(chatroom_id = a_contact_chatroom.id, chatroomname = chatroomname,
+                                member_count = a_contact_chatroom.member_count).generate_create_time(now)
+        db.session.merge(chatroom)
+
+        # user_chatroom_r
+        user_chatroom_r = db.session.query(UserChatroomR).filter(UserChatroomR.user_id == user_id,
+                                                                 UserChatroomR.chatroom_id == a_contact_chatroom.id).first()
+        if user_chatroom_r:
+            user_chatroom_r.permission = USER_CHATROOM_R_PERMISSION_1
+        else:
+            user_chatroom_r = UserChatroomR(user_id = user_id, chatroom_id = a_contact_chatroom.id,
+                                            permission = USER_CHATROOM_R_PERMISSION_1) \
+                .generate_create_time(now)
+            db.session.add(user_chatroom_r)
+
+        # bot_chatroom_r
+        # 判断是否已经有 is_on 状态的其他 bot
+        is_on = True
+        bot_chatroom_r_is_on = db.session.query(BotChatroomR).filter(BotChatroomR.chatroomname == chatroomname,
+                                                                     BotChatroomR.is_on == 1).first()
+        if bot_chatroom_r_is_on:
+            is_on = False
+        bot_chatroom_r = BotChatroomR(a_chatroom_r_id = a_chatroom_r.id, chatroomname = a_chatroom_r.chatroomname,
+                                      username = a_chatroom_r.username, is_on = is_on).generate_create_time(now)
+        db.session.merge(bot_chatroom_r)
+
+        # 初始化 MemberInfo 和 MemberOverview
+        update_members(chatroomname, create_time = now)
+
+        # 初始化 ChatroomOverview
+        ChatroomOverview.init_all_scope(chatroom_id = a_contact_chatroom.id,
+                                        chatroomname = a_contact_chatroom.username)
+
+        db.session.commit()
     return SUCCESS, user_info
 
 
