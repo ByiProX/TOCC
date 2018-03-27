@@ -182,9 +182,6 @@ def update_member_change(chatroom_overview, chatroom_create_time, save_flag = Fa
     else:
         start_time, end_time = get_time_window_by_scope(chatroom_overview.scope)
     chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == chatroom_overview.chatroom_id).first()
-    filter_list_total = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = False,
-                                                end_time = end_time)
-    filter_list_total.append(AContact.id > 0)
     filter_list_in = AMember.get_filter_list(chatroomname = chatroom.chatroomname, is_deleted = False,
                                              start_time = start_time, end_time = end_time)
     filter_list_in.append(AMember.create_time > chatroom_create_time)

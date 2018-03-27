@@ -214,8 +214,6 @@ def chatroom_get_in_out_members():
         return make_response(status)
 
     scope = request.json.get('scope', 24)
-    page = request.json.get('page', DEFAULT_PAGE)
-    page_size = request.json.get('page_size', DEFAULT_PAGE_SIZE)
     chatroom_id = request.json.get("chatroom_id")
     if not chatroom_id:
         return make_response(ERR_INVALID_PARAMS)
@@ -225,7 +223,6 @@ def chatroom_get_in_out_members():
         start_time = end_time - timedelta(days = 1)
     else:
         start_time, end_time = get_time_window_by_scope(scope)
-    get_time_window_by_scope(scope)
     chatroom = db.session.query(ChatroomInfo).filter(ChatroomInfo.chatroom_id == chatroom_id).first()
     if not chatroom:
         return make_response(ERR_WRONG_ITEM)
@@ -234,17 +231,17 @@ def chatroom_get_in_out_members():
 
     in_list = list()
     out_list = list()
-    filter_list_in = AMember.get_filter_list(chatroomname = chatroomname, is_deleted = False, start_time = start_time,
-                                             end_time = end_time)
+    filter_list_in = AMember.get_filter_list(chatroomname = chatroomname, is_deleted = False, start_time = start_time, end_time = end_time)
     filter_list_in.append(AMember.create_time > chatroom_create_time)
     filter_list_in.append(AContact.id > 0)
     filter_list_out = AMember.get_filter_list(chatroomname = chatroomname, is_deleted = True)
     filter_list_out.append(AMember.update_time >= start_time)
     filter_list_out.append(AMember.update_time < end_time)
+    filter_list_out.append(AMember.create_time >= chatroom_create_time)
     filter_list_out.append(AContact.id > 0)
     members_in_query = db.session.query(AMember, AContact).outerjoin(AContact, AMember.username == AContact.username)\
         .filter(*filter_list_in)
-    members_in = members_in_query.order_by(AMember.create_time.desc()).limit(page_size).offset(page * page_size).all()
+    members_in = members_in_query.order_by(AMember.create_time.desc()).all()
     for row in members_in:
         a_member = row[0]
         a_contact = row[1]
@@ -256,7 +253,7 @@ def chatroom_get_in_out_members():
         in_list.append(member_json)
     members_out_query = db.session.query(AMember, AContact).outerjoin(AContact, AMember.username == AContact.username)\
         .filter(*filter_list_out)
-    members_out = members_out_query.order_by(AMember.create_time.desc()).limit(page_size).offset(page * page_size).all()
+    members_out = members_out_query.order_by(AMember.create_time.desc()).all()
     for row in members_out:
         a_member = row[0]
         a_contact = row[1]
