@@ -5,8 +5,14 @@ from datetime import timedelta, datetime
 
 from sqlalchemy import func, or_
 
-from configs.config import db, USER_CHATROOM_R_PERMISSION_1
-from core.message_core import update_members, count_msg_by_create_time
+from configs.config import db, USER_CHATROOM_R_PERMISSION_1, GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, \
+    GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, MSG_TYPE_TXT, MSG_TYPE_SYS
+from core.coin_wallet_core import check_whether_message_is_a_coin_wallet
+from core.matching_rule_core import get_gm_rule_dict, get_gm_default_rule_dict, match_message_by_rule
+from core.message_core import update_members, count_msg_by_create_time, analysis_and_save_a_message
+from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
+from core.real_time_quotes_core import match_message_by_coin_keyword
+from core.welcome_message_core import check_whether_message_is_friend_into_qun
 from models.android_db_models import AMember, AContact, AChatroomR
 from models.auto_reply_models import AutoReplySettingInfo, AutoReplyKeywordRelateInfo, AutoReplyMaterialRelate, \
     AutoReplyTargetRelate
@@ -264,6 +270,72 @@ def clear_all_user_data():
 def session_delete(li):
     for l in li:
         db.session.delete(l)
+
+
+def test_msg(message_list):
+    # 第一次读取用户设置词
+    gm_rule_dict = get_gm_rule_dict()
+    GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
+
+    # 第一次读取统一设置词
+    gm_default_rule_dict = get_gm_default_rule_dict()
+    GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
+
+    message_analysis_list = list()
+    # if len(message_list) != 0:
+    #     ProductionThread._process_a_msg_list(message_list, message_analysis_list)
+    if len(message_list) != 0:
+        for i, a_message in enumerate(message_list):
+            message_analysis = analysis_and_save_a_message(a_message)
+            if not message_analysis:
+                continue
+            message_analysis_list.append(message_analysis)
+
+            # 判断这个机器人说的话是否是文字或系统消息
+            if message_analysis.type == MSG_TYPE_TXT or message_analysis.type == MSG_TYPE_SYS:
+                pass
+            else:
+                continue
+
+            # 这个机器人说的话
+            # TODO 当有两个机器人的时候，这里不仅要判断是否是自己说的，还是要判断是否是其他机器人说的
+            if message_analysis.is_send == 1:
+                continue
+
+            # is_add_friend
+            # is_add_friend = check_whether_message_is_add_friend(message_analysis)
+            # if is_add_friend:
+            #     continue
+
+            # 检查信息是否为加了一个群
+            is_add_qun = check_whether_message_is_add_qun(message_analysis)
+            if is_add_qun:
+                continue
+
+            # is_removed
+            is_removed = check_is_removed(message_analysis)
+            if is_removed:
+                continue
+
+            # is_a_coin_wallet
+            is_a_coin_wallet = check_whether_message_is_a_coin_wallet(message_analysis)
+            if is_a_coin_wallet:
+                continue
+
+            # 检测是否是别人的进群提示
+            is_friend_into_qun = check_whether_message_is_friend_into_qun(message_analysis)
+
+            # 根据规则和内容进行匹配，并生成任务
+            rule_status = match_message_by_rule(gm_rule_dict, message_analysis)
+            if rule_status is True:
+                continue
+            else:
+                pass
+
+            # 对内容进行判断，是否为查询比价的情况
+            coin_price_status = match_message_by_coin_keyword(gm_default_rule_dict, message_analysis)
+            if coin_price_status is True:
+                continue
 
 
 if __name__ == '__main__':
