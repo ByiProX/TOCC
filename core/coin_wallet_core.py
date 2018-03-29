@@ -60,7 +60,7 @@ def switch_func_coin_wallet(user_info, switch):
 def get_members(user_info, uqun_id = None, limit = 10, offset = 0, member_username_except = None, keyword = None):
     filter_list_members = list()
     if keyword:
-        filter_list_members.append(AContact.nickname.like('' + unicode_to_str(keyword) + ''))
+        filter_list_members.append(AContact.nickname.like('%' + unicode_to_str(keyword) + '%'))
     if member_username_except:
         filter_list_members.append(AMember.username.notin_(member_username_except))
     if uqun_id is not None:
