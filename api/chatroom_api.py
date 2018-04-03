@@ -161,10 +161,10 @@ def chatroom_get_msg_tendency():
     out_count_list = [0] * scope
     total_count_list = [0] * scope
     for cs in cs_list:
-        msg_tendency[cs.time_to_day.day - start_time.day] = cs.speak_count
-        in_count_list[cs.time_to_day.day - start_time.day] = cs.in_count
-        out_count_list[cs.time_to_day.day - start_time.day] = cs.out_count
-        total_count_list[cs.time_to_day.day - start_time.day] = cs.member_count
+        msg_tendency[(cs.time_to_day - start_time).days] = cs.speak_count
+        in_count_list[(cs.time_to_day - start_time).days] = cs.in_count
+        out_count_list[(cs.time_to_day - start_time).days] = cs.out_count
+        total_count_list[(cs.time_to_day - start_time).days] = cs.member_count
 
     return make_response(SUCCESS, msg_count_list = msg_tendency, in_count_list = in_count_list, out_count_list = out_count_list,
                          total_count_list = total_count_list)
@@ -198,9 +198,9 @@ def chatroom_get_active_tendency():
         member_count = row[1]
         time_to_day = row[2]
         if member_count:
-            active_rate_list[time_to_day.day - start_time.day] = (Decimal(active_count) / Decimal(member_count)).to_eng_string()
-        active_count_list[time_to_day.day - start_time.day] = active_count
-        member_count_list[time_to_day.day - start_time.day] = member_count
+            active_rate_list[(time_to_day - start_time).days] = (Decimal(active_count) / Decimal(member_count)).to_eng_string()
+        active_count_list[(time_to_day - start_time).days] = active_count
+        member_count_list[(time_to_day - start_time).days] = member_count
 
     return make_response(SUCCESS, active_count_list = active_count_list, active_rate_list = active_rate_list,
                          member_count_list = member_count_list)
