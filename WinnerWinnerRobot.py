@@ -7,8 +7,9 @@ from maintenance.database_rel import create_all_databases
 
 import logging
 
-from configs.config import app, main_api
+from configs.config import app, main_api, api_v2
 from core.production_core import production_thread
+from models_v2.base_model import BaseModel
 
 from utils import u_log
 import models
@@ -17,6 +18,7 @@ import configs
 
 monkey.patch_all()
 app.register_blueprint(main_api, url_prefix='/yaca_api')
+app.register_blueprint(api_v2, url_prefix='/yaca_api_v2')
 
 models.import_str = ""
 api.api_str = ""
@@ -46,8 +48,9 @@ def initial_all():
 
 
 logger = logging.getLogger('main')
-production_thread.start()
-crawler_thread.start()
+# production_thread.start()
+# crawler_thread.start()
+BaseModel.extract_from_json()
 
 # 开启环境监测线程
 # if config_name_s == 'p':

@@ -134,6 +134,7 @@ APP_ID = 'wxc3bc48b4c40651fd'
 APP_SECRET = '959f45dbf812a5685f85ff572e76a671'
 
 main_api = Blueprint('api', __name__)
+api_v2 = Blueprint('api_v2', __name__)
 
 # 生成所有任务的循环和发送所有任务的循环所需要用的时间
 PRODUCTION_CIRCLE_INTERVAL = 1
@@ -311,3 +312,9 @@ CRON_TYPE_CHATROOM_STATISTIC = 2
 CRON_TYPE_MEMBER_OVERVIEW = 3
 
 LEVEL_CLASS = ['D', 'C', 'B', 'A']
+
+DB_RULE = dict()
+AccessToken = "access_token"
+UserInfo = "client_member"
+UserSwitch = "client_switch"
+UserBotR = "client_bot_r"
