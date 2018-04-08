@@ -9,7 +9,7 @@ from sqlalchemy import func
 from configs.config import SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
     ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM, \
     ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE, MSG_TYPE_TXT, MSG_TYPE_SYS, ERR_INVALID_PARAMS, UserInfo, UserSwitch, \
-    UserBotR
+    UserBotR, BotInfo, UserQunR, Chatroom
 from core_v2.wechat_core import wechat_conn
 from models_v2.base_model import BaseModel, CM
 from utils.u_transformat import str_to_unicode
@@ -170,24 +170,22 @@ class UserLogin:
 
 
 def set_bot_name(bot_id, bot_nickname, user_info):
-    ubr = CM(UserBotR).fetch_one('*', where_clause = BaseModel.where_dict({"client_id": client_id,
-                                                                           "bot_username": bot_username}))
-    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.bot_id == bot_id,
-                                                          UserBotRelateInfo.user_id == user_info.client_id,
-                                                          UserBotRelateInfo.is_setted == 1).first()
+    bot_info = CM(BotInfo).fetch_one("*", where_clause = BaseModel.where_dict({"_id": bot_id}))
+    ubr_info = CM(UserBotR).fetch_one('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+                                                                                "bot_username": bot_info.username}))
 
     if not ubr_info:
         logger.error(u"未找到已开启的user与bot关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_id))
         return ERR_WRONG_USER_ITEM
 
     ubr_info.chatbot_default_nickname = bot_nickname
-    db.session.commit()
+    ubr_info.save()
     logger.info(u"已更新全局bot名称. bot_id: %s. bot_nickname: %s" % (bot_id, bot_nickname))
     return SUCCESS
 
 
 def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
-    ubr_info_list = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id).all()
+    ubr_info_list = CM(UserBotR).fetch_all('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
     if len(ubr_info_list) > 1:
         raise ValueError(u"已经有多于一个机器人，不可以再预设置机器人")
     elif len(ubr_info_list) == 1:
@@ -197,92 +195,86 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
         else:
             ubr_info = ubr_info_list[0]
     else:
-        ubr_info = UserBotRelateInfo()
+        ubr_info = CM(UserBotR)
 
-    ubr_info.user_id = user_info.user_id
+    ubr_info.client_id = user_info.client_id
 
     bot_info = _get_a_balanced_bot()
     if not bot_info:
-        logger.error(u"未取得可用bot. user_id: %s" % user_info.user_id)
+        logger.error(u"未取得可用bot. user_id: %s" % user_info.client_id)
         return ERR_NO_ALIVE_BOT, None
 
-    ubr_info.bot_id = bot_info.bot_id
+    ubr_info.bot_username = bot_info.username
 
     ubr_info.chatbot_default_nickname = chatbot_default_nickname
-    ubr_info.preset_time = datetime.now()
-    ubr_info.set_time = 0
-    ubr_info.is_setted = False
-    ubr_info.is_being_used = False
+    ubr_info.is_work = False
+    ubr_info.create_time = datetime.now()
 
-    db.session.add(ubr_info)
-    db.session.commit()
-    logger.info(u"初始化user与bot关系成功. user_id: %s. bot_id: %s." % (user_info.user_id, bot_info.bot_id))
+    ubr_info.save()
+    logger.info(u"初始化user与bot关系成功. user_id: %s. bot_username: %s." % (user_info.client_id, bot_info.bot_username))
     return SUCCESS, ubr_info
 
 
 def cal_user_basic_page_info(user_info):
-    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
-                                                          UserBotRelateInfo.is_setted == 1,
-                                                          UserBotRelateInfo.is_being_used == 1).first()
+    ubr_info = CM(UserBotR).fetch_one('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
 
     if ubr_info:
-        uqr_info_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == user_info.user_id,
-                                                                   UserQunRelateInfo.is_deleted == 0).all()
-        qun_count = len(uqr_info_list)
-        if not uqr_info_list:
+        uqr_info = CM(UserQunR).fetch_one('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+        group_list = uqr_info.group_list
+        chatroomname_set = set()
+        for group in group_list:
+            for chatroomname in group.values()[0]:
+                chatroomname_set.add(chatroomname)
+        qun_count = len(chatroomname_set)
+        if not chatroomname_set:
             # 目前没有控制的群，不需要下一步统计
             logger.debug(u"无绑定群. user_id: %s." % user_info.user_id)
             member_count = 0
             pass
         else:
-            chatroomname_list = []
-            for uqr_info in uqr_info_list:
-                chatroomname_list.append(uqr_info.chatroomname)
-
-            member_count = db.session.query(func.sum(AContact.member_count)).filter(
-                AContact.username.in_(chatroomname_list)).first()
-            if member_count is None:
-                member_count = 0
-            else:
-
-                member_count = int(member_count[0])
+            chatroomname_list = list(chatroomname_set)
+            chatroom_list = CM(Chatroom).fetch_all(select_colums = ["chatroomname", "member_count"], where_clause = BaseModel.where("in", "chatroomname", chatroomname_list))
+            member_count = 0
+            for chatroom in chatroom_list:
+                member_count += chatroom.member_count
 
         res = dict()
         res.setdefault("bot_info", {})
-        res['bot_info'].setdefault('bot_id', ubr_info.bot_id)
-        res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
-        bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
-        if not bot_info:
-            logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
-            return ERR_WRONG_ITEM, None
-        if bot_info.is_alive is True:
-            bot_status = 0
-        else:
-            bot_status = -1
-        res['bot_info'].setdefault('bot_status', bot_status)
-        a_bot = db.session.query(ABot).filter(ABot.username == bot_info.username).first()
-        if not a_bot:
-            logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
-            return ERR_WRONG_ITEM, None
-        res['bot_info'].setdefault('bot_avatar', a_bot.avatar_url2)
-
-        username = a_bot.username
-        img_str = _get_qr_code_base64_str(username)
-        res['bot_info'].setdefault('bot_qr_code', img_str)
-
-        res.setdefault("total_info", {})
-        res['total_info'].setdefault('qun_count', qun_count)
-        res['total_info'].setdefault('cover_member_count', member_count)
-
-        res.setdefault("user_func", {})
-        res['user_func'].setdefault('func_send_messages', user_info.func_send_qun_messages)
-        res['user_func'].setdefault('func_sign', user_info.func_qun_sign)
-        res['user_func'].setdefault('func_reply', user_info.func_auto_reply)
-        res['user_func'].setdefault('func_welcome', user_info.func_welcome_message)
-        res['user_func'].setdefault('func_real_time_quotes', user_info.func_real_time_quotes)
-        res['user_func'].setdefault('func_synchronous_announcement', user_info.func_synchronous_announcement)
-        res['user_func'].setdefault('func_coin_wallet', user_info.func_coin_wallet)
-        logger.info(u"返回有机器人时群组列表. user_id: %s." % user_info.user_id)
+        # TODO: bot_id encode
+        # res['bot_info'].setdefault('bot_id', ubr_info.bot_id)
+        # res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
+        # bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
+        # if not bot_info:
+        #     logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
+        #     return ERR_WRONG_ITEM, None
+        # if bot_info.is_alive is True:
+        #     bot_status = 0
+        # else:
+        #     bot_status = -1
+        # res['bot_info'].setdefault('bot_status', bot_status)
+        # a_bot = db.session.query(ABot).filter(ABot.username == bot_info.username).first()
+        # if not a_bot:
+        #     logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
+        #     return ERR_WRONG_ITEM, None
+        # res['bot_info'].setdefault('bot_avatar', a_bot.avatar_url2)
+        #
+        # username = a_bot.username
+        # img_str = _get_qr_code_base64_str(username)
+        # res['bot_info'].setdefault('bot_qr_code', img_str)
+        #
+        # res.setdefault("total_info", {})
+        # res['total_info'].setdefault('qun_count', qun_count)
+        # res['total_info'].setdefault('cover_member_count', member_count)
+        #
+        # res.setdefault("user_func", {})
+        # res['user_func'].setdefault('func_send_messages', user_info.func_send_qun_messages)
+        # res['user_func'].setdefault('func_sign', user_info.func_qun_sign)
+        # res['user_func'].setdefault('func_reply', user_info.func_auto_reply)
+        # res['user_func'].setdefault('func_welcome', user_info.func_welcome_message)
+        # res['user_func'].setdefault('func_real_time_quotes', user_info.func_real_time_quotes)
+        # res['user_func'].setdefault('func_synchronous_announcement', user_info.func_synchronous_announcement)
+        # res['user_func'].setdefault('func_coin_wallet', user_info.func_coin_wallet)
+        # logger.info(u"返回有机器人时群组列表. user_id: %s." % user_info.user_id)
         return SUCCESS, res
 
     # 用户目前没有机器人
@@ -305,13 +297,13 @@ def cal_user_basic_page_info(user_info):
 
 
 def get_bot_qr_code(user_info):
-    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id).first()
+    ubr_info = CM(UserBotR).fetch_one('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
 
     if not ubr_info:
         logger.error(u"无预建立的群关系. user_id: %s." % user_info.user_id)
         return ERR_WRONG_USER_ITEM, None
 
-    bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
+    bot_info = CM(BotInfo).fetch_one("*", where_clause = BaseModel.where_dict({"username": ubr_info.bot_username}))
 
     if not bot_info:
         logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
@@ -326,38 +318,6 @@ def get_bot_qr_code(user_info):
 
     logger.info(u"返回QR码. bot_id: %s." % ubr_info.bot_id)
     return SUCCESS, img_str
-
-
-def check_whether_message_is_add_friend(message_analysis):
-    """
-    根据一条Message，返回是否为加bot为好友
-    :return:
-    """
-    is_add_friend = False
-    msg_type = message_analysis.type
-    content = str_to_unicode(message_analysis.content)
-
-    if (msg_type in (MSG_TYPE_TXT, MSG_TYPE_SYS) and content.find(u'现在可以开始聊天了') != -1) or (
-            msg_type is MSG_TYPE_SYS and content.find(u'以上是打招呼的内容') != -1):
-        # add friend
-        is_add_friend = True
-        user_username = message_analysis.real_talker
-        bot_info = db.session.query(BotInfo).filter(BotInfo.username == message_analysis.username).first()
-        if not bot_info:
-            return is_add_friend
-        a_contact = db.session.query(AContact).filter(AContact.username == user_username).first()
-        logger.info(u"发现加bot好友用户. username: %s." % user_username)
-        status, user_info = _bind_bot_success(a_contact.nickname, user_username, bot_info)
-        we_conn = WechatConn()
-        if status == SUCCESS:
-            we_conn.send_txt_to_follower(
-                "您好，欢迎使用数字货币友问币答！请将我拉入您要管理的区块链社群，拉入成功后即可为您的群提供实时查询币价，涨幅榜，币种成交榜，交易所榜，最新动态，行业百科等服务。步骤如下：\n拉我入群➡确认拉群成功➡ "
-                "机器人在群发自我介绍帮助群友了解规则➡群友按照命令发关键字➡机器人回复➡完毕",
-                user_info.open_id)
-        # else:
-        #     EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
-        #                              u"user_username: %s." % user_username)
-    return is_add_friend
 
 
 def _bind_bot_success(user_nickname, user_username, bot_info):
@@ -384,10 +344,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     #     logger.info(u'但是放宽限制，暂时给予通过')
     #     # return ERR_WRONG_ITEM, None
 
-    filter_list_user = UserInfo.get_filter_list(nickname = user_nickname)
-    filter_list_user.append(UserInfo.username == u"")
-    user_info_list = db.session.query(UserInfo).filter(*filter_list_user) \
-        .order_by(UserInfo.create_time.desc()).all()
+    user_info_list = CM(UserInfo).fetch_all('*', where_clause = BaseModel.where_dict({"nickname": user_nickname, "username": u""}))
     if len(user_info_list) > 1:
         logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
@@ -405,119 +362,114 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
 
     user_info = user_info_list[0]
     user_info.username = user_username
-    user_info.func_send_qun_messages = True
-    user_info.func_auto_reply = False
-    user_info.func_real_time_quotes = True
-    user_info.func_synchronous_announcement = True
-    user_info.func_coin_wallet = False
-    db.session.merge(user_info)
-    db.session.commit()
-    logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.user_id, user_username))
+    user_info.save()
 
-    ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user_info.user_id,
-                                                          UserBotRelateInfo.bot_id == bot_info.bot_id).first()
+    user_switch = CM(UserSwitch)
+    user_switch.client_id = user_info.client_id
+    user_switch.func_send_qun_messages = True
+    user_switch.func_auto_reply = False
+    user_switch.func_real_time_quotes = True
+    user_switch.func_synchronous_announcement = True
+    user_switch.func_coin_wallet = False
+    user_switch.save()
+
+    logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.user_id, user_username))
+    ubr_info = CM(UserBotR).fetch_one('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+                                                                                "bot_username": bot_info.username}))
     if not ubr_info:
         logger.debug(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.user_id)
-        if not ubr_info:
-            ubr_info = UserBotRelateInfo()
-            ubr_info.user_id = user_info.user_id
-            ubr_info.bot_id = bot_info.bot_id
-            ubr_info.preset_time = datetime.now()
-            ubr_info.set_time = 0
-            ubr_info.create_time = datetime.now()
-        ubr_info.is_setted = True
-        ubr_info.is_being_used = True
-        db.session.merge(ubr_info)
-        # return ERR_WRONG_ITEM, None
+        ubr_info = CM(UserBotR)
+        ubr_info.client_id = user_info.client_id
+        ubr_info.bot_username = bot_info.username
+        ubr_info.is_work = True
+        ubr_info.save()
 
-    ubr_info.is_setted = True
-    ubr_info.is_being_used = True
-    db.session.merge(ubr_info)
-    db.session.commit()
+    ubr_info.is_work = True
+    ubr_info.save()
 
-    set_default_group(user_info)
+    # set_default_group(user_info)
     logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_info.bot_id))
     return SUCCESS, user_info
 
 
-def check_whether_message_is_add_friend_v2(message_analysis):
-    """
-    根据一条Message，返回是否为加bot为好友
-    :return:
-    """
-    is_add_friend = False
-    msg_type = message_analysis.type
-    content = str_to_unicode(message_analysis.content)
-
-    if message_analysis.is_to_friend and \
-            ((msg_type in (MSG_TYPE_TXT, MSG_TYPE_SYS) and content.find(u'现在可以开始聊天了') != -1)
-             or (msg_type is MSG_TYPE_SYS and content.find(u'以上是打招呼的内容') != -1)):
-        # add friend
-        is_add_friend = True
-        # Mark
-        # 考虑用启线程去处理
-        _process_is_add_friend(message_analysis)
-
-    return is_add_friend
-
-
-def _process_is_add_friend(message_analysis):
-    bot = db.session.query(BotInfo).filter(BotInfo.username == message_analysis.username).first()
-    if not bot:
-        logger.error(u"找不到 bot: " + str_to_unicode(message_analysis.username))
-        return
-    user_username = message_analysis.real_talker
-    a_contact = AContact.get_a_contact(username = user_username)
-    if a_contact:
-        user_nickname = str_to_unicode(a_contact.nickname)
-        logger.info(u"发现加bot好友用户. username: %s, nickname: %s" % (user_username, user_nickname))
-
-        # 验证是否是唯一的friend
-        # a_friend = AFriend.get_a_friend(from_username = bot.username, to_username = user_username)
-        # if not a_friend:
-        #     logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
-        #                  (bot.username, user_username))
-        #     return ERR_WRONG_ITEM, None
-        #
-        # if a_friend.type % 2 != 1:
-        #     logger.error(u"用户与bot不是好友. bot_username: %s. user_username: %s" %
-        #                  (bot.username, user_username))
-        #     logger.info(u'但是放宽限制，暂时给予通过')
-        #     # return ERR_WRONG_ITEM, None
-
-        filter_list_user = UserInfo.get_filter_list(nickname = user_nickname)
-        filter_list_user.append(UserInfo.username == u"")
-        user_list = db.session.query(UserInfo).filter(*filter_list_user)\
-            .order_by(UserInfo.create_time.desc()).all()
-        if len(user_list) > 1:
-            logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
-                         (bot.username, user_username))
-            return
-        elif len(user_list) == 0:
-            logger.error(u"配对user信息出错. bot_username: %s. user_username: %s" %
-                         (bot.username, user_username))
-            return
-
-        user = user_list[0]
-        user.username = user_username
-        db.session.merge(user)
-
-        ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user.user_id,
-                                                              UserBotRelateInfo.bot_id == bot.bot_id).first()
-        if not ubr_info:
-            ubr_info = UserBotRelateInfo()
-            ubr_info.user_id = user.user_id
-            ubr_info.bot_id = bot.bot_id
-            ubr_info.preset_time = datetime.now()
-            ubr_info.set_time = 0
-            ubr_info.create_time = datetime.now()
-        ubr_info.is_setted = True
-        ubr_info.is_being_used = True
-        db.session.merge(ubr_info)
-
-        db.session.commit()
-    else:
-        logger.error(u"找不到 a_contact: " + str_to_unicode(user_username))
+# def check_whether_message_is_add_friend_v2(message_analysis):
+#     """
+#     根据一条Message，返回是否为加bot为好友
+#     :return:
+#     """
+#     is_add_friend = False
+#     msg_type = message_analysis.type
+#     content = str_to_unicode(message_analysis.content)
+#
+#     if message_analysis.is_to_friend and \
+#             ((msg_type in (MSG_TYPE_TXT, MSG_TYPE_SYS) and content.find(u'现在可以开始聊天了') != -1)
+#              or (msg_type is MSG_TYPE_SYS and content.find(u'以上是打招呼的内容') != -1)):
+#         # add friend
+#         is_add_friend = True
+#         # Mark
+#         # 考虑用启线程去处理
+#         _process_is_add_friend(message_analysis)
+#
+#     return is_add_friend
+#
+#
+# def _process_is_add_friend(message_analysis):
+#     bot = db.session.query(BotInfo).filter(BotInfo.username == message_analysis.username).first()
+#     if not bot:
+#         logger.error(u"找不到 bot: " + str_to_unicode(message_analysis.username))
+#         return
+#     user_username = message_analysis.real_talker
+#     a_contact = AContact.get_a_contact(username = user_username)
+#     if a_contact:
+#         user_nickname = str_to_unicode(a_contact.nickname)
+#         logger.info(u"发现加bot好友用户. username: %s, nickname: %s" % (user_username, user_nickname))
+#
+#         # 验证是否是唯一的friend
+#         # a_friend = AFriend.get_a_friend(from_username = bot.username, to_username = user_username)
+#         # if not a_friend:
+#         #     logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
+#         #                  (bot.username, user_username))
+#         #     return ERR_WRONG_ITEM, None
+#         #
+#         # if a_friend.type % 2 != 1:
+#         #     logger.error(u"用户与bot不是好友. bot_username: %s. user_username: %s" %
+#         #                  (bot.username, user_username))
+#         #     logger.info(u'但是放宽限制，暂时给予通过')
+#         #     # return ERR_WRONG_ITEM, None
+#
+#         filter_list_user = UserInfo.get_filter_list(nickname = user_nickname)
+#         filter_list_user.append(UserInfo.username == u"")
+#         user_list = db.session.query(UserInfo).filter(*filter_list_user)\
+#             .order_by(UserInfo.create_time.desc()).all()
+#         if len(user_list) > 1:
+#             logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
+#                          (bot.username, user_username))
+#             return
+#         elif len(user_list) == 0:
+#             logger.error(u"配对user信息出错. bot_username: %s. user_username: %s" %
+#                          (bot.username, user_username))
+#             return
+#
+#         user = user_list[0]
+#         user.username = user_username
+#         db.session.merge(user)
+#
+#         ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user.user_id,
+#                                                               UserBotRelateInfo.bot_id == bot.bot_id).first()
+#         if not ubr_info:
+#             ubr_info = UserBotRelateInfo()
+#             ubr_info.user_id = user.user_id
+#             ubr_info.bot_id = bot.bot_id
+#             ubr_info.preset_time = datetime.now()
+#             ubr_info.set_time = 0
+#             ubr_info.create_time = datetime.now()
+#         ubr_info.is_setted = True
+#         ubr_info.is_being_used = True
+#         db.session.merge(ubr_info)
+#
+#         db.session.commit()
+#     else:
+#         logger.error(u"找不到 a_contact: " + str_to_unicode(user_username))
 
 
 def _get_a_balanced_bot():
@@ -525,24 +477,26 @@ def _get_a_balanced_bot():
     得到一个平衡过数量的bot
     :return:
     """
+    # TODO: _get_a_balanced_bot
 
-    bot_info_list = db.session.query(BotInfo).all()
-    bot_used_dict = dict()
-    for bot_info in bot_info_list:
-        bot_used_dict.setdefault(bot_info.bot_id, 0)
-        ugc = db.session.query(func.count(UserBotRelateInfo.user_id)).filter(
-            UserBotRelateInfo.bot_id == bot_info.bot_id, UserBotRelateInfo.is_being_used == 1).first()
-        if ugc:
-            bot_used_dict[bot_info.bot_id] = int(ugc[0])
-
-    ugls = sorted(bot_used_dict.items(), key=lambda d: d[1])
-    if ugls:
-        for eug in ugls:
-            bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == eug[0], BotInfo.is_alive == 1).first()
-            if bot_info:
-                return bot_info
-
-    return None
+    # bot_info_list = db.session.query(BotInfo).all()
+    # bot_used_dict = dict()
+    # for bot_info in bot_info_list:
+    #     bot_used_dict.setdefault(bot_info.bot_id, 0)
+    #     ugc = db.session.query(func.count(UserBotRelateInfo.user_id)).filter(
+    #         UserBotRelateInfo.bot_id == bot_info.bot_id, UserBotRelateInfo.is_being_used == 1).first()
+    #     if ugc:
+    #         bot_used_dict[bot_info.bot_id] = int(ugc[0])
+    #
+    # ugls = sorted(bot_used_dict.items(), key=lambda d: d[1])
+    # if ugls:
+    #     for eug in ugls:
+    #         bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == eug[0], BotInfo.is_alive == 1).first()
+    #         if bot_info:
+    #             return bot_info
+    #
+    # return None
+    return CM(BotInfo).fetch_one('*')
 
 
 def _get_qr_code_base64_str(username):
