@@ -324,6 +324,8 @@ UserBotR = "client_bot_r"
 BotInfo = "bot_info"
 UserQunR = "client_qun_r"
 Chatroom = "a_chatroom"
+AMember = "a_member"
+AContact = "a_contact"
 
 SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
 DB_SERVER_URL = u'http://dal.com/'
@@ -332,3 +334,6 @@ CHAT_LOGS_TYPE_0 = 0  # 退群
 CHAT_LOGS_TYPE_1 = 1  # 拉人进群
 CHAT_LOGS_TYPE_2 = 2  # 发言不带@
 CHAT_LOGS_TYPE_3 = 3  # 发言带@
+
+CHAT_LOGS_ERR_TYPE_0 = 0  # 未匹配到昵称和 wxid 的关系
+CHAT_LOGS_ERR_TYPE_1 = 1  # 匹配到多个昵称和 wxid 的关系

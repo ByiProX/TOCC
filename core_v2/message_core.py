@@ -3,13 +3,10 @@ import copy
 import json
 
 from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, db, CONTENT_TYPE_SYS, CONTENT_TYPE_TXT, CHAT_LOGS_TYPE_2, \
-    CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, rds
+    CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, rds, AMember, AContact, CHAT_LOGS_ERR_TYPE_0
 from core.redis_core import rds_lpush
 from core.send_task_and_ws_setting_core import update_chatroom_members_info
-from models.android_db_models import AMessage, AMember, AContact
-from models.chatroom_member_models import BotChatroomR, ChatroomInfo, ChatroomStatistic, MemberInfo, MemberStatistic, \
-    ChatroomActive, MemberAtMember, MemberInviteMember, MemberOverview
-from models.message_ext_models import MessageAnalysis
+from models_v2.base_model import BaseModel
 from utils.u_time import get_today_0
 from utils.u_transformat import str_to_unicode, unicode_to_str
 
@@ -83,20 +80,18 @@ def extract_msg_be_at(msg, chatroomname):
                     at_count += 1
                     break
                 else:
-                    # logger.info(u'not find ' + name_be_at)
-                    # 没有匹配到 member
-                    # if not checked_flag:
-                    #     # check
-                    #     checked_flag = True
-                    #     # check
-                    #     MessageAnalysis.check_chatroom(chatroom)
-                    #     end_index = 0
-                    # else:
                     logger.info(u'really not find ' + name_be_at)
+                    rds_lpush(chat_logs_type = CHAT_LOGS_ERR_TYPE_0, msg_id = msg.get_id(), err = True)
+                    # Mark 一个异常，全部异常
+                    return
             content_index = offset
 
-    chat_logs_type = CHAT_LOGS_TYPE_3 if is_at else CHAT_LOGS_TYPE_2
-    content = json.dumps(member_be_at_list) if is_at else ""
+    if is_at and member_be_at_list:
+        chat_logs_type = CHAT_LOGS_TYPE_3
+        content = json.dumps(member_be_at_list)
+    else:
+        chat_logs_type = CHAT_LOGS_TYPE_2
+        content = ""
     rds_lpush(chat_logs_type, msg.get_id(), msg.talker, msg.real_talker, msg.create_time, content)
     return is_at, at_count
 
@@ -106,6 +101,9 @@ def invite_bot(msg, chatroomname):
     content_tmp = copy.deepcopy(content)
     invitor_nick_name = content_tmp.split(u'邀请')[0][1:-1]
     logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
+
+    invited_username_list = list()
+    invited_username_list.append(msg.bot_username)
 
     invited_nick_name_list = list()
     if content_tmp.find(u'邀请你和') != -1:
@@ -117,27 +115,22 @@ def invite_bot(msg, chatroomname):
     invitor = fetch_member_by_nickname(chatroomname = chatroomname,
                                        nickname = invitor_nick_name)
     if invitor:
-        # filter_list_wechat = Wechat.get_filter_list()
-        # filter_list_wechat.append(Wechat.nick_name == invitor.nick_name)
-        # filter_list_wechat.append(Wechat.sex == invitor.sex)
-        # filter_list_wechat.append(Wechat.city == invitor.city)
-        # filter_list_wechat.append(Wechat.province == invitor.province)
-        # invitor_wechat = db.session.query(Wechat).filter(*filter_list_wechat).first()
-        # if invitor_wechat:
-        #     logger.info('invitor_wechat: ' + str(invitor_wechat.id))
-        #     observer = Observer(wechat_id = invitor_wechat.id, chatroom_id = chatroom_id,
-        #                         is_on = True).generate_create_time()
-        #     db.session.merge(observer)
         for invited_nick_name in invited_nick_name_list:
             logger.debug(u'invited_nick_name: ' + invited_nick_name)
             invited = fetch_member_by_nickname(chatroomname = chatroomname,
                                                nickname = invited_nick_name)
             if invited:
-                m_i_m = MemberInviteMember(invitor_id = invitor.member_id, invited_id = invited.member_id,
-                                           create_time = msg.create_time, invited_username = invited.username,
-                                           invitor_username = invitor.username)
-                db.session.merge(m_i_m)
-    db.session.commit()
+                logger.info(u'invited ' + unicode(invited))
+                invited_username_list.append(invited)
+            else:
+                logger.info(u'really not find ' + invited_nick_name)
+                rds_lpush(chat_logs_type = CHAT_LOGS_ERR_TYPE_0, msg_id = msg.get_id(), err = True)
+                # Mark 一个异常，全部异常
+                return
+
+        chat_logs_type = CHAT_LOGS_TYPE_1
+        content = json.dumps(invited_username_list)
+        rds_lpush(chat_logs_type, msg.get_id(), msg.talker, invitor, msg.create_time, content)
 
 
 def invite_other(msg, chatroomname):
@@ -167,75 +160,75 @@ def invite_other(msg, chatroomname):
         logger.info(msg.content)
         return
 
-    invitor = fetch_member_by_nickname(chatroomname = chatroom.chatroomname,
+    invited_username_list = list()
+    invitor = fetch_member_by_nickname(chatroomname = chatroomname,
                                        nickname = invitor_nick_name)
     if invitor:
         for invited_nick_name in invited_nick_name_list:
             logger.debug(u'invited_nick_name: ' + invited_nick_name)
-            invited = fetch_member_by_nickname(chatroomname = chatroom.chatroomname,
+            invited = fetch_member_by_nickname(chatroomname = chatroomname,
                                                nickname = invited_nick_name)
             if invited:
-                m_i_m = MemberInviteMember(invitor_id = invitor.member_id, invited_id = invited.member_id,
-                                           create_time = msg.create_time, invited_username = invited.username,
-                                           invitor_username = invitor.username)
-                db.session.merge(m_i_m)
-    db.session.commit()
+                logger.info(u'invited ' + unicode(invited))
+                invited_username_list.append(invited)
+            else:
+                logger.info(u'really not find ' + invited_nick_name)
+                rds_lpush(chat_logs_type = CHAT_LOGS_ERR_TYPE_0, msg_id = msg.get_id(), err = True)
+                # Mark 一个异常，全部异常
+                return
+
+        if invited_username_list:
+            chat_logs_type = CHAT_LOGS_TYPE_1
+            content = json.dumps(invited_username_list)
+            rds_lpush(chat_logs_type, msg.get_id(), msg.talker, invitor, msg.create_time, content)
 
 
-def fetch_member_by_nickname(chatroomname, nickname):
+def fetch_member_by_nickname(chatroomname, nickname, update_flag = True):
     member = None
     if nickname:
         # 匹配 AMember
-        a_member = db.session.query(AMember).filter(AMember.displayname == nickname,
-                                                    AMember.chatroomname == chatroomname).first()
-        if not a_member:
-            # 匹配 AContact
-            a_contact = db.session.query(AContact).outerjoin(AMember, AMember.username == AContact.username)\
-                .filter(AContact.nickname == unicode_to_str(nickname), AMember.chatroomname == chatroomname).first()
-            if a_contact:
-                member = fetch_member_by_username(chatroomname, a_contact.username)
-            else:
-                logger.error(u"未匹配到 member, nickname: %s, chatroom: %s" % (nickname, chatroomname))
-        else:
-            member = fetch_member_by_username(chatroomname, a_member.username)
+        a_member = BaseModel.fetch_one(AMember, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+        members = a_member.members
+        for member in members:
+            # Mark 不处理匹配到多个的情况
+            if member.displayname == nickname:
+                return member.username
+        member_usernames = [member.username for member in members]
+        a_contact_list = BaseModel.fetch_all(AContact, ["username", "nickname"], where_clause = BaseModel.where("in", "username", member_usernames))
+        for a_contact in a_contact_list:
+            # Mark 不处理匹配到多个的情况
+            if a_contact.nickname == nickname:
+                return a_contact.username
 
-    return member
-
-
-def fetch_member_by_username(chatroomname, username):
-    member = db.session.query(MemberInfo).filter(MemberInfo.chatroomname == chatroomname,
-                                                 MemberInfo.username == username).first()
-    if not member:
-        update_members(chatroomname, save_flag = True)
-        # 更新信息之后再查不到就不管了
-        member = db.session.query(MemberInfo).filter(MemberInfo.chatroomname == chatroomname,
-                                                     MemberInfo.username == username).first()
-
+    if update_flag:
+        update_members(chatroomname)
+        return fetch_member_by_nickname(chatroomname, nickname, update_flag = False)
     return member
 
 
 def update_members(chatroomname, create_time = None, save_flag = False):
-    a_contact_chatroom = db.session.query(AContact).filter(AContact.username == chatroomname).first()
-    if not a_contact_chatroom:
-        logger.error(u'Not found chatroomname in AContact: %s.' % chatroomname)
-        return
-    old_members = db.session.query(MemberInfo.username).filter(MemberInfo.chatroomname == chatroomname).all()
-    # old_member_dict = {old_member.username: old_member for old_member in old_members}
-    old_member_username_set = {old_member.username for old_member in old_members}
-    a_member_list = db.session.query(AMember).filter(AMember.chatroomname == chatroomname).all()
-    for a_member in a_member_list:
-        if a_member.username in old_member_username_set:
-            pass
-        else:
-            old_member_username_set.add(a_member.username)
-            new_member_info = MemberInfo(member_id = a_member.id, chatroomname = chatroomname,
-                                         username = a_member.username, chatroom_id = a_contact_chatroom.id) \
-                .generate_create_time(create_time)
-
-            MemberOverview.init_all_scope(member_id = a_member.id, chatroom_id = a_contact_chatroom.id,
-                                          chatroomname = chatroomname, username = a_member.username)
-            db.session.merge(new_member_info)
-
-    update_chatroom_members_info(chatroomname)
-    if save_flag:
-        db.session.commit()
+    # a_contact_chatroom = db.session.query(AContact).filter(AContact.username == chatroomname).first()
+    # if not a_contact_chatroom:
+    #     logger.error(u'Not found chatroomname in AContact: %s.' % chatroomname)
+    #     return
+    # old_members = db.session.query(MemberInfo.username).filter(MemberInfo.chatroomname == chatroomname).all()
+    # # old_member_dict = {old_member.username: old_member for old_member in old_members}
+    # old_member_username_set = {old_member.username for old_member in old_members}
+    # a_member_list = db.session.query(AMember).filter(AMember.chatroomname == chatroomname).all()
+    # for a_member in a_member_list:
+    #     if a_member.username in old_member_username_set:
+    #         pass
+    #     else:
+    #         old_member_username_set.add(a_member.username)
+    #         new_member_info = MemberInfo(member_id = a_member.id, chatroomname = chatroomname,
+    #                                      username = a_member.username, chatroom_id = a_contact_chatroom.id) \
+    #             .generate_create_time(create_time)
+    #
+    #         MemberOverview.init_all_scope(member_id = a_member.id, chatroom_id = a_contact_chatroom.id,
+    #                                       chatroomname = chatroomname, username = a_member.username)
+    #         db.session.merge(new_member_info)
+    #
+    # update_chatroom_members_info(chatroomname)
+    # if save_flag:
+    #     db.session.commit()
+    pass

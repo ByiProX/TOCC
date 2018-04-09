@@ -7,15 +7,19 @@ from configs.config import rds
 logger = logging.getLogger('main')
 
 
-def rds_lpush(chat_logs_type, msg_id, chatroomname, username, create_time, content):
+def rds_lpush(chat_logs_type, msg_id, chatroomname = None, username = None, create_time = None, content = None, err = False):
     chat_logs = dict()
     chat_logs["type"] = chat_logs_type
     chat_logs["msg_id"] = msg_id
-    chat_logs["chatroomname"] = chatroomname
-    chat_logs["username"] = username
-    chat_logs["time"] = create_time
-    chat_logs["content"] = content
-    rds.lpush("ct_logs", json.dumps(chat_logs))
+    if err:
+        queue_name = "ct_logs_err"
+    else:
+        chat_logs["chatroomname"] = chatroomname
+        chat_logs["username"] = username
+        chat_logs["time"] = create_time
+        chat_logs["content"] = content
+        queue_name = "ct_logs"
+    rds.lpush(queue_name, json.dumps(chat_logs))
 
 
 if __name__ == '__main__':
