@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import redis
 from decimal import Decimal
 
 from flask import Flask, Blueprint
@@ -128,6 +129,8 @@ app = Flask(__name__)
 app.config.from_object(config_map[config_name])
 config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
+
+rds = redis.StrictRedis(host = '192.168.1.191', port = 6379, db = 1, password = "redisRedis_789")
 
 # TODO 此处应换为新公众号的数值
 APP_ID = 'wxc3bc48b4c40651fd'
@@ -324,3 +327,8 @@ Chatroom = "a_chatroom"
 
 SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
 DB_SERVER_URL = u'http://dal.com/'
+
+CHAT_LOGS_TYPE_0 = 0  # 退群
+CHAT_LOGS_TYPE_1 = 1  # 拉人进群
+CHAT_LOGS_TYPE_2 = 2  # 发言不带@
+CHAT_LOGS_TYPE_3 = 3  # 发言带@

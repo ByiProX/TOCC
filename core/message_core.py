@@ -39,7 +39,10 @@ def analysis_and_save_a_message(a_message):
     msg_ext.is_to_friend = is_to_friend
 
     # real_talker & real_content
-    if is_to_friend or is_send or msg_type == MSG_TYPE_SYS:
+    if is_send:
+        real_talker = msg_ext.username
+        real_content = content
+    elif is_to_friend or msg_type == MSG_TYPE_SYS:
         real_talker = talker
         real_content = content
     elif msg_type != MSG_TYPE_TXT:
