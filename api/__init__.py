@@ -13,7 +13,7 @@ import synchronous_announcement_api
 import coin_wallet_api
 import chatroom_api
 import member_api
-import cron_api
+# import cron_api
 import android_db_api
 
 api_str = ""

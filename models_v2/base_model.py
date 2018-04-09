@@ -17,17 +17,10 @@ class BaseModel(object):
     def __init__(self, tablename = None, rules = None):
         self.__tablename = tablename
         self.__rules = rules
-        self.__attrs = self.generate_attrs()
+        self.attrs = self.generate_attrs()
 
     def __repr__(self):
         return unicode(BaseModel.__module__) + u'.' + unicode(BaseModel.__name__) + u' instance at ' + unicode(hex(id(self)))
-
-    def __getattr__(self, item):
-        return self.__attrs[item]
-
-    # def __setattr__(self, key, value):
-    #     if key in
-    #     return self.__attrs.setdefault(key, value)
 
     @staticmethod
     def create_model(tablename):
@@ -46,22 +39,23 @@ class BaseModel(object):
         return self.__rules
 
     def generate_attrs(self):
-        __attrs = dict()
+        __attrs = list()
         for rule in self.__rules:
             for attr in rule[0]:
-                __attrs.setdefault(attr, None)
+                __attrs.append(attr)
+                setattr(self, attr, None)
         return __attrs
 
     def from_json(self, data_json):
         for key in data_json.keys():
             if key == u'_id':
                 _id = data_json.get(key).get(u"$oid")
-                self.__attrs.setdefault(self.__tablename + u"_id", _id)
-            if key in self.__attrs.keys():
+                setattr(self, self.__tablename + u"_id", _id)
+            if key in self.attrs:
                 value = data_json.get(key)
                 if isinstance(value, bool):
                     value = 1 if value else 0
-                self.__attrs[key] = value
+                setattr(self, key, value)
         # if self._validate_all():
         #     return self
         # else:
@@ -70,11 +64,12 @@ class BaseModel(object):
         return self
 
     def to_json(self):
-        res_json = {__attr: __value for __attr, __value in self.__attrs.iteritems()}
+        # res_json = {__attr: __value for __attr, __value in self.attrs.iteritems()}
+        res_json = {attr: getattr(self, attr) for attr in self.attrs if getattr(self, attr) is not None}
         return res_json
 
     def _validate_attr(self, __attr):
-        if __attr not in self.__attrs.keys():
+        if __attr not in self.attrs:
             return False
         __value = getattr(self, __attr)
         if __value is not None:
@@ -99,7 +94,7 @@ class BaseModel(object):
                 logger.error(u'require ' + unicode(__require))
                 return False
 
-        for __attr in self.__attrs.keys():
+        for __attr in self.attrs:
             self._validate_attr(__attr)
         return True
 
@@ -151,36 +146,40 @@ class BaseModel(object):
             return False
 
     def set_id(self, _id):
-        self.__attrs[self.__tablename + u"_id"] = _id
+        setattr(self, self.__tablename + u"_id", _id)
         return self
 
     def get_id(self):
-        return self.__attrs.get(self.__tablename + u'_id')
+        if hasattr(self, self.__tablename + u'_id'):
+            return getattr(self, self.__tablename + u'_id')
+        else:
+            return None
 
     def save(self):
         if not self._validate_all():
             logger.error(u"_validate failed")
-            return
+            return False
         item_exist_where_clause = dict()
         for __require in self.__rules[0][0]:
             value = getattr(self, __require)
             item_exist_where_clause.setdefault(__require, value)
-        item_exist = BaseModel.fetch_one(self.__tablename, '*', where_clause = item_exist_where_clause)
-        if self.get_id() is None and item_exist is None:
+        # Mark
+        item_exist = BaseModel.count(self.__tablename, where_clause = {"where": json.dumps(item_exist_where_clause)})
+        if self.get_id() is None and item_exist == 0:
             # 插入
-            self.db_post()
+            return self.db_post()
         else:
             # 更新
-            self.db_put()
-        return self
+            return self.db_put()
+        # return self
 
     # TODO: validate and update
     def update(self):
         if not self._validate_all():
             logger.error(u"_validate failed")
-            return
-        self.db_put()
-        return self
+            return False
+        return self.db_put()
+        # return self
 
     # 保存
     def db_post(self):
@@ -193,16 +192,18 @@ class BaseModel(object):
         if code == 0:
             msg = response_json.get(u"msg")
             self.set_id(_id = msg)
+            return True
         else:
             logger.error(u"insert failed, content: " + unicode(response.content))
-        return self
+            return False
+        # return self
 
     # 更新
     def db_put(self):
         _id = self.get_id()
         if _id is None:
             logger.error(u"update failed, _id is None")
-            return self
+            return False
         url = DB_SERVER_URL + self.__tablename + u'/' + _id
         data = self.to_json()
         response = requests.put(url = url, data = data)
@@ -211,9 +212,29 @@ class BaseModel(object):
         if code == 0:
             msg = response_json.get(u"msg")
             self.set_id(_id = msg)
+            return True
         else:
             logger.error(u"update failed, content: " + unicode(response.content))
-        return self
+            return False
+        # return self
+
+    @staticmethod
+    def count(tablename, where_clause = None, **kwargs):
+        query_clause = dict()
+        query_clause.update({"count": 1})
+        if where_clause:
+            query_clause.update(where_clause)
+        query_clause.update(kwargs)
+        url = DB_SERVER_URL + tablename + u's'
+        response = requests.get(url = url, params = query_clause)
+        response_json = json.loads(response.content)
+        code = response_json.get(u"code")
+        count = 0
+        if code == 0:
+            count = response_json.get(u"count")
+        else:
+            logger.error(u"query failed, content: " + unicode(response.content))
+        return count
 
     @staticmethod
     def fetch_all(tablename, select_colums, where_clause = None, limit = None, offset = None, order_by = None, **kwargs):
@@ -221,7 +242,7 @@ class BaseModel(object):
         if not select_colums == '*':
             if not isinstance(select_colums, list):
                 select_colums = [select_colums]
-            query_clause.update({"select": select_colums})
+            query_clause.update({"select": json.dumps(select_colums)})
         if where_clause:
             query_clause.update(where_clause)
         if limit:
@@ -356,14 +377,17 @@ CM = BaseModel.create_model
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
-    # user = db.session.query(UserInfo).first()
-    # user_json = model_to_dict(user, user.__class__)
-    # user_json['client_id'] = 1
-    # user_json['last_login_time'] = int(user_json['last_login_time']) / 1000
-    # user_json['token_expired_time'] = int(user_json['token_expired_time']) / 1000
-    # user_json['create_time'] = int(user_json['create_time']) / 1000
-    # user_info = CM('client_member').from_json(user_json)
-    # user_info.save()
-    user_info_list = BaseModel.fetch_all('client_member', '*', pagesize = 1)
-    # user_info = BaseModel.fetch_by_id(u'client_member', u'5aca233d421aa939413cc042')
+    user = db.session.query(UserInfo).first()
+    user_json = model_to_dict(user, user.__class__)
+    user_json['client_id'] = 1
+    user_json['open_id'] += "a"
+    user_json['last_login_time'] = int(user_json['last_login_time']) / 1000
+    user_json['token_expired_time'] = int(user_json['token_expired_time']) / 1000
+    user_json['create_time'] = int(user_json['create_time']) / 1000
+    user_info = CM('client_member').from_json(user_json)
+    user_info.save()
+    # user_info_list = BaseModel.fetch_all('client_member', ['open_id', 'token'])
+    # user_info = BaseModel.fetch_by_id(u'client_member', u'5acb919f421aa9393f212b88')
+    # user_info.union_id = "1"
+    # user_info.update()
     pass
