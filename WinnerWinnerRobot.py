@@ -7,21 +7,24 @@ from maintenance.database_rel import create_all_databases
 
 import logging
 
-from configs.config import app, main_api, api_v2
+from configs.config import app, main_api, main_api_v2
 from core.production_core import production_thread
 from models_v2.base_model import BaseModel
 
 from utils import u_log
 import models
 import api
+import api_v2
 import configs
 
 monkey.patch_all()
 app.register_blueprint(main_api, url_prefix='/yaca_api')
-app.register_blueprint(api_v2, url_prefix='/yaca_api_v2')
+app.register_blueprint(main_api_v2, url_prefix= '/yaca_api_v2')
 
 models.import_str = ""
 api.api_str = ""
+api_v2.api_str = ""
+main_api_v2.api_str = ""
 configs.config_str = ""
 
 __version__ = "0.0.1a1"

@@ -6,7 +6,7 @@ from urllib import urlencode
 
 import requests
 
-from configs.config import DB_RULE, db, SECRET_ATTR_SET, DB_SERVER_URL, SUCCESS, ERROR_CODE
+from configs.config import DB_RULE, db, DB_SERVER_URL, SUCCESS, ERROR_CODE
 from models.user_bot_models import UserInfo
 from utils.u_model_json_str import model_to_dict
 
@@ -70,7 +70,7 @@ class BaseModel(object):
         return self
 
     def to_json(self):
-        res_json = {__attr: __value for __attr, __value in self.__attrs.iteritems() if __attr not in SECRET_ATTR_SET}
+        res_json = {__attr: __value for __attr, __value in self.__attrs.iteritems()}
         return res_json
 
     def _validate_attr(self, __attr):
@@ -128,6 +128,10 @@ class BaseModel(object):
     @staticmethod
     def _validate_json(__value, __params = None):
         print u'_validate_json'
+        # if isinstance(__value, dict) or isinstance(__value, list):
+        #     return True
+        # else:
+        #     return False
         try:
             json.loads(__value)
             return True
@@ -162,7 +166,7 @@ class BaseModel(object):
             value = getattr(self, __require)
             item_exist_where_clause.setdefault(__require, value)
         item_exist = BaseModel.fetch_one(self.__tablename, '*', where_clause = item_exist_where_clause)
-        if self.get_id() is not None or item_exist is not None:
+        if self.get_id() is None and item_exist is None:
             # 插入
             self.db_post()
         else:
@@ -212,7 +216,7 @@ class BaseModel(object):
         return self
 
     @staticmethod
-    def fetch_all(tablename, select_colums, where_clause = None, limit = None, offset = None, order_by = None):
+    def fetch_all(tablename, select_colums, where_clause = None, limit = None, offset = None, order_by = None, **kwargs):
         query_clause = dict()
         if not select_colums == '*':
             if not isinstance(select_colums, list):
@@ -226,6 +230,8 @@ class BaseModel(object):
             query_clause.update(offset)
         if order_by:
             query_clause.update(order_by)
+
+        query_clause.update(kwargs)
 
         item_list = list()
         url = DB_SERVER_URL + tablename + u's'
@@ -245,8 +251,9 @@ class BaseModel(object):
         return item_list
 
     @staticmethod
-    def fetch_one(tablename, select_colums, where_clause = None, order_by = None):
+    def fetch_one(tablename, select_colums, where_clause = None, order_by = None, **kwargs):
         query_clause = dict()
+        print where_clause
         if not select_colums == '*':
             if not isinstance(select_colums, list):
                 select_colums = [select_colums]
@@ -257,6 +264,8 @@ class BaseModel(object):
         if order_by:
             query_clause.update(order_by)
         query_clause.update({"limit": 1})
+
+        query_clause.update(kwargs)
 
         item = None
         url = DB_SERVER_URL + tablename + u's'
@@ -292,7 +301,7 @@ class BaseModel(object):
 
     @staticmethod
     def where_dict(where_dict):
-        where_clause = {"where": where_dict}
+        where_clause = {"where": json.dumps(where_dict)}
         return where_clause
 
     @staticmethod
@@ -321,7 +330,7 @@ class BaseModel(object):
         where_clause_list.append(operator)
         where_clause_list.append(key)
         where_clause_list.append(value)
-        where_clause = {"where": where_clause_list}
+        where_clause = {"where": json.dumps(where_clause_list)}
         return where_clause
 
     @staticmethod
@@ -347,14 +356,14 @@ CM = BaseModel.create_model
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
-    user = db.session.query(UserInfo).first()
-    user_json = model_to_dict(user, user.__class__)
-    user_json['client_id'] = 1
-    user_json['last_login_time'] = int(user_json['last_login_time']) / 1000
-    user_json['token_expired_time'] = int(user_json['token_expired_time']) / 1000
-    user_json['create_time'] = int(user_json['create_time']) / 1000
-    user_info = CM('client_member').from_json(user_json)
-    user_info.save()
-    # user_info_list = BaseModel.fetch_all('client_member', '*')
+    # user = db.session.query(UserInfo).first()
+    # user_json = model_to_dict(user, user.__class__)
+    # user_json['client_id'] = 1
+    # user_json['last_login_time'] = int(user_json['last_login_time']) / 1000
+    # user_json['token_expired_time'] = int(user_json['token_expired_time']) / 1000
+    # user_json['create_time'] = int(user_json['create_time']) / 1000
+    # user_info = CM('client_member').from_json(user_json)
+    # user_info.save()
+    user_info_list = BaseModel.fetch_all('client_member', '*', pagesize = 1)
     # user_info = BaseModel.fetch_by_id(u'client_member', u'5aca233d421aa939413cc042')
     pass

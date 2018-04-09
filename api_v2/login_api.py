@@ -3,13 +3,13 @@ import json
 
 from flask import request
 
-from configs.config import api_v2, ERR_PARAM_SET, ERR_INVALID_PARAMS, SUCCESS, INFO_NO_USED_BOT, ERR_SET_LENGTH_WRONG
+from configs.config import main_api_v2, ERR_PARAM_SET, ERR_INVALID_PARAMS, SUCCESS, INFO_NO_USED_BOT, ERR_SET_LENGTH_WRONG
 from core_v2.user_core import UserLogin, cal_user_basic_page_info, add_a_pre_relate_user_bot_info, get_bot_qr_code, \
     set_bot_name
 from utils.u_response import make_response
 
 
-@api_v2.route('/verify_code', methods=['POST'])
+@main_api_v2.route('/verify_code', methods=['POST'])
 def login_verify_code():
     """
     用于验证
@@ -32,7 +32,7 @@ def login_verify_code():
         return make_response(status)
 
 
-@api_v2.route('/get_user_basic_info', methods=['POST'])
+@main_api_v2.route('/get_user_basic_info', methods=['POST'])
 def app_get_user_basic_info():
     """
     读取用户管理界面的所有的信息
@@ -54,7 +54,7 @@ def app_get_user_basic_info():
         return make_response(status)
 
 
-@api_v2.route('/initial_robot_nickname', methods=['POST'])
+@main_api_v2.route('/initial_robot_nickname', methods=['POST'])
 def app_initial_robot_nickname():
     """
     用于设置robot名字,并返回二维码
@@ -82,7 +82,7 @@ def app_initial_robot_nickname():
         return make_response(status)
 
 
-@api_v2.route('/set_robot_nickname', methods=['POST'])
+@main_api_v2.route('/set_robot_nickname', methods=['POST'])
 def app_set_robot_nickname():
     """
     用于设置rebot名字
@@ -106,7 +106,7 @@ def app_set_robot_nickname():
     return make_response(status)
 
 
-@api_v2.route("/get_bot_qr_code", methods=["POST"])
+@main_api_v2.route("/get_bot_qr_code", methods=["POST"])
 def app_get_bot_qr_code():
     """
     提供前端一个二维码
@@ -124,7 +124,7 @@ def app_get_bot_qr_code():
         return make_response(status)
 
 
-@api_v2.route("/binded_wechat_bot", methods=["POST"])
+@main_api_v2.route("/binded_wechat_bot", methods=["POST"])
 def app_binded_wechat_bot():
     """
     当捆绑bot成功时，我应该得到的消息

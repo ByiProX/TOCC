@@ -137,7 +137,7 @@ APP_ID = 'wxc3bc48b4c40651fd'
 APP_SECRET = '959f45dbf812a5685f85ff572e76a671'
 
 main_api = Blueprint('api', __name__)
-api_v2 = Blueprint('api_v2', __name__)
+main_api_v2 = Blueprint('api_v2', __name__)
 
 # 生成所有任务的循环和发送所有任务的循环所需要用的时间
 PRODUCTION_CIRCLE_INTERVAL = 1
@@ -324,8 +324,9 @@ UserBotR = "client_bot_r"
 BotInfo = "bot_info"
 UserQunR = "client_qun_r"
 Chatroom = "a_chatroom"
-AMember = "a_member"
-AContact = "a_contact"
+Member = "a_member"
+Contact = "a_contact"
+Keywords = "keywords"
 
 SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
 DB_SERVER_URL = u'http://dal.com/'

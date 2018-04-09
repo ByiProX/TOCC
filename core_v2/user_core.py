@@ -12,6 +12,7 @@ from configs.config import SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPI
     UserBotR, BotInfo, UserQunR, Chatroom
 from core_v2.wechat_core import wechat_conn
 from models_v2.base_model import BaseModel, CM
+from utils.u_time import datetime_to_timestamp_utc_8
 from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
@@ -44,7 +45,7 @@ class UserLogin:
             self.now_user_info = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where("=", "code", self.code))
             # 如果这个code和上次code一样
             if self.now_user_info:
-                if datetime.now() < self.now_user_info.token_expired_time:
+                if datetime_to_timestamp_utc_8(datetime.now()) < self.now_user_info.token_expired_time:
                     return SUCCESS, self.now_user_info
                 else:
                     logger.error(
@@ -64,27 +65,25 @@ class UserLogin:
                 # 意味着之前有，现在也有
                 if self.now_user_info:
                     self.now_user_info.code = self.code
-                    self.now_user_info.last_login_time = datetime.now()
+                    self.now_user_info.last_login_time = datetime_to_timestamp_utc_8(datetime.now())
 
-                    if datetime.now() < self.now_user_info.token_expired_time:
+                    if datetime_to_timestamp_utc_8(datetime.now()) < self.now_user_info.token_expired_time:
                         logger.info(u"老用户登录，token未过期. user_id: %s" % self.now_user_info.client_id)
                         pass
                     else:
                         self.now_user_info.token = self._generate_user_token()
-                        self.now_user_info.token_expired_time = datetime.now() + timedelta(
-                            days=TOKEN_EXPIRED_THRESHOLD)
+                        self.now_user_info.token_expired_time = datetime_to_timestamp_utc_8(datetime.now() + timedelta(days=TOKEN_EXPIRED_THRESHOLD))
                         logger.info(u"老用户登录，token更新. user_id: %s" % self.now_user_info.client_id)
 
                     self.now_user_info.save()
                     return SUCCESS, self.now_user_info
                 else:
                     self.user_info_up_to_date.code = self.code
-                    self.user_info_up_to_date.create_time = datetime.now()
-                    self.user_info_up_to_date.last_login_time = datetime.now()
+                    self.user_info_up_to_date.create_time = datetime_to_timestamp_utc_8(datetime.now())
+                    self.user_info_up_to_date.last_login_time = datetime_to_timestamp_utc_8(datetime.now())
 
                     self.user_info_up_to_date.token = self._generate_user_token()
-                    self.user_info_up_to_date.token_expired_time = datetime.now() + timedelta(
-                        days=TOKEN_EXPIRED_THRESHOLD)
+                    self.user_info_up_to_date.token_expired_time = datetime_to_timestamp_utc_8(datetime.now() + timedelta(days=TOKEN_EXPIRED_THRESHOLD))
 
                     # switch
                     user_switch = CM(UserSwitch)
@@ -105,7 +104,7 @@ class UserLogin:
             else:
                 self.now_user_info = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where("=", "open_id", self.open_id))
                 if self.now_user_info:
-                    if datetime.now() < self.now_user_info.token_expired_time:
+                    if datetime_to_timestamp_utc_8(datetime.now()) < self.now_user_info.token_expired_time:
                         logger.warning(u"老用户登录，微信不认可open_id. user_id: %s" % self.now_user_info.client_id)
                         return SUCCESS, self.now_user_info
                     else:
@@ -121,7 +120,7 @@ class UserLogin:
             return ERR_INVALID_PARAMS, None
         user_info = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where("=", "token", token))
         if user_info:
-            if datetime.now() < user_info.token_expired_time:
+            if datetime_to_timestamp_utc_8(datetime.now()) < user_info.token_expired_time:
                 logger.debug(u"用户token有效")
                 return SUCCESS, user_info
             else:
@@ -155,9 +154,9 @@ class UserLogin:
     def _generate_user_token(self, open_id=None, datetime_now=None):
         if open_id and datetime_now:
             self.open_id = open_id
-            datetime_now = datetime_now
+            datetime_now = datetime_to_timestamp_utc_8(datetime_now)
         else:
-            datetime_now = datetime.now()
+            datetime_now = datetime_to_timestamp_utc_8(datetime.now())
 
         if self.open_id is None:
             raise ValueError("没有正确的open_id")
@@ -172,7 +171,7 @@ class UserLogin:
 def set_bot_name(bot_id, bot_nickname, user_info):
     bot_info = BaseModel.fetch_by_id(BotInfo, bot_id)
     ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
-                                                                                "bot_username": bot_info.username}))
+                                                                                       "bot_username": bot_info.username}))
 
     if not ubr_info:
         logger.error(u"未找到已开启的user与bot关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_id))
@@ -208,7 +207,7 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
 
     ubr_info.chatbot_default_nickname = chatbot_default_nickname
     ubr_info.is_work = False
-    ubr_info.create_time = datetime.now()
+    ubr_info.create_time = datetime_to_timestamp_utc_8(datetime.now())
 
     ubr_info.save()
     logger.info(u"初始化user与bot关系成功. user_id: %s. bot_username: %s." % (user_info.client_id, bot_info.bot_username))
@@ -460,9 +459,9 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
 #             ubr_info = UserBotRelateInfo()
 #             ubr_info.user_id = user.user_id
 #             ubr_info.bot_id = bot.bot_id
-#             ubr_info.preset_time = datetime.now()
+#             ubr_info.preset_time = datetime_to_timestamp_utc_8(datetime.now())
 #             ubr_info.set_time = 0
-#             ubr_info.create_time = datetime.now()
+#             ubr_info.create_time = datetime_to_timestamp_utc_8(datetime.now())
 #         ubr_info.is_setted = True
 #         ubr_info.is_being_used = True
 #         db.session.merge(ubr_info)

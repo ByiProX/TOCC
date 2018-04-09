@@ -3,7 +3,7 @@ import copy
 import json
 
 from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, db, CONTENT_TYPE_SYS, CONTENT_TYPE_TXT, CHAT_LOGS_TYPE_2, \
-    CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, rds, AMember, AContact, CHAT_LOGS_ERR_TYPE_0
+    CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, rds, Member, Contact, CHAT_LOGS_ERR_TYPE_0
 from core.redis_core import rds_lpush
 from core.send_task_and_ws_setting_core import update_chatroom_members_info
 from models_v2.base_model import BaseModel
@@ -187,14 +187,14 @@ def fetch_member_by_nickname(chatroomname, nickname, update_flag = True):
     member = None
     if nickname:
         # 匹配 AMember
-        a_member = BaseModel.fetch_one(AMember, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+        a_member = BaseModel.fetch_one(Member, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
         members = a_member.members
         for member in members:
             # Mark 不处理匹配到多个的情况
             if member.displayname == nickname:
                 return member.username
         member_usernames = [member.username for member in members]
-        a_contact_list = BaseModel.fetch_all(AContact, ["username", "nickname"], where_clause = BaseModel.where("in", "username", member_usernames))
+        a_contact_list = BaseModel.fetch_all(Contact, ["username", "nickname"], where_clause = BaseModel.where("in", "username", member_usernames))
         for a_contact in a_contact_list:
             # Mark 不处理匹配到多个的情况
             if a_contact.nickname == nickname:
