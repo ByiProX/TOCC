@@ -17,7 +17,7 @@ logger = logging.getLogger('main')
 
 class WechatConn:
     def __init__(self):
-        self.access_token = CM(AccessToken).fetch_one('*', where_clause = BaseModel.where(">", "expired_time", datetime.now()))
+        self.access_token = BaseModel.fetch_one(AccessToken, '*', where_clause = BaseModel.where(">", "expired_time", datetime.now()))
 
     def wechat_get(self, url, **kwargs):
         return self._wechat_requst('GET', url=url, **kwargs)

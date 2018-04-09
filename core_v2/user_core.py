@@ -41,7 +41,7 @@ class UserLogin:
         """
         # 如果没有读取到open_id
         if self.open_id is None:
-            self.now_user_info = CM(UserInfo).fetch_one('*', where_clause = BaseModel.where("=", "code", self.code))
+            self.now_user_info = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where("=", "code", self.code))
             # 如果这个code和上次code一样
             if self.now_user_info:
                 if datetime.now() < self.now_user_info.token_expired_time:
@@ -60,7 +60,7 @@ class UserLogin:
             self._get_user_info_from_wechat()
             # 抓到了信息，那么所有信息都更新
             if self.user_info_up_to_date:
-                self.now_user_info = CM(UserInfo).fetch_one('*', where_clause = BaseModel.where("=", "open_id", self.open_id))
+                self.now_user_info = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where("=", "open_id", self.open_id))
                 # 意味着之前有，现在也有
                 if self.now_user_info:
                     self.now_user_info.code = self.code
@@ -103,7 +103,7 @@ class UserLogin:
 
             # 因为各种原因没有拿到用户信息
             else:
-                self.now_user_info = CM(UserInfo).fetch_one('*', where_clause = BaseModel.where("=", "open_id", self.open_id))
+                self.now_user_info = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where("=", "open_id", self.open_id))
                 if self.now_user_info:
                     if datetime.now() < self.now_user_info.token_expired_time:
                         logger.warning(u"老用户登录，微信不认可open_id. user_id: %s" % self.now_user_info.client_id)
@@ -119,7 +119,7 @@ class UserLogin:
     def verify_token(token):
         if not token:
             return ERR_INVALID_PARAMS, None
-        user_info = CM(UserInfo).fetch_one('*', where_clause = BaseModel.where("=", "token", token))
+        user_info = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where("=", "token", token))
         if user_info:
             if datetime.now() < user_info.token_expired_time:
                 logger.debug(u"用户token有效")
@@ -170,8 +170,8 @@ class UserLogin:
 
 
 def set_bot_name(bot_id, bot_nickname, user_info):
-    bot_info = CM(BotInfo).fetch_one("*", where_clause = BaseModel.where_dict({"_id": bot_id}))
-    ubr_info = CM(UserBotR).fetch_one('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+    bot_info = BaseModel.fetch_by_id(BotInfo, bot_id)
+    ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
                                                                                 "bot_username": bot_info.username}))
 
     if not ubr_info:
@@ -216,10 +216,10 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
 
 
 def cal_user_basic_page_info(user_info):
-    ubr_info = CM(UserBotR).fetch_one('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
 
     if ubr_info:
-        uqr_info = CM(UserQunR).fetch_one('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+        uqr_info = BaseModel.fetch_one(UserQunR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
         group_list = uqr_info.group_list
         chatroomname_set = set()
         for group in group_list:
@@ -297,13 +297,13 @@ def cal_user_basic_page_info(user_info):
 
 
 def get_bot_qr_code(user_info):
-    ubr_info = CM(UserBotR).fetch_one('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
 
     if not ubr_info:
         logger.error(u"无预建立的群关系. user_id: %s." % user_info.user_id)
         return ERR_WRONG_USER_ITEM, None
 
-    bot_info = CM(BotInfo).fetch_one("*", where_clause = BaseModel.where_dict({"username": ubr_info.bot_username}))
+    bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"username": ubr_info.bot_username}))
 
     if not bot_info:
         logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
@@ -374,7 +374,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     user_switch.save()
 
     logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.user_id, user_username))
-    ubr_info = CM(UserBotR).fetch_one('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+    ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
                                                                                 "bot_username": bot_info.username}))
     if not ubr_info:
         logger.debug(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.user_id)
@@ -496,7 +496,7 @@ def _get_a_balanced_bot():
     #             return bot_info
     #
     # return None
-    return CM(BotInfo).fetch_one('*')
+    return BaseModel.fetch_one(BotInfo, '*')
 
 
 def _get_qr_code_base64_str(username):

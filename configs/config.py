@@ -321,3 +321,6 @@ UserBotR = "client_bot_r"
 BotInfo = "bot_info"
 UserQunR = "client_qun_r"
 Chatroom = "a_chatroom"
+
+SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
+DB_SERVER_URL = u'http://dal.com/'
