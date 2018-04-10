@@ -53,3 +53,17 @@ def decimal_to_str(a_decimal):
                 return a_split[0] + "." + a_split[1]
     else:
         return a_str
+
+
+def trim_str(a_str):
+    if "." in a_str:
+        a_split = a_str.split(".")
+        while True:
+            if len(a_split[1]) == 0:
+                return a_split[0] + ".00"
+            if a_split[1][-1] == "0":
+                a_split[1] = a_split[1][:-1]
+            else:
+                return a_split[0] + "." + a_split[1]
+    else:
+        return a_str

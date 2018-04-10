@@ -327,6 +327,8 @@ Chatroom = "a_chatroom"
 Member = "a_member"
 Contact = "a_contact"
 Keywords = "keywords"
+Message = "a_message"
+RealTimeQuotesDefaultSettingInfo = "real_time_quotes_default_setting_info"
 
 SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
 DB_SERVER_URL = u'http://dal.com/'

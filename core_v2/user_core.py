@@ -10,6 +10,7 @@ from configs.config import SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPI
     ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM, \
     ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE, MSG_TYPE_TXT, MSG_TYPE_SYS, ERR_INVALID_PARAMS, UserInfo, UserSwitch, \
     UserBotR, BotInfo, UserQunR, Chatroom
+from core_v2.qun_manage_core import set_default_group
 from core_v2.wechat_core import wechat_conn
 from models_v2.base_model import BaseModel, CM
 from utils.u_time import datetime_to_timestamp_utc_8
@@ -386,89 +387,9 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     ubr_info.is_work = True
     ubr_info.save()
 
-    # set_default_group(user_info)
+    set_default_group(user_info.client_id)
     logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_info.bot_id))
     return SUCCESS, user_info
-
-
-# def check_whether_message_is_add_friend_v2(message_analysis):
-#     """
-#     根据一条Message，返回是否为加bot为好友
-#     :return:
-#     """
-#     is_add_friend = False
-#     msg_type = message_analysis.type
-#     content = str_to_unicode(message_analysis.content)
-#
-#     if message_analysis.is_to_friend and \
-#             ((msg_type in (MSG_TYPE_TXT, MSG_TYPE_SYS) and content.find(u'现在可以开始聊天了') != -1)
-#              or (msg_type is MSG_TYPE_SYS and content.find(u'以上是打招呼的内容') != -1)):
-#         # add friend
-#         is_add_friend = True
-#         # Mark
-#         # 考虑用启线程去处理
-#         _process_is_add_friend(message_analysis)
-#
-#     return is_add_friend
-#
-#
-# def _process_is_add_friend(message_analysis):
-#     bot = db.session.query(BotInfo).filter(BotInfo.username == message_analysis.username).first()
-#     if not bot:
-#         logger.error(u"找不到 bot: " + str_to_unicode(message_analysis.username))
-#         return
-#     user_username = message_analysis.real_talker
-#     a_contact = AContact.get_a_contact(username = user_username)
-#     if a_contact:
-#         user_nickname = str_to_unicode(a_contact.nickname)
-#         logger.info(u"发现加bot好友用户. username: %s, nickname: %s" % (user_username, user_nickname))
-#
-#         # 验证是否是唯一的friend
-#         # a_friend = AFriend.get_a_friend(from_username = bot.username, to_username = user_username)
-#         # if not a_friend:
-#         #     logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
-#         #                  (bot.username, user_username))
-#         #     return ERR_WRONG_ITEM, None
-#         #
-#         # if a_friend.type % 2 != 1:
-#         #     logger.error(u"用户与bot不是好友. bot_username: %s. user_username: %s" %
-#         #                  (bot.username, user_username))
-#         #     logger.info(u'但是放宽限制，暂时给予通过')
-#         #     # return ERR_WRONG_ITEM, None
-#
-#         filter_list_user = UserInfo.get_filter_list(nickname = user_nickname)
-#         filter_list_user.append(UserInfo.username == u"")
-#         user_list = db.session.query(UserInfo).filter(*filter_list_user)\
-#             .order_by(UserInfo.create_time.desc()).all()
-#         if len(user_list) > 1:
-#             logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
-#                          (bot.username, user_username))
-#             return
-#         elif len(user_list) == 0:
-#             logger.error(u"配对user信息出错. bot_username: %s. user_username: %s" %
-#                          (bot.username, user_username))
-#             return
-#
-#         user = user_list[0]
-#         user.username = user_username
-#         db.session.merge(user)
-#
-#         ubr_info = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_id == user.user_id,
-#                                                               UserBotRelateInfo.bot_id == bot.bot_id).first()
-#         if not ubr_info:
-#             ubr_info = UserBotRelateInfo()
-#             ubr_info.user_id = user.user_id
-#             ubr_info.bot_id = bot.bot_id
-#             ubr_info.preset_time = datetime_to_timestamp_utc_8(datetime.now())
-#             ubr_info.set_time = 0
-#             ubr_info.create_time = datetime_to_timestamp_utc_8(datetime.now())
-#         ubr_info.is_setted = True
-#         ubr_info.is_being_used = True
-#         db.session.merge(ubr_info)
-#
-#         db.session.commit()
-#     else:
-#         logger.error(u"找不到 a_contact: " + str_to_unicode(user_username))
 
 
 def _get_a_balanced_bot():

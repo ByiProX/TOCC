@@ -338,11 +338,11 @@ class BaseModel(object):
     @staticmethod
     def order_by(order_dict):
         order_str = unicode()
-        for key, value in order_dict:
+        for key, value in order_dict.iteritems():
             if order_str != u"":
                 order_str += u", "
             order_str += key + u" " + value
-        order_clause = {"order_by": order_str}
+        order_clause = {"orderBy": order_str}
         return order_clause
 
     @staticmethod
@@ -377,16 +377,16 @@ CM = BaseModel.create_model
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
-    user = db.session.query(UserInfo).first()
-    user_json = model_to_dict(user, user.__class__)
-    user_json['client_id'] = 1
-    user_json['open_id'] += "a"
-    user_json['last_login_time'] = int(user_json['last_login_time']) / 1000
-    user_json['token_expired_time'] = int(user_json['token_expired_time']) / 1000
-    user_json['create_time'] = int(user_json['create_time']) / 1000
-    user_info = CM('client_member').from_json(user_json)
-    user_info.save()
-    # user_info_list = BaseModel.fetch_all('client_member', ['open_id', 'token'])
+    # user = db.session.query(UserInfo).first()
+    # user_json = model_to_dict(user, user.__class__)
+    # user_json['client_id'] = 1
+    # user_json['open_id'] += "a"
+    # user_json['last_login_time'] = int(user_json['last_login_time']) / 1000
+    # user_json['token_expired_time'] = int(user_json['token_expired_time']) / 1000
+    # user_json['create_time'] = int(user_json['create_time']) / 1000
+    # user_info = CM('client_member').from_json(user_json)
+    # user_info.save()
+    user_info_list = BaseModel.fetch_all('client_member', "*", order_by = BaseModel.order_by({"union_id": "desc"}))
     # user_info = BaseModel.fetch_by_id(u'client_member', u'5acb919f421aa9393f212b88')
     # user_info.union_id = "1"
     # user_info.update()
