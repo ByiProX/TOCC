@@ -172,21 +172,21 @@ def transfer_qun_into_a_group(old_group_id, new_group_id, chatroomname, client_i
     return SUCCESS
 
 
-def check_whether_message_is_add_qun(message_analysis):
+def check_whether_message_is_add_qun(a_message):
     """
     根据一条Message，返回是否为加群，如果是，则完成加群动作
     :return:
     """
     is_add_qun = False
-    msg_type = message_analysis.type
-    content = str_to_unicode(message_analysis.content)
+    msg_type = a_message.type
+    content = str_to_unicode(a_message.content)
 
     if msg_type == MSG_TYPE_SYS and content.find(u'邀请你') != -1:
         is_add_qun = True
-        bot_username = message_analysis.username
+        bot_username = a_message.username
         user_nickname = content.split(u'邀请')[0][1:-1]
-        logger.info(u"发现加群. user_nickname: %s. chatroomname: %s." % (user_nickname, message_analysis.talker))
-        status, user_info = _bind_qun_success(message_analysis.talker, user_nickname, bot_username)
+        logger.info(u"发现加群. user_nickname: %s. chatroomname: %s." % (user_nickname, a_message.talker))
+        status, user_info = _bind_qun_success(a_message.talker, user_nickname, bot_username)
         we_conn = WechatConn()
         if status == SUCCESS:
             we_conn.send_txt_to_follower("恭喜！友问币答小助手已经进入您的群了，可立即使用啦\n想再次试用？再次把我拉进群就好啦", user_info.open_id)
@@ -322,19 +322,19 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
     return SUCCESS, user_info
 
 
-def check_is_removed(message_analysis):
+def check_is_removed(a_message):
     """
     根据一条Message，返回是否为被移除群聊，如果是，则完成相关动作
     :return:
     """
 
     is_removed = False
-    msg_type = message_analysis.type
-    content = str_to_unicode(message_analysis.content)
+    msg_type = a_message.type
+    content = str_to_unicode(a_message.content)
     if msg_type == MSG_TYPE_SYS and content.find(u'移出群聊') != -1:
         is_removed = True
-        bot_username = message_analysis.username
-        chatroomname = message_analysis.talker
+        bot_username = a_message.username
+        chatroomname = a_message.talker
         logger.info(u"发现机器人被踢出群聊. bot_username: %s. chatroomname: %s." % (bot_username, chatroomname))
         _remove_bot_process(bot_username, chatroomname)
     return is_removed

@@ -4,7 +4,7 @@ import logging
 from flask import request
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api_v2
-from core_v2.auto_reply_core import update_a_auto_reply_setting, create_a_auto_reply_setting, switch_func_auto_reply, \
+from core_v2.auto_reply_core import create_a_auto_reply_setting, switch_func_auto_reply, \
     get_auto_reply_setting, delete_a_auto_reply_setting
 from core_v2.user_core import UserLogin
 from utils.u_response import make_response

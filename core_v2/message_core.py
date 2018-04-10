@@ -6,6 +6,7 @@ from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, db, CONTENT_TYPE_SYS, CON
     CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, rds, Member, Contact, CHAT_LOGS_ERR_TYPE_0
 from core.redis_core import rds_lpush
 from core.send_task_and_ws_setting_core import update_chatroom_members_info
+from core_v2.coin_wallet_core import check_whether_message_is_a_coin_wallet
 from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from models_v2.base_model import BaseModel
 from utils.u_time import get_today_0
@@ -16,16 +17,16 @@ import logging
 logger = logging.getLogger('main')
 
 
-def route_msg(message_analysis):
+def route_msg(a_message):
     # 判断这个机器人说的话是否是文字或系统消息
-    if message_analysis.type == MSG_TYPE_TXT or message_analysis.type == MSG_TYPE_SYS:
+    if a_message.type == MSG_TYPE_TXT or a_message.type == MSG_TYPE_SYS:
         pass
     else:
         return
 
     # 这个机器人说的话
     # TODO 当有两个机器人的时候，这里不仅要判断是否是自己说的，还是要判断是否是其他机器人说的
-    if message_analysis.is_send == 1:
+    if a_message.is_send == 1:
         return
 
     # is_add_friend
@@ -34,32 +35,32 @@ def route_msg(message_analysis):
     #     continue
 
     # 检查信息是否为加了一个群
-    is_add_qun = check_whether_message_is_add_qun(message_analysis)
+    is_add_qun = check_whether_message_is_add_qun(a_message)
     if is_add_qun:
         return
 
     # is_removed
-    is_removed = check_is_removed(message_analysis)
+    is_removed = check_is_removed(a_message)
     if is_removed:
         return
 
     # is_a_coin_wallet
-    is_a_coin_wallet = check_whether_message_is_a_coin_wallet(message_analysis)
+    is_a_coin_wallet = check_whether_message_is_a_coin_wallet(a_message)
     if is_a_coin_wallet:
         return
 
     # 检测是否是别人的进群提示
-    is_friend_into_qun = check_whether_message_is_friend_into_qun(message_analysis)
+    is_friend_into_qun = check_whether_message_is_friend_into_qun(a_message)
 
     # 根据规则和内容进行匹配，并生成任务
-    rule_status = match_message_by_rule(gm_rule_dict, message_analysis)
+    rule_status = match_message_by_rule(gm_rule_dict, a_message)
     if rule_status is True:
         return
     else:
         pass
 
     # 对内容进行判断，是否为查询比价的情况
-    coin_price_status = match_message_by_coin_keyword(gm_default_rule_dict, message_analysis)
+    coin_price_status = match_message_by_coin_keyword(gm_default_rule_dict, a_message)
     if coin_price_status is True:
         return
 

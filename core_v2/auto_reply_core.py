@@ -230,19 +230,6 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
     return SUCCESS
 
 
-def update_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list, keywords_id):
-    """
-    先将之前的删除，然后再建立一个新的任务
-    """
-
-    if status == SUCCESS:
-        logger.info(u"更新自动回复任务成功.")
-        return SUCCESS
-    else:
-        logger.error(u"新建任务失败.")
-        return status
-
-
 def activate_rule_and_add_task_to_consumption_task(ar_setting_id, message_chatroomname, message_said_username):
     ar_setting_info = db.session.query(AutoReplySettingInfo).filter(
         AutoReplySettingInfo.setting_id == ar_setting_id).first()

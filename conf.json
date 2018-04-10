@@ -1,8 +1,8 @@
 {
-  "client": [[["client_id"], "required"], [["client_id"], "integer"], [["client_name", "client_cn_name"], "string", {"max": 50}], [["tel"], "string", {"max": 15}], [["admin"], "string" ], [["create_time"], "integer"]],
+  "client": [[["client_name"], "required"], [["client_id"], "integer"], [["client_name", "client_cn_name"], "string", {"max": 50}], [["tel"], "string", {"max": 15}], [["admin"], "string" ], [["create_time"], "integer"]],
   "client_member": [[["client_id", "open_id"], "required"], [["client_id"], "integer"], [["open_id", "union_id", "nick_name"], "string", {"max": 64}], [["username", "province", "city", "country"], "string", {"max": 32}], [["avatar_url", "code", "token"], "string"], [["sex", "create_time", "last_login_time", "token_expired_time"], "integer"], [["ext_info"], "json"]],
   "client_bot_r": [[["client_id", "bot_username"], "required"], [["client_id"], "integer"], [["chatbot_default_nickname"], "string", {"max": 50}], [["is_work", "create_time"], "integer"]],
-  "client_qun_r": [[["client_id", "group_list"], "required"], [["client_id"], "integer"], [["group_list"], "json"]],
+  "client_qun_r": [[["client_id", "chatroomname"], "required"], [["client_id"], "integer"], [["group_info"], "json"], [["chatroomname"], "string", {"max": 32}]],
   "batch_send_task": [[["client_id"], "required"], [["client_id"], "integer"], [["chatroom_count", "people_count", "status", "is_deleted", "create_time"], "integer"], [["status_content"], "string"], [["content_list", "chatroom_list"], "json"]],
   "material_lib": [[["client_id"], "required"], [["clinet_id", "type", "create_time"], "integer"], [["title"], "string", {"max": 50}], [["content"], "string"]],
   "keywords": [[["client_id", "welcome"], "required"], [["client_id", "welcome", "status", "create_time"], "integer"], [["keywords", "chatroom_list", "reply_content"], "json"]],
@@ -23,5 +23,5 @@
   "statistics_member_daily": [[["chatroomname", "username","date","client_id"], "required"], [["chatroomname", "username"], "string", {"max": 32}], [["speak_count", "be_at_count", "invitation_count", "red_package_count", "effect_num", "date","client_id"], "integer"]],
   "statistics_member_total": [[["chatroomname", "username","client_id"], "required"], [["chatroomname", "username"], "string", {"max": 32}], [["speak_count", "be_at_count", "invitation_count", "red_package_count", "effect_num","client_id"], "integer"]],
   "chat_logs":[[["chatroomname","username","time","type"], "required"],[["content"], "json"],[["type","time"], "integer"]],
-  "real_time_quotes_default_setting_info": [[["ds_id", "symbol", "coin_name", "coin_name_cn", "coin_icon", "change1d", "change1h", "change7d", "marketcap", "available_supply", "price", "volume_ex", "is_integral", "create_time", "rank", "open", "close", "vol"], "required"], [["ds_id", "is_integral", "create_time", "rank"], "integer"], [["symbol", "coin_name", "coin_name_cn", "coin_icon", "change1d", "change1h", "change7d", "marketcap", "available_supply", "price", "volume_ex", "suggest_ex1", "suggest_ex2", "suggest_ex1_url", "suggest_ex2_url", "open", "close", "vol"], "string"]]
+  "coin": [[["symbol"], "required"], [["coin_id", "is_integral", "create_time", "rank"], "integer"], [["symbol", "coin_name", "coin_name_cn", "coin_icon", "change1d", "change1h", "change7d", "marketcap", "available_supply", "price", "volume_ex", "suggest_ex1", "suggest_ex2", "suggest_ex1_url", "suggest_ex2_url", "open", "close", "vol"], "string"]]
 }

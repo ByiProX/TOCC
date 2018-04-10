@@ -5,10 +5,12 @@ import logging
 from urllib import urlencode
 
 import requests
+from datetime import datetime
 
 from configs.config import DB_RULE, db, DB_SERVER_URL, SUCCESS, ERROR_CODE
 from models.user_bot_models import UserInfo
 from utils.u_model_json_str import model_to_dict
+from utils.u_time import datetime_to_timestamp_utc_8
 
 logger = logging.getLogger('main')
 
@@ -40,7 +42,7 @@ class BaseModel(object):
 
     def generate_attrs(self):
         __attrs = list()
-        for rule in self.__rules:
+        for rule in self.__rules[1:]:
             for attr in rule[0]:
                 __attrs.append(attr)
                 setattr(self, attr, None)
@@ -164,16 +166,16 @@ class BaseModel(object):
             value = getattr(self, __require)
             item_exist_where_clause.setdefault(__require, value)
         # Mark
-        item_exist = BaseModel.count(self.__tablename, where_clause = {"where": json.dumps(item_exist_where_clause)})
-        if self.get_id() is None and item_exist == 0:
+        item_exist = BaseModel.fetch_one(self.__tablename, '*', where_clause = {"where": json.dumps(item_exist_where_clause)})
+        if self.get_id() is None and item_exist is None:
             # 插入
             return self.db_post()
         else:
             # 更新
+            self.set_id(item_exist.get_id())
             return self.db_put()
         # return self
 
-    # TODO: validate and update
     def update(self):
         if not self._validate_all():
             logger.error(u"_validate failed")
@@ -211,7 +213,7 @@ class BaseModel(object):
         code = response_json.get(u"code")
         if code == 0:
             msg = response_json.get(u"msg")
-            self.set_id(_id = msg)
+            # self.set_id(_id = msg)
             return True
         else:
             logger.error(u"update failed, content: " + unicode(response.content))
@@ -230,7 +232,7 @@ class BaseModel(object):
         response_json = json.loads(response.content)
         code = response_json.get(u"code")
         count = 0
-        if code == 0:
+        if code == 0 and response.status_code == 200:
             count = response_json.get(u"count")
         else:
             logger.error(u"query failed, content: " + unicode(response.content))
@@ -377,16 +379,24 @@ CM = BaseModel.create_model
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
-    # user = db.session.query(UserInfo).first()
-    # user_json = model_to_dict(user, user.__class__)
-    # user_json['client_id'] = 1
-    # user_json['open_id'] += "a"
-    # user_json['last_login_time'] = int(user_json['last_login_time']) / 1000
-    # user_json['token_expired_time'] = int(user_json['token_expired_time']) / 1000
-    # user_json['create_time'] = int(user_json['create_time']) / 1000
-    # user_info = CM('client_member').from_json(user_json)
-    # user_info.save()
-    user_info_list = BaseModel.fetch_all('client_member', "*", order_by = BaseModel.order_by({"union_id": "desc"}))
+    user_list = db.session.query(UserInfo).all()
+    for user in user_list:
+        client = CM('client')
+        client.create_time = datetime_to_timestamp_utc_8(datetime.now())
+        client.client_name = user.open_id
+        client.admin = user.open_id
+        client.save()
+        user_json = model_to_dict(user, user.__class__)
+        user_json['client_id'] = client.client_id
+        user_json['open_id'] += "a"
+        user_json['last_login_time'] = int(user_json['last_login_time']) / 1000
+        user_json['token_expired_time'] = int(user_json['token_expired_time']) / 1000
+        user_json['create_time'] = int(user_json['create_time']) / 1000
+        user_info = CM('client_member').from_json(user_json)
+        user_switch = CM('client_switch').from_json(user_json)
+        user_info.save()
+        user_switch.save()
+    # user_info_list = BaseModel.fetch_all('client_member', "*", order_by = BaseModel.order_by({"union_id": "desc"}))
     # user_info = BaseModel.fetch_by_id(u'client_member', u'5acb919f421aa9393f212b88')
     # user_info.union_id = "1"
     # user_info.update()

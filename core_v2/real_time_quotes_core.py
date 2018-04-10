@@ -7,7 +7,7 @@ from datetime import datetime
 from sqlalchemy import func
 
 from configs.config import db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, TASK_SEND_TYPE, \
-    ERR_WRONG_USER_ITEM, UserSwitch, RealTimeQuotesDefaultSettingInfo
+    ERR_WRONG_USER_ITEM, UserSwitch, Coin
 from models_v2.base_model import BaseModel
 from utils.u_transformat import str_to_unicode, trim_str
 
@@ -34,14 +34,14 @@ def switch_func_real_time_quotes(user_info, switch):
 def get_rt_quotes_list_and_status(user_info, per_page, page_number):
     # FIXME 此处应按照个人读取，而不应该所有人读取相同的结果
     # 因为目前进度比较急，所以直接读取全部人的结果
-    ds_info_list = BaseModel.fetch_all(RealTimeQuotesDefaultSettingInfo, ["ds_id", "coin_name", "coin_icon"], where_clause = BaseModel.where_dict({"is_integral": 1}), order_by = BaseModel.order_by({"marketcap": "desc"}), page = page_number, pagesize = per_page)
+    ds_info_list = BaseModel.fetch_all(Coin, ["coin_id", "coin_name", "coin_icon"], where_clause = BaseModel.where_dict({"is_integral": 1}), order_by = BaseModel.order_by({"marketcap": "desc"}), page = page_number, pagesize = per_page)
 
-    ds_info_count = BaseModel.count(RealTimeQuotesDefaultSettingInfo, where_clause = BaseModel.where_dict({"is_integral": 1}))
+    ds_info_count = BaseModel.count(Coin, where_clause = BaseModel.where_dict({"is_integral": 1}))
 
     res = []
     for ds_info in ds_info_list:
         res_dict = {}
-        res_dict.setdefault("coin_id", ds_info.ds_id)
+        res_dict.setdefault("coin_id", ds_info.coin_id)
         res_dict.setdefault("coin_name", ds_info.coin_name)
         res_dict.setdefault("logo", ds_info.coin_icon)
         res.append(res_dict)
@@ -49,7 +49,7 @@ def get_rt_quotes_list_and_status(user_info, per_page, page_number):
 
 
 def get_rt_quotes_preview(coin_id):
-    ds_info = BaseModel.fetch_one(RealTimeQuotesDefaultSettingInfo, "*", where_clause = BaseModel.where_dict({"is_integral": 1, "ds_id": coin_id}))
+    ds_info = BaseModel.fetch_one(Coin, "*", where_clause = BaseModel.where_dict({"is_integral": 1, "coin_id": coin_id}))
     if not ds_info:
         logger.error(u"没有对应的币号. coin_id: %s." % coin_id)
         return ERR_WRONG_ITEM, None
@@ -91,7 +91,7 @@ def get_rt_quotes_preview(coin_id):
         pass
     #
     # ds_keyword_list = db.session.query(RealTimeQuotesDefaultKeywordRelateInfo).filter(
-    #     RealTimeQuotesDefaultKeywordRelateInfo.ds_id == coin_id).all()
+    #     RealTimeQuotesDefaultKeywordRelateInfo.coin_id == coin_id).all()
     #
     # for ds_keyword_info in ds_keyword_list:
     #     res["keyword_list"].append(ds_keyword_info.keyword)
@@ -116,7 +116,7 @@ def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
         is_match_coin_keyword = True
         pass
 
-    for keyword, ds_id in gm_default_rule_dict['is_not_full_match']:
+    for keyword, coin_id in gm_default_rule_dict['is_not_full_match']:
         if keyword in message_text:
             activate_rule_and_add_task_to_consumption_task(gm_default_rule_dict['is_not_full_match'][message_text],
                                                            message_chatroomname, message_said_username)
@@ -125,10 +125,10 @@ def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
     return is_match_coin_keyword
 
 
-def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, message_said_username):
-    ds_info = db.session.query(RealTimeQuotesDefaultSettingInfo).filter(
-        RealTimeQuotesDefaultSettingInfo.ds_id == ds_id,
-        RealTimeQuotesDefaultSettingInfo.is_integral == 1).first()
+def activate_rule_and_add_task_to_consumption_task(coin_id, message_chatroomname, message_said_username):
+    ds_info = db.session.query(Coin).filter(
+        Coin.coin_id == coin_id,
+        Coin.is_integral == 1).first()
     if not ds_info:
         return ERR_WRONG_ITEM
 
@@ -152,7 +152,7 @@ def activate_rule_and_add_task_to_consumption_task(ds_id, message_chatroomname, 
 
             c_task.chatroomname = chatroom_relate_user_id_dict[user_info.user_id].chatroomname
             c_task.task_type = CONSUMPTION_TASK_TYPE['real_time_quotes']
-            c_task.task_relevant_id = ds_id
+            c_task.task_relevant_id = coin_id
 
             c_task.task_send_type = TASK_SEND_TYPE['text']
 

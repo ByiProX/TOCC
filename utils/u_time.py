@@ -6,7 +6,7 @@ from configs.config import SCOPE_YES
 
 
 def datetime_to_timestamp_utc_8(a_datetime):
-    return (a_datetime - datetime(1970, 1, 1, 8)).total_seconds()
+    return int((a_datetime - datetime(1970, 1, 1, 8)).total_seconds())
 
 
 def like_datetime_to_timestamp_utc_8(year, month, day, hour=0, minute=0, second=0, microsecond=0):

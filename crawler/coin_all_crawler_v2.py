@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 
 from configs.config import db, GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, \
-    RealTimeQuotesDefaultSettingInfo
+    Coin
 from crawler.usdcny import dollar_currency_rate
 from models_v2.base_model import CM, BaseModel
 from utils.u_time import datetime_to_timestamp_utc_8
@@ -159,7 +159,7 @@ def update_coin_all():
         if symbol in new_coin_dict.keys() and new_coin_dict[symbol].rank < priority:
             pass
         else:
-            coin = CM(RealTimeQuotesDefaultSettingInfo)
+            coin = CM(Coin)
             coin.symbol = symbol
             coin.coin_name = coin_name
             coin.coin_name_cn = coin_name_cn
@@ -182,7 +182,7 @@ def update_coin_all():
             new_coin_dict[symbol] = coin
 
     # 去重插新
-    old_coin_list = BaseModel.fetch_all(RealTimeQuotesDefaultSettingInfo, "*")
+    old_coin_list = BaseModel.fetch_all(Coin, "*")
     old_coin_dict = {coin.symbol.upper(): coin for coin in old_coin_list if coin.symbol}
     old_coin_symbol_set = set(old_coin_dict.keys())
     new_coin_symbol_set = set(new_coin_dict.keys())
@@ -196,7 +196,7 @@ def update_coin_all():
     for comm_coin_symbol in comm_coin_symbol_set:
         old_coin = old_coin_dict[comm_coin_symbol]
         new_coin = new_coin_dict[comm_coin_symbol]
-        new_coin.ds_id = old_coin.ds_id
+        new_coin.coin_id = old_coin.coin_id
         new_coin.save()
     for none_coin_symbol in none_coin_symbol_set:
         none_coin = old_coin_dict[none_coin_symbol]
