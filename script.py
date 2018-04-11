@@ -13,6 +13,7 @@ from core.message_core import update_members, count_msg_by_create_time, analysis
 from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core.real_time_quotes_core import match_message_by_coin_keyword
 from core.welcome_message_core import check_whether_message_is_friend_into_qun
+from crawler.coin_all_crawler_v2 import update_coin_all
 from models.android_db_models import AMember, AContact, AChatroomR
 from models.auto_reply_models import AutoReplySettingInfo, AutoReplyKeywordRelateInfo, AutoReplyMaterialRelate, \
     AutoReplyTargetRelate
@@ -350,6 +351,8 @@ def test_msg(message_list):
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
+    update_coin_all()
+    exit()
     now_time = datetime_to_timestamp_utc_8(datetime.now())
     client = BaseModel.fetch_by_id(u"client", 1)
     client.client_id = int(client.client_id)

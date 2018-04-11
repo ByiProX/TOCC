@@ -175,9 +175,9 @@ def update_coin_all():
             coin.rank = priority
             coin.is_integral = is_integral
 
-            coin.open = 0
-            coin.close = 0
-            coin.vol = 0
+            coin.open = "0"
+            coin.close = "0"
+            coin.vol = "0"
 
             new_coin_dict[symbol] = coin
 

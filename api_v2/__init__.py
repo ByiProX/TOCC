@@ -3,8 +3,9 @@
 import login_api
 import auto_reply_api
 import batch_sending_api
-import coin_wallet_api
+import wallet
 import android_db_api
 import manage_api
+import coin_api
 
 api_str = ""
