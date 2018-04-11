@@ -25,9 +25,12 @@ logger = logging.getLogger('main')
 
 def create_new_group(group_name, client_id):
     ugr_last = BaseModel.fetch_one(UserGroupR, "group_id", where_clause = BaseModel.where_dict({"client_id": client_id}), order_by = BaseModel.order_by({"create_time": "DESC"}))
-    order = int(ugr_last.group_id.split(u"_")[1] + 1)
+    if ugr_last:
+        order = int(ugr_last.group_id.split(u"_")[1]) + 1
+    else:
+        order = 1
     # 默认分组的 group_id = client_id_0, 并不显式地存在库里
-    group_id = client_id + u"_" + unicode(order)
+    group_id = unicode(client_id) + u"_" + unicode(order)
 
     ugr = CM(UserGroupR)
     ugr.group_id = group_id
@@ -37,9 +40,10 @@ def create_new_group(group_name, client_id):
     ugr.save()
 
     group_info = dict()
+    group_info.setdefault("client_group_r_id", ugr.get_id())
     group_info.setdefault("group_id", group_id)
     group_info.setdefault("group_nickname", group_name)
-    group_info.setdefault("is_default", False)
+    group_info.setdefault("is_default", 0)
     group_info.setdefault("chatroom_list", [])
     logger.info(u"添加分组. user_id: %s. group_name: %s." % (client_id, group_name))
     return SUCCESS, group_info
@@ -47,23 +51,20 @@ def create_new_group(group_name, client_id):
 
 def get_group_list(user_info):
     ugr_list = BaseModel.fetch_all(UserGroupR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
-    if not ugr_list:
-        logger.error(u"无默认分组. user_id: %s." % user_info.client_id)
-        return ERR_WRONG_ITEM, None
 
     res = []
     # 默认分组的 group_id = client_id_0, 并不显式得存在库里
-    res.append({"group_id": user_info.client_id + u"_0"})
-    res.append({"group_nickname": u"未分组"})
-    res.append({"create_time": user_info.create_time})
-    res.append({"is_default": True})
+    res.append({"group_id": unicode(user_info.client_id) + u"_0",
+                "group_nickname": u"未分组",
+                "create_time": user_info.create_time,
+                "is_default": 1})
     # res.append({"chatroom_list": []})
     for ugr in ugr_list:
         temp_dict = dict()
         temp_dict.setdefault("group_id", ugr.group_id)
         temp_dict.setdefault("group_nickname", ugr.group_name)
         temp_dict.setdefault("create_time", ugr.create_time)
-        temp_dict.setdefault("is_default", False)
+        temp_dict.setdefault("is_default", 0)
         # TODO: 根据前端需求加
         # temp_dict.setdefault("chatroom_list", group_info.get("chatroom_list"))
 
@@ -86,7 +87,7 @@ def rename_a_group(group_rename, group_id, client_id):
     if group_id.endswith(u"_0"):
         logger.error(u"默认分组无法重命名. group_id: %s. user_id: %s." % (group_id, client_id))
         return ERR_RENAME_OR_DELETE_DEFAULT_GROUP
-    ugr = BaseModel.fetch_by_id(UserGroupR, group_id)
+    ugr = BaseModel.fetch_one(UserGroupR, "*", where_clause = BaseModel.where_dict({"client_id": client_id, "group_id": group_id}))
     if not ugr:
         logger.error(u"无法找到该分组. group_id: %s." % group_id)
         return ERR_WRONG_ITEM
@@ -98,16 +99,15 @@ def rename_a_group(group_rename, group_id, client_id):
 
 def delete_a_group(group_id, client_id):
     if group_id.endswith(u"_0"):
-        logger.error(u"默认分组无法重命名. group_id: %s. user_id: %s." % (group_id, client_id))
+        logger.error(u"默认分组无法删除. group_id: %s. user_id: %s." % (group_id, client_id))
         return ERR_RENAME_OR_DELETE_DEFAULT_GROUP
-    ugr = BaseModel.fetch_by_id(UserGroupR, group_id)
+    ugr = BaseModel.fetch_one(UserGroupR, "*", where_clause = BaseModel.where_dict({"client_id": client_id, "group_id": group_id}))
     if not ugr:
         logger.error(u"无法找到该分组. group_id: %s." % group_id)
         return ERR_WRONG_ITEM
     # ugr.group_name = group_rename
-    # ugr.update()
-    uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": client_id,
-                                                                                       "group_id": group_id}))
+    ugr.delete()
+    uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": client_id, "group_id": group_id}))
     for uqr in uqr_list:
         uqr.group_id = u""
         uqr.save()

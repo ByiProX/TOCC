@@ -190,6 +190,11 @@ class BaseModel(object):
         return self.db_put()
         # return self
 
+    def delete(self):
+        if self.__tablename not in ["client_group_r"]:
+            return False
+        return self.db_delete()
+
     # 保存
     def db_post(self):
         url = DB_SERVER_URL + self.__tablename + u's'
@@ -199,9 +204,8 @@ class BaseModel(object):
         code = response_json.get(u"code")
         # load _id
         if code == 0:
-            data = response_json.get(u"data")
-            if data:
-                self.from_json(data)
+            msg = response_json.get(u"msg")
+            self.set_id(msg)
             return True
         else:
             logger.error(u"insert failed, content: " + unicode(response.content))
@@ -220,14 +224,32 @@ class BaseModel(object):
         response_json = json.loads(response.content)
         code = response_json.get(u"code")
         if code == 0:
-            data = response_json.get(u"data")
-            if data:
-                self.from_json(data)
+            msg = response_json.get(u"msg")
+            self.set_id(msg)
             return True
         else:
             logger.error(u"update failed, content: " + unicode(response.content))
             return False
         # return self
+
+    # 删除
+    def db_delete(self):
+        _id = self.get_id()
+        if _id is None:
+            logger.error(u"delete failed, _id is None")
+            return False
+        url = DB_SERVER_URL + self.__tablename + u'/' + unicode(_id)
+        data = self.to_json()
+        response = requests.delete(url = url, data = data)
+        response_json = json.loads(response.content)
+        code = response_json.get(u"code")
+        if code == 0:
+            msg = response_json.get(u"msg")
+            self.set_id(msg)
+            return True
+        else:
+            logger.error(u"update failed, content: " + unicode(response.content))
+            return False
 
     @staticmethod
     def count(tablename, where_clause = None, **kwargs):

@@ -73,10 +73,7 @@ def app_rename_a_group():
     group_id = request.json.get('group_id')
     if not group_id:
         return make_response(ERR_INVALID_PARAMS)
-    if group_id == new_group_name:
-        status = SUCCESS
-    else:
-        status = rename_a_group(new_group_name, group_id, user_info.client_id)
+    status = rename_a_group(new_group_name, group_id, user_info.client_id)
 
     if status == SUCCESS:
         return make_response(SUCCESS)
