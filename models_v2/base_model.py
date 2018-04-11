@@ -82,7 +82,7 @@ class BaseModel(object):
                         logger.error(u'type validate error: ' + unicode(__attr) + u' type: ' + unicode(type(__value)) + u' required type: ' + unicode(__attr_type))
                         return False
                     if len(__rule) > 2:
-                        print __rule[2]
+                        # print __rule[2]
                         for __rule_ext, __rule_params in __rule[2].iteritems():
                             if not BaseModel._call_validate(__rule_ext, __value, __rule_params):
                                 logger.error(u'rule validate error: ' + unicode(__attr), u' value: ' + unicode(__value) + u' required rule: ' + unicode(__rule_ext) + u' ' + unicode(__rule_params))
@@ -97,7 +97,8 @@ class BaseModel(object):
                 return False
 
         for __attr in self.attrs:
-            self._validate_attr(__attr)
+            if not self._validate_attr(__attr):
+                return False
         return True
 
     @staticmethod
@@ -108,7 +109,7 @@ class BaseModel(object):
 
     @staticmethod
     def _validate_string(__value, __params = None):
-        print u'_validate_string'
+        # print u'_validate_string'
         if isinstance(__value, str) or isinstance(__value, unicode):
             return True
         else:
@@ -116,7 +117,7 @@ class BaseModel(object):
 
     @staticmethod
     def _validate_integer(__value, __params = None):
-        print u'_validate_integer'
+        # print u'_validate_integer'
         if isinstance(__value, int) or isinstance(__value, long):
             return True
         else:
@@ -124,7 +125,7 @@ class BaseModel(object):
 
     @staticmethod
     def _validate_json(__value, __params = None):
-        print u'_validate_json'
+        # print u'_validate_json'
         # if isinstance(__value, dict) or isinstance(__value, list):
         #     return True
         # else:
@@ -137,11 +138,11 @@ class BaseModel(object):
 
     @staticmethod
     def _validate_max(__value, __params = None):
-        print u'_validate_max'
+        # print u'_validate_max'
 
         if __params is None:
             return False
-        print __value, __params, len(__value)
+        # print __value, __params, len(__value)
         if len(__value) <= __params:
             return True
         else:
@@ -167,12 +168,14 @@ class BaseModel(object):
             item_exist_where_clause.setdefault(__require, value)
         # Mark
         item_exist = BaseModel.fetch_one(self.__tablename, '*', where_clause = {"where": json.dumps(item_exist_where_clause)})
-        if self.get_id() is None and item_exist is None:
+        self_id = self.get_id()
+        if self_id is None and item_exist is None:
             # 插入
             return self.db_post()
         else:
             # 更新
-            self.set_id(item_exist.get_id())
+            if self_id is None:
+                self.set_id(item_exist.get_id())
             return self.db_put()
         # return self
 
@@ -207,7 +210,7 @@ class BaseModel(object):
         if _id is None:
             logger.error(u"update failed, _id is None")
             return False
-        url = DB_SERVER_URL + self.__tablename + u'/' + _id
+        url = DB_SERVER_URL + self.__tablename + u'/' + unicode(_id)
         data = self.to_json()
         response = requests.put(url = url, data = data)
         response_json = json.loads(response.content)
@@ -311,7 +314,7 @@ class BaseModel(object):
 
     @staticmethod
     def fetch_by_id(tablename, _id):
-        url = DB_SERVER_URL + tablename + u'/' + _id
+        url = DB_SERVER_URL + tablename + u'/' + unicode(_id)
         item = None
         response = requests.get(url = url)
         response_json = json.loads(response.content)
@@ -381,23 +384,44 @@ CM = BaseModel.create_model
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
-    user_list = db.session.query(UserInfo).all()
-    for user in user_list:
-        client = CM('client')
-        client.create_time = datetime_to_timestamp_utc_8(datetime.now())
-        client.client_name = user.open_id
-        client.admin = user.open_id
-        client.save()
-        user_json = model_to_dict(user, user.__class__)
-        user_json['client_id'] = client.client_id
-        user_json['open_id'] += "a"
-        user_json['last_login_time'] = int(user_json['last_login_time']) / 1000
-        user_json['token_expired_time'] = int(user_json['token_expired_time']) / 1000
-        user_json['create_time'] = int(user_json['create_time']) / 1000
-        user_info = CM('client_member').from_json(user_json)
-        user_switch = CM('client_switch').from_json(user_json)
-        user_info.save()
-        user_switch.save()
+    client = BaseModel.fetch_by_id(u"client", 1)
+    client.client_id = int(client.client_id)
+    client.create_time = long(client.create_time)
+    # client.client_name = u"Doodod"
+    # client.client_cn_name = u"独到科技"
+    # client.tel = u"18888888888"
+    # client.admin = u"neil"
+    # client.update_time = datetime_to_timestamp_utc_8(datetime.now())
+    # client.save()
+    # user_list = db.session.query(UserInfo).all()
+    user_old = db.session.query(UserInfo).filter(UserInfo.user_id == 5).first()
+    user_old_json = model_to_dict(user_old, user_old.__class__)
+    user_old_json['client_id'] = client.client_id
+    user_old_json['last_login_time'] = int(user_old_json['last_login_time']) / 1000
+    user_old_json['token_expired_time'] = int(user_old_json['token_expired_time']) / 1000
+    user_old_json['create_time'] = int(user_old_json['create_time']) / 1000
+    user = CM("client_member").from_json(user_old_json)
+    user_switch = CM('client_switch').from_json(user_old_json)
+    user.code = "111"
+    user.token = "222"
+    user.save()
+    user_switch.save()
+    # for user in user_list:
+    #     client = CM('client')
+    #     client.create_time = datetime_to_timestamp_utc_8(datetime.now())
+    #     client.client_name = user.open_id
+    #     client.admin = user.open_id
+    #     client.save()
+    #     user_json = model_to_dict(user, user.__class__)
+    #     user_json['client_id'] = client.client_id
+    #     user_json['open_id'] += "a"
+    #     user_json['last_login_time'] = int(user_json['last_login_time']) / 1000
+    #     user_json['token_expired_time'] = int(user_json['token_expired_time']) / 1000
+    #     user_json['create_time'] = int(user_json['create_time']) / 1000
+    #     user_info = CM('client_member').from_json(user_json)
+    #     user_switch = CM('client_switch').from_json(user_json)
+    #     user_info.save()
+    #     user_switch.save()
     # user_info_list = BaseModel.fetch_all('client_member', "*", order_by = BaseModel.order_by({"union_id": "desc"}))
     # user_info = BaseModel.fetch_by_id(u'client_member', u'5acb919f421aa9393f212b88')
     # user_info.union_id = "1"
