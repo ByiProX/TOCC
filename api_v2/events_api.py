@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-from flask import request
+import os
+import time
+import logging
+
+from flask import request, jsonify
+from functools import wraps
+
+from configs.config import main_api_v2 as app_test
 from core_v2.user_core import UserLogin
 from models_v2.base_model import *
 
 logger = logging.getLogger('main')
-
-import time
-import os
-
-from flask import request, jsonify
-from configs.config import main_api_v2 as app_test
-from functools import wraps
 
 
 def para_check(need_list, *parameters):
@@ -42,7 +42,7 @@ def create_event_init():
     event_instance = BaseModel.fetch_one('events', '*', BaseModel.where_dict({"owner": owner}))
     if event_instance:
         for i in event_instance:
-            if i.is_finish is False:
+            if i.is_finish == 0:
                 # previous_event = db.session.query(Event).filter(Event.owner == owner,
                 #                                                 Event.is_finish == False).first()
                 previous_event = BaseModel.fetch_one('events', '*',
