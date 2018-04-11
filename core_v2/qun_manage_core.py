@@ -7,7 +7,8 @@ from datetime import datetime
 from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
-    ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE, USER_CHATROOM_R_PERMISSION_1, UserQunR
+    ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE, USER_CHATROOM_R_PERMISSION_1, UserQunR, \
+    UserGroupR
 from core_v2.wechat_core import WechatConn
 from models.qun_friend_models import GroupInfo
 from models_v2.base_model import BaseModel, CM
@@ -22,69 +23,51 @@ logger = logging.getLogger('main')
 #
 
 
-def set_default_group(client_id):
-    """
-    设置未分组的群的组
-    :param client_id:
-    :return:
-    """
-    count_uqr = BaseModel.count(UserQunR, where_clause = BaseModel.where_dict({"client_id": client_id}))
-    # 如果已经有了默认群，则不去建立默认群
-    if count_uqr > 0:
-        logger.warning(u"已有默认分组. user_id: %s." % client_id)
-        return WARN_HAS_DEFAULT_QUN
-    else:
-        group_info = _create_new_group(u"未分组", is_default = True)
-        group_list = list()
-        group_list.append(group_info)
-        uqr = CM(UserQunR)
-        uqr.client_id = client_id
-        uqr.group_list = group_list
-        uqr.save()
-        logger.debug(u"已建立默认分组. user_id: %s." % client_id)
-        return SUCCESS
-
-
 def create_new_group(group_name, client_id):
-    uqr = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": client_id}))
-    if not uqr:
-        set_default_group(client_id)
-        uqr = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": client_id}))
-    else:
-        group_name_exist = [group_info.keys[0] for group_info in uqr.group_list]
-        if group_name in group_name_exist:
-            return ERR_WRONG_ITEM, None
+    ugr_last = BaseModel.fetch_one(UserGroupR, "group_id", where_clause = BaseModel.where_dict({"client_id": client_id}), order_by = BaseModel.order_by({"create_time": "DESC"}))
+    order = int(ugr_last.group_id.split(u"_")[1] + 1)
+    # 默认分组的 group_id = client_id_0, 并不显式地存在库里
+    group_id = client_id + u"_" + unicode(order)
 
-    group_info = _create_new_group(group_name)
-    uqr.group_list.append(group_info)
+    ugr = CM(UserGroupR)
+    ugr.group_id = group_id
+    ugr.client_id = client_id
+    ugr.group_name = group_name
+    ugr.create_time = datetime_to_timestamp_utc_8(datetime.now())
+    ugr.save()
 
-    temp_dict = dict()
-    temp_dict.setdefault("group_id", group_name)
-    temp_dict.setdefault("group_nickname", group_name)
-    temp_dict.setdefault("is_default", True if group_name == u'未分组' else False)
-    temp_dict.setdefault("chatroom_list", [])
+    group_info = dict()
+    group_info.setdefault("group_id", group_id)
+    group_info.setdefault("group_nickname", group_name)
+    group_info.setdefault("is_default", False)
+    group_info.setdefault("chatroom_list", [])
     logger.info(u"添加分组. user_id: %s. group_name: %s." % (client_id, group_name))
-    return SUCCESS, temp_dict
+    return SUCCESS, group_info
 
 
 def get_group_list(user_info):
-    uqr = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
-    group_list = uqr.group_list
-    if not group_list:
+    ugr_list = BaseModel.fetch_all(UserGroupR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    if not ugr_list:
         logger.error(u"无默认分组. user_id: %s." % user_info.client_id)
         return ERR_WRONG_ITEM, None
 
     res = []
-    for group_info in group_list:
+    # 默认分组的 group_id = client_id_0, 并不显式得存在库里
+    res.append({"group_id": user_info.client_id + u"_0"})
+    res.append({"group_nickname": u"未分组"})
+    res.append({"create_time": user_info.create_time})
+    res.append({"is_default": True})
+    # res.append({"chatroom_list": []})
+    for ugr in ugr_list:
         temp_dict = dict()
-        temp_dict.setdefault("group_id", group_info.get("group_name"))
-        temp_dict.setdefault("group_nickname", group_info.get("group_name"))
-        temp_dict.setdefault("is_default", group_info.get("is_default"))
-        temp_dict.setdefault("create_time", group_info.get("create_time"))
-        temp_dict.setdefault("update_time", group_info.get("update_time"))
-        temp_dict.setdefault("chatroom_list", group_info.get("chatroom_list"))
+        temp_dict.setdefault("group_id", ugr.group_id)
+        temp_dict.setdefault("group_nickname", ugr.group_name)
+        temp_dict.setdefault("create_time", ugr.create_time)
+        temp_dict.setdefault("is_default", False)
+        # TODO: 根据前端需求加
+        # temp_dict.setdefault("chatroom_list", group_info.get("chatroom_list"))
 
-        res.append(deepcopy(temp_dict))
+        res.append(temp_dict)
     logger.info(u"获取分组列表. user_id: %s." % user_info.client_id)
     return SUCCESS, res
 
@@ -100,73 +83,48 @@ def get_group_list(user_info):
 
 
 def rename_a_group(group_rename, group_id, client_id):
-    uqr = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": client_id}))
-    group_list = uqr.group_list
-    for group_info in group_list:
-        if group_info.get("group_name") == group_id:
-            if group_info.get("is_default") == 1:
-                logger.error(u"默认分组无法更名. group_id: %s. user_id: %s." % (group_id, client_id))
-                return ERR_RENAME_OR_DELETE_DEFAULT_GROUP
-            group_info.set("group_name", group_rename)
-            logger.info(u"重命名成功. group_id: %s." % group_id)
-            return SUCCESS
-    logger.error(u"无法找到该分组. group_id: %s." % group_id)
-    return ERR_WRONG_ITEM
+    if group_id.endswith(u"_0"):
+        logger.error(u"默认分组无法重命名. group_id: %s. user_id: %s." % (group_id, client_id))
+        return ERR_RENAME_OR_DELETE_DEFAULT_GROUP
+    ugr = BaseModel.fetch_by_id(UserGroupR, group_id)
+    if not ugr:
+        logger.error(u"无法找到该分组. group_id: %s." % group_id)
+        return ERR_WRONG_ITEM
+    ugr.group_name = group_rename
+    ugr.update()
+    logger.info(u"重命名成功. group_id: %s." % group_id)
+    return SUCCESS
 
 
 def delete_a_group(group_id, client_id):
-    uqr = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": client_id}))
-    group_list = uqr.group_list
-    group_info_default = None
-    group_info_deleted = None
-    group_info_deleted_i = -1
-    for i, group_info in enumerate(group_list):
-        if group_info.get("group_name") == group_id:
-            group_info_deleted = group_info
-            group_info_deleted_i = i
-        if group_info.get("is_default") == 1:
-            group_info_default = group_info
-
-    if group_info_default is None:
-        logger.error(u"无法找到该默认分组. client_id: %s." % client_id)
-        return ERR_WRONG_ITEM
-    if group_info_deleted is None or group_info_deleted_i == -1:
+    if group_id.endswith(u"_0"):
+        logger.error(u"默认分组无法重命名. group_id: %s. user_id: %s." % (group_id, client_id))
+        return ERR_RENAME_OR_DELETE_DEFAULT_GROUP
+    ugr = BaseModel.fetch_by_id(UserGroupR, group_id)
+    if not ugr:
         logger.error(u"无法找到该分组. group_id: %s." % group_id)
         return ERR_WRONG_ITEM
-    if group_info_deleted.get("is_default") == 1:
-        logger.error(u"默认分组无法删除. group_id: %s. user_id: %s." % (group_id, client_id))
-        return ERR_RENAME_OR_DELETE_DEFAULT_GROUP
-    chatroom_list = group_info_deleted.get("chatroom_list")
-    for chatroom in chatroom_list:
-        if chatroom not in group_info_default.chatroom_list:
-            group_info_default.chatroom_list.append(chatroom)
-    group_list.pop(group_info_deleted_i)
+    # ugr.group_name = group_rename
+    # ugr.update()
+    uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": client_id,
+                                                                                       "group_id": group_id}))
+    for uqr in uqr_list:
+        uqr.group_id = u""
+        uqr.save()
+
     logger.info(u"已删除分组. old_group_id: %s. user_id: %s." % (group_id, client_id))
     return SUCCESS
 
 
 def transfer_qun_into_a_group(old_group_id, new_group_id, chatroomname, client_id):
-    uqr = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": client_id}))
-    group_list = uqr.group_list
-    group_info_old = None
-    group_info_new = None
-    for i, group_info in enumerate(group_list):
-        if group_info.get("group_name") == old_group_id:
-            group_info_old = group_info
-            continue
-        if group_info.get("group_name") == new_group_id:
-            group_info_new = group_info
-            continue
-    if group_info_old is None or group_info_new is None:
-        logger.error(u"无法找到该分组. group_id: %s." % new_group_id)
+    uqr = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": client_id,
+                                                                                  "group_id": old_group_id,
+                                                                                  "chatroomname": chatroomname}))
+    if not uqr:
+        logger.error(u"无法找到该群. group_id: %s. client_id: %s. chatroomname: %s." % (new_group_id, client_id, chatroomname))
         return ERR_WRONG_ITEM
-
-    if chatroomname not in group_info_old.get("chatroom_list"):
-        logger.error(u"无法找到该群. group_id: %s. chatroomname: %s." % (new_group_id, chatroomname))
-        return ERR_WRONG_ITEM
-
-    group_info_old.get("chatroom_list").remove(chatroomname)
-    group_info_new.get("chatroom_list").append(chatroomname)
+    uqr.group_id = new_group_id
+    uqr.save()
 
     logger.info(u"转移分组成功. new_group_id: %s. chatroomname: %s." % (new_group_id, chatroomname))
     return SUCCESS
@@ -431,15 +389,3 @@ def get_a_chatroom_dict_by_uqun_id(uqr_info=None, uqun_id=None):
 
     return SUCCESS, temp_chatroom_dict
 
-
-def _create_new_group(group_name, is_default=False):
-    now_time = datetime_to_timestamp_utc_8(datetime.now())
-
-    group_info = dict()
-    group_info["group_name"] = group_name
-    group_info["is_default"] = is_default
-    group_info["create_time"] = now_time
-    group_info["create_time"] = now_time
-    group_info["chatroom_list"] = list()
-
-    return group_info

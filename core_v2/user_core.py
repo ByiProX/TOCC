@@ -12,6 +12,7 @@ from configs.config import SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPI
     UserBotR, BotInfo, UserQunR, Chatroom
 from core_v2.qun_manage_core import set_default_group
 from core_v2.wechat_core import wechat_conn
+from models.android_db_models import AContact
 from models_v2.base_model import BaseModel, CM
 from utils.u_time import datetime_to_timestamp_utc_8
 from utils.u_transformat import str_to_unicode
@@ -219,18 +220,15 @@ def cal_user_basic_page_info(user_info):
     ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
 
     if ubr_info:
-        uqr_info = BaseModel.fetch_one(UserQunR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
-        group_list = uqr_info.group_list
         chatroomname_set = set()
-        for group in group_list:
-            for chatroomname in group.values()[0]:
-                chatroomname_set.add(chatroomname)
+        uqr_list = BaseModel.fetch_all(UserQunR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+        for uqr in uqr_list:
+            chatroomname_set.add(uqr.chatroomname)
         qun_count = len(chatroomname_set)
         if not chatroomname_set:
             # 目前没有控制的群，不需要下一步统计
             logger.debug(u"无绑定群. user_id: %s." % user_info.user_id)
             member_count = 0
-            pass
         else:
             chatroomname_list = list(chatroomname_set)
             chatroom_list = CM(Chatroom).fetch_all(select_colums = ["chatroomname", "member_count"], where_clause = BaseModel.where("in", "chatroomname", chatroomname_list))
@@ -238,47 +236,41 @@ def cal_user_basic_page_info(user_info):
             for chatroom in chatroom_list:
                 member_count += chatroom.member_count
 
+        bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+        if not bot_info:
+            logger.error(u"bot信息出错. client_id: %s" % user_info.client_id)
+            return ERR_WRONG_ITEM, None
+        a_contact_bot = BaseModel.fetch_one(AContact, "*", where_clause = BaseModel.where_dict({"username": bot_info.bot_username}))
+        if not a_contact_bot:
+            logger.error(u"bot信息出错. bot_username: %s" % bot_info.bot_username)
+            return ERR_WRONG_ITEM, None
         res = dict()
         res.setdefault("bot_info", {})
         # TODO: bot_id encode
-        # res['bot_info'].setdefault('bot_id', ubr_info.bot_id)
-        # res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
-        # bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == ubr_info.bot_id).first()
-        # if not bot_info:
-        #     logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
-        #     return ERR_WRONG_ITEM, None
-        # if bot_info.is_alive is True:
-        #     bot_status = 0
-        # else:
-        #     bot_status = -1
-        # res['bot_info'].setdefault('bot_status', bot_status)
-        # a_bot = db.session.query(ABot).filter(ABot.username == bot_info.username).first()
-        # if not a_bot:
-        #     logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
-        #     return ERR_WRONG_ITEM, None
-        # res['bot_info'].setdefault('bot_avatar', a_bot.avatar_url2)
-        #
-        # username = a_bot.username
-        # img_str = _get_qr_code_base64_str(username)
-        # res['bot_info'].setdefault('bot_qr_code', img_str)
-        #
-        # res.setdefault("total_info", {})
-        # res['total_info'].setdefault('qun_count', qun_count)
-        # res['total_info'].setdefault('cover_member_count', member_count)
-        #
-        # res.setdefault("user_func", {})
-        # res['user_func'].setdefault('func_send_messages', user_info.func_send_qun_messages)
-        # res['user_func'].setdefault('func_sign', user_info.func_qun_sign)
-        # res['user_func'].setdefault('func_reply', user_info.func_auto_reply)
-        # res['user_func'].setdefault('func_welcome', user_info.func_welcome_message)
-        # res['user_func'].setdefault('func_real_time_quotes', user_info.func_real_time_quotes)
-        # res['user_func'].setdefault('func_synchronous_announcement', user_info.func_synchronous_announcement)
-        # res['user_func'].setdefault('func_coin_wallet', user_info.func_coin_wallet)
-        # logger.info(u"返回有机器人时群组列表. user_id: %s." % user_info.user_id)
-        return SUCCESS, res
+        res['bot_info'].setdefault('bot_id', bot_info.bot_info_id)
+        res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
+        res['bot_info'].setdefault('bot_status', 0 if bot_info.is_alive else -1)
+        res['bot_info'].setdefault('bot_avatar', a_contact_bot.avatar_url)
+        img_str = _get_qr_code_base64_str(bot_info.bot_username)
+        res['bot_info'].setdefault('bot_qr_code', img_str)
 
-    # 用户目前没有机器人
+        res.setdefault("total_info", {})
+        res['total_info'].setdefault('qun_count', qun_count)
+        res['total_info'].setdefault('cover_member_count', member_count)
+
+        user_switch = BaseModel.fetch_one(UserSwitch, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+        res.setdefault("user_func", {})
+        res['user_func'].setdefault('func_send_messages', user_switch.func_send_qun_messages)
+        res['user_func'].setdefault('func_sign', user_switch.func_qun_sign)
+        res['user_func'].setdefault('func_reply', user_switch.func_auto_reply)
+        res['user_func'].setdefault('func_welcome', user_switch.func_welcome_message)
+        res['user_func'].setdefault('func_real_time_quotes', user_switch.func_real_time_quotes)
+        res['user_func'].setdefault('func_synchronous_announcement', user_switch.func_synchronous_announcement)
+        res['user_func'].setdefault('func_coin_wallet', user_switch.func_coin_wallet)
+        logger.info(u"返回有机器人时群组列表. user_id: %s." % user_info.client_id)
+        return SUCCESS, res
     else:
+        # 用户目前没有机器人
         res = dict()
         res.setdefault("bot_info", None)
         res.setdefault("total_info", {})
@@ -292,7 +284,7 @@ def cal_user_basic_page_info(user_info):
         res['user_func'].setdefault('func_real_time_quotes', False)
         res['user_func'].setdefault('func_synchronous_announcement', False)
         res['user_func'].setdefault('func_coin_wallet', False)
-        logger.info(u"返回无机器人时群组列表. user_id: %s." % user_info.user_id)
+        logger.info(u"返回无机器人时群组列表. user_id: %s." % user_info.client_id)
         return INFO_NO_USED_BOT, res
 
 
@@ -387,7 +379,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     ubr_info.is_work = True
     ubr_info.save()
 
-    set_default_group(user_info.client_id)
+    # set_default_group(user_info.client_id)
     logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_info.bot_id))
     return SUCCESS, user_info
 

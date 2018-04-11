@@ -8,8 +8,8 @@ from datetime import datetime
 
 from sqlalchemy import func
 
-from configs.config import db, SUCCESS, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, UserQunR
-from models_v2.base_model import BaseModel
+from configs.config import db, SUCCESS, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, UserQunR, Chatroom, Wallet
+from models_v2.base_model import BaseModel, CM
 from utils.u_time import datetime_to_timestamp_utc_8
 from utils.u_transformat import str_to_unicode, unicode_to_str
 
@@ -168,82 +168,52 @@ def check_whether_message_is_a_coin_wallet(a_message):
             return True
 
 
-def _save_coin_wallet(message_analysis, wallet_address):
-    chatroomname = message_analysis.talker
-    username = message_analysis.real_talker
+def _save_coin_wallet(a_message, wallet_address):
+    chatroomname = a_message.talker
+    username = a_message.real_talker
+    a_chatroom = BaseModel.fetch_one(Chatroom, "nickname", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+    if not a_chatroom:
+        logger.error(u"没有找到该群的信息. chatroomname: %s." % chatroomname)
+        return ERR_WRONG_ITEM
+    chatroom_nick = a_chatroom.nickname
     uqr_list = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+    client_id_set = set()
+    for uqr in uqr_list:
+        client_id_set.add(uqr.client_id)
 
-    uqr_info_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.chatroomname == message_chatroomname,
-                                                               UserQunRelateInfo.is_deleted == 0).all()
-    for uqr_info in uqr_info_list:
-        uqun_id = uqr_info.uqun_id
+    now_time = datetime_to_timestamp_utc_8(datetime.now())
+    address_info = dict()
+    address_info.setdefault("address", wallet_address)
+    address_info.setdefault("create_time", now_time)
+    address_info.setdefault("update_time", now_time)
+    address_info.setdefault("is_deleted", False)
 
-        user_id = uqr_info.user_id
-        user_info = db.session.query(UserInfo).filter(UserInfo.user_id == user_id).first()
-        if not user_info:
-            logger.error(u"没有找到uqr绑定关系的userinfo. uqun_id: %s." % uqun_id)
-            return ERR_WRONG_USER_ITEM
-        # 用户功能关闭，不对其进行记录
-        if user_info.func_coin_wallet is False:
-            continue
+    for client_id in client_id_set:
+        wallet = BaseModel.fetch_one(Wallet, "*", where_clause = BaseModel.where_dict({"client_id": client_id,
+                                                                                       "chatroomname": chatroomname,
+                                                                                       "username": username}))
+        if not wallet:
+            wallet = CM(Wallet)
+            wallet.client_id = client_id
+            wallet.chatroomname = chatroomname
+            wallet.chatroom_nick = chatroom_nick
+            wallet.username = username
+            wallet.address_count = 0
+            wallet.address_list = list()
+            wallet.create_time = now_time
 
-        old_cw_qmr_info = db.session.query(CoinWalletQunMemberRelate). \
-            filter(CoinWalletQunMemberRelate.uqun_id == uqun_id,
-                   CoinWalletQunMemberRelate.member_username == member_username).first()
-        # 之前有过存储
-        if old_cw_qmr_info:
-            old_cw_qmr_info.last_update_time = datetime.now()
-            db.session.merge(old_cw_qmr_info)
-            db.session.commit()
-            uqun_member_id = old_cw_qmr_info.uqun_member_id
-        # 之前没有该人
-        else:
-            cw_qmr_info = CoinWalletQunMemberRelate()
-            cw_qmr_info.user_id = uqr_info.user_id
-            cw_qmr_info.uqun_id = uqr_info.uqun_id
-            cw_qmr_info.member_username = message_analysis.real_talker
-            cw_qmr_info.member_is_deleted = False
-            cw_qmr_info.last_update_time = datetime.now()
-            db.session.add(cw_qmr_info)
-            db.session.commit()
-            uqun_member_id = cw_qmr_info.uqun_member_id
-
-        cw_mar_info = CoinWalletMemberAddressRelate()
-        cw_mar_info.uqun_member_id = uqun_member_id
-        cw_mar_info.coin_address = wallet_address
-        cw_mar_info.address_is_origin = True
-        cw_mar_info.wallet_is_deleted = False
-        cw_mar_info.found_in_qun_time = message_analysis.create_time
-        cw_mar_info.last_updated_time = datetime.now()
-        db.session.add(cw_mar_info)
-        db.session.commit()
+        wallet.update_time = now_time
+        update_flag = False
+        for address_info in wallet.address_list:
+            if address_info.get("address") == wallet_address:
+                update_flag = True
+                address_info.set("address", wallet_address)
+                address_info.set("update_time", now_time)
+        if not update_flag:
+            wallet.address_list.append(address_info)
+        wallet.save()
 
     return SUCCESS
-
-
-def update_coin_address_by_id(wallet_id, address_text):
-    wallet = db.session.query(CoinWalletMemberAddressRelate)\
-        .filter(CoinWalletMemberAddressRelate.wallet_id == wallet_id).first()
-    if wallet:
-        wallet.coin_address = address_text
-        db.session.commit()
-        return SUCCESS
-    else:
-        return ERR_WRONG_ITEM
-
-
-def delete_wallet_by_id(wallet_id):
-    wallet = db.session.query(CoinWalletMemberAddressRelate)\
-        .filter(CoinWalletMemberAddressRelate.wallet_id == wallet_id).first()
-    if wallet:
-        wallet.wallet_is_deleted = True
-        # TODO: check and update for querying for non-wallet members
-        # cw_qmr = db.session.query(CoinWalletQunMemberRelate)\
-        #     .filter(CoinWalletQunMemberRelate.uqun_member_id == wallet.uqun_member_id).first()
-        db.session.commit()
-        return SUCCESS
-    else:
-        return ERR_WRONG_ITEM
 
 
 # def build_wallet_excel(user_info, uqun_id = None):

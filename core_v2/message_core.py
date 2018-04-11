@@ -2,15 +2,15 @@
 import copy
 import json
 
-from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, db, CONTENT_TYPE_SYS, CONTENT_TYPE_TXT, CHAT_LOGS_TYPE_2, \
-    CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, rds, Member, Contact, CHAT_LOGS_ERR_TYPE_0
-from core.redis_core import rds_lpush
-from core.send_task_and_ws_setting_core import update_chatroom_members_info
+from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT_TYPE_TXT, CHAT_LOGS_TYPE_2, \
+    CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, Member, Contact, CHAT_LOGS_ERR_TYPE_0, GLOBAL_RULES_UPDATE_FLAG, \
+    GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
+from core_v2.matching_rule_core import get_gm_rule_dict, get_gm_default_rule_dict, match_message_by_rule
+from core_v2.redis_core import rds_lpush
 from core_v2.coin_wallet_core import check_whether_message_is_a_coin_wallet
 from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from models_v2.base_model import BaseModel
-from utils.u_time import get_today_0
-from utils.u_transformat import str_to_unicode, unicode_to_str
+from utils.u_transformat import str_to_unicode
 
 import logging
 
@@ -18,6 +18,16 @@ logger = logging.getLogger('main')
 
 
 def route_msg(a_message):
+    # TODO: 消息队列实现
+    # TODO: gm_rule_dict 和 gm_default_rule_dict 在全局初始化
+    if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
+        gm_rule_dict = get_gm_rule_dict()
+        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
+
+    if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
+        gm_default_rule_dict = get_gm_default_rule_dict()
+        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
+
     # 判断这个机器人说的话是否是文字或系统消息
     if a_message.type == MSG_TYPE_TXT or a_message.type == MSG_TYPE_SYS:
         pass
@@ -50,7 +60,7 @@ def route_msg(a_message):
         return
 
     # 检测是否是别人的进群提示
-    is_friend_into_qun = check_whether_message_is_friend_into_qun(a_message)
+    # is_friend_into_qun = check_whether_message_is_friend_into_qun(a_message)
 
     # 根据规则和内容进行匹配，并生成任务
     rule_status = match_message_by_rule(gm_rule_dict, a_message)

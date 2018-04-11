@@ -323,12 +323,14 @@ UserSwitch = "client_switch"
 UserBotR = "client_bot_r"
 BotInfo = "bot_info"
 UserQunR = "client_qun_r"
+UserGroupR = "client_group_r"
 Chatroom = "a_chatroom"
 Member = "a_member"
 Contact = "a_contact"
 Keywords = "keywords"
 Message = "a_message"
 Coin = "coin"
+Wallet = "wallet"
 
 SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
 DB_SERVER_URL = u'http://dal.com/'

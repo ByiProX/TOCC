@@ -192,8 +192,9 @@ class BaseModel(object):
         code = response_json.get(u"code")
         # load _id
         if code == 0:
-            msg = response_json.get(u"msg")
-            self.set_id(_id = msg)
+            data = response_json.get(u"data")
+            if data:
+                self.from_json(data)
             return True
         else:
             logger.error(u"insert failed, content: " + unicode(response.content))
@@ -212,8 +213,9 @@ class BaseModel(object):
         response_json = json.loads(response.content)
         code = response_json.get(u"code")
         if code == 0:
-            msg = response_json.get(u"msg")
-            # self.set_id(_id = msg)
+            data = response_json.get(u"data")
+            if data:
+                self.from_json(data)
             return True
         else:
             logger.error(u"update failed, content: " + unicode(response.content))
