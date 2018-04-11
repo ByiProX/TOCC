@@ -27,7 +27,7 @@ def login_verify_code():
     status, user_info = user_login.get_user_token()
     # TODO 这里有bug
     if status == SUCCESS:
-        return make_response(status, user_info = user_info.to_dict())
+        return make_response(status, user_info = user_info.to_json_full())
     else:
         return make_response(status)
 

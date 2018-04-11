@@ -183,15 +183,12 @@ def set_bot_name(bot_id, bot_nickname, user_info):
 
 
 def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
-    ubr_info_list = CM(UserBotR).fetch_all('*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    ubr_info_list = BaseModel.fetch_all(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
     if len(ubr_info_list) > 1:
         raise ValueError(u"已经有多于一个机器人，不可以再预设置机器人")
     elif len(ubr_info_list) == 1:
-        if ubr_info_list[0].is_setted:
-            logger.error(u"已经有设置完成的bot. user_id: %s." % user_info.client_id)
-            return ERR_MAXIMUM_BOT, None
-        else:
-            ubr_info = ubr_info_list[0]
+        logger.error(u"已经有设置完成的bot. user_id: %s." % user_info.client_id)
+        return ERR_MAXIMUM_BOT, None
     else:
         ubr_info = CM(UserBotR)
 
@@ -205,7 +202,7 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
     ubr_info.bot_username = bot_info.username
 
     ubr_info.chatbot_default_nickname = chatbot_default_nickname
-    ubr_info.is_work = False
+    ubr_info.is_work = 1
     ubr_info.create_time = datetime_to_timestamp_utc_8(datetime.now())
 
     ubr_info.save()
@@ -295,17 +292,17 @@ def get_bot_qr_code(user_info):
     bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"username": ubr_info.bot_username}))
 
     if not bot_info:
-        logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_id)
+        logger.error(u"bot信息出错. bot_id: %s" % ubr_info.bot_username)
         return ERR_WRONG_ITEM, None
 
     username = bot_info.username
     img_str = _get_qr_code_base64_str(username)
 
     if not img_str:
-        logger.error(u"static中无bot的QR信息. bot_id: %s. bot_username: %s." % (ubr_info.bot_id, username))
+        logger.error(u"static中无bot的QR信息. bot_id: %s. bot_username: %s." % (ubr_info.bot_username, username))
         return ERR_NO_BOT_QR_CODE, None
 
-    logger.info(u"返回QR码. bot_id: %s." % ubr_info.bot_id)
+    logger.info(u"返回QR码. bot_id: %s." % ubr_info.bot_username)
     return SUCCESS, img_str
 
 
