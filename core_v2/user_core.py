@@ -9,13 +9,10 @@ from sqlalchemy import func
 from configs.config import SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
     ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM, \
     ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE, MSG_TYPE_TXT, MSG_TYPE_SYS, ERR_INVALID_PARAMS, UserInfo, UserSwitch, \
-    UserBotR, BotInfo, UserQunR, Chatroom
-from core_v2.qun_manage_core import set_default_group
+    UserBotR, BotInfo, UserQunR, Chatroom, Contact
 from core_v2.wechat_core import wechat_conn
-from models.android_db_models import AContact
 from models_v2.base_model import BaseModel, CM
 from utils.u_time import datetime_to_timestamp_utc_8
-from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
 
@@ -176,7 +173,7 @@ def set_bot_name(bot_id, bot_nickname, user_info):
                                                                                        "bot_username": bot_info.username}))
 
     if not ubr_info:
-        logger.error(u"未找到已开启的user与bot关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_id))
+        logger.error(u"未找到已开启的user与bot关系. user_id: %s. bot_id: %s." % (user_info.client_id, bot_id))
         return ERR_WRONG_USER_ITEM
 
     ubr_info.chatbot_default_nickname = bot_nickname
@@ -191,7 +188,7 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
         raise ValueError(u"已经有多于一个机器人，不可以再预设置机器人")
     elif len(ubr_info_list) == 1:
         if ubr_info_list[0].is_setted:
-            logger.error(u"已经有设置完成的bot. user_id: %s." % user_info.user_id)
+            logger.error(u"已经有设置完成的bot. user_id: %s." % user_info.client_id)
             return ERR_MAXIMUM_BOT, None
         else:
             ubr_info = ubr_info_list[0]
@@ -212,7 +209,7 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
     ubr_info.create_time = datetime_to_timestamp_utc_8(datetime.now())
 
     ubr_info.save()
-    logger.info(u"初始化user与bot关系成功. user_id: %s. bot_username: %s." % (user_info.client_id, bot_info.bot_username))
+    logger.info(u"初始化user与bot关系成功. user_id: %s. bot_username: %s." % (user_info.client_id, bot_info.username))
     return SUCCESS, ubr_info
 
 
@@ -227,7 +224,7 @@ def cal_user_basic_page_info(user_info):
         qun_count = len(chatroomname_set)
         if not chatroomname_set:
             # 目前没有控制的群，不需要下一步统计
-            logger.debug(u"无绑定群. user_id: %s." % user_info.user_id)
+            logger.debug(u"无绑定群. user_id: %s." % user_info.client_id)
             member_count = 0
         else:
             chatroomname_list = list(chatroomname_set)
@@ -236,13 +233,13 @@ def cal_user_basic_page_info(user_info):
             for chatroom in chatroom_list:
                 member_count += chatroom.member_count
 
-        bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+        bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"username": ubr_info.bot_username}))
         if not bot_info:
             logger.error(u"bot信息出错. client_id: %s" % user_info.client_id)
             return ERR_WRONG_ITEM, None
-        a_contact_bot = BaseModel.fetch_one(AContact, "*", where_clause = BaseModel.where_dict({"username": bot_info.bot_username}))
+        a_contact_bot = BaseModel.fetch_one(Contact, "*", where_clause = BaseModel.where_dict({"username": bot_info.username}))
         if not a_contact_bot:
-            logger.error(u"bot信息出错. bot_username: %s" % bot_info.bot_username)
+            logger.error(u"bot信息出错. bot_username: %s" % bot_info.username)
             return ERR_WRONG_ITEM, None
         res = dict()
         res.setdefault("bot_info", {})
@@ -251,7 +248,7 @@ def cal_user_basic_page_info(user_info):
         res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
         res['bot_info'].setdefault('bot_status', 0 if bot_info.is_alive else -1)
         res['bot_info'].setdefault('bot_avatar', a_contact_bot.avatar_url)
-        img_str = _get_qr_code_base64_str(bot_info.bot_username)
+        img_str = _get_qr_code_base64_str(bot_info.username)
         res['bot_info'].setdefault('bot_qr_code', img_str)
 
         res.setdefault("total_info", {})
@@ -277,13 +274,13 @@ def cal_user_basic_page_info(user_info):
         res['total_info'].setdefault('qun_count', 0)
         res['total_info'].setdefault('cover_member_count', 0)
         res.setdefault("user_func", {})
-        res['user_func'].setdefault('func_send_messages', False)
-        res['user_func'].setdefault('func_sign', False)
-        res['user_func'].setdefault('func_reply', False)
-        res['user_func'].setdefault('func_welcome', False)
-        res['user_func'].setdefault('func_real_time_quotes', False)
-        res['user_func'].setdefault('func_synchronous_announcement', False)
-        res['user_func'].setdefault('func_coin_wallet', False)
+        res['user_func'].setdefault('func_send_messages', 0)
+        res['user_func'].setdefault('func_sign', 0)
+        res['user_func'].setdefault('func_reply', 0)
+        res['user_func'].setdefault('func_welcome', 0)
+        res['user_func'].setdefault('func_real_time_quotes', 0)
+        res['user_func'].setdefault('func_synchronous_announcement', 0)
+        res['user_func'].setdefault('func_coin_wallet', 0)
         logger.info(u"返回无机器人时群组列表. user_id: %s." % user_info.client_id)
         return INFO_NO_USED_BOT, res
 
@@ -292,7 +289,7 @@ def get_bot_qr_code(user_info):
     ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
 
     if not ubr_info:
-        logger.error(u"无预建立的群关系. user_id: %s." % user_info.user_id)
+        logger.error(u"无预建立的群关系. user_id: %s." % user_info.client_id)
         return ERR_WRONG_USER_ITEM, None
 
     bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"username": ubr_info.bot_username}))
@@ -365,11 +362,11 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     user_switch.func_coin_wallet = False
     user_switch.save()
 
-    logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.user_id, user_username))
+    logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.client_id, user_username))
     ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
                                                                                 "bot_username": bot_info.username}))
     if not ubr_info:
-        logger.debug(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.user_id)
+        logger.debug(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.client_id)
         ubr_info = CM(UserBotR)
         ubr_info.client_id = user_info.client_id
         ubr_info.bot_username = bot_info.username
@@ -380,7 +377,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     ubr_info.save()
 
     # set_default_group(user_info.client_id)
-    logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.user_id, bot_info.bot_id))
+    logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.client_id, bot_info.bot_info_id))
     return SUCCESS, user_info
 
 

@@ -6,7 +6,7 @@ from datetime import timedelta, datetime
 from sqlalchemy import func, or_
 
 from configs.config import db, USER_CHATROOM_R_PERMISSION_1, GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, \
-    GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, MSG_TYPE_TXT, MSG_TYPE_SYS
+    GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, MSG_TYPE_TXT, MSG_TYPE_SYS, UserBotR, Contact
 from core.coin_wallet_core import check_whether_message_is_a_coin_wallet
 from core.matching_rule_core import get_gm_rule_dict, get_gm_default_rule_dict, match_message_by_rule
 from core.message_core import update_members, count_msg_by_create_time, analysis_and_save_a_message
@@ -25,6 +25,8 @@ from models.matching_rule_models import GlobalMatchingRule
 from models.material_library_models import MaterialLibraryUser
 from models.message_ext_models import MessageAnalysis
 from models.synchronous_announcement_models import SynchronousAnnouncementDSUserRelate
+from models_v2.base_model import CM, BaseModel
+from utils.u_model_json_str import model_to_dict
 
 logger = logging.getLogger('main')
 
@@ -76,7 +78,8 @@ logger = logging.getLogger('main')
 from models.qun_friend_models import UserQunBotRelateInfo, UserQunRelateInfo, GroupInfo
 from models.user_bot_models import UserBotRelateInfo, BotInfo, UserInfo
 
-from utils.u_time import get_today_0
+from utils.u_time import get_today_0, datetime_to_timestamp_utc_8
+
 
 # chatroom_statistics_list = db.session.query(ChatroomStatistic).all()
 # for chatroom_statistics in chatroom_statistics_list:
@@ -338,10 +341,91 @@ def test_msg(message_list):
                 continue
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # update_member_overview()
     # init_cia()
     # init_count_msg()
-    clear_all_user_data()
+    # clear_all_user_data()
+
+
+if __name__ == '__main__':
+    BaseModel.extract_from_json()
+    now_time = datetime_to_timestamp_utc_8(datetime.now())
+    client = BaseModel.fetch_by_id(u"client", 1)
+    client.client_id = int(client.client_id)
+    client.create_time = long(client.create_time)
+    client.update_time = long(client.update_time)
+    # client.client_name = u"Doodod"
+    # client.client_cn_name = u"独到科技"
+    # client.tel = u"18888888888"
+    # client.admin = u"neil"
+    # client.update_time = datetime_to_timestamp_utc_8(datetime.now())
+    # client.save()
+    # user_list = db.session.query(UserInfo).all()
+
+    # user_old = db.session.query(UserInfo).filter(UserInfo.user_id == 5).first()
+    # user_old_json = model_to_dict(user_old, user_old.__class__)
+    # user_old_json['client_id'] = client.client_id
+    # user_old_json['last_login_time'] = int(user_old_json['last_login_time']) / 1000
+    # user_old_json['token_expired_time'] = int(user_old_json['token_expired_time']) / 1000
+    # user_old_json['create_time'] = int(user_old_json['create_time']) / 1000
+    # user = CM("client_member").from_json(user_old_json)
+    # user_switch = CM('client_switch').from_json(user_old_json)
+    # user.code = "111"
+    # user.token = "222"
+    # user.save()
+    # user_switch.save()
+
+    contact = CM(Contact)
+    contact.username = u"wxid_3mxn6zyskbpt22"
+    contact.nickname = u"柳罗"
+    contact.quan_pin = u"liuluo"
+    contact.py_initial = u"ll"
+    contact.contact_label_ids = u""
+    contact.avatar_url = u"http://wx.qlogo.cn/mmhead/ver_1/MSznWf00lhxtibw2TbbNQEt6fLp7dicMWfo0ITBTWz3vwb2WLGuYkE6EKdxL7GSjlYXqboJl7LLmE8k1g2XEC3otk4cx5ChNBYS6icnGvXql0s/132"
+    contact.img_lastupdatetime = now_time
+    contact.create_time = now_time
+    contact.update_time = now_time
+    contact.province = u"北京"
+    contact.city = u"海淀"
+    contact.sex = 1
+    contact.signature = u""
+    contact.save()
+
+    # bot_info = CM(BotInfo)
+    # bot_info.username = u"wxid_3mxn6zyskbpt22"
+    # bot_info.create_bot_time = now_time
+    # bot_info.is_alive = 1
+    # bot_info.alive_detect_time = now_time
+    # bot_info.save()
+    #
+    # ubr = CM(UserBotR)
+    # ubr.client_id = client.client_id
+    # ubr.bot_username = bot_info.username
+    # ubr.chatbot_default_nickname = u"奔跑的小黄豆"
+    # ubr.is_work = 1
+    # ubr.create_time = now_time
+    # ubr.save()
+    # for user in user_list:
+    #     client = CM('client')
+    #     client.create_time = datetime_to_timestamp_utc_8(datetime.now())
+    #     client.client_name = user.open_id
+    #     client.admin = user.open_id
+    #     client.save()
+    #     user_json = model_to_dict(user, user.__class__)
+    #     user_json['client_id'] = client.client_id
+    #     user_json['open_id'] += "a"
+    #     user_json['last_login_time'] = int(user_json['last_login_time']) / 1000
+    #     user_json['token_expired_time'] = int(user_json['token_expired_time']) / 1000
+    #     user_json['create_time'] = int(user_json['create_time']) / 1000
+    #     user_info = CM('client_member').from_json(user_json)
+    #     user_switch = CM('client_switch').from_json(user_json)
+    #     user_info.save()
+    #     user_switch.save()
+    # user_info_list = BaseModel.fetch_all('client_member', "*", order_by = BaseModel.order_by({"union_id": "desc"}))
+    # user_info = BaseModel.fetch_by_id(u'client_member', u'5acb919f421aa9393f212b88')
+    # user_info.union_id = "1"
+    # user_info.update()
+    pass
 
 pass

@@ -24,7 +24,6 @@ app.register_blueprint(main_api_v2, url_prefix= '/yaca_api_v2')
 models.import_str = ""
 api.api_str = ""
 api_v2.api_str = ""
-main_api_v2.api_str = ""
 configs.config_str = ""
 
 __version__ = "0.0.1a1"

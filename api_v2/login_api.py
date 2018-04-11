@@ -32,6 +32,15 @@ def login_verify_code():
         return make_response(status)
 
 
+@main_api_v2.route("/get_user_info", methods = ['POST'])
+def app_get_user_info():
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    return make_response(SUCCESS, user_info = user_info.to_json_full())
+
+
 @main_api_v2.route('/get_user_basic_info', methods=['POST'])
 def app_get_user_basic_info():
     """

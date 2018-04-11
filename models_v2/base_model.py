@@ -7,7 +7,7 @@ from urllib import urlencode
 import requests
 from datetime import datetime
 
-from configs.config import DB_RULE, db, DB_SERVER_URL, SUCCESS, ERROR_CODE
+from configs.config import DB_RULE, db, DB_SERVER_URL, SUCCESS, ERROR_CODE, UserBotR, BotInfo
 from models.user_bot_models import UserInfo
 from utils.u_model_json_str import model_to_dict
 from utils.u_time import datetime_to_timestamp_utc_8
@@ -31,7 +31,7 @@ class BaseModel(object):
 
     @staticmethod
     def extract_from_json():
-        with open("../conf.json", "r") as f:
+        with open("conf.json", "r") as f:
             DB_RULE.update(json.load(f))
 
     def get_tablename(self):
@@ -68,6 +68,10 @@ class BaseModel(object):
     def to_json(self):
         # res_json = {__attr: __value for __attr, __value in self.attrs.iteritems()}
         res_json = {attr: getattr(self, attr) for attr in self.attrs if getattr(self, attr) is not None}
+        return res_json
+
+    def to_json_full(self):
+        res_json = {attr: getattr(self, attr) for attr in self.attrs}
         return res_json
 
     def _validate_attr(self, __attr):
@@ -281,7 +285,6 @@ class BaseModel(object):
     @staticmethod
     def fetch_one(tablename, select_colums, where_clause = None, order_by = None, **kwargs):
         query_clause = dict()
-        print where_clause
         if not select_colums == '*':
             if not isinstance(select_colums, list):
                 select_colums = [select_colums]
@@ -384,9 +387,11 @@ CM = BaseModel.create_model
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
+    now_time = datetime_to_timestamp_utc_8(datetime.now())
     client = BaseModel.fetch_by_id(u"client", 1)
     client.client_id = int(client.client_id)
     client.create_time = long(client.create_time)
+    client.update_time = long(client.update_time)
     # client.client_name = u"Doodod"
     # client.client_cn_name = u"独到科技"
     # client.tel = u"18888888888"
@@ -406,6 +411,21 @@ if __name__ == '__main__':
     user.token = "222"
     user.save()
     user_switch.save()
+
+    bot_info = CM(BotInfo)
+    bot_info.username = u"wxid_3mxn6zyskbpt22"
+    bot_info.create_bot_time = now_time
+    bot_info.is_alive = 1
+    bot_info.alive_detect_time = now_time
+    bot_info.save()
+
+    ubr = CM(UserBotR)
+    ubr.client_id = client.client_id
+    ubr.bot_username = bot_info.username
+    ubr.chatbot_default_nickname = u"奔跑的小黄豆"
+    ubr.is_work = 1
+    ubr.create_time = now_time
+    ubr.save()
     # for user in user_list:
     #     client = CM('client')
     #     client.create_time = datetime_to_timestamp_utc_8(datetime.now())
