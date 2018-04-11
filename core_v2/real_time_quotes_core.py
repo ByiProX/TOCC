@@ -27,6 +27,7 @@ def switch_func_real_time_quotes(user_info, switch):
         return ERR_WRONG_ITEM
 
     user_switch.func_real_time_quotes = 1 if switch else 0
+    user_switch.save()
 
     return SUCCESS
 
@@ -45,7 +46,8 @@ def get_rt_quotes_list_and_status(user_info, per_page, page_number):
         res_dict.setdefault("coin_name", ds_info.coin_name)
         res_dict.setdefault("logo", ds_info.coin_icon)
         res.append(res_dict)
-    return SUCCESS, res, user_info.func_real_time_quotes, ds_info_count
+    user_switch = BaseModel.fetch_one(UserSwitch, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    return SUCCESS, res, user_switch.func_real_time_quotes, ds_info_count
 
 
 def get_rt_quotes_preview(coin_id):
@@ -111,90 +113,92 @@ def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
 
     if message_text in gm_default_rule_dict['is_full_match']:
         # 已经匹配到了text，执行后续操作
-        activate_rule_and_add_task_to_consumption_task(gm_default_rule_dict['is_full_match'][message_text],
-                                                       message_chatroomname, message_said_username)
+        print 'send msg coin'
+        # activate_rule_and_add_task_to_consumption_task(gm_default_rule_dict['is_full_match'][message_text],
+        #                                                message_chatroomname, message_said_username)
         is_match_coin_keyword = True
         pass
 
     for keyword, coin_id in gm_default_rule_dict['is_not_full_match']:
         if keyword in message_text:
-            activate_rule_and_add_task_to_consumption_task(gm_default_rule_dict['is_not_full_match'][message_text],
-                                                           message_chatroomname, message_said_username)
+            print 'send msg coin'
+            # activate_rule_and_add_task_to_consumption_task(gm_default_rule_dict['is_not_full_match'][message_text],
+            #                                                message_chatroomname, message_said_username)
             is_match_coin_keyword = True
 
     return is_match_coin_keyword
 
 
-def activate_rule_and_add_task_to_consumption_task(coin_id, message_chatroomname, message_said_username):
-    ds_info = db.session.query(Coin).filter(
-        Coin.coin_id == coin_id,
-        Coin.is_integral == 1).first()
-    if not ds_info:
-        return ERR_WRONG_ITEM
-
-    uqr_info_list = db.session.query(UserQunRelateInfo).filter(
-        UserQunRelateInfo.chatroomname == message_chatroomname,
-        UserQunRelateInfo.is_deleted == 0).all()
-    if not uqr_info_list:
-        logger.warning("在未开启实时报价的群中发现报价关键字")
-        return ERR_WRONG_ITEM
-    chatroom_relate_user_id_dict = {}
-    for uqr_info in uqr_info_list:
-        chatroom_relate_user_id_dict.setdefault(uqr_info.user_id, uqr_info)
-
-    user_info_list = db.session.query(UserInfo).filter(UserInfo.func_real_time_quotes == 1).all()
-
-    for user_info in user_info_list:
-        if user_info.user_id in chatroom_relate_user_id_dict:
-            c_task = ConsumptionTask()
-            c_task.qun_owner_user_id = user_info.user_id
-            c_task.task_initiate_user_id = user_info.user_id
-
-            c_task.chatroomname = chatroom_relate_user_id_dict[user_info.user_id].chatroomname
-            c_task.task_type = CONSUMPTION_TASK_TYPE['real_time_quotes']
-            c_task.task_relevant_id = coin_id
-
-            c_task.task_send_type = TASK_SEND_TYPE['text']
-
-            res_text = _build_a_rs_text_to_send(message_said_username, ds_info)
-
-            c_task.task_send_content = json.dumps({"text": res_text})
-
-            uqun_id = chatroom_relate_user_id_dict[user_info.user_id].uqun_id
-
-            uqbr_info_list = db.session.query(UserQunBotRelateInfo).filter(
-                UserQunBotRelateInfo.uqun_id == uqun_id).all()
-            if not uqbr_info_list:
-                logger.error(u"没有找到群与机器人绑定关系. qun_id: %s." % uqun_id)
-                return ERR_WRONG_USER_ITEM
-            user_bot_rid_list = []
-            for uqbr_info in uqbr_info_list:
-                if uqbr_info.is_error is True:
-                    continue
-                else:
-                    user_bot_rid_list.append(uqbr_info.user_bot_rid)
-            # 目前只要读取到一个bot_id就好
-            bot_id = None
-            for user_bot_rid in user_bot_rid_list:
-                ubr_info = db.session.query(UserBotRelateInfo).filter(
-                    UserBotRelateInfo.user_bot_rid == user_bot_rid).all()
-                bot_id = ubr_info[0].bot_id
-                if bot_id:
-                    break
-
-            bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == bot_id).first()
-            if not bot_info:
-                logger.error(u"没有找到bot相关信息. bot_id: %s." % bot_id)
-                return ERR_WRONG_ITEM
-
-            c_task.bot_username = bot_info.username
-            now_time = datetime.now()
-            c_task.message_received_time = now_time
-            c_task.task_create_time = now_time
-
-            db.session.add(c_task)
-            db.session.commit()
-            return SUCCESS
+# def activate_rule_and_add_task_to_consumption_task(coin_id, message_chatroomname, message_said_username):
+#     ds_info = db.session.query(Coin).filter(
+#         Coin.coin_id == coin_id,
+#         Coin.is_integral == 1).first()
+#     if not ds_info:
+#         return ERR_WRONG_ITEM
+#
+#     uqr_info_list = db.session.query(UserQunRelateInfo).filter(
+#         UserQunRelateInfo.chatroomname == message_chatroomname,
+#         UserQunRelateInfo.is_deleted == 0).all()
+#     if not uqr_info_list:
+#         logger.warning("在未开启实时报价的群中发现报价关键字")
+#         return ERR_WRONG_ITEM
+#     chatroom_relate_user_id_dict = {}
+#     for uqr_info in uqr_info_list:
+#         chatroom_relate_user_id_dict.setdefault(uqr_info.user_id, uqr_info)
+#
+#     user_info_list = db.session.query(UserInfo).filter(UserInfo.func_real_time_quotes == 1).all()
+#
+#     for user_info in user_info_list:
+#         if user_info.user_id in chatroom_relate_user_id_dict:
+#             c_task = ConsumptionTask()
+#             c_task.qun_owner_user_id = user_info.user_id
+#             c_task.task_initiate_user_id = user_info.user_id
+#
+#             c_task.chatroomname = chatroom_relate_user_id_dict[user_info.user_id].chatroomname
+#             c_task.task_type = CONSUMPTION_TASK_TYPE['real_time_quotes']
+#             c_task.task_relevant_id = coin_id
+#
+#             c_task.task_send_type = TASK_SEND_TYPE['text']
+#
+#             res_text = _build_a_rs_text_to_send(message_said_username, ds_info)
+#
+#             c_task.task_send_content = json.dumps({"text": res_text})
+#
+#             uqun_id = chatroom_relate_user_id_dict[user_info.user_id].uqun_id
+#
+#             uqbr_info_list = db.session.query(UserQunBotRelateInfo).filter(
+#                 UserQunBotRelateInfo.uqun_id == uqun_id).all()
+#             if not uqbr_info_list:
+#                 logger.error(u"没有找到群与机器人绑定关系. qun_id: %s." % uqun_id)
+#                 return ERR_WRONG_USER_ITEM
+#             user_bot_rid_list = []
+#             for uqbr_info in uqbr_info_list:
+#                 if uqbr_info.is_error is True:
+#                     continue
+#                 else:
+#                     user_bot_rid_list.append(uqbr_info.user_bot_rid)
+#             # 目前只要读取到一个bot_id就好
+#             bot_id = None
+#             for user_bot_rid in user_bot_rid_list:
+#                 ubr_info = db.session.query(UserBotRelateInfo).filter(
+#                     UserBotRelateInfo.user_bot_rid == user_bot_rid).all()
+#                 bot_id = ubr_info[0].bot_id
+#                 if bot_id:
+#                     break
+#
+#             bot_info = db.session.query(BotInfo).filter(BotInfo.bot_id == bot_id).first()
+#             if not bot_info:
+#                 logger.error(u"没有找到bot相关信息. bot_id: %s." % bot_id)
+#                 return ERR_WRONG_ITEM
+#
+#             c_task.bot_username = bot_info.username
+#             now_time = datetime.now()
+#             c_task.message_received_time = now_time
+#             c_task.task_create_time = now_time
+#
+#             db.session.add(c_task)
+#             db.session.commit()
+#             return SUCCESS
 
 
 def _build_a_rs_text_to_send(message_said_username, ds_info):
