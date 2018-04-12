@@ -13,14 +13,20 @@ from utils.u_time import datetime_to_timestamp_utc_8
 logger = logging.getLogger('main')
 
 
-def get_batch_sending_task(user_info, task_per_page, page_number):
+def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
     """
     根据一个人，把所有的这个人可见的群发任务都出来
     :param user_info:
     :return:
     """
     result = []
-    batch_send_task_list = BaseModel.fetch_all(BatchSendTask, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    if task_status:
+        where = BaseModel.where_dict({"client_id": user_info.client_id,
+                                      "status": task_status})
+    else:
+        where = BaseModel.where_dict({"client_id": user_info.client_id})
+    batch_send_task_count = BaseModel.count(BatchSendTask, where)
+    batch_send_task_list = BaseModel.fetch_all(BatchSendTask, "*", where_clause = where, page = page_number, pagesize = task_per_page)
     for batch_send_task in batch_send_task_list:
         res = dict()
         chatroom_list = batch_send_task.chatroom_list
@@ -49,7 +55,7 @@ def get_batch_sending_task(user_info, task_per_page, page_number):
         res["task_sended_failed_count"] = 0
         result.append(res)
 
-    return SUCCESS, result
+    return SUCCESS, result, batch_send_task_count
 
 
 def get_task_detail(batch_send_task_id):

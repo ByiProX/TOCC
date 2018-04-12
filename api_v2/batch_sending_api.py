@@ -24,6 +24,7 @@ def app_get_batch_sending_task():
     # TODO: 结构修改
     task_per_page = request.json.get('page_size')
     page_number = request.json.get('page')
+    task_status = request.json.get("status")
     if not task_per_page:
         logger.warning("没有收到page_size，设置为10")
         task_per_page = 10
@@ -34,9 +35,9 @@ def app_get_batch_sending_task():
     # if not user_info.func_send_qun_messages:
     #     return make_response(ERR_WRONG_FUNC_STATUS)
 
-    status, res = get_batch_sending_task(user_info, task_per_page, page_number)
+    status, res, total_count = get_batch_sending_task(user_info, task_per_page, page_number, task_status)
     if status == SUCCESS:
-        return make_response(SUCCESS, task_info=res)
+        return make_response(SUCCESS, task_info=res, total_count = total_count)
     else:
         return make_response(status)
 
