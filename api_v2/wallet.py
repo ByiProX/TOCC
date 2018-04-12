@@ -142,7 +142,7 @@ def get_wallet_status():
     return response({'err_code': 0, 'content': {'status': result}})
 
 
-@main_api_v2.route('/get_chatroom_list', methods=['POST'])
+@main_api_v2.route('/get_wallet_chatroom_list', methods=['POST'])
 @para_check('token', 'keyword')
 def get_chatroom_list():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
