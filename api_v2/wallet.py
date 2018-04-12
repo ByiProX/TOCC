@@ -164,6 +164,6 @@ def get_chatroom_list():
         _chatroom_nickname = BaseModel.fetch_one('a_chatroom', '*',
                                                  BaseModel.where_dict({'chatroomname': _chatroom_name})).nickname_real
         result['content']['chatroom_list'].append(
-            {'chatroom_nickname': _chatroom_nickname, 'chatroom_name': _chatroom_name})
+            {'chatroom_nickname': _chatroom_nickname, 'chatroomname': _chatroom_name})
 
     return response(result)
