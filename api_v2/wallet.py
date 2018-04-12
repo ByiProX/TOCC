@@ -13,7 +13,7 @@ from models_v2.base_model import *
 logger = logging.getLogger('main')
 
 
-@main_api_v2.route('/wallets', methods = ['POST'])
+@main_api_v2.route('/wallets', methods=['POST'])
 def app_wallets():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
@@ -32,9 +32,11 @@ def app_wallets():
     if chatroomname:
         where = BaseModel.where_dict({"client_id": user_info.client_id, "chatroomname": chatroomname})
 
-    wallet_list = BaseModel.fetch_all('wallet', '*', where, page = 1, pagesize = pagesize)
+    wallet_list = BaseModel.fetch_all('wallet', '*', where, page=1, pagesize=pagesize)
 
     client_switch = BaseModel.fetch_one('client_switch', '*', BaseModel.where_dict({"client_id": user_info.client_id}))
+
+    switch = 0
     if client_switch:
         switchJson = client_switch.to_json()
         switch = switchJson['func_coin_wallet']
@@ -61,10 +63,10 @@ def app_wallets():
                     if (da['username'] == uinfo['username']):
                         da.update({"uinfo": {"nickname": uinfo['nickname'], "avatar_url": uinfo['avatar_url']}})
 
-    return make_response(SUCCESS, wallet_list = data, switch = switch)
+    return make_response(SUCCESS, wallet_list=data, switch=switch)
 
 
-@main_api_v2.route('/wallets_switch', methods = ['POST'])
+@main_api_v2.route('/wallets_switch', methods=['POST'])
 def app_wallets_switch():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
@@ -78,6 +80,6 @@ def app_wallets_switch():
     switchModel.func_coin_wallet = switch
 
     if (switchModel.save() == True):
-        return make_response(SUCCESS, switch = switch)
+        return make_response(SUCCESS, switch=switch)
     else:
         return make_response(ERR_PARAM_SET)
