@@ -7,5 +7,6 @@ import wallet
 import android_api
 import manage_api
 import coin_api
+import events_api
 
 api_str = ""
