@@ -39,7 +39,7 @@ def create_event_init():
         return response({'err_code': -2, 'content': 'Wrong user.'})
     # Check if previous event is not finished.
     # event_instance = Event.query.filter(Event.owner == owner).all()
-    event_instance = BaseModel.fetch_one('events', '*', BaseModel.where_dict({"owner": owner}))
+    event_instance = BaseModel.fetch_all('events', '*', BaseModel.where_dict({"owner": owner}))
     if event_instance:
         for i in event_instance:
             if i.is_finish == 0:
@@ -255,7 +255,7 @@ def events_list():
     result = {'err_code': 0, 'content': []}
     for i in events:
         temp = {}
-        today_inc, total_inc = inc_info(i.id)
+        today_inc, total_inc = inc_info(i.get_id())
         temp.update({
             'event_id': i.events_id,
             'poster_raw': read_poster_raw(i.poster_raw),
