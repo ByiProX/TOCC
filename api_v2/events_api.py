@@ -128,7 +128,7 @@ def create_event():
     # [Improve] string to bytes.
     full_event_paras_as_dict['is_finish'] = 1
     # True -> 1, False ->0
-    for k, v in full_event_paras_as_dict:
+    for k, v in full_event_paras_as_dict.items():
         if v is True:
             full_event_paras_as_dict[k] = 1
         if v is False:
