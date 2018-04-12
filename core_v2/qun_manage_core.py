@@ -170,7 +170,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
         return ERR_WRONG_ITEM, None
 
     user_info = BaseModel.fetch_one(UserInfo, "*", where_clause = BaseModel.where_dict({"username": member_username}))
-    if not user_info:`
+    if not user_info:
         logger.error(u"找不到该用户. username: %s." % member_username)
         return ERR_WRONG_ITEM, None
 
