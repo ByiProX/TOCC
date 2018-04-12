@@ -141,6 +141,7 @@ def create_event():
                                 BaseModel.where_dict({"owner": owner, "is_finish": 0}))
     event_id = event.events_id
     event.from_json(full_event_paras_as_dict)
+    event.save()
 
     return response({'err_code': 0, 'content': {'event_id': event_id}})
 
