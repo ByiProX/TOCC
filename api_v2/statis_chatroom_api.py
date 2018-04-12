@@ -32,7 +32,7 @@ def chatroom_statistics_chatroom():
         return make_response(status)
     # date_type=1 今日实时，每10分钟计算一次，cache 10分钟
     # date_type=2 昨日，从daily取，cache10分钟
-    # date_type3=7日，从daily计算过去7天，cache 10分钟
+    # date_type=3 7日，从daily计算过去7天，cache 10分钟
     # date_type=4 全部，从total表取，cache10分钟
     #   cache key=  dateType_clientId, cache value= {time():data}
     date_type = request.json.get('date_type', 1)

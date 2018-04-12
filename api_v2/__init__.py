@@ -8,5 +8,7 @@ import android_api
 import manage_api
 import coin_api
 import events_api
+import statis_chatroom_api
+import statis_member_api
 
 api_str = ""
