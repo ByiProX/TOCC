@@ -105,6 +105,6 @@ def app_create_a_sending_task():
     if not message_list:
         return make_response(ERR_PARAM_SET)
 
-    status, batch_send_task = create_a_sending_task(user_info, chatroom_list, message_list)
+    status = create_a_sending_task(user_info, chatroom_list, message_list)
 
     return make_response(status)

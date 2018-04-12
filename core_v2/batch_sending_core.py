@@ -137,7 +137,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     batch_send_task.save()
     # TODO: Send Task
     print u'send task'
-    return SUCCESS, batch_send_task
+    return SUCCESS
 
 
 def _add_task_to_consumption_task(uqr_info, um_lib, bs_task_info):
