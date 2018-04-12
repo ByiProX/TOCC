@@ -4,9 +4,9 @@ import os
 import redis
 from decimal import Decimal
 
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, Response
 from flask_sqlalchemy import SQLAlchemy
-
+from werkzeug.datastructures import Headers
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'ohayo'
@@ -46,6 +46,26 @@ class TestConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'DATABASE_URI') or 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/YACATest'
     SQLALCHEMY_BINDS = {'android_db': 'mysql+pymysql://back_end_spe:IyhSnnYAng6dCjD9@101.251.222.236/cia'}
+
+class MyResponse(Response):
+    """解决跨域问题"""
+    def __init__(self, response=None, **kwargs):
+        kwargs['headers'] = ''
+        headers = kwargs.get('headers')
+        origin = ('Access-Control-Allow-Origin', '*')
+        methods = ('Access-Control-Allow-Methods', 'HEAD, OPTIONS, GET, POST, DELETE, PUT')
+        credentials = ('Access-Control-Allow-Credentials', 'true')
+        header = ('Access-Control-Allow-Headers', 'x-requested-with,content-type')
+        if headers:
+            headers.add(*origin)
+            headers.add(*methods)
+            headers.add(*credentials)
+            headers.add(*header)
+        else:
+            headers = Headers([origin, methods, credentials, header])
+        kwargs['headers'] = headers
+        return super(MyResponse, self).__init__(response, **kwargs)
+
 
 
 # class WenFaDevelopmentConfig(Config):
@@ -127,6 +147,8 @@ else:
 
 app = Flask(__name__)
 app.config.from_object(config_map[config_name])
+# 跨域，替换flask原有response，注释下方语句即可关闭
+app.response_class = MyResponse
 config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
