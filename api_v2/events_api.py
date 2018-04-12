@@ -101,7 +101,7 @@ def create_event():
         return response({'err_code': -2, 'content': 'Previous init does not exist.'})
     # Check parameters and save.
     full_event_paras = (
-        'event_title', 'start_time', 'end_time', 'start_index', 'event_title',
+        'event_title', 'start_time', 'end_time', 'start_index', 'start_name',
         'chatroom_name_protect',
         'chatroom_repeat_protect', 'need_fission', 'need_condition_word', 'need_pull_people', 'fission_word_1',
         'fission_word_2', 'condition_word', 'pull_people_word')
@@ -242,10 +242,10 @@ def events_detail():
                     'start_time': event.start_time,
                     'end_time': event.end_time,
                     # Add more
-                    'chatroom_name_protect':event.chatroom_name_protect,
-                    'chatroom_repeat_protect':event.chatroom_repeat_protect,
-                    'start_index':event.start_index,
-                    'start_name':event.start_name,
+                    'chatroom_name_protect': event.chatroom_name_protect,
+                    'chatroom_repeat_protect': event.chatroom_repeat_protect,
+                    'start_index': event.start_index,
+                    'start_name': event.start_name,
                     })
     # Add chatroom info.
     content['chatrooms'] = [
@@ -254,11 +254,13 @@ def events_detail():
     _temp = content.copy()
 
     for k, v in _temp.items():
+        if k in ('start_index',):
+            continue
         if v == 1:
             content[k] = True
         if v == 0:
             content[k] = False
-
+    content['event_status'] = status_detect(event.start_time, event.end_time, event.is_work, event.is_finish)
     result['content'] = content
     return response(result)
 
