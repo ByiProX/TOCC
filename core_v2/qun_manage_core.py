@@ -52,19 +52,27 @@ def create_new_group(group_name, client_id):
 def get_group_list(user_info):
     ugr_list = BaseModel.fetch_all(UserGroupR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
 
+    group_chatroom = dict()
+    uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    for uqr in uqr_list:
+        group_chatroom.setdefault(uqr.group_id, list())
+        group_chatroom[uqr.group_id].append(uqr.chatroomname)
     res = []
     # 默认分组的 group_id = client_id_0, 并不显式得存在库里
     res.append({"group_id": unicode(user_info.client_id) + u"_0",
                 "group_nickname": u"未分组",
                 "create_time": user_info.create_time,
-                "is_default": 1})
-    # res.append({"chatroom_list": []})
+                "is_default": 1,
+                "chatroom_list": group_chatroom[unicode(user_info.client_id) + u"_0"]})
+
     for ugr in ugr_list:
         temp_dict = dict()
         temp_dict.setdefault("group_id", ugr.group_id)
         temp_dict.setdefault("group_nickname", ugr.group_name)
         temp_dict.setdefault("create_time", ugr.create_time)
         temp_dict.setdefault("is_default", 0)
+        chatroom_list = group_chatroom.get(ugr.group_id) or list()
+        temp_dict.setdefault("chatroom_list", chatroom_list)
         # TODO: 根据前端需求加
         # temp_dict.setdefault("chatroom_list", group_info.get("chatroom_list"))
 
