@@ -31,8 +31,8 @@ def app_get_batch_sending_task():
         logger.warning("没有收到page_number，设置为0")
         page_number = 0
 
-    if not user_info.func_send_qun_messages:
-        return make_response(ERR_WRONG_FUNC_STATUS)
+    # if not user_info.func_send_qun_messages:
+    #     return make_response(ERR_WRONG_FUNC_STATUS)
 
     status, res = get_batch_sending_task(user_info, task_per_page, page_number)
     if status == SUCCESS:
@@ -51,15 +51,15 @@ def app_get_task_detail():
     if status != SUCCESS:
         return make_response(status)
 
-    if not user_info.func_send_qun_messages:
-        return make_response(ERR_WRONG_FUNC_STATUS)
+    # if not user_info.func_send_qun_messages:
+    #     return make_response(ERR_WRONG_FUNC_STATUS)
 
     # TODO: 结构修改
-    sending_task_id = request.json.get('sending_task_id')
-    if not sending_task_id:
+    batch_send_task_id = request.json.get('batch_send_task_id')
+    if not batch_send_task_id:
         return make_response(ERR_PARAM_SET)
 
-    status, res = get_task_detail(sending_task_id)
+    status, res = get_task_detail(batch_send_task_id)
     if status == SUCCESS:
         return make_response(SUCCESS, task_info=res)
     else:
@@ -75,8 +75,8 @@ def app_get_task_fail_detail():
     if status != SUCCESS:
         return make_response(status)
 
-    if not user_info.func_send_qun_messages:
-        return make_response(ERR_WRONG_FUNC_STATUS)
+    # if not user_info.func_send_qun_messages:
+    #     return make_response(ERR_WRONG_FUNC_STATUS)
 
     sending_task_id = request.json.get('sending_task_id')
     if not sending_task_id:
@@ -95,8 +95,8 @@ def app_create_a_sending_task():
     if status != SUCCESS:
         return make_response(status)
 
-    if not user_info.func_send_qun_messages:
-        return make_response(ERR_WRONG_FUNC_STATUS)
+    # if not user_info.func_send_qun_messages:
+    #     return make_response(ERR_WRONG_FUNC_STATUS)
 
     chatroom_list = request.json.get('chatroom_list')
     if not chatroom_list:

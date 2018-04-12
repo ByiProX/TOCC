@@ -353,6 +353,7 @@ Keywords = "keywords"
 Message = "a_message"
 Coin = "coin"
 Wallet = "wallet"
+BatchSendTask = "batch_send_task"
 
 SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
 DB_SERVER_URL = u'http://dal.com/'

@@ -1,22 +1,13 @@
 # -*- coding: utf-8 -*-
-from copy import deepcopy
 import logging
-
+from copy import deepcopy
 from datetime import datetime
+
 from sqlalchemy import func, desc
 
-from configs.config import db, ERR_WRONG_ITEM, SUCCESS, ERR_WRONG_USER_ITEM, CONSUMPTION_TASK_TYPE
-from core.consumption_core import add_task_to_consumption_task
-from core.material_library_core import generate_material_into_frontend_by_material_id, \
-    analysis_frontend_material_and_put_into_mysql
-from core.qun_manage_core import get_a_chatroom_dict_by_uqun_id
-from models.android_db_models import AContact
-from models.batch_sending_models import BatchSendingTaskInfo, BatchSendingTaskTargetRelate, \
-    BatchSendingTaskMaterialRelate
-from models.material_library_models import MaterialLibraryUser
-from models.production_consumption_models import ConsumptionTaskStream, ConsumptionTask
-from models.qun_friend_models import UserQunRelateInfo, UserQunBotRelateInfo
-from models.user_bot_models import UserBotRelateInfo, BotInfo
+from configs.config import db, ERR_WRONG_ITEM, SUCCESS, ERR_WRONG_USER_ITEM, CONSUMPTION_TASK_TYPE, BatchSendTask, \
+    Chatroom
+from models_v2.base_model import BaseModel
 from utils.u_time import datetime_to_timestamp_utc_8
 
 logger = logging.getLogger('main')
@@ -28,79 +19,73 @@ def get_batch_sending_task(user_info, task_per_page, page_number):
     :param user_info:
     :return:
     """
-    bs_task_info_list = db.session.query(BatchSendingTaskInfo).filter(
-        BatchSendingTaskInfo.user_id == user_info.user_id,
-        BatchSendingTaskInfo.is_deleted == 0).order_by(
-        desc(BatchSendingTaskInfo.task_create_time)).limit(task_per_page).offset(task_per_page * page_number).all()
     result = []
-    for bs_task_info in bs_task_info_list:
-        status, task_detail_res = get_task_detail(bs_task_info=bs_task_info)
-        if status == SUCCESS:
-            result.append(deepcopy(task_detail_res))
-        else:
-            logger.error(u"部分任务无法读取. sending_task_id: %s." % bs_task_info.sending_task_id)
+    batch_send_task_list = BaseModel.fetch_all(BatchSendTask, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    for batch_send_task in batch_send_task_list:
+        res = dict()
+        chatroom_list = batch_send_task.chatroom_list
+        chatroom_count = len(chatroom_list)
+        member_count = 0
+        for chatroomname in chatroom_list:
+            chatroom = BaseModel.fetch_one(Chatroom, "member_count", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+            member_count += chatroom.member_count
+
+        message_list = list()
+        content_list = batch_send_task.content_list
+        for content in content_list:
+            message_json = dict()
+            message_json["task_send_type"] = content.get("type")
+            message_json["text"] = content.get("content")
+            message_json["seq"] = content.get("seq")
+            message_list.append(message_json)
+
+        res["message_list"] = message_list
+        res["task_covering_chatroom_count"] = chatroom_count
+        res["task_covering_people_count"] = member_count
+        res["task_create_time"] = batch_send_task.create_time
+        # TODO: TBD
+        res["task_sended_count"] = chatroom_count
+        res["task_sended_failed_count"] = 0
+        result.append(res)
 
     return SUCCESS, result
 
 
-def get_task_detail(sending_task_id=None, bs_task_info=None):
+def get_task_detail(batch_send_task_id):
     """
     读取一个任务的所有信息
     """
-    if not sending_task_id and not bs_task_info:
-        raise ValueError(u"传入参数有误，不能传入空参数")
-
-    if sending_task_id:
-        bs_task_info = db.session.query(BatchSendingTaskInfo).filter(
-            BatchSendingTaskInfo.sending_task_id == sending_task_id).first()
-
-    if not bs_task_info:
+    batch_send_task = BaseModel.fetch_by_id(BatchSendTask, batch_send_task_id)
+    if not batch_send_task:
+        logger.error(u"群发不存在, batch_send_task_id: %s." + unicode(batch_send_task_id))
         return ERR_WRONG_ITEM, None
 
+    # batch_send_task = BaseModel.fetch_one(BatchSendTask, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
     res = dict()
-    res.setdefault("sending_task_id", sending_task_id)
-    res.setdefault("task_covering_chatroom_count", bs_task_info.task_covering_qun_count)
-    res.setdefault("task_covering_people_count", bs_task_info.task_covering_people_count)
-    res.setdefault("task_create_time", datetime_to_timestamp_utc_8(bs_task_info.task_create_time))
+    chatroom_list = batch_send_task.chatroom_list
+    chatroom_count = len(chatroom_list)
+    member_count = 0
+    for chatroomname in chatroom_list:
+        chatroom = BaseModel.fetch_one(Chatroom, "member_count",
+                                       where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+        member_count += chatroom.member_count
 
-    temp_tsc = db.session.query(func.count(ConsumptionTaskStream.chatroomname)). \
-        filter(ConsumptionTaskStream.task_type == 1,
-               ConsumptionTaskStream.task_relevant_id == bs_task_info.sending_task_id).all()
+    message_list = list()
+    content_list = batch_send_task.content_list
+    for content in content_list:
+        message_json = dict()
+        message_json["task_send_type"] = content.get("type")
+        message_json["text"] = content.get("content")
+        message_json["seq"] = content.get("seq")
+        message_list.append(message_json)
 
-    res.setdefault("task_sended_count", temp_tsc[0][0])
-
-    # TODO-zwf 想办法把失败的读出来
-    res.setdefault("task_sended_failed_count", 0)
-
-    # 生成群信息
-    res.setdefault("chatroom_list", [])
-    bs_task_target_list = db.session.query(BatchSendingTaskTargetRelate).filter(
-        BatchSendingTaskTargetRelate.sending_task_id == bs_task_info.sending_task_id).all()
-    if not bs_task_target_list:
-        return ERR_WRONG_ITEM, None
-    uqun_id_list = []
-    for bs_task_target in bs_task_target_list:
-        uqun_id_list.append(bs_task_target.uqun_id)
-    for uqun_id in uqun_id_list:
-        status, tcd_res = get_a_chatroom_dict_by_uqun_id(uqun_id=uqun_id)
-        if status == SUCCESS:
-            res['chatroom_list'].append(deepcopy(tcd_res))
-        else:
-            pass
-
-    # 生成material信息
-    res.setdefault("message_list", [])
-    bs_task_material_list = db.session.query(BatchSendingTaskMaterialRelate).filter(
-        BatchSendingTaskMaterialRelate.sending_task_id == bs_task_info.sending_task_id).order_by(
-        BatchSendingTaskMaterialRelate.send_seq).all()
-    if not bs_task_material_list:
-        return ERR_WRONG_ITEM, None
-    material_id_list = []
-    for bs_task_material_relate in bs_task_material_list:
-        material_id_list.append(bs_task_material_relate.material_id)
-    for material_id in material_id_list:
-        temp_material_dict = generate_material_into_frontend_by_material_id(material_id)
-        res["message_list"].append(deepcopy(temp_material_dict))
+    res["message_list"] = message_list
+    res["task_covering_chatroom_count"] = chatroom_count
+    res["task_covering_people_count"] = member_count
+    res["task_create_time"] = batch_send_task.create_time
+    # TODO: TBD
+    res["task_sended_count"] = chatroom_count
+    res["task_sended_failed_count"] = 0
 
     return SUCCESS, res
 
