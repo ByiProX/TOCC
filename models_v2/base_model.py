@@ -183,7 +183,7 @@ class BaseModel(object):
             logger.error(u"_validate failed")
             return False
         item_exist_where_clause = dict()
-        for __require in self.__rules[0][0]:
+        for __require in self.__required:
             value = getattr(self, __require)
             item_exist_where_clause.setdefault(__require, value)
         # Mark
