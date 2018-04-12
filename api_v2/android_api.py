@@ -42,7 +42,6 @@ def android_add_friend():
 def android_new_message():
     verify_json()
     a_message = CM(Message).from_json(request.json)
-    print a_message.to_json()
     route_msg(a_message)
     # count_msg(a_message)
     return make_response(SUCCESS)

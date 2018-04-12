@@ -222,7 +222,7 @@ def check_is_removed(a_message):
     content = str_to_unicode(a_message.content)
     if msg_type == MSG_TYPE_SYS and content.find(u'移出群聊') != -1:
         is_removed = True
-        bot_username = a_message.username
+        bot_username = a_message.bot_username
         chatroomname = a_message.talker
         logger.info(u"发现机器人被踢出群聊. bot_username: %s. chatroomname: %s." % (bot_username, chatroomname))
         _remove_bot_process(bot_username, chatroomname)
