@@ -128,7 +128,8 @@ def create_event():
     # [Improve] string to bytes.
     full_event_paras_as_dict['is_finish'] = 1
     # True -> 1, False ->0
-    for k, v in full_event_paras_as_dict.items():
+    _temp = full_event_paras_as_dict.copy()
+    for k, v in _temp.items():
         if v is True:
             full_event_paras_as_dict[k] = 1
         if v is False:
@@ -139,7 +140,7 @@ def create_event():
     event = BaseModel.fetch_one('events', '*',
                                 BaseModel.where_dict({"owner": owner, "is_finish": 0}))
     event_id = event.events_id
-    event.from_json()
+    event.from_json(full_event_paras_as_dict)
 
     return response({'err_code': 0, 'content': {'event_id': event_id}})
 
