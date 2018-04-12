@@ -51,7 +51,8 @@ def get_rt_quotes_list_and_status(user_info, per_page, page_number):
 
 
 def get_rt_quotes_preview(coin_id):
-    ds_info = BaseModel.fetch_one(Coin, "*", where_clause = BaseModel.where_dict({"is_integral": 1, "coin_id": coin_id}))
+    # ds_info = BaseModel.fetch_one(Coin, "*", where_clause = BaseModel.where_dict({"is_integral": 1, "coin_id": coin_id}))
+    ds_info = BaseModel.fetch_by_id(Coin, coin_id)
     if not ds_info:
         logger.error(u"没有对应的币号. coin_id: %s." % coin_id)
         return ERR_WRONG_ITEM, None
