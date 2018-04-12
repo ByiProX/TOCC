@@ -88,7 +88,7 @@ def get_chatroom_dict(chatroomname):
     chatroom_dict = dict()
     chatroom_dict['chatroom_id'] = chatroom.get_id()
     chatroom_dict['chatroom_nickname'] = chatroom.nickname
-    chatroom_dict['chatroom_nickname'] = chatroom.nickname
+    chatroom_dict['chatroomname'] = chatroomname
     chatroom_dict['chatroom_member_count'] = chatroom.member_count
     chatroom_dict['avatar_url'] = chatroom.avatar_url
     chatroom_dict['chatroom_status'] = 0
