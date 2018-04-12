@@ -2,18 +2,58 @@
 
 import logging
 
-from flask import request
+from flask import request, jsonify
 
 from configs.config import ERR_PARAM_SET, main_api_v2
 from core_v2.user_core import UserLogin
 from utils.u_response import make_response
 
 from models_v2.base_model import *
+from functools import wraps
 
 logger = logging.getLogger('main')
 
 
-@main_api_v2.route('/wallets', methods = ['POST'])
+def para_check(need_list, *parameters):
+    def _wrapper(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            _para_check = parameters_check(need_list, *parameters)
+            if _para_check is not True:
+                return _para_check
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return _wrapper
+
+
+def parameters_check(need_list, *args):
+    """Check each parameter (For POST)
+    if could not get this parameter return 'Lack of (parameter)'
+    """
+
+    if request.json is None:
+        return response({'err_code': -1, 'content': 'Lack of json.'})
+
+    if isinstance(need_list, str):
+        need = args + (need_list,)
+    else:
+        need = need_list + args
+
+    for i in need:
+        if request.json.get(i) is None:
+            return response({'err_code': -1, 'content': 'Lack of %s.' % i})
+    return True
+
+
+def response(body_as_dict):
+    """Use make_response or not."""
+    response_body = jsonify(body_as_dict)
+    return response_body
+
+
+@main_api_v2.route('/wallets', methods=['POST'])
 def app_wallets():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
@@ -32,9 +72,11 @@ def app_wallets():
     if chatroomname:
         where = BaseModel.where_dict({"client_id": user_info.client_id, "chatroomname": chatroomname})
 
-    wallet_list = BaseModel.fetch_all('wallet', '*', where, page = 1, pagesize = pagesize)
+    wallet_list = BaseModel.fetch_all('wallet', '*', where, page=1, pagesize=pagesize)
 
     client_switch = BaseModel.fetch_one('client_switch', '*', BaseModel.where_dict({"client_id": user_info.client_id}))
+
+    switch = 0
     if client_switch:
         switchJson = client_switch.to_json()
         switch = switchJson['func_coin_wallet']
@@ -51,20 +93,20 @@ def app_wallets():
         #    _w.update({"uinfo":[_wxUserInfo['nickname'],_wxUserInfo['avatar_url']]})
         data.append(_w)
 
-    if (len(wxIds) >= 1):
+    if len(wxIds) >= 1:
         wxUserInfo = BaseModel.fetch_all('a_contact', ['nickname', 'username', 'avatar_url'],
                                          BaseModel.where("in", "username", wxIds))
-        if (wxUserInfo):
+        if wxUserInfo:
             for wu in wxUserInfo:
                 uinfo = wu.to_json()
                 for da in data:
-                    if (da['username'] == uinfo['username']):
+                    if da['username'] == uinfo['username']:
                         da.update({"uinfo": {"nickname": uinfo['nickname'], "avatar_url": uinfo['avatar_url']}})
 
-    return make_response(SUCCESS, wallet_list = data, switch = switch)
+    return make_response(SUCCESS, wallet_list=data, switch=switch)
 
 
-@main_api_v2.route('/wallets_switch', methods = ['POST'])
+@main_api_v2.route('/wallets_switch', methods=['POST'])
 def app_wallets_switch():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
@@ -77,7 +119,35 @@ def app_wallets_switch():
     switchModel = BaseModel.fetch_one('client_switch', '*', BaseModel.where_dict({"client_id": user_info.client_id}))
     switchModel.func_coin_wallet = switch
 
-    if (switchModel.save() == True):
-        return make_response(SUCCESS, switch = switch)
+    if switchModel.save() is True:
+        return make_response(SUCCESS, switch=switch)
     else:
         return make_response(ERR_PARAM_SET)
+
+
+@main_api_v2.route('/get_wallet_status', methods=['POST'])
+@para_check('token')
+def get_coin_wallet_setting():
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    switchModel = BaseModel.fetch_one('client_switch', '*', BaseModel.where_dict({"client_id": user_info.client_id}))
+
+    if switchModel.func_coin_wallet:
+        result = True
+    else:
+        result = False
+
+    return response({'err_code': 0, 'content': {'func_coin_wallet': result}})
+
+
+@main_api_v2.route('/get_chatroom_list', methods=['POST'])
+@para_check('token')
+def get_chatroom_list():
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+
+
