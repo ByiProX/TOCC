@@ -244,7 +244,7 @@ def events_detail():
                     })
     # Add chatroom info.
     content['chatrooms'] = [
-        {'chatroom_avatar': 'fake', 'chatroom_name': 'fake', 'chatroom_status': True, 'chatroom_member_num': 30}]
+        {'chatroom_avatar': 'fake', 'chatroom_name': 'fake', 'chatroom_status': 0, 'chatroom_member_num': 30}]
 
     _temp = content.copy()
 
