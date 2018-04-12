@@ -24,6 +24,6 @@
   "statistics_member_total": [[["chatroomname", "username","client_id"], "required"], [["chatroomname", "username"], "string", {"max": 32}], [["speak_count", "be_at_count", "invitation_count", "red_package_count", "effect_num","client_id"], "integer"]],
   "chat_logs":[[["chatroomname","username","time","type"], "required"],[["content"], "json"],[["type","time"], "integer"]],
   "coin": [[["symbol"], "required"], [["coin_id", "is_integral", "create_time", "rank"], "integer"], [["symbol", "coin_name", "coin_name_cn", "coin_icon", "change1d", "change1h", "change7d", "marketcap", "available_supply", "price", "volume_ex", "suggest_ex1", "suggest_ex2", "suggest_ex1_url", "suggest_ex2_url", "open", "close", "vol"], "string"]],
-  "events": [[["is_finish", "is_work", "chatroom_name_protect", "chatroom_repeat_protect", "need_fission", "need_condition_word", "need_pull_people", "start_time", "end_time", "start_index"], "integer"], [["owner", "event_title", "fission_word_1", "fission_word_2", "condition_word", "pull_people_word", "poster_raw", "alive_qrcode_url"], "string"]],
+  "events": [[["is_finish", "is_work", "chatroom_name_protect", "chatroom_repeat_protect", "need_fission", "need_condition_word", "need_pull_people", "start_time", "end_time", "start_index"], "integer"], [["owner", "event_title", "fission_word_1", "fission_word_2", "condition_word", "pull_people_word", "poster_raw", "alive_qrcode_url", "start_name"], "string"]],
   "events_scan_qrcode_info": [[["scan_time"], "integer"], [["owner"], "string"]]
 }
