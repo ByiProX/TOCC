@@ -198,7 +198,7 @@ _modify_need = (
 
 
 @app_test.route('/events_modify_word', methods=['POST'])
-@para_check(need_list=_modify_need, 'token', 'event_id', )
+@para_check(_modify_need, 'token', 'event_id', )
 def modify_event_word():
     event_id = request.json.get('event_id')
     para_as_dict = {}
