@@ -47,6 +47,7 @@ def switch_func_auto_reply(user_info, switch):
         return SUCCESS
 
     user_switch.func_auto_reply = switch
+    user_switch.save()
     # GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = True
 
     return SUCCESS

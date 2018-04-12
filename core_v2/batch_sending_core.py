@@ -6,8 +6,8 @@ from datetime import datetime
 from sqlalchemy import func, desc
 
 from configs.config import db, ERR_WRONG_ITEM, SUCCESS, ERR_WRONG_USER_ITEM, CONSUMPTION_TASK_TYPE, BatchSendTask, \
-    Chatroom
-from models_v2.base_model import BaseModel
+    Chatroom, BATCH_SEND_TASK_STATUS_1
+from models_v2.base_model import BaseModel, CM
 from utils.u_time import datetime_to_timestamp_utc_8
 
 logger = logging.getLogger('main')
@@ -55,20 +55,15 @@ def get_task_detail(batch_send_task_id):
     """
     读取一个任务的所有信息
     """
+    # batch_send_task = BaseModel.fetch_one(BatchSendTask, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
     batch_send_task = BaseModel.fetch_by_id(BatchSendTask, batch_send_task_id)
     if not batch_send_task:
         logger.error(u"群发不存在, batch_send_task_id: %s." + unicode(batch_send_task_id))
         return ERR_WRONG_ITEM, None
 
-    # batch_send_task = BaseModel.fetch_one(BatchSendTask, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
     res = dict()
     chatroom_list = batch_send_task.chatroom_list
-    chatroom_count = len(chatroom_list)
-    member_count = 0
-    for chatroomname in chatroom_list:
-        chatroom = BaseModel.fetch_one(Chatroom, "member_count",
-                                       where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
-        member_count += chatroom.member_count
+
 
     message_list = list()
     content_list = batch_send_task.content_list
@@ -80,11 +75,11 @@ def get_task_detail(batch_send_task_id):
         message_list.append(message_json)
 
     res["message_list"] = message_list
-    res["task_covering_chatroom_count"] = chatroom_count
-    res["task_covering_people_count"] = member_count
+    res["task_covering_chatroom_count"] = batch_send_task.chatroom_count
+    res["task_covering_people_count"] = batch_send_task.people_count
     res["task_create_time"] = batch_send_task.create_time
     # TODO: TBD
-    res["task_sended_count"] = chatroom_count
+    res["task_sended_count"] = batch_send_task.chatroom_count
     res["task_sended_failed_count"] = 0
 
     return SUCCESS, res
@@ -103,75 +98,44 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     将前端发送过来的任务放入task表，并将任务放入consumption_task
     :return:
     """
-    # 先验证各个群情况
-    now_time = datetime.now()
-    bs_task_info = BatchSendingTaskInfo()
-    bs_task_info.user_id = user_info.user_id
-    bs_task_info.task_covering_qun_count = 0
-    bs_task_info.task_covering_people_count = 0
-    bs_task_info.task_status = 1
-    bs_task_info.task_status_content = "等待开始"
-    bs_task_info.is_deleted = False
-    bs_task_info.task_create_time = now_time
-    db.session.add(bs_task_info)
-    db.session.commit()
 
-    task_covering_qun_count = 0
-    task_covering_people_count = 0
-
-    valid_chatroom_list = []
-    for uqun_id in chatroom_list:
-        uqr_info = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == user_info.user_id,
-                                                              UserQunRelateInfo.uqun_id == uqun_id).first()
-        if not uqr_info:
-            logger.error("没有属于该用户的该群")
-            return ERR_WRONG_USER_ITEM
-
-        a_contact = db.session.query(AContact).filter(AContact.username == uqr_info.chatroomname).first()
-
-        if not a_contact:
-            logger.error("安卓库中没有该群")
-            return ERR_WRONG_USER_ITEM
-
-        task_covering_qun_count += 1
-        task_covering_people_count += a_contact.member_count
-
-        bs_task_target = BatchSendingTaskTargetRelate()
-        bs_task_target.sending_task_id = bs_task_info.sending_task_id
-        bs_task_target.uqun_id = uqun_id
-        db.session.add(bs_task_target)
-        valid_chatroom_list.append(uqr_info)
-    db.session.commit()
-
-    # 处理message，入库material
-    valid_material_list = []
-    for i, message_info in enumerate(message_list):
-        message_return, um_lib = analysis_frontend_material_and_put_into_mysql(user_info.user_id, message_info,
-                                                                               now_time, update_material=True)
-        if message_return == SUCCESS:
-            pass
-        elif message_return == ERR_WRONG_ITEM:
+    chatroom_count = len(chatroom_list)
+    member_count = 0
+    for chatroomname in chatroom_list:
+        chatroom = BaseModel.fetch_one(Chatroom, "member_count",
+                                       where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+        if not chatroom:
+            logger.error(u"未获取到 chatroom, chatroomname: %s." % chatroomname)
             continue
+        member_count += chatroom.member_count
 
-        material_id = um_lib.material_id
-        bs_task_material = BatchSendingTaskMaterialRelate()
-        bs_task_material.material_id = material_id
-        bs_task_material.sending_task_id = bs_task_info.sending_task_id
-        bs_task_material.send_seq = i
-        db.session.add(bs_task_material)
-        valid_material_list.append(um_lib)
-    db.session.commit()
+    if chatroom_count == 0 or member_count == 0:
+        logger.error(u"没有发送对象, 批量发送任务创建失败")
+        return ERR_WRONG_ITEM
 
-    # 更新主库中的数量
-    bs_task_info.task_covering_qun_count = task_covering_qun_count
-    bs_task_info.task_covering_people_count = task_covering_people_count
-    db.session.merge(bs_task_info)
-    db.session.commit()
+    now_time = datetime_to_timestamp_utc_8(datetime.now())
+    batch_send_task = CM(BatchSendTask)
+    batch_send_task.client_id = user_info.client_id
+    batch_send_task.chatroom_list = chatroom_list
+    batch_send_task.chatroom_count = chatroom_count
+    batch_send_task.people_count = member_count
+    batch_send_task.is_deleted = 0
+    batch_send_task.create_time = now_time
+    batch_send_task.status = BATCH_SEND_TASK_STATUS_1
+    batch_send_task.status_content = ""
+    content_list = list()
+    for i, message in enumerate(message_list):
+        message_dict = dict()
+        message_dict["type"] = message.get("send_type")
+        message_dict["text"] = message.get("text")
+        message_dict["seq"] = i
+        content_list.append(message_dict)
 
-    # 确认任务放入无问题后，将任务发出
-    for uqr_info_iter in valid_chatroom_list:
-        for um_lib_iter in valid_material_list:
-            _add_task_to_consumption_task(uqr_info_iter, um_lib_iter, bs_task_info)
+    batch_send_task.content_list = content_list
+
+    batch_send_task.save()
+    # TODO: Send Task
+    print u'send task'
     return SUCCESS
 
 
