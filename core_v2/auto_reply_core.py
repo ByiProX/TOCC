@@ -109,13 +109,23 @@ def get_auto_reply_setting(user_info):
             message_list.append(message_json)
 
         chatroom_count = len(chatroom_list)
+        chatroom_json_list = list()
         member_count = 0
         for chatroomname in chatroom_list:
             chatroom = BaseModel.fetch_one(Chatroom, "member_count", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
             member_count += chatroom.member_count
+            chatroom_dict = dict()
+            chatroom_dict['chatroom_id'] = chatroom.get_id()
+            chatroom_dict['chatroom_nickname'] = chatroom.nickname
+            chatroom_dict['chatroomname'] = chatroomname
+            chatroom_dict['chatroom_member_count'] = chatroom.member_count
+            chatroom_dict['avatar_url'] = chatroom.avatar_url
+            chatroom_dict['chatroom_status'] = 0
+            chatroom_json_list.append(chatroom_dict)
 
         res['keyword_list'] = keyword_list
         res['message_list'] = message_list
+        res['chatroom_list'] = chatroom_json_list
         res['task_covering_chatroom_count'] = chatroom_count
         res['task_covering_people_count'] = member_count
         res['task_create_time'] = keywords_info.create_time
