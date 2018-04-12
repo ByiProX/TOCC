@@ -2,7 +2,7 @@
 
 import logging
 
-from flask import request,jsonify
+from flask import request, jsonify
 
 from configs.config import ERR_PARAM_SET, main_api_v2
 from core_v2.user_core import UserLogin
@@ -124,7 +124,8 @@ def app_wallets_switch():
     else:
         return make_response(ERR_PARAM_SET)
 
-@main_api_v2.route('/get_coin_wallet_setting', methods=['POST'])
+
+@main_api_v2.route('/get_wallet_status', methods=['POST'])
 @para_check('token')
 def get_coin_wallet_setting():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
@@ -138,4 +139,15 @@ def get_coin_wallet_setting():
     else:
         result = False
 
-    return response({'content': {'func_coin_wallet': result}})
+    return response({'err_code': 0, 'content': {'func_coin_wallet': result}})
+
+
+@main_api_v2.route('/get_chatroom_list', methods=['POST'])
+@para_check('token')
+def get_chatroom_list():
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+
+

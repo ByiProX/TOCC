@@ -113,6 +113,10 @@ def create_event():
             full_event_paras_as_dict[i] = request.json.get(i)
     # [Fix]
     static_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
+    try:
+        os.mkdir(static_path)
+    except Exception:
+        pass
     new_file = new_file_path(static_path)
     if request.json.get('poster_raw'):
         with open(new_file, 'wb') as f:
