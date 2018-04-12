@@ -241,6 +241,11 @@ def events_detail():
                     'pull_people_word': event.pull_people_word,
                     'start_time': event.start_time,
                     'end_time': event.end_time,
+                    # Add more
+                    'chatroom_name_protect':event.chatroom_name_protect,
+                    'chatroom_repeat_protect':event.chatroom_repeat_protect,
+                    'start_index':event.start_index,
+                    'start_name':event.start_name,
                     })
     # Add chatroom info.
     content['chatrooms'] = [
