@@ -242,10 +242,10 @@ def events_detail():
                     'start_time': event.start_time,
                     'end_time': event.end_time,
                     # Add more
-                    'chatroom_name_protect':event.chatroom_name_protect,
-                    'chatroom_repeat_protect':event.chatroom_repeat_protect,
-                    'start_index':event.start_index,
-                    'start_name':event.start_name,
+                    'chatroom_name_protect': event.chatroom_name_protect,
+                    'chatroom_repeat_protect': event.chatroom_repeat_protect,
+                    'start_index': event.start_index,
+                    'start_name': event.start_name,
                     })
     # Add chatroom info.
     content['chatrooms'] = [
@@ -258,7 +258,7 @@ def events_detail():
             content[k] = True
         if v == 0:
             content[k] = False
-
+    content['event_status'] = status_detect(event.start_time, event.end_time, event.is_work, event.is_finish)
     result['content'] = content
     return response(result)
 
