@@ -139,7 +139,7 @@ def get_wallet_status():
     else:
         result = False
 
-    return response({'err_code': 0, 'content': {'status': result}})
+    return response({'err_code': 0, 'content': {'func_coin_wallet': result}})
 
 
 @main_api_v2.route('/get_wallet_chatroom_list', methods=['POST'])
