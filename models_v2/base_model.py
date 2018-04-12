@@ -317,6 +317,7 @@ class BaseModel(object):
             data = response_json.get(u"data")
             for item in data:
                 item_list.append(CM(tablename).from_json(item))
+            # pages = response_json.get(u"pages")
         else:
             logger.error(u"query failed, content: " + unicode(response.content))
         return item_list

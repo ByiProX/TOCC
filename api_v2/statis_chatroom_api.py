@@ -102,6 +102,7 @@ def chatroom_statistics_chatroom():
 
     print "------_where:::-----------\n", _where, order, "-----------------\n"
 
+    total_count = BaseModel.count(table, _where)
     chatroom_statis = BaseModel.fetch_all(table, '*', _where, page = 1, pagesize = pagesize, orderBy = order)
     chatroom_json_list = []
 
@@ -126,7 +127,7 @@ def chatroom_statistics_chatroom():
         rds.set(cache_key, json.dumps({last_update_time: chatroom_json_list}))
         rds.expire(cache_key, 60 * 10)
 
-    return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
+    return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time, total_count = total_count)
 
 
 # chatroomnames must array
