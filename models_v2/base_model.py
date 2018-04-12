@@ -182,12 +182,13 @@ class BaseModel(object):
         if not self._validate_all():
             logger.error(u"_validate failed")
             return False
-        item_exist_where_clause = dict()
-        for __require in self.__required:
-            value = getattr(self, __require)
-            item_exist_where_clause.setdefault(__require, value)
-        # Mark
-        item_exist = BaseModel.fetch_one(self.__tablename, '*', where_clause = {"where": json.dumps(item_exist_where_clause)})
+        item_exist = None
+        if self.__required:
+            item_exist_where_clause = dict()
+            for __require in self.__required:
+                value = getattr(self, __require)
+                item_exist_where_clause.setdefault(__require, value)
+            item_exist = BaseModel.fetch_one(self.__tablename, '*', where_clause = {"where": json.dumps(item_exist_where_clause)})
         self_id = self.get_id()
         if self_id is None and item_exist is None:
             # 插入
