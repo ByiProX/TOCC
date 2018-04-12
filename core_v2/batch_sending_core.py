@@ -35,11 +35,12 @@ def get_batch_sending_task(user_info, task_per_page, page_number):
         for content in content_list:
             message_json = dict()
             message_json["task_send_type"] = content.get("type")
-            message_json["text"] = content.get("content")
+            message_json["text"] = content.get("text")
             message_json["seq"] = content.get("seq")
             message_list.append(message_json)
 
         res["message_list"] = message_list
+        res["chatroom_list"] = chatroom_list
         res["task_covering_chatroom_count"] = chatroom_count
         res["task_covering_people_count"] = member_count
         res["task_create_time"] = batch_send_task.create_time
@@ -136,7 +137,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     batch_send_task.save()
     # TODO: Send Task
     print u'send task'
-    return SUCCESS
+    return SUCCESS, batch_send_task
 
 
 def _add_task_to_consumption_task(uqr_info, um_lib, bs_task_info):
