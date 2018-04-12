@@ -225,7 +225,7 @@ def cal_user_basic_page_info(user_info):
             member_count = 0
         else:
             chatroomname_list = list(chatroomname_set)
-            chatroom_list = CM(Chatroom).fetch_all(select_colums = ["chatroomname", "member_count"], where_clause = BaseModel.where("in", "chatroomname", chatroomname_list))
+            chatroom_list = BaseModel.fetch_all(Chatroom, select_colums = ["chatroomname", "member_count"], where_clause = BaseModel.where("in", "chatroomname", chatroomname_list))
             member_count = 0
             for chatroom in chatroom_list:
                 member_count += chatroom.member_count
