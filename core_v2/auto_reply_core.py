@@ -78,18 +78,52 @@ def get_auto_reply_setting(user_info):
     得到一个人的所有自动回复设置
     :return:
     """
-    ar_setting_info_list = db.session.query(AutoReplySettingInfo).filter(
-        AutoReplySettingInfo.user_id == user_info.user_id).filter(AutoReplySettingInfo.is_deleted == 0).order_by(
-        AutoReplySettingInfo.setting_create_time.desc()).all()
-
+    user_switch = BaseModel.fetch_one(UserSwitch, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    func_auto_reply = user_switch.func_auto_reply
+    keywords_info_list = BaseModel.fetch_all(Keywords, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+                                                                                            "welcome": 0}))
     result = []
-    for ar_setting_info in ar_setting_info_list:
-        status, task_detail_res = get_setting_detail(ar_setting_info)
-        if status == SUCCESS:
-            result.append(deepcopy(task_detail_res))
-        else:
-            logger.error(u"部分任务无法读取. setting_id: %s." % ar_setting_info.setting_id)
-    return SUCCESS, result
+    for keywords_info in keywords_info_list:
+        res = dict()
+        keywords_dict = keywords_info.keywords
+        chatroom_list = keywords_info.chatroom_list
+        reply_content_list = keywords_info.reply_content
+        keyword_list = list()
+        for match_type, keywords in keywords_dict.iteritems():
+            keyword_json = dict()
+            if match_type == "precise":
+                keyword_json["is_full_match"] = True
+            else:
+                keyword_json["is_full_match"] = False
+            for keyword in keywords:
+                keyword_json["keyword_content"] = keyword
+                keyword_list.append(deepcopy(keyword_json))
+
+        message_list = list()
+        for reply_content in reply_content_list:
+            message_json = dict()
+            message_json["task_send_type"] = reply_content.get("type")
+            message_json["text"] = reply_content.get("content")
+            message_json["seq"] = reply_content.get("seq")
+            message_list.append(message_json)
+
+        chatroom_count = len(chatroom_list)
+        member_count = 0
+        for chatroomname in chatroom_list:
+            chatroom = BaseModel.fetch_one(Chatroom, "member_count", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+            member_count += chatroom.member_count
+
+        res['keyword_list'] = keyword_list
+        res['message_list'] = message_list
+        res['task_covering_chatroom_count'] = chatroom_count
+        res['task_covering_people_count'] = member_count
+        res['task_create_time'] = keywords_info.create_time
+        result.append(res)
+        # TODO: TBD
+        # res['task_sended_count'] = message_list
+        # res['task_sended_failed_count'] = message_list
+
+    return SUCCESS, result, func_auto_reply
 
 
 # def get_default_auto_reply_setting():

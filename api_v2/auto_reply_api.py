@@ -66,10 +66,10 @@ def app_get_auto_reply_setting():
         return make_response(status)
 
     # TODO: 返回结构改变
-    status, res = get_auto_reply_setting(user_info)
+    status, res, func_auto_reply = get_auto_reply_setting(user_info)
 
     if status == SUCCESS:
-        return make_response(SUCCESS, setting_info=res, func_auto_reply=user_info.func_auto_reply)
+        return make_response(SUCCESS, setting_info=res, func_auto_reply=func_auto_reply)
     else:
         return make_response(status)
 
