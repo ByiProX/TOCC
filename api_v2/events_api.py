@@ -254,6 +254,8 @@ def events_detail():
     _temp = content.copy()
 
     for k, v in _temp.items():
+        if k in ('start_index',):
+            continue
         if v == 1:
             content[k] = True
         if v == 0:
