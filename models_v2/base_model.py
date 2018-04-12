@@ -19,7 +19,7 @@ class BaseModel(object):
     def __init__(self, tablename = None, rules = None):
         self.__tablename = tablename
         self.__rules = rules
-        self.attrs = self.generate_attrs()
+        self.attrs, self.__required = self.generate_attrs()
 
     def __repr__(self):
         return unicode(BaseModel.__module__) + u'.' + unicode(BaseModel.__name__) + u' instance at ' + unicode(hex(id(self)))
@@ -42,11 +42,15 @@ class BaseModel(object):
 
     def generate_attrs(self):
         __attrs = list()
-        for rule in self.__rules[1:]:
+        __required = list()
+        for rule in self.__rules:
+            if rule[1] == "required":
+                __required = rule[0]
+                continue
             for attr in rule[0]:
                 __attrs.append(attr)
                 setattr(self, attr, None)
-        return __attrs
+        return __attrs, __required
 
     def from_json(self, data_json):
         for key in data_json.keys():
@@ -86,9 +90,11 @@ class BaseModel(object):
             return False
         __value = getattr(self, __attr)
         if __value is not None:
-            for __rule in self.__rules[1:]:
+            for __rule in self.__rules:
                 if __attr in __rule[0]:
                     __attr_type = __rule[1]
+                    if __attr_type == u"required":
+                        continue
                     if not BaseModel._call_validate(__attr_type, __value):
                         logger.error(u'type validate error: ' + unicode(__attr) + u' type: ' + unicode(type(__value)) + u' required type: ' + unicode(__attr_type))
                         return False
@@ -101,8 +107,7 @@ class BaseModel(object):
         return True
 
     def _validate_all(self):
-        __requires = self.__rules[0][0]
-        for __require in __requires:
+        for __require in self.__required:
             if getattr(self, __require) is None:
                 logger.error(u'require ' + unicode(__require))
                 return False
