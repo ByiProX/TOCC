@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import copy
 import json
+import threading
 
 from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT_TYPE_TXT, CHAT_LOGS_TYPE_2, \
     CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, Member, Contact, CHAT_LOGS_ERR_TYPE_0, GLOBAL_RULES_UPDATE_FLAG, \
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
-from core_v2.matching_rule_core import get_gm_rule_dict, get_gm_default_rule_dict, match_message_by_rule
+from core_v2.matching_rule_core import get_gm_default_rule_dict, match_message_by_rule, get_gm_rule_dict
 from core_v2.real_time_quotes_core import match_message_by_coin_keyword
 from core_v2.redis_core import rds_lpush
 from core_v2.coin_wallet_core import check_whether_message_is_a_coin_wallet
-from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from models_v2.base_model import BaseModel
 from utils.u_transformat import str_to_unicode
 
@@ -18,16 +18,88 @@ import logging
 logger = logging.getLogger('main')
 
 
-def route_msg(a_message):
-    # TODO: 消息队列实现
-    # TODO: gm_rule_dict 和 gm_default_rule_dict 在全局初始化
-    if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
+class NewMessageThread(threading.Thread):
+    def __init__(self, thread_id):
+        threading.Thread.__init__(self)
+        self.thread_id = thread_id
+        self.go_work = True
+
+    def run(self):
+        logger.info(u"Start thread id: %s." % str(self.thread_id))
+
+        # 第一次读取用户设置词
         gm_rule_dict = get_gm_rule_dict()
         GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
 
-    if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
+        # 第一次读取统一设置词
         gm_default_rule_dict = get_gm_default_rule_dict()
         GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
+
+        while self.go_work:
+            # TODO: 消息队列实现
+            # TODO: gm_rule_dict 和 gm_default_rule_dict 在全局初始化
+            if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
+                gm_rule_dict = get_gm_rule_dict()
+                GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
+
+            if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
+                gm_default_rule_dict = get_gm_default_rule_dict()
+                GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
+
+            # a_message = rds
+
+            # 判断这个机器人说的话是否是文字或系统消息
+            if a_message.type == MSG_TYPE_TXT or a_message.type == MSG_TYPE_SYS:
+                pass
+            else:
+                continue
+
+            # 这个机器人说的话
+            # TODO 当有两个机器人的时候，这里不仅要判断是否是自己说的，还是要判断是否是其他机器人说的
+            if a_message.is_send == 1:
+                continue
+
+            # is_add_friend
+            # is_add_friend = check_whether_message_is_add_friend(message_analysis)
+            # if is_add_friend:
+            #     continue
+
+            # 检查信息是否为加了一个群
+            is_add_qun = check_whether_message_is_add_qun(a_message)
+            if is_add_qun:
+                continue
+
+            # is_removed
+            is_removed = check_is_removed(a_message)
+            if is_removed:
+                continue
+
+            # is_a_coin_wallet
+            is_a_coin_wallet = check_whether_message_is_a_coin_wallet(a_message)
+            if is_a_coin_wallet:
+                continue
+
+            # 检测是否是别人的进群提示
+            # is_friend_into_qun = check_whether_message_is_friend_into_qun(a_message)
+
+            # 根据规则和内容进行匹配，并生成任务
+            rule_status = match_message_by_rule(gm_rule_dict, a_message)
+            if rule_status is True:
+                continue
+            else:
+                pass
+
+            # 对内容进行判断，是否为查询比价的情况
+            coin_price_status = match_message_by_coin_keyword(gm_default_rule_dict, a_message)
+            if coin_price_status is True:
+                continue
+
+
+def route_msg(a_message):
+    # TODO: 消息队列实现
+    # TODO: gm_rule_dict 和 gm_default_rule_dict 在全局初始化
+    gm_rule_dict = get_gm_rule_dict()
+    gm_default_rule_dict = get_gm_default_rule_dict()
 
     # 判断这个机器人说的话是否是文字或系统消息
     if a_message.type == MSG_TYPE_TXT or a_message.type == MSG_TYPE_SYS:
@@ -247,6 +319,7 @@ def invite_other(msg, chatroomname):
 
 
 def fetch_member_by_nickname(chatroomname, nickname, update_flag = True):
+    # Mark 结果上并不需要 bot_username 限定好友范围
     member = None
     if nickname:
         # 匹配 AMember
@@ -254,9 +327,9 @@ def fetch_member_by_nickname(chatroomname, nickname, update_flag = True):
         members = a_member.members
         for member in members:
             # Mark 不处理匹配到多个的情况
-            if member.displayname == nickname:
-                return member.username
-        member_usernames = [member.username for member in members]
+            if member.get("displayname") == nickname:
+                return member.get("username")
+        member_usernames = [member.get("username") for member in members]
         a_contact_list = BaseModel.fetch_all(Contact, ["username", "nickname"], where_clause = BaseModel.where("in", "username", member_usernames))
         for a_contact in a_contact_list:
             # Mark 不处理匹配到多个的情况
@@ -295,3 +368,5 @@ def update_members(chatroomname, create_time = None, save_flag = False):
     # if save_flag:
     #     db.session.commit()
     pass
+
+from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed

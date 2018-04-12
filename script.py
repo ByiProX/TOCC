@@ -3,6 +3,7 @@ import json
 import logging
 from datetime import timedelta, datetime
 
+import requests
 from sqlalchemy import func, or_
 
 from configs.config import db, USER_CHATROOM_R_PERMISSION_1, GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, \
@@ -14,7 +15,7 @@ from core.qun_manage_core import check_whether_message_is_add_qun, check_is_remo
 from core.real_time_quotes_core import match_message_by_coin_keyword
 from core.welcome_message_core import check_whether_message_is_friend_into_qun
 from crawler.coin_all_crawler_v2 import update_coin_all
-from models.android_db_models import AMember, AContact, AChatroomR
+from models.android_db_models import AMember, AContact, AChatroomR, AChatroom, AFriend
 from models.auto_reply_models import AutoReplySettingInfo, AutoReplyKeywordRelateInfo, AutoReplyMaterialRelate, \
     AutoReplyTargetRelate
 from models.batch_sending_models import BatchSendingTaskInfo, BatchSendingTaskMaterialRelate, \
@@ -351,8 +352,9 @@ def test_msg(message_list):
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
-    update_coin_all()
-    exit()
+    # a_member = BaseModel.fetch_by_id("a_member", "5aceeaf0421aa90746779fd6")
+    # update_coin_all()
+    # exit()
     now_time = datetime_to_timestamp_utc_8(datetime.now())
     client = BaseModel.fetch_by_id(u"client", 1)
     client.client_id = int(client.client_id)
@@ -379,21 +381,21 @@ if __name__ == '__main__':
     # user.save()
     # user_switch.save()
 
-    contact = CM(Contact)
-    contact.username = u"wxid_3mxn6zyskbpt22"
-    contact.nickname = u"柳罗"
-    contact.quan_pin = u"liuluo"
-    contact.py_initial = u"ll"
-    contact.contact_label_ids = u""
-    contact.avatar_url = u"http://wx.qlogo.cn/mmhead/ver_1/MSznWf00lhxtibw2TbbNQEt6fLp7dicMWfo0ITBTWz3vwb2WLGuYkE6EKdxL7GSjlYXqboJl7LLmE8k1g2XEC3otk4cx5ChNBYS6icnGvXql0s/132"
-    contact.img_lastupdatetime = now_time
-    contact.create_time = now_time
-    contact.update_time = now_time
-    contact.province = u"北京"
-    contact.city = u"海淀"
-    contact.sex = 1
-    contact.signature = u""
-    contact.save()
+    # contact = CM(Contact)
+    # contact.username = u"wxid_3mxn6zyskbpt22"
+    # contact.nickname = u"柳罗"
+    # contact.quan_pin = u"liuluo"
+    # contact.py_initial = u"ll"
+    # contact.contact_label_ids = u""
+    # contact.avatar_url = u"http://wx.qlogo.cn/mmhead/ver_1/MSznWf00lhxtibw2TbbNQEt6fLp7dicMWfo0ITBTWz3vwb2WLGuYkE6EKdxL7GSjlYXqboJl7LLmE8k1g2XEC3otk4cx5ChNBYS6icnGvXql0s/132"
+    # contact.img_lastupdatetime = now_time
+    # contact.create_time = now_time
+    # contact.update_time = now_time
+    # contact.province = u"北京"
+    # contact.city = u"海淀"
+    # contact.sex = 1
+    # contact.signature = u""
+    # contact.save()
 
     # bot_info = CM(BotInfo)
     # bot_info.username = u"wxid_3mxn6zyskbpt22"
@@ -429,6 +431,75 @@ if __name__ == '__main__':
     # user_info = BaseModel.fetch_by_id(u'client_member', u'5acb919f421aa9393f212b88')
     # user_info.union_id = "1"
     # user_info.update()
-    pass
+
+    # chatroomname = u"5437479256@chatroom"
+    # chatroom_info = db.session.query(AChatroom).filter(AChatroom.chatroomname == chatroomname).first()
+    # chatroom_info_json = model_to_dict(chatroom_info, chatroom_info.__class__)
+    # a_contact_chatroom = db.session.query(AContact).filter(AContact.username == chatroomname).first()
+    # a_contact_chatroom_json = model_to_dict(a_contact_chatroom, a_contact_chatroom.__class__)
+    # chatroom = CM("a_chatroom")
+    # chatroom.from_json(chatroom_info_json)
+    # chatroom.from_json(a_contact_chatroom_json)
+    # chatroom.member_count = 5
+
+    # member = CM("a_member")
+    # member_list = list()
+
+    # friend_info = CM("a_friend")
+    # friend_info.bot_username = u"wxid_3mxn6zyskbpt22"
+
+    # to_username_list = list()
+    # rows = db.session.query(AMember, AContact).outerjoin(AContact, AMember.username == AContact.username).filter(AMember.chatroomname == chatroomname).all()
+    # for row in rows:
+        # member_dict = dict()
+        # a_member = row[0]
+        # to_username_list.append(a_member.username)
+        # a_contact = row[1]
+        # member_dict["username"] = a_member.username
+        # member_dict["displayname"] = a_member.displayname
+        # member_dict["is_deleted"] = 0
+        # member_list.append(member_dict)
+        # a_contact_json = model_to_dict(a_contact, a_contact.__class__)
+        # a_contact_json["create_time"] = int(a_contact_json["create_time"]) / 1000
+        # a_contact_json["update_time"] = int(a_contact_json["update_time"]) / 1000
+        # a_contact_json["avatar_url"] = a_contact_json["avatar_url2"]
+        # contact = CM("a_contact")
+        # contact.from_json(a_contact_json)
+        # contact.save()
+
+    # friend_list = list()
+    # friends = db.session.query(AFriend).filter(AFriend.from_username == u"wxid_6mf4yqgs528e22",
+    #                                            AFriend.to_username.in_(to_username_list)).all()
+    # for friend in friends:
+    #     # friend_dict = model_to_dict(friend, friend.__class__)
+    #     friend_dict = dict()
+    #     friend_dict['username'] = friend.to_username
+    #     friend_dict['con_remark'] = friend.con_remark
+    #     friend_dict['con_remark_py_full'] = friend.con_remark_py_full
+    #     friend_dict['con_remark_py_short'] = friend.con_remark_py_short
+    #     friend_dict['type'] = friend.type
+    #     friend_dict["create_time"] = datetime_to_timestamp_utc_8(friend.create_time)
+    #     friend_dict["update_time"] = datetime_to_timestamp_utc_8(friend.update_time)
+    #     friend_list.append(friend_dict)
+    # friend_info.friends = friend_list
+    # friend_info.save()
+    # member.chatroomname = chatroomname
+    # member.members = member_list
+    #
+    # chatroom.nickname_real = chatroom.nickname
+    # chatroom.create_time = int(chatroom.create_time) / 1000
+    # chatroom.update_time = int(chatroom.update_time) / 1000
+    # print json.dumps(chatroom.to_json_full())
+    # print json.dumps(member.to_json_full())
+    # chatroom.save()
+    # member.save()
+    # exit()
+    message_list = db.session.query(MessageAnalysis).filter(MessageAnalysis.msg_id == 20420).all()
+    for message in message_list:
+        message.username = u"wxid_3mxn6zyskbpt22"
+        print message.msg_id, message.content
+        msg_json = model_to_dict(message, message.__class__)
+        msg_json["bot_username"] = msg_json["username"]
+        response = requests.post("http://127.0.0.1:5505/yaca_api_v2/android/new_message", json = msg_json)
 
 pass

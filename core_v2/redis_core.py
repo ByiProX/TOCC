@@ -25,8 +25,8 @@ def rds_lpush(chat_logs_type, msg_id, chatroomname = None, username = None, crea
 if __name__ == '__main__':
     print 1
     # ct_logs
-    print rds.keys()
-    rds.delete("zclaiqcc1")
+    # print rds.keys()
+    # rds.delete("zclaiqcc1")
     # rds.lpush("zclaiqcc1", 1)
     # rds.lpush("zclaiqcc1", "2")
     # rds.lpush("zclaiqcc1", [3, 4])
@@ -38,4 +38,6 @@ if __name__ == '__main__':
     # print rds.rpop("zclaiqcc1")
     # print rds.rpop("zclaiqcc1")
     # print rds.rpop("zclaiqcc1")
+    # while True:
+    #     print rds.get("zclaiqcc1")
     pass

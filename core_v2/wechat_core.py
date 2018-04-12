@@ -47,10 +47,10 @@ class WechatConn:
             res_json = json.loads(res.content, strict=False)
 
             if self.access_token is None:
-                access_token = AccessToken().load_from_json(res_json)
+                access_token = CM(AccessToken).from_json(res_json)
                 self.access_token = access_token
             else:
-                self.access_token.load_from_json(res_json)
+                self.access_token.from_json(res_json)
             self.access_token.save()
 
         return self.access_token

@@ -67,7 +67,14 @@ class BaseModel(object):
 
     def to_json(self):
         # res_json = {__attr: __value for __attr, __value in self.attrs.iteritems()}
-        res_json = {attr: getattr(self, attr) for attr in self.attrs if getattr(self, attr) is not None}
+        # res_json = {attr: getattr(self, attr) for attr in self.attrs if getattr(self, attr) is not None}
+        res_json = dict()
+        for attr in self.attrs:
+            if getattr(self, attr) is not None:
+                value = getattr(self, attr)
+                if isinstance(value, list) or isinstance(value, dict):
+                    value = json.dumps(value)
+                res_json[attr] = value
         return res_json
 
     def to_json_full(self):
@@ -117,6 +124,7 @@ class BaseModel(object):
         if isinstance(__value, str) or isinstance(__value, unicode):
             return True
         else:
+            print __value, type(__value)
             return False
 
     @staticmethod
@@ -125,20 +133,23 @@ class BaseModel(object):
         if isinstance(__value, int) or isinstance(__value, long):
             return True
         else:
+            print __value, type(__value)
             return False
 
     @staticmethod
     def _validate_json(__value, __params = None):
         # print u'_validate_json'
-        # if isinstance(__value, dict) or isinstance(__value, list):
-        #     return True
-        # else:
-        #     return False
-        try:
-            json.loads(__value)
+        if isinstance(__value, dict) or isinstance(__value, list):
             return True
-        except:
+        else:
+            print __value, type(__value)
             return False
+        # try:
+        #     json.loads(__value)
+        #     return True
+        # except:
+        #     print __value, type(__value)
+        #     return False
 
     @staticmethod
     def _validate_max(__value, __params = None):
@@ -146,10 +157,10 @@ class BaseModel(object):
 
         if __params is None:
             return False
-        # print __value, __params, len(__value)
         if len(__value) <= __params:
             return True
         else:
+            print __value, __params, len(__value)
             return False
 
     def set_id(self, _id):
