@@ -143,14 +143,15 @@ def get_wallet_status():
 
 
 @main_api_v2.route('/get_chatroom_list', methods=['POST'])
-@para_check('token')
+@para_check('token', 'keyword')
 def get_chatroom_list():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
     client_id = user_info.client_id
+    keyword = request.json.get('keyword')
+    _temp = BaseModel.fetch_all('wallet', '*', BaseModel.where_dict({'client_id': client_id}))
 
-    chatroom_list = BaseModel.fetch_all('client_qun_r', '*', BaseModel.where_dict({'client_id': client_id}))
 
     result = {
         'err_code': 0,
@@ -159,11 +160,13 @@ def get_chatroom_list():
         }
     }
 
-    for i in chatroom_list:
-        _chatroom_name = i.chatroom_name
-        _chatroom_nickname = BaseModel.fetch_one('a_chatroom', '*',
-                                                 BaseModel.where_dict({'chatroomname': _chatroom_name})).nickname_real
-        result['content']['chatroom_list'].append(
-            {'chatroom_nickname': _chatroom_nickname, 'chatroomname': _chatroom_name})
+    _chatroom_name_list = []
+
+    for i in _temp:
+        if keyword in i.user_nick or keyword in i.address :
+            if i.chatroomname not in _chatroom_name_list:
+                _chatroom_name_list.append(i.chatroomname)
+                result['content']['chatroom_list'].append({'chatroom_nickname': i.chatroom_nick, 'chatroomname': i.chatroomname})
+
 
     return response(result)
