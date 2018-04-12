@@ -101,7 +101,7 @@ def create_event():
         return response({'err_code': -2, 'content': 'Previous init does not exist.'})
     # Check parameters and save.
     full_event_paras = (
-        'event_title', 'start_time', 'end_time', 'start_index', 'event_title',
+        'event_title', 'start_time', 'end_time', 'start_index', 'start_name',
         'chatroom_name_protect',
         'chatroom_repeat_protect', 'need_fission', 'need_condition_word', 'need_pull_people', 'fission_word_1',
         'fission_word_2', 'condition_word', 'pull_people_word')
