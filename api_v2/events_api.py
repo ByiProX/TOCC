@@ -140,6 +140,8 @@ def create_event():
     event = BaseModel.fetch_one('events', '*',
                                 BaseModel.where_dict({"owner": owner, "is_finish": 0}))
     event_id = event.events_id
+    # Fix is_work
+    full_event_paras_as_dict.update({'is_work': 1})
     event.from_json(full_event_paras_as_dict)
     event.save()
 
