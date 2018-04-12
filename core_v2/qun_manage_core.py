@@ -8,7 +8,7 @@ from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE, USER_CHATROOM_R_PERMISSION_1, UserQunR, \
-    UserGroupR, UserInfo, BotInfo, UserBotR
+    UserGroupR, UserInfo, BotInfo, UserBotR, Chatroom
 from core_v2.wechat_core import WechatConn
 from models.qun_friend_models import GroupInfo
 from models_v2.base_model import BaseModel, CM
@@ -56,7 +56,8 @@ def get_group_list(user_info):
     uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
     for uqr in uqr_list:
         group_chatroom.setdefault(uqr.group_id, list())
-        group_chatroom[uqr.group_id].append(uqr.chatroomname)
+        group_chatroom[uqr.group_id].append(get_chatroom_dict(uqr.chatroomname))
+
     res = []
     # 默认分组的 group_id = client_id_0, 并不显式得存在库里
     res.append({"group_id": unicode(user_info.client_id) + u"_0",
@@ -81,14 +82,18 @@ def get_group_list(user_info):
     return SUCCESS, res
 
 
-# def get_chatroom_list_by_user_info(user_info):
-#     uqr_info_list = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.user_id == user_info.user_id).all()
-#     chartoom_list = []
-#     for uqr_info in uqr_info_list:
-#         status, chatroom_dict = get_a_chatroom_dict_by_uqun_id(uqr_info=uqr_info)
-#         if status == SUCCESS:
-#             chartoom_list.append(chatroom_dict)
-#     return SUCCESS, chartoom_list
+def get_chatroom_dict(chatroomname):
+    chatroom = BaseModel.fetch_one(Chatroom, "*",
+                                   where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+    chatroom_dict = dict()
+    chatroom_dict['chatroom_id'] = chatroom.get_id()
+    chatroom_dict['chatroom_nickname'] = chatroom.nickname
+    chatroom_dict['chatroom_nickname'] = chatroom.nickname
+    chatroom_dict['chatroom_member_count'] = chatroom.member_count
+    chatroom_dict['chatroom_avatar'] = chatroom.avatar_url
+    chatroom_dict['chatroom_status'] = 0
+
+    return chatroom_dict
 
 
 def rename_a_group(group_rename, group_id, client_id):

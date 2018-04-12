@@ -432,14 +432,14 @@ if __name__ == '__main__':
     # user_info.union_id = "1"
     # user_info.update()
 
-    # chatroomname = u"5437479256@chatroom"
-    # chatroom_info = db.session.query(AChatroom).filter(AChatroom.chatroomname == chatroomname).first()
-    # chatroom_info_json = model_to_dict(chatroom_info, chatroom_info.__class__)
-    # a_contact_chatroom = db.session.query(AContact).filter(AContact.username == chatroomname).first()
-    # a_contact_chatroom_json = model_to_dict(a_contact_chatroom, a_contact_chatroom.__class__)
-    # chatroom = CM("a_chatroom")
-    # chatroom.from_json(chatroom_info_json)
-    # chatroom.from_json(a_contact_chatroom_json)
+    chatroomname = u"5437479256@chatroom"
+    chatroom_info = db.session.query(AChatroom).filter(AChatroom.chatroomname == chatroomname).first()
+    chatroom_info_json = model_to_dict(chatroom_info, chatroom_info.__class__)
+    a_contact_chatroom = db.session.query(AContact).filter(AContact.username == chatroomname).first()
+    a_contact_chatroom_json = model_to_dict(a_contact_chatroom, a_contact_chatroom.__class__)
+    chatroom = CM("a_chatroom")
+    chatroom.from_json(chatroom_info_json)
+    chatroom.from_json(a_contact_chatroom_json)
     # chatroom.member_count = 5
 
     # member = CM("a_member")
@@ -486,20 +486,22 @@ if __name__ == '__main__':
     # member.chatroomname = chatroomname
     # member.members = member_list
     #
-    # chatroom.nickname_real = chatroom.nickname
-    # chatroom.create_time = int(chatroom.create_time) / 1000
-    # chatroom.update_time = int(chatroom.update_time) / 1000
-    # print json.dumps(chatroom.to_json_full())
+    chatroom.nickname_real = chatroom.nickname
+    chatroom.avatar_url = a_contact_chatroom.avatar_url2
+    chatroom.create_time = int(chatroom.create_time) / 1000
+    chatroom.update_time = int(chatroom.update_time) / 1000
+    print json.dumps(chatroom.to_json_full())
     # print json.dumps(member.to_json_full())
-    # chatroom.save()
+    chatroom.save()
     # member.save()
     # exit()
-    message_list = db.session.query(MessageAnalysis).filter(MessageAnalysis.msg_id == 20420).all()
-    for message in message_list:
-        message.username = u"wxid_3mxn6zyskbpt22"
-        print message.msg_id, message.content
-        msg_json = model_to_dict(message, message.__class__)
-        msg_json["bot_username"] = msg_json["username"]
-        response = requests.post("http://127.0.0.1:5505/yaca_api_v2/android/new_message", json = msg_json)
+
+    # message_list = db.session.query(MessageAnalysis).filter(MessageAnalysis.msg_id == 20420).all()
+    # for message in message_list:
+    #     message.username = u"wxid_3mxn6zyskbpt22"
+    #     print message.msg_id, message.content
+    #     msg_json = model_to_dict(message, message.__class__)
+    #     msg_json["bot_username"] = msg_json["username"]
+    #     response = requests.post("http://127.0.0.1:5505/yaca_api_v2/android/new_message", json = msg_json)
 
 pass
