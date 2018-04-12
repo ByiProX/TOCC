@@ -7,6 +7,7 @@ from configs.config import SUCCESS, ERR_PARAM_SET, main_api_v2
 from core_v2.auto_reply_core import create_a_auto_reply_setting, switch_func_auto_reply, \
     get_auto_reply_setting, delete_a_auto_reply_setting
 from core_v2.user_core import UserLogin
+from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 
 logger = logging.getLogger('main')
@@ -18,6 +19,7 @@ def app_create_a_auto_reply_setting():
     创建一个任务
     :return:
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -44,6 +46,7 @@ def app_create_a_auto_reply_setting():
 
 @main_api_v2.route('/switch_func_auto_reply', methods=['POST'])
 def app_switch_func_auto_reply():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -61,6 +64,7 @@ def app_switch_func_auto_reply():
 
 @main_api_v2.route('/get_auto_reply_setting', methods=['POST'])
 def app_get_auto_reply_setting():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -76,6 +80,7 @@ def app_get_auto_reply_setting():
 
 @main_api_v2.route('/delete_a_auto_reply_setting', methods=['POST'])
 def app_delete_a_auto_reply_setting():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)

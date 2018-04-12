@@ -6,6 +6,7 @@ from flask import request
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api_v2, ERR_WRONG_FUNC_STATUS
 from core_v2.batch_sending_core import get_batch_sending_task, get_task_detail, create_a_sending_task
 from core_v2.user_core import UserLogin
+from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 
 logger = logging.getLogger('main')
@@ -17,6 +18,7 @@ def app_get_batch_sending_task():
     得到主界面所需的所有信息
     :return:
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -48,6 +50,7 @@ def app_get_task_detail():
     查看任务详情
     :return:
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -72,6 +75,7 @@ def app_get_task_fail_detail():
     查看任务失败详情
     :return:
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -92,6 +96,7 @@ def app_create_a_sending_task():
     创建一个任务
     :return:
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)

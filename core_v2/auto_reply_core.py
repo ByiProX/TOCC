@@ -232,12 +232,8 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
     keywords_info.status = 1
 
     chatroomname_list = list()
-    for a_chatroom_id in chatroom_list:
-        chatroom = BaseModel.fetch_by_id(Chatroom, a_chatroom_id)
-        if not chatroom:
-            logger.error("安卓库中没有该群")
-            return ERR_WRONG_USER_ITEM
-        chatroomname_list.append(chatroom.chatroomname)
+    for chatroomname in chatroom_list:
+        chatroomname_list.append(chatroomname)
 
     reply_content_list = list()
     for i, message_info in enumerate(message_list):
