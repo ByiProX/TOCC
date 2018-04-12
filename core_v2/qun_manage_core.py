@@ -90,7 +90,7 @@ def get_chatroom_dict(chatroomname):
     chatroom_dict['chatroom_nickname'] = chatroom.nickname
     chatroom_dict['chatroom_nickname'] = chatroom.nickname
     chatroom_dict['chatroom_member_count'] = chatroom.member_count
-    chatroom_dict['chatroom_avatar'] = chatroom.avatar_url
+    chatroom_dict['avatar_url'] = chatroom.avatar_url
     chatroom_dict['chatroom_status'] = 0
 
     return chatroom_dict
