@@ -127,7 +127,7 @@ def app_wallets_switch():
 
 @main_api_v2.route('/get_wallet_status', methods=['POST'])
 @para_check('token')
-def get_coin_wallet_setting():
+def get_wallet_status():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -139,7 +139,7 @@ def get_coin_wallet_setting():
     else:
         result = False
 
-    return response({'err_code': 0, 'content': {'func_coin_wallet': result}})
+    return response({'err_code': 0, 'content': {'status': result}})
 
 
 @main_api_v2.route('/get_chatroom_list', methods=['POST'])
@@ -148,6 +148,22 @@ def get_chatroom_list():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
+    client_id = user_info.client_id
 
+    chatroom_list = BaseModel.fetch_all('client_qun_r', '*', BaseModel.where_dict({'client_id': client_id}))
 
+    result = {
+        'err_code': 0,
+        'content': {
+            'chatroom_list': []
+        }
+    }
 
+    for i in chatroom_list:
+        _chatroom_name = i.chatroom_name
+        _chatroom_nickname = BaseModel.fetch_one('a_chatroom', '*',
+                                                 BaseModel.where_dict({'chatroomname': _chatroom_name})).nickname_real
+        result['content']['chatroom_list'].append(
+            {'chatroom_nickname': _chatroom_nickname, 'chatroom_name': _chatroom_name})
+
+    return response(result)
