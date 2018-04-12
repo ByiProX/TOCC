@@ -34,7 +34,7 @@ def create_event_init():
     # Check owner or return.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.client_id
+        owner = user_info.username
     except AttributeError:
         return response({'err_code': -2, 'content': 'Wrong user.'})
     # Check if previous event is not finished.
@@ -90,7 +90,7 @@ def create_event():
     # Check owner or return.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.client_id
+        owner = user_info.username
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
     # Check previous init.
@@ -145,7 +145,7 @@ def create_event():
 def disable_events():
     # Check token and event_id.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
-    owner = user_info.client_id
+    owner = user_info.username
     event_id = int(request.json.get('event_id'))
     # Search event.
     # temp_check = db.session.query(Event).filter(Event.owner == owner, Event.id == event_id).first()
@@ -166,7 +166,7 @@ def get_events_qrcode():
     event_id = request.json.get('event_id')
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.client_id
+        owner = user_info.username
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
     # Handle.
@@ -247,7 +247,7 @@ def events_detail():
 def events_list():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.client_id
+        owner = user_info.username
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
     # events = db.session.query(Event).filter(Event.owner == owner).all()
