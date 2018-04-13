@@ -210,7 +210,7 @@ def delete_a_auto_reply_setting(user_info, keywords_id):
     :return:
     """
     keywords_info = BaseModel.fetch_by_id(Keywords, keywords_id)
-    keywords_info.status = 0
+    keywords_info.delete()
     GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = True
     return SUCCESS
 
