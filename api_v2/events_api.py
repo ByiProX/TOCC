@@ -178,10 +178,9 @@ def get_events_qrcode():
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
     # Handle.
-    # event = db.session.query(Event).filter(Event.id == event_id, Event.owner == owner).first()
     event = BaseModel.fetch_by_id('events', event_id)
     # Use event_id search chatroom list, then get a prepared chatroom
-    # and return its info
+    # and return its chatroomname.
     event_start = event.start_time
     event_end = event.end_time
     status = status_detect(event_start, event_end, event.is_work, event.is_finish)
@@ -289,7 +288,7 @@ def events_list():
             # Need another table to search.
             'chatroom_total': 2,
             'today_inc': today_inc,
-            'total_inc': 0,
+            'total_inc': 0, # the people of all chatroom.
         })
         result['content'].append(temp)
     return response(result)
