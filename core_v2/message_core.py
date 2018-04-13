@@ -2,97 +2,40 @@
 import copy
 import json
 import threading
+import traceback
+from xml.etree import ElementTree
 
 from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT_TYPE_TXT, CHAT_LOGS_TYPE_2, \
     CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, Member, Contact, CHAT_LOGS_ERR_TYPE_0, GLOBAL_RULES_UPDATE_FLAG, \
-    GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG
+    GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, new_msg_q, \
+    MSG_TYPE_ENTERCHATROOM, SUCCESS, ERR_UNKNOWN_ERROR, CONTENT_TYPE_ENTERCHATROOM
+from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core_v2.matching_rule_core import get_gm_default_rule_dict, match_message_by_rule, get_gm_rule_dict
 from core_v2.real_time_quotes_core import match_message_by_coin_keyword
 from core_v2.redis_core import rds_lpush
 from core_v2.coin_wallet_core import check_whether_message_is_a_coin_wallet
 from models_v2.base_model import BaseModel
-from utils.u_transformat import str_to_unicode
+from utils.u_transformat import str_to_unicode, unicode_to_str
 
 import logging
 
 logger = logging.getLogger('main')
 
 
-class NewMessageThread(threading.Thread):
-    def __init__(self, thread_id):
-        threading.Thread.__init__(self)
-        self.thread_id = thread_id
-        self.go_work = True
+def start_listen_new_msg():
+    logger.info("start_listen_new_msg")
+    new_msg_thread = threading.Thread(target = route_and_count_msg)
+    new_msg_thread.setDaemon(True)
+    new_msg_thread.start()
 
-    def run(self):
-        logger.info(u"Start thread id: %s." % str(self.thread_id))
 
-        # 第一次读取用户设置词
-        gm_rule_dict = get_gm_rule_dict()
-        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
-
-        # 第一次读取统一设置词
-        gm_default_rule_dict = get_gm_default_rule_dict()
-        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
-
-        while self.go_work:
-            # TODO: 消息队列实现
-            # TODO: gm_rule_dict 和 gm_default_rule_dict 在全局初始化
-            if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
-                gm_rule_dict = get_gm_rule_dict()
-                GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
-
-            if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
-                gm_default_rule_dict = get_gm_default_rule_dict()
-                GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
-
-            # a_message = rds
-
-            # 判断这个机器人说的话是否是文字或系统消息
-            if a_message.type == MSG_TYPE_TXT or a_message.type == MSG_TYPE_SYS:
-                pass
-            else:
-                continue
-
-            # 这个机器人说的话
-            # TODO 当有两个机器人的时候，这里不仅要判断是否是自己说的，还是要判断是否是其他机器人说的
-            if a_message.is_send == 1:
-                continue
-
-            # is_add_friend
-            # is_add_friend = check_whether_message_is_add_friend(message_analysis)
-            # if is_add_friend:
-            #     continue
-
-            # 检查信息是否为加了一个群
-            is_add_qun = check_whether_message_is_add_qun(a_message)
-            if is_add_qun:
-                continue
-
-            # is_removed
-            is_removed = check_is_removed(a_message)
-            if is_removed:
-                continue
-
-            # is_a_coin_wallet
-            is_a_coin_wallet = check_whether_message_is_a_coin_wallet(a_message)
-            if is_a_coin_wallet:
-                continue
-
-            # 检测是否是别人的进群提示
-            # is_friend_into_qun = check_whether_message_is_friend_into_qun(a_message)
-
-            # 根据规则和内容进行匹配，并生成任务
-            rule_status = match_message_by_rule(gm_rule_dict, a_message)
-            if rule_status is True:
-                continue
-            else:
-                pass
-
-            # 对内容进行判断，是否为查询比价的情况
-            coin_price_status = match_message_by_coin_keyword(gm_default_rule_dict, a_message)
-            if coin_price_status is True:
-                continue
+def route_and_count_msg():
+    while True:
+        a_message = new_msg_q.get()
+        print 111
+        print a_message.to_json_full()
+        route_msg(a_message)
+        count_msg(a_message)
 
 
 def route_msg(a_message):
@@ -102,7 +45,7 @@ def route_msg(a_message):
     gm_default_rule_dict = get_gm_default_rule_dict()
 
     # 判断这个机器人说的话是否是文字或系统消息
-    if a_message.type == MSG_TYPE_TXT or a_message.type == MSG_TYPE_SYS:
+    if a_message.type == MSG_TYPE_TXT or a_message.type == MSG_TYPE_SYS or a_message.type == MSG_TYPE_ENTERCHATROOM:
         pass
     else:
         return
@@ -163,7 +106,7 @@ def count_msg(msg):
                 logger.info(u'| be_at_count')
                 is_at, at_count = extract_msg_be_at(msg, chatroomname)
 
-        if msg_type == CONTENT_TYPE_SYS:
+        if msg_type == CONTENT_TYPE_ENTERCHATROOM:
             # 被邀请入群
             # Content="frank5433"邀请你和"秦思语-Doodod、磊"加入了群聊
             # "Sw-fQ"邀请你加入了群聊，群聊参与人还有：qiezi、Hugh、蒋郁、123
@@ -229,6 +172,33 @@ def extract_msg_be_at(msg, chatroomname):
         content = ""
     rds_lpush(chat_logs_type, msg.get_id(), msg.talker, msg.real_talker, msg.create_time, content)
     return is_at, at_count
+
+
+def extract_enter_chatroom_msg(content):
+    content = content.split(u":\n")[1].replace("\t", "").replace("\n", "")
+    content = content.replace("\t", "").replace("\n", "")
+    invitor_username = None
+    invitor_nickname = None
+    content = unicode_to_str(content)
+    try:
+        etree_msg = ElementTree.fromstring(content)
+        etree_link_list = etree_msg.iter(tag = "link")
+        for etree_link in etree_link_list:
+            print etree_link.get("name")
+            name = etree_link.get("name")
+            if name == "username":
+                etree_member_list = etree_link.find("memberlist")
+                for member in etree_member_list:
+                    for attr in member:
+                        if attr.tag == "username":
+                            invitor_username = attr.text
+                        elif attr.tag == "nickname":
+                            invitor_nickname = attr.text
+        return SUCCESS, invitor_username, invitor_nickname
+    except Exception as e:
+        logger.error("邀请进群解析失败")
+        logger.error(traceback.format_exc())
+        return ERR_UNKNOWN_ERROR, None, None
 
 
 def invite_bot(msg, chatroomname):
@@ -368,5 +338,3 @@ def update_members(chatroomname, create_time = None, save_flag = False):
     # if save_flag:
     #     db.session.commit()
     pass
-
-from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed

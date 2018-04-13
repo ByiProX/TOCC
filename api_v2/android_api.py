@@ -3,8 +3,7 @@
 import logging
 from flask import request
 
-from configs.config import SUCCESS, main_api_v2, db, BotInfo, Message
-from core_v2.message_core import route_msg, count_msg
+from configs.config import SUCCESS, main_api_v2, db, BotInfo, Message, new_msg_q
 from core_v2.user_core import _bind_bot_success
 from core_v2.wechat_core import WechatConn
 from models_v2.base_model import BaseModel, CM
@@ -42,6 +41,7 @@ def android_add_friend():
 def android_new_message():
     verify_json()
     a_message = CM(Message).from_json(request.json)
-    route_msg(a_message)
+    new_msg_q.put(a_message)
+    # route_msg(a_message)
     # count_msg(a_message)
     return make_response(SUCCESS)

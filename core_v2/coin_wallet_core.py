@@ -186,12 +186,13 @@ def _save_coin_wallet(a_message, wallet_address):
     address_info.setdefault("address", wallet_address)
     address_info.setdefault("create_time", now_time)
     address_info.setdefault("update_time", now_time)
-    address_info.setdefault("is_deleted", False)
+    address_info.setdefault("is_deleted", 0)
 
     for client_id in client_id_set:
         wallet = BaseModel.fetch_one(Wallet, "*", where_clause = BaseModel.where_dict({"client_id": client_id,
                                                                                        "chatroomname": chatroomname,
-                                                                                       "username": username}))
+                                                                                       "username": username,
+                                                                                       "address": wallet_address}))
         if not wallet:
             wallet = CM(Wallet)
             wallet.client_id = client_id
@@ -199,18 +200,11 @@ def _save_coin_wallet(a_message, wallet_address):
             wallet.chatroom_nick = chatroom_nick
             wallet.username = username
             wallet.address_count = 0
-            wallet.address_list = list()
             wallet.create_time = now_time
+            wallet.address = wallet_address
 
+        wallet.is_deleted = 0
         wallet.update_time = now_time
-        update_flag = False
-        for address_info in wallet.address_list:
-            if address_info.get("address") == wallet_address:
-                update_flag = True
-                address_info.set("address", wallet_address)
-                address_info.set("update_time", now_time)
-        if not update_flag:
-            wallet.address_list.append(address_info)
         wallet.save()
 
     return SUCCESS

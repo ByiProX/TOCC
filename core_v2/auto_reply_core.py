@@ -125,6 +125,7 @@ def get_auto_reply_setting(user_info):
             chatroom_dict['chatroom_status'] = 0
             chatroom_json_list.append(chatroom_dict)
 
+        res['keywords_id'] = keywords_info.get_id()
         res['keyword_list'] = keyword_list
         res['message_list'] = message_list
         res['chatroom_list'] = chatroom_json_list
@@ -209,7 +210,7 @@ def delete_a_auto_reply_setting(user_info, keywords_id):
     :return:
     """
     keywords_info = BaseModel.fetch_by_id(Keywords, keywords_id)
-    keywords_info.status = 0
+    keywords_info.delete()
     GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = True
     return SUCCESS
 

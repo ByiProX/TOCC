@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
 import logging
 import time
+import traceback
 
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timedelta
+from xml.etree import ElementTree
+
 from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE, USER_CHATROOM_R_PERMISSION_1, UserQunR, \
-    UserGroupR, UserInfo, BotInfo, UserBotR, Chatroom
+    UserGroupR, UserInfo, BotInfo, UserBotR, Chatroom, MSG_TYPE_ENTERCHATROOM, ERR_UNKNOWN_ERROR
 from core_v2.wechat_core import WechatConn
 from models.qun_friend_models import GroupInfo
 from models_v2.base_model import BaseModel, CM
 from utils.u_email import EmailAlert
 from utils.u_time import datetime_to_timestamp_utc_8
-from utils.u_transformat import str_to_unicode
+from utils.u_transformat import str_to_unicode, unicode_to_str
 
 logger = logging.getLogger('main')
 
@@ -64,7 +67,7 @@ def get_group_list(user_info):
                 "group_nickname": u"未分组",
                 "create_time": user_info.create_time,
                 "is_default": 1,
-                "chatroom_list": group_chatroom[unicode(user_info.client_id) + u"_0"]})
+                "chatroom_list": group_chatroom.get(unicode(user_info.client_id) + u"_0") or list()})
 
     for ugr in ugr_list:
         temp_dict = dict()
@@ -152,22 +155,24 @@ def check_whether_message_is_add_qun(a_message):
     msg_type = a_message.type
     content = str_to_unicode(a_message.content)
 
-    if msg_type == MSG_TYPE_SYS and content.find(u'邀请你') != -1:
+    if msg_type == MSG_TYPE_ENTERCHATROOM and content.find(u'邀请你') != -1:
         is_add_qun = True
-        bot_username = a_message.bot_username
-        user_nickname = content.split(u'邀请')[0][1:-1]
-        logger.info(u"发现加群. user_nickname: %s. chatroomname: %s." % (user_nickname, a_message.talker))
-        status, user_info = _bind_qun_success(a_message.talker, user_nickname, bot_username)
-        we_conn = WechatConn()
+        status, user_nickname, invitor_username = extract_enter_chatroom_msg(content)
         if status == SUCCESS:
-            we_conn.send_txt_to_follower("恭喜！友问币答小助手已经进入您的群了，可立即使用啦\n想再次试用？再次把我拉进群就好啦", user_info.open_id)
-        else:
-            EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
-                                     u"user_nickname: %s." % user_nickname)
+            bot_username = a_message.bot_username
+            logger.info(u"发现加群. user_nickname: %s. chatroomname: %s." % (user_nickname, a_message.talker))
+            status, user_info = _bind_qun_success(a_message.talker, user_nickname, bot_username, invitor_username)
+            we_conn = WechatConn()
+            if status == SUCCESS:
+                we_conn.send_txt_to_follower("恭喜！友问币答小助手已经进入您的群了，可立即使用啦\n想再次试用？再次把我拉进群就好啦", user_info.open_id)
+            else:
+                # EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
+                #                          u"user_nickname: %s." % user_nickname)
+                pass
     return is_add_qun
 
 
-def _bind_qun_success(chatroomname, user_nickname, bot_username):
+def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username):
     """
     当确认message为加群时，将群加入到系统中
     :param user_nickname: 除了有可能是nickname，还有可能是displayname
@@ -177,10 +182,10 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
     # 因为AMember等库更新未必在Message之前（在网速较慢的情况下可能出现）
     # 所以此处先sleep一段时间，等待AMember更新后再读取
 
-    member_username = fetch_member_by_nickname(chatroomname, user_nickname)
-    if not member_username:
-        logger.error(u"找不到该成员. nickname: %s." % user_nickname)
-        return ERR_WRONG_ITEM, None
+    # member_username = fetch_member_by_nickname(chatroomname, user_nickname)
+    # if not member_username:
+    #     logger.error(u"找不到该成员. nickname: %s." % user_nickname)
+    #     return ERR_WRONG_ITEM, None
 
     user_info = BaseModel.fetch_one(UserInfo, "*", where_clause = BaseModel.where_dict({"username": member_username}))
     if not user_info:
@@ -240,4 +245,34 @@ def _remove_bot_process(bot_username, chatroomname):
     logger.info(u"已将该bot所有相关群设置为异常")
     return SUCCESS
 
-from core_v2.message_core import fetch_member_by_nickname
+
+def extract_enter_chatroom_msg(content):
+    content = content.split(u":\n")[1].replace("\t", "").replace("\n", "")
+    invitor_username = None
+    invitor_nickname = None
+    content = unicode_to_str(content)
+    try:
+        etree_msg = ElementTree.fromstring(content)
+        etree_link_list = etree_msg.iter(tag = "link")
+        for etree_link in etree_link_list:
+            print etree_link.get("name")
+            name = etree_link.get("name")
+            if name == "username":
+                etree_member_list = etree_link.find("memberlist")
+                for member in etree_member_list:
+                    for attr in member:
+                        if attr.tag == "username":
+                            invitor_username = attr.text
+                        elif attr.tag == "nickname":
+                            invitor_nickname = attr.text
+        return SUCCESS, invitor_username, invitor_nickname
+    except Exception as e:
+        logger.error("邀请进群解析失败")
+        logger.error(traceback.format_exc())
+        return ERR_UNKNOWN_ERROR, None, None
+
+
+if __name__ == '__main__':
+    # content = '<sysmsg type="sysmsgtemplate"> <sysmsgtemplate> <content_template type="tmpl_type_profile"> <plain><![CDATA[]]></plain> <template><![CDATA["$username$"邀请"$names$"加入了群聊]]></template> <link_list> <link name="username" type="link_profile"> <memberlist> <member> <username><![CDATA[wxid_zy8gemkhx2r222]]></username> <nickname><![CDATA[ZYunH]]></nickname> </member> </memberlist> </link> <link name="names" type="link_profile"> <memberlist> <member> <username><![CDATA[wxid_56mqtj11ewa022]]></username> <nickname><![CDATA[呆呆球]]></nickname> </member> </memberlist> <separator><![CDATA[、]]></separator> </link> </link_list> </content_template> </sysmsgtemplate> </sysmsg>'
+    # print extract_enter_chatroom_msg(content)
+    pass
