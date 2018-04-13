@@ -152,7 +152,6 @@ def get_chatroom_list():
     keyword = request.json.get('keyword')
     _temp = BaseModel.fetch_all('wallet', '*', BaseModel.where_dict({'client_id': client_id}))
 
-
     result = {
         'err_code': 0,
         'content': {
@@ -163,10 +162,28 @@ def get_chatroom_list():
     _chatroom_name_list = []
 
     for i in _temp:
-        if keyword in i.user_nick or keyword in i.address :
+        if keyword in i.user_nick or keyword in i.address:
             if i.chatroomname not in _chatroom_name_list:
                 _chatroom_name_list.append(i.chatroomname)
-                result['content']['chatroom_list'].append({'chatroom_nickname': i.chatroom_nick, 'chatroomname': i.chatroomname})
-
+                result['content']['chatroom_list'].append(
+                    {'chatroom_nickname': i.chatroom_nick, 'chatroomname': i.chatroomname})
 
     return response(result)
+
+
+@main_api_v2.route('/wallets_delete', methods=['DELETE'])
+def app_wallets_delete():
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    _id = request.json.get('id')
+    if _id is None:
+        return make_response(ERR_PARAM_SET)
+
+    ret = CM("wallet").set_id(_id).db_delete()
+
+    if ret is True:
+        return make_response(SUCCESS, id=_id)
+    else:
+        return make_response(ERR_PARAM_SET)
