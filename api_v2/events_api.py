@@ -144,7 +144,7 @@ def create_event():
     full_event_paras_as_dict.update({'is_work': 1})
     event.from_json(full_event_paras_as_dict)
     event.save()
-
+    logger.warning('events_create:{}'.format(full_event_paras_as_dict.get('start_name')))
     return response({'err_code': 0, 'content': {'event_id': event_id}})
 
 
