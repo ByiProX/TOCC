@@ -205,6 +205,6 @@ def verify_pc_login_qr():
     if SIGN_DICT[sign]:
         token = SIGN_DICT[sign]
         SIGN_DICT[sign] = False
-        return make_response(SUCCESS, token = token)
+        return make_response(SUCCESS, token = token, is_login = True)
 
-    return make_response(ERR_UN_LOGIN)
+    return make_response(SUCCESS, is_login = False)
