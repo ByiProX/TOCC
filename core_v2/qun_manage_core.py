@@ -4,11 +4,13 @@ import time
 
 from copy import deepcopy
 from datetime import datetime
+from xml.etree import ElementTree
+
 from sqlalchemy import desc
 
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE, USER_CHATROOM_R_PERMISSION_1, UserQunR, \
-    UserGroupR, UserInfo, BotInfo, UserBotR, Chatroom
+    UserGroupR, UserInfo, BotInfo, UserBotR, Chatroom, MSG_TYPE_ENTERCHATROOM, ERR_UNKNOWN_ERROR
 from core_v2.wechat_core import WechatConn
 from models.qun_friend_models import GroupInfo
 from models_v2.base_model import BaseModel, CM
@@ -152,12 +154,12 @@ def check_whether_message_is_add_qun(a_message):
     msg_type = a_message.type
     content = str_to_unicode(a_message.content)
 
-    if msg_type == MSG_TYPE_SYS and content.find(u'邀请你') != -1:
+    if msg_type == MSG_TYPE_ENTERCHATROOM and content.find(u'邀请你') != -1:
         is_add_qun = True
         bot_username = a_message.bot_username
         user_nickname = content.split(u'邀请')[0][1:-1]
         logger.info(u"发现加群. user_nickname: %s. chatroomname: %s." % (user_nickname, a_message.talker))
-        status, user_info = _bind_qun_success(a_message.talker, user_nickname, bot_username)
+        status, user_info = _bind_qun_success(a_message.talker, user_nickname, bot_username, member_username)
         we_conn = WechatConn()
         if status == SUCCESS:
             we_conn.send_txt_to_follower("恭喜！友问币答小助手已经进入您的群了，可立即使用啦\n想再次试用？再次把我拉进群就好啦", user_info.open_id)
@@ -167,7 +169,15 @@ def check_whether_message_is_add_qun(a_message):
     return is_add_qun
 
 
-def _bind_qun_success(chatroomname, user_nickname, bot_username):
+def extract_enter_chatroom_msg(content):
+    try:
+        etree_msg = ElementTree.fromstring(content)
+        etree_appmsg = etree_msg.find('sysmsg')
+    except:
+        return ERR_UNKNOWN_ERROR
+
+
+def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username):
     """
     当确认message为加群时，将群加入到系统中
     :param user_nickname: 除了有可能是nickname，还有可能是displayname
@@ -177,10 +187,10 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username):
     # 因为AMember等库更新未必在Message之前（在网速较慢的情况下可能出现）
     # 所以此处先sleep一段时间，等待AMember更新后再读取
 
-    member_username = fetch_member_by_nickname(chatroomname, user_nickname)
-    if not member_username:
-        logger.error(u"找不到该成员. nickname: %s." % user_nickname)
-        return ERR_WRONG_ITEM, None
+    # member_username = fetch_member_by_nickname(chatroomname, user_nickname)
+    # if not member_username:
+    #     logger.error(u"找不到该成员. nickname: %s." % user_nickname)
+    #     return ERR_WRONG_ITEM, None
 
     user_info = BaseModel.fetch_one(UserInfo, "*", where_clause = BaseModel.where_dict({"username": member_username}))
     if not user_info:
