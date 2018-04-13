@@ -143,8 +143,6 @@ def create_event():
     # Fix is_work
     full_event_paras_as_dict.update({'is_work': 1})
     event.from_json(full_event_paras_as_dict)
-    for k,v in full_event_paras_as_dict.items():
-        print(k,v)
     event.save()
 
     return response({'err_code': 0, 'content': {'event_id': event_id}})
