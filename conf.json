@@ -7,7 +7,7 @@
   "batch_send_task": [[["client_id"], "integer"], [["chatroom_count", "people_count", "status", "is_deleted", "create_time"], "integer"], [["status_content"], "string"], [["content_list", "chatroom_list"], "json"]],
   "material_lib": [[["clinet_id", "type", "create_time"], "integer"], [["title"], "string", {"max": 50}], [["content"], "string"]],
   "keywords": [[["client_id", "welcome", "status", "create_time"], "integer"], [["keywords", "chatroom_list", "reply_content"], "json"]],
-  "wallet": [[["client_id", "chatroomname", "username"], "required"], [["client_id", "address_count", "create_time", "update_time", "is_deleted"], "integer"], [["chatroomname", "username", "address"], "string", {"max": 32}], [["chatroom_nick", "user_nick"], "string"]],
+  "wallet": [[["client_id", "chatroomname", "username", "address"], "required"], [["client_id", "address_count", "create_time", "update_time", "is_deleted"], "integer"], [["chatroomname", "username", "address"], "string", {"max": 32}], [["chatroom_nick", "user_nick"], "string"]],
   "a_contact": [[["username"], "required"], [["username", "nickname", "py_initial", "province", "city", "alias"], "string", {"max": 50}], [["quan_pin"], "string", {"max": 100}], [["avatar_url", "signature"], "string"], [["img_lastupdatetime", "create_time", "update_time", "sex"], "integer"]],
   "a_chatroom_r": [[["bot_username", "chatroomname"], "required"], [["bot_username", "chatroomname"], "string", {"max": 32}], [["is_work"], "integer"]],
   "a_member": [[["chatroomname"], "required"], [["chatroomname"], "string", {"max": 32}], [["members"], "json"]],
