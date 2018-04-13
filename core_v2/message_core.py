@@ -107,19 +107,30 @@ def count_msg(msg):
                 is_at, at_count = extract_msg_be_at(msg, chatroomname)
 
         if msg_type == CONTENT_TYPE_ENTERCHATROOM:
+            content = str_to_unicode(msg.real_content)
+            status, invitor_username, invitor_nickname, invited_username_list = _extract_enter_chatroom_msg(content)
+            if status == SUCCESS:
+                if content.find(u'邀请你') != -1:
+                    invited_username_list.append(msg.bot_username)
+                chat_logs_type = CHAT_LOGS_TYPE_1
+                content = json.dumps(invited_username_list)
+                rds_lpush(chat_logs_type, msg.get_id(), msg.talker, invitor_username, msg.create_time, content)
+            else:
+                rds_lpush(chat_logs_type = CHAT_LOGS_ERR_TYPE_0, msg_id = msg.get_id(), err = True)
+
             # 被邀请入群
             # Content="frank5433"邀请你和"秦思语-Doodod、磊"加入了群聊
             # "Sw-fQ"邀请你加入了群聊，群聊参与人还有：qiezi、Hugh、蒋郁、123
-            if content.find(u'邀请你') != -1:
-                logger.info(u'invite_bot')
-                invite_bot(msg, chatroomname)
+            # if content.find(u'邀请你') != -1:
+            #     logger.info(u'invite_bot')
+            #     invite_bot(msg)
             # 其他人入群：邀请、扫码
             # "斗西"邀请"陈若曦"加入了群聊
             # " BILL"通过扫描"谢工@GitChat&图灵工作用"分享的二维码加入群聊
             # "風中落葉🍂"邀请"大冬天的、追忆那年的似水年华、往事随风去、搁浅、陈梁～HILTI"加入了群聊
-            elif content.find(u'加入了群聊') != -1 or content.find(u'加入群聊') != -1:
-                logger.info(u'invite_other')
-                invite_other(msg, chatroomname)
+            # elif content.find(u'加入了群聊') != -1 or content.find(u'加入群聊') != -1:
+            #     logger.info(u'invite_other')
+            #     invite_other(msg)
 
 
 def extract_msg_be_at(msg, chatroomname):
@@ -174,118 +185,131 @@ def extract_msg_be_at(msg, chatroomname):
     return is_at, at_count
 
 
-def extract_enter_chatroom_msg(content):
+def _extract_enter_chatroom_msg(content):
     content = content.split(u":\n")[1].replace("\t", "").replace("\n", "")
-    content = content.replace("\t", "").replace("\n", "")
     invitor_username = None
     invitor_nickname = None
+    invited_username_list = list()
     content = unicode_to_str(content)
     try:
         etree_msg = ElementTree.fromstring(content)
         etree_link_list = etree_msg.iter(tag = "link")
         for etree_link in etree_link_list:
             print etree_link.get("name")
-            name = etree_link.get("name")
-            if name == "username":
-                etree_member_list = etree_link.find("memberlist")
-                for member in etree_member_list:
-                    for attr in member:
-                        if attr.tag == "username":
+            link_name = etree_link.get("name")
+            etree_member_list = etree_link.find("memberlist")
+            for member in etree_member_list:
+                for attr in member:
+                    if attr.tag == "username":
+                        if link_name == "username":
                             invitor_username = attr.text
-                        elif attr.tag == "nickname":
-                            invitor_nickname = attr.text
-        return SUCCESS, invitor_username, invitor_nickname
+                        elif link_name == "names":
+                            invited_username_list.append(attr.text)
+                        elif link_name == "adder":
+                            invited_username_list.append(attr.text)
+                        elif link_name == "from":
+                            invitor_username = attr.text
+
+        return SUCCESS, invitor_username, invitor_nickname, invited_username_list
     except Exception as e:
         logger.error("邀请进群解析失败")
         logger.error(traceback.format_exc())
-        return ERR_UNKNOWN_ERROR, None, None
+        return ERR_UNKNOWN_ERROR, None, None, None
 
 
-def invite_bot(msg, chatroomname):
-    content = str_to_unicode(msg.real_content)
-    content_tmp = copy.deepcopy(content)
-    invitor_nick_name = content_tmp.split(u'邀请')[0][1:-1]
-    logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
+# def invite_bot(msg):
+#     content = str_to_unicode(msg.real_content)
+#     status, invitor_username, invitor_nickname, invited_username_list = _extract_enter_chatroom_msg(content)
+#     if status == SUCCESS:
+#         chat_logs_type = CHAT_LOGS_TYPE_1
+#         content = json.dumps(invited_username_list)
+#         rds_lpush(chat_logs_type, msg.get_id(), msg.talker, invitor_username, msg.create_time, content)
+#     else:
+#         rds_lpush(chat_logs_type = CHAT_LOGS_ERR_TYPE_0, msg_id = msg.get_id(), err = True)
 
-    invited_username_list = list()
-    invited_username_list.append(msg.bot_username)
-
-    invited_nick_name_list = list()
-    if content_tmp.find(u'邀请你和') != -1:
-        start_index = content_tmp.find(u'邀请你和')
-        end_index = content_tmp.rfind(u'"加入')
-        invited_nick_names = content_tmp[start_index + 5:end_index]
-        invited_nick_name_list = invited_nick_names.split(u'、')
-
-    invitor = fetch_member_by_nickname(chatroomname = chatroomname,
-                                       nickname = invitor_nick_name)
-    if invitor:
-        for invited_nick_name in invited_nick_name_list:
-            logger.debug(u'invited_nick_name: ' + invited_nick_name)
-            invited = fetch_member_by_nickname(chatroomname = chatroomname,
-                                               nickname = invited_nick_name)
-            if invited:
-                logger.info(u'invited ' + unicode(invited))
-                invited_username_list.append(invited)
-            else:
-                logger.info(u'really not find ' + invited_nick_name)
-                rds_lpush(chat_logs_type = CHAT_LOGS_ERR_TYPE_0, msg_id = msg.get_id(), err = True)
-                # Mark 一个异常，全部异常
-                return
-
-        chat_logs_type = CHAT_LOGS_TYPE_1
-        content = json.dumps(invited_username_list)
-        rds_lpush(chat_logs_type, msg.get_id(), msg.talker, invitor, msg.create_time, content)
-
-
-def invite_other(msg, chatroomname):
-    content = str_to_unicode(msg.real_content)
-    content_tmp = copy.deepcopy(content)
-    print u''
-    if content_tmp.find(u'邀请') != -1:
-        invitor_nick_name = content_tmp.split(u'邀请')[0][1:-1]
-        logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
-        # "斗西"邀请"陈若曦"加入了群聊
-        # "風中落葉🍂"邀请"大冬天的、追忆那年的似水年华、往事随风去、搁浅、陈梁～HILTI"加入了群聊
-        start_index = content_tmp.find(u'邀请')
-        end_index = content_tmp.rfind(u'"加入')
-        invited_nick_names = content_tmp[start_index + 3:end_index]
-        invited_nick_name_list = invited_nick_names.split(u'、')
-
-    # " BILL"通过扫描"谢工@GitChat&图灵工作用"分享的二维码加入群聊
-    elif content_tmp.find(u'通过扫描') != -1:
-        nick_names = content_tmp.split(u'通过扫描')
-        invited_nick_name = nick_names[0][2:-1]
-        end_index = nick_names[1].rfind(u'"分享')
-        invitor_nick_name = nick_names[1][1:end_index]
-        logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
-        invited_nick_name_list = [invited_nick_name]
-    else:
-        logger.info(u'unknown invite type: ')
-        logger.info(msg.content)
-        return
-
-    invited_username_list = list()
-    invitor = fetch_member_by_nickname(chatroomname = chatroomname,
-                                       nickname = invitor_nick_name)
-    if invitor:
-        for invited_nick_name in invited_nick_name_list:
-            logger.debug(u'invited_nick_name: ' + invited_nick_name)
-            invited = fetch_member_by_nickname(chatroomname = chatroomname,
-                                               nickname = invited_nick_name)
-            if invited:
-                logger.info(u'invited ' + unicode(invited))
-                invited_username_list.append(invited)
-            else:
-                logger.info(u'really not find ' + invited_nick_name)
-                rds_lpush(chat_logs_type = CHAT_LOGS_ERR_TYPE_0, msg_id = msg.get_id(), err = True)
-                # Mark 一个异常，全部异常
-                return
-
-        if invited_username_list:
-            chat_logs_type = CHAT_LOGS_TYPE_1
-            content = json.dumps(invited_username_list)
-            rds_lpush(chat_logs_type, msg.get_id(), msg.talker, invitor, msg.create_time, content)
+    # content_tmp = copy.deepcopy(content)
+    # invitor_nick_name = content_tmp.split(u'邀请')[0][1:-1]
+    # logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
+    #
+    # invited_username_list = list()
+    # invited_username_list.append(msg.bot_username)
+    #
+    # invited_nick_name_list = list()
+    # if content_tmp.find(u'邀请你和') != -1:
+    #     start_index = content_tmp.find(u'邀请你和')
+    #     end_index = content_tmp.rfind(u'"加入')
+    #     invited_nick_names = content_tmp[start_index + 5:end_index]
+    #     invited_nick_name_list = invited_nick_names.split(u'、')
+    #
+    # invitor = fetch_member_by_nickname(chatroomname = chatroomname,
+    #                                    nickname = invitor_nick_name)
+    # if invitor:
+    #     for invited_nick_name in invited_nick_name_list:
+    #         logger.debug(u'invited_nick_name: ' + invited_nick_name)
+    #         invited = fetch_member_by_nickname(chatroomname = chatroomname,
+    #                                            nickname = invited_nick_name)
+    #         if invited:
+    #             logger.info(u'invited ' + unicode(invited))
+    #             invited_username_list.append(invited)
+    #         else:
+    #             logger.info(u'really not find ' + invited_nick_name)
+    #             rds_lpush(chat_logs_type = CHAT_LOGS_ERR_TYPE_0, msg_id = msg.get_id(), err = True)
+    #             # Mark 一个异常，全部异常
+    #             return
+    #
+    #     chat_logs_type = CHAT_LOGS_TYPE_1
+    #     content = json.dumps(invited_username_list)
+    #     rds_lpush(chat_logs_type, msg.get_id(), msg.talker, invitor, msg.create_time, content)
+#
+#
+# def invite_other(msg, chatroomname):
+#     content = str_to_unicode(msg.real_content)
+#     content_tmp = copy.deepcopy(content)
+#     print u''
+#     if content_tmp.find(u'邀请') != -1:
+#         invitor_nick_name = content_tmp.split(u'邀请')[0][1:-1]
+#         logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
+#         # "斗西"邀请"陈若曦"加入了群聊
+#         # "風中落葉🍂"邀请"大冬天的、追忆那年的似水年华、往事随风去、搁浅、陈梁～HILTI"加入了群聊
+#         start_index = content_tmp.find(u'邀请')
+#         end_index = content_tmp.rfind(u'"加入')
+#         invited_nick_names = content_tmp[start_index + 3:end_index]
+#         invited_nick_name_list = invited_nick_names.split(u'、')
+#
+#     # " BILL"通过扫描"谢工@GitChat&图灵工作用"分享的二维码加入群聊
+#     elif content_tmp.find(u'通过扫描') != -1:
+#         nick_names = content_tmp.split(u'通过扫描')
+#         invited_nick_name = nick_names[0][2:-1]
+#         end_index = nick_names[1].rfind(u'"分享')
+#         invitor_nick_name = nick_names[1][1:end_index]
+#         logger.debug(u'invitor_nick_name: ' + invitor_nick_name)
+#         invited_nick_name_list = [invited_nick_name]
+#     else:
+#         logger.info(u'unknown invite type: ')
+#         logger.info(msg.content)
+#         return
+#
+#     invited_username_list = list()
+#     invitor = fetch_member_by_nickname(chatroomname = chatroomname,
+#                                        nickname = invitor_nick_name)
+#     if invitor:
+#         for invited_nick_name in invited_nick_name_list:
+#             logger.debug(u'invited_nick_name: ' + invited_nick_name)
+#             invited = fetch_member_by_nickname(chatroomname = chatroomname,
+#                                                nickname = invited_nick_name)
+#             if invited:
+#                 logger.info(u'invited ' + unicode(invited))
+#                 invited_username_list.append(invited)
+#             else:
+#                 logger.info(u'really not find ' + invited_nick_name)
+#                 rds_lpush(chat_logs_type = CHAT_LOGS_ERR_TYPE_0, msg_id = msg.get_id(), err = True)
+#                 # Mark 一个异常，全部异常
+#                 return
+#
+#         if invited_username_list:
+#             chat_logs_type = CHAT_LOGS_TYPE_1
+#             content = json.dumps(invited_username_list)
+#             rds_lpush(chat_logs_type, msg.get_id(), msg.talker, invitor, msg.create_time, content)
 
 
 def fetch_member_by_nickname(chatroomname, nickname, update_flag = True):
