@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 import base64
+import json
 import logging
 import hashlib
+import random
 
 from datetime import datetime, timedelta
+
+import requests
 from sqlalchemy import func
 
 from configs.config import SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
@@ -378,12 +382,31 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     return SUCCESS, user_info
 
 
+def _get_qr_code_base64_str(username):
+    try:
+        f = open("static/bot_qr_code/" + str(username) + ".jpg", 'r')
+    except IOError:
+        logger.warning(u"无该username(%s)的qr_code." % str(username))
+        return None
+    img_str = base64.b64encode(f.read())
+    f.close()
+    return img_str
+
+
 def _get_a_balanced_bot():
     """
     得到一个平衡过数量的bot
     :return:
     """
     # TODO: _get_a_balanced_bot
+    response = requests.get("http://192.168.1.10:5000/android/bot_status")
+    bot_status = json.loads(response.content)
+
+    bot_info = None
+    while bot_info is None:
+        bot_username = random.choice(bot_status.keys())
+        bot_info = BaseModel.fetch_one(BotInfo, '*', where_clause = BaseModel.where_dict({"username": bot_username}))
+        bot_status.pop(bot_username)
 
     # bot_info_list = db.session.query(BotInfo).all()
     # bot_used_dict = dict()
@@ -402,15 +425,4 @@ def _get_a_balanced_bot():
     #             return bot_info
     #
     # return None
-    return BaseModel.fetch_one(BotInfo, '*')
-
-
-def _get_qr_code_base64_str(username):
-    try:
-        f = open("static/bot_qr_code/" + str(username) + ".jpg", 'r')
-    except IOError:
-        logger.warning(u"无该username(%s)的qr_code." % str(username))
-        return None
-    img_str = base64.b64encode(f.read())
-    f.close()
-    return img_str
+    return bot_info

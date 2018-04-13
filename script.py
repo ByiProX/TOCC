@@ -1,33 +1,15 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-from Queue import Queue
 from datetime import timedelta, datetime
 
-import requests
 from sqlalchemy import func, or_
 
 from configs.config import db, USER_CHATROOM_R_PERMISSION_1, GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, \
     GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, MSG_TYPE_TXT, MSG_TYPE_SYS, UserBotR, Contact
-from core.coin_wallet_core import check_whether_message_is_a_coin_wallet
-from core.matching_rule_core import get_gm_rule_dict, get_gm_default_rule_dict, match_message_by_rule
-from core.message_core import update_members, count_msg_by_create_time, analysis_and_save_a_message
-from core.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
-from core.real_time_quotes_core import match_message_by_coin_keyword
-from core.welcome_message_core import check_whether_message_is_friend_into_qun
+from core_v2.user_core import _get_a_balanced_bot
 from crawler.coin_all_crawler_v2 import update_coin_all
-from models.android_db_models import AMember, AContact, AChatroomR, AChatroom, AFriend
-from models.auto_reply_models import AutoReplySettingInfo, AutoReplyKeywordRelateInfo, AutoReplyMaterialRelate, \
-    AutoReplyTargetRelate
-from models.batch_sending_models import BatchSendingTaskInfo, BatchSendingTaskMaterialRelate, \
-    BatchSendingTaskTargetRelate
-from models.chatroom_member_models import ChatroomInfo, MemberInfo, ChatroomOverview, MemberOverview, ChatroomStatistic, \
-    UserChatroomR, BotChatroomR
-from models.coin_wallet_models import CoinWalletQunMemberRelate, CoinWalletMemberAddressRelate
-from models.matching_rule_models import GlobalMatchingRule
-from models.material_library_models import MaterialLibraryUser
-from models.message_ext_models import MessageAnalysis
-from models.synchronous_announcement_models import SynchronousAnnouncementDSUserRelate
+
 from models_v2.base_model import CM, BaseModel
 from utils.u_model_json_str import model_to_dict
 
@@ -352,12 +334,15 @@ def test_msg(message_list):
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
+    bot_info = BaseModel.fetch_one("client_bot_r", '*')
+    bot_info.bot_username = u'wxid_3mxn5zyskbpt22'
+    bot_info.save()
     # a_member = BaseModel.fetch_by_id("a_member", "5aceeaf0421aa90746779fd6")
     # update_coin_all()
     # exit()
     # now_time = datetime_to_timestamp_utc_8(datetime.now())
-    client = BaseModel.fetch_by_id(u"client", 1)
-    client.save()
+    # client = BaseModel.fetch_by_id(u"client", 1)
+    # client.save()
     pass
     # client.client_id = int(client.client_id)
     # client.create_time = long(client.create_time)
