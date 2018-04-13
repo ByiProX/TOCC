@@ -3,6 +3,7 @@ import os
 import time
 import logging
 
+import requests
 from flask import request, jsonify
 from functools import wraps
 
@@ -143,8 +144,31 @@ def create_event():
     # Fix is_work
     full_event_paras_as_dict.update({'is_work': 1})
     event.from_json(full_event_paras_as_dict)
-    event.save()
 
+    # Create a chatroom for this event. index = start_index.
+    chatroom_nickname = to_str(event.start_name) + str(event.start_index) + '群'
+    bot_username = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': event.owner})).bot_username
+    create_chatroom_dict = {
+        'bot_username':bot_username,
+        'data':{
+            'task': 'create_chatroom',
+            "owner": event.owner,
+            "chatroom_nickname": chatroom_nickname
+        }
+    }
+    try:
+        create_chatroom_resp = requests.post('http://47.75.83.5/android/send_message', json=create_chatroom_dict)
+    except Exception as e:
+        logger.warning('Create chatroom request error:{}'.format(e))
+    # Add chatroom info in relationship.
+    events_chatroom = CM('events_chatroom')
+    events_chatroom.index = event.start_index
+    events_chatroom.chatroomname = 'Tobe'
+    events_chatroom.event_id = event.events_id
+
+    # Save at final.
+    events_chatroom.save()
+    event.save()
     return response({'err_code': 0, 'content': {'event_id': event_id}})
 
 
@@ -186,6 +210,8 @@ def get_events_qrcode():
     status = status_detect(event_start, event_end, event.is_work, event.is_finish)
     # Add a scan qrcode log.
     add_qrcode_log(event_id)
+    # Check which chatroom is available.
+
     result = {
         'err_code': 0,
         'content': {'event_status': status,
@@ -286,9 +312,9 @@ def events_list():
             'start_time': i.start_time,
             'end_time': i.end_time,
             # Need another table to search.
-            'chatroom_total': 2,
+            'chatroom_total': 2,  # Just check chatroom list.
             'today_inc': today_inc,
-            'total_inc': 0, # the people of all chatroom.
+            'total_inc': 0,  # the people of all chatroom.
         })
         result['content'].append(temp)
     return response(result)
