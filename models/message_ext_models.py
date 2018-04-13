@@ -378,7 +378,6 @@ class MessageAnalysis(db.Model):
     #         # is_send = msg.is_send
     #         msg_type = msg.type
     #
-    #         # TODO: 在内存中，用全局标识控制更新
     #         bot_chatroom_r = db.session.query(BotChatroomR).filter(BotChatroomR.chatroomname == chatroomname,
     #                                                                BotChatroomR.username == msg.username,
     #                                                                BotChatroomR.is_on == 1).first()

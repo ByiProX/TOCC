@@ -147,63 +147,6 @@ def get_auto_reply_setting(user_info):
 #     """
 
 
-def get_setting_detail(ar_setting_info):
-    """
-    读取一个任务的所有信息
-    :return:
-    """
-    res = dict()
-    res.setdefault("setting_id", ar_setting_info.setting_id)
-    res.setdefault("task_covering_chatroom_count", ar_setting_info.task_covering_qun_count)
-    res.setdefault("task_covering_people_count", ar_setting_info.task_covering_people_count)
-    res.setdefault("task_create_time", datetime_to_timestamp_utc_8(ar_setting_info.setting_create_time))
-
-    # 生成群信息
-    res.setdefault("chatroom_list", [])
-    ar_setting_target_list = db.session.query(AutoReplyTargetRelate).filter(
-        AutoReplyTargetRelate.setting_id == ar_setting_info.setting_id).all()
-    if not ar_setting_target_list:
-        return ERR_WRONG_ITEM, None
-    uqun_id_list = []
-    for ar_setting_target in ar_setting_target_list:
-        uqun_id_list.append(ar_setting_target.uqun_id)
-    for uqun_id in uqun_id_list:
-        status, tcd_res = get_a_chatroom_dict_by_uqun_id(uqun_id=uqun_id)
-        if status == SUCCESS:
-            res['chatroom_list'].append(deepcopy(tcd_res))
-        else:
-            pass
-
-    # 生成material信息
-    res.setdefault("message_list", [])
-    ar_setting_material_list = db.session.query(AutoReplyMaterialRelate).filter(
-        AutoReplyMaterialRelate.setting_id == ar_setting_info.setting_id).order_by(
-        AutoReplyMaterialRelate.send_seq).all()
-    if not ar_setting_material_list:
-        return ERR_WRONG_ITEM, None
-    material_id_list = []
-    for ar_setting_material in ar_setting_material_list:
-        material_id_list.append(ar_setting_material.material_id)
-    for material_id in material_id_list:
-        temp_material_dict = generate_material_into_frontend_by_material_id(material_id)
-        res["message_list"].append(deepcopy(temp_material_dict))
-
-    # TODO 生成keyword信息
-    res.setdefault("keyword_list", [])
-    ar_setting_keyword_list = db.session.query(AutoReplyKeywordRelateInfo).filter(
-        AutoReplyKeywordRelateInfo.setting_id == ar_setting_info.setting_id).order_by(
-        AutoReplyKeywordRelateInfo.send_seq).all()
-    if not ar_setting_keyword_list:
-        return ERR_WRONG_ITEM, None
-    for ar_setting_keyword in ar_setting_keyword_list:
-        temp_keyword_dict = dict()
-        temp_keyword_dict.setdefault("keyword_content", ar_setting_keyword.keyword)
-        temp_keyword_dict.setdefault("is_full_match", ar_setting_keyword.is_full_match)
-        res['keyword_list'].append(deepcopy(temp_keyword_dict))
-
-    return SUCCESS, res
-
-
 def delete_a_auto_reply_setting(user_info, keywords_id):
     """
     完全删除一条回复

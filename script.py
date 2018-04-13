@@ -304,7 +304,6 @@ def test_msg(message_list):
                 continue
 
             # 这个机器人说的话
-            # TODO 当有两个机器人的时候，这里不仅要判断是否是自己说的，还是要判断是否是其他机器人说的
             if message_analysis.is_send == 1:
                 continue
 
@@ -357,7 +356,9 @@ if __name__ == '__main__':
     # update_coin_all()
     # exit()
     # now_time = datetime_to_timestamp_utc_8(datetime.now())
-    # client = BaseModel.fetch_by_id(u"client", 1)
+    client = BaseModel.fetch_by_id(u"client", 1)
+    client.save()
+    pass
     # client.client_id = int(client.client_id)
     # client.create_time = long(client.create_time)
     # client.update_time = long(client.update_time)

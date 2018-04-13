@@ -39,8 +39,6 @@ def route_and_count_msg():
 
 
 def route_msg(a_message):
-    # TODO: 消息队列实现
-    # TODO: gm_rule_dict 和 gm_default_rule_dict 在全局初始化
     gm_rule_dict = get_gm_rule_dict()
     gm_default_rule_dict = get_gm_default_rule_dict()
 

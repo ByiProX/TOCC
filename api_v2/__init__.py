@@ -10,5 +10,6 @@ import coin_api
 import events_api
 import statis_chatroom_api
 import statis_member_api
+import member_api
 
 api_str = ""
