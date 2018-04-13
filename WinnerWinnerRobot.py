@@ -3,6 +3,7 @@
 from gevent import monkey
 
 from core.crawler_core import crawler_thread
+from core_v2.message_core import start_listen_new_msg
 from maintenance.database_rel import create_all_databases
 
 import logging
@@ -52,6 +53,7 @@ def initial_all():
 logger = logging.getLogger('main')
 # production_thread.start()
 # crawler_thread.start()
+start_listen_new_msg()
 BaseModel.extract_from_json()
 
 # 开启环境监测线程
