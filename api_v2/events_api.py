@@ -202,7 +202,7 @@ def get_events_qrcode():
 _modify_need = (
     'need_fission', 'need_condition_word', 'need_pull_people', 'fission_word_1', 'fission_word_2',
     'condition_word', 'pull_people_word', 'event_title', 'start_time', 'end_time', 'start_index',
-    'chatroom_name_protect', 'chatroom_repeat_protect', 'poster_raw')
+    'chatroom_name_protect', 'chatroom_repeat_protect', 'poster_raw', 'start_time')
 
 
 @app_test.route('/events_modify_word', methods=['POST'])
