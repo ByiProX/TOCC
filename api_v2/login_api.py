@@ -8,7 +8,7 @@ import qrcode
 from flask import request
 
 from configs.config import main_api_v2, ERR_PARAM_SET, ERR_INVALID_PARAMS, SUCCESS, INFO_NO_USED_BOT, \
-    ERR_SET_LENGTH_WRONG, SIGN_DICT, ERR_ALREADY_LOGIN, ERR_UN_LOGIN
+    ERR_SET_LENGTH_WRONG, SIGN_DICT, ERR_ALREADY_LOGIN
 from core_v2.user_core import UserLogin, cal_user_basic_page_info, add_a_pre_relate_user_bot_info, get_bot_qr_code, \
     set_bot_name
 from utils.u_response import make_response
@@ -62,8 +62,7 @@ def app_get_user_basic_info():
         return make_response(status, bot_info=res['bot_info'], user_func=res['user_func'], total_info=res['total_info'])
     # 目前INFO均返回为SUCCESS
     elif status == INFO_NO_USED_BOT:
-        return make_response(SUCCESS, bot_info=res['bot_info'], user_func=res['user_func'],
-                             total_info=res['total_info'])
+        return make_response(SUCCESS, bot_info=res['bot_info'], user_func=res['user_func'], total_info=res['total_info'])
     else:
         return make_response(status)
 

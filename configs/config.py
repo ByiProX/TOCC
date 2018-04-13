@@ -233,10 +233,6 @@ ERROR_CODE[ERR_NOT_IMPLEMENTED] = {'discription': '成员不存在', 'status_cod
 ERR_ALREADY_LOGIN = 'err_already_login'
 ERROR_CODE[ERR_ALREADY_LOGIN] = {'discription': '成员不存在', 'status_code': -18}
 
-# PC 未登录
-ERR_UN_LOGIN = 'err_un_login'
-ERROR_CODE[ERR_UN_LOGIN] = {'discription': '成员不存在', 'status_code': -19}
-
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
 ERROR_CODE[WARN_HAS_DEFAULT_QUN] = {'discription': '建立默认分组时已有默认分组', 'status_code': 1}
