@@ -162,7 +162,14 @@ def get_chatroom_list():
     _chatroom_name_list = []
 
     for i in _temp:
-        if keyword in i.user_nick or keyword in i.address:
+        _user_nick = i.user_nick
+        _address = i.address
+        if _user_nick is None:
+            _user_nick = ''
+        if _address is None:
+            _address = ''
+
+        if keyword in _user_nick or keyword in _address:
             if i.chatroomname not in _chatroom_name_list:
                 _chatroom_name_list.append(i.chatroomname)
                 result['content']['chatroom_list'].append(
@@ -171,13 +178,14 @@ def get_chatroom_list():
     return response(result)
 
 
-@main_api_v2.route('/wallets_delete', methods=['DELETE'])
+@main_api_v2.route('/wallets_delete', methods=['POST'])
+@para_check('wallet_id', 'token')
 def app_wallets_delete():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
 
-    _id = request.json.get('id')
+    _id = request.json.get('wallet_id')
     if _id is None:
         return make_response(ERR_PARAM_SET)
 
