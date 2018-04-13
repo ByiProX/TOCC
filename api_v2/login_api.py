@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
+import base64
 import json
+import random
 
+import cStringIO
+import qrcode
 from flask import request
 
-from configs.config import main_api_v2, ERR_PARAM_SET, ERR_INVALID_PARAMS, SUCCESS, INFO_NO_USED_BOT, ERR_SET_LENGTH_WRONG
+from configs.config import main_api_v2, ERR_PARAM_SET, ERR_INVALID_PARAMS, SUCCESS, INFO_NO_USED_BOT, \
+    ERR_SET_LENGTH_WRONG, SIGN_DICT, ERR_ALREADY_LOGIN, ERR_UN_LOGIN
 from core_v2.user_core import UserLogin, cal_user_basic_page_info, add_a_pre_relate_user_bot_info, get_bot_qr_code, \
     set_bot_name
 from utils.u_response import make_response
@@ -142,3 +147,64 @@ def app_binded_wechat_bot():
     pass
 
 # 进群只能通过Message，
+
+
+@main_api_v2.route("/get_pc_login_qr", methods=['POST'])
+def get_pc_login_qr():
+
+    sign = ""
+    while sign is "" or sign in SIGN_DICT:
+        for i in range(6):
+            sign += chr(random.randint(65, 90))
+
+    SIGN_DICT.setdefault(sign, None)
+    url_ori = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2fimtagger.com%2fwww%2fauth.html&response_type=code&scope=snsapi_userinfo&state=#wechat_redirect"
+    url = url_ori + "&state=" + sign
+    qr = qrcode.QRCode(
+        version = 3,
+        error_correction = qrcode.constants.ERROR_CORRECT_H,
+        box_size = 8,
+        border = 3,
+    )
+    qr.add_data(url)
+    qr.make()
+    img = qr.make_image()
+    buffer = cStringIO.StringIO()
+    img.save(buffer, format = "JPEG")
+    b64qr = base64.b64encode(buffer.getvalue())
+
+    return make_response(SUCCESS, qr = b64qr, sign = sign)
+
+
+@main_api_v2.route("/pc_login", methods = ['POST'])
+def pc_login():
+    sign = request.json.get("sign")
+    code = request.json.get("code")
+
+    if sign is None or sign not in SIGN_DICT or code is None:
+        return make_response(ERR_INVALID_PARAMS)
+
+    user_login = UserLogin(code)
+    status, user_info = user_login.get_user_token()
+
+    if status == SUCCESS:
+        SIGN_DICT[sign] = user_info.token
+    return make_response(status)
+
+
+@main_api_v2.route("/verify_pc_login_qr", methods=['POST'])
+def verify_pc_login_qr():
+    sign = request.json.get("sign")
+
+    if sign is None or sign not in SIGN_DICT:
+        return make_response(ERR_INVALID_PARAMS)
+
+    if SIGN_DICT[sign] is False:
+        return make_response(ERR_ALREADY_LOGIN)
+
+    if SIGN_DICT[sign]:
+        token = SIGN_DICT[sign]
+        SIGN_DICT[sign] = False
+        return make_response(SUCCESS, token = token)
+
+    return make_response(ERR_UN_LOGIN)

@@ -229,6 +229,14 @@ ERROR_CODE[ERR_NOT_IMPLEMENTED] = {'discription': '功能未实现，先留出�
 ERR_INVALID_MEMBER = 'err_invalid_member'
 ERROR_CODE[ERR_NOT_IMPLEMENTED] = {'discription': '成员不存在', 'status_code': -17}
 
+# PC 已登录
+ERR_ALREADY_LOGIN = 'err_already_login'
+ERROR_CODE[ERR_ALREADY_LOGIN] = {'discription': '成员不存在', 'status_code': -18}
+
+# PC 未登录
+ERR_UN_LOGIN = 'err_un_login'
+ERROR_CODE[ERR_UN_LOGIN] = {'discription': '成员不存在', 'status_code': -19}
+
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
 ERROR_CODE[WARN_HAS_DEFAULT_QUN] = {'discription': '建立默认分组时已有默认分组', 'status_code': 1}
@@ -375,4 +383,6 @@ BATCH_SEND_TASK_STATUS_2 = 2  # 发送中
 BATCH_SEND_TASK_STATUS_3 = 3  # 成功
 BATCH_SEND_TASK_STATUS_4 = 4  # 失败
 
-new_msg_q = Queue()
+NEW_MSG_Q = Queue()
+
+SIGN_DICT = dict()
