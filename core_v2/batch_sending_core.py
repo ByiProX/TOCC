@@ -54,6 +54,7 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
             message_json["seq"] = content.get("seq")
             message_list.append(message_json)
 
+        res["status"] = batch_send_task.status
         res["message_list"] = message_list
         res["chatroom_list"] = chatroom_json_list
         res["task_covering_chatroom_count"] = chatroom_count
