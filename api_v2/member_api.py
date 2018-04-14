@@ -3,8 +3,9 @@ import json
 
 from flask import request
 
-from configs.config import main_api_v2, SUCCESS
+from configs.config import main_api_v2, SUCCESS, ERR_WRONG_ITEM
 from core_v2.user_core import UserLogin
+from models_v2.base_model import BaseModel
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 import time
@@ -20,31 +21,36 @@ def member_get_in_out_member():
 
     check_time = request.json.get('date_type')
     group = request.json.get('chatroomname')
-    # status = request.json.get('status')
 
-    members = BaseModel.fetch_one("a_member", "*", where_clause=BaseModel.where_dict({"chatroomname": group})).members
-    # print members[0]['username']
-    for member in members:
-        # print member['is_deleted']
-        # if member[]
-        member_info = BaseModel.fetch_one("a_contact", "*", where_clause=BaseModel.where_dict({"username": member['username']}))
+    in_list = list()
+    out_list = list()
 
-        if not member['is_deleted']:
-            try:
-                # print member_info.create_time, member_info.update_time
-                if check_time <= member_info.create_time:
-                    in_list.append(member)
-            except AttributeError:
-                pass
+    a_member = BaseModel.fetch_one("a_member", "*", where_clause=BaseModel.where_dict({"chatroomname": group}))
+    a_member.create_time = int(time.time())
+    a_member.save()
 
-        else:
-            try:
-                if check_time <= member_info.update_time:
-                    out_list.append(member)
-            except AttributeError:
-                pass
+    if not a_member:
+        pass
+        # return make_response(ERR_WRONG_ITEM)
+    else:
+        members = a_member.members
+        for member in members:
+            member_info = BaseModel.fetch_one("a_contact", "*", where_clause=BaseModel.where_dict({"username": member['username']}))
+
+            if not member['is_deleted']:
+                try:
+                    if check_time <= member_info.create_time:
+                        in_list.append(member)
+                except AttributeError:
+                    pass
+
+            else:
+                try:
+                    if check_time <= member_info.update_time:
+                        out_list.append(member)
+                except AttributeError:
+                    pass
 
     last_update_time = int(time.time())
-    # 业务逻辑
 
     return make_response(SUCCESS, in_list = in_list, out_list = out_list, last_update_time = last_update_time)
