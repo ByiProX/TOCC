@@ -347,7 +347,6 @@ class BaseModel(object):
         #     for key, value in query_clause.iteritems():
         #         url += unicode(key) + u"=" + urlencode(unicode(value)) + u"&"
         response = requests.get(url = url, params = query_clause)
-        print response.content
         response_json = json.loads(response.content)
         code = response_json.get(u"code")
         if code == 0:
