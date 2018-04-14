@@ -192,9 +192,9 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
         reply_content_list.append(reply_content)
 
     keyword_dict = dict()
+    precise = list()
+    fuzzy = list()
     for i, keyword_info in enumerate(keyword_list):
-        precise = list()
-        fuzzy = list()
         is_full_match = keyword_info.get("is_full_match")
         keyword = keyword_info.get("keyword_content")
         if keyword:
@@ -205,10 +205,11 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
         else:
             logger.error("没有读取到关键词")
             continue
-        keyword_dict['precise'] = precise
-        keyword_dict['fuzzy'] = fuzzy
+    keyword_dict['precise'] = precise
+    keyword_dict['fuzzy'] = fuzzy
 
     keywords_info.keywords = keyword_dict
+    print keyword_dict
     keywords_info.reply_content = reply_content_list
     keywords_info.chatroom_list = chatroomname_list
     keywords_info.save()
