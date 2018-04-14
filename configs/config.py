@@ -390,3 +390,6 @@ BATCH_SEND_TASK_STATUS_4 = 4  # 失败
 NEW_MSG_Q = Queue()
 
 SIGN_DICT = dict()
+
+ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.xuanren360.com/android/bot_status"
+ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_mass_message"

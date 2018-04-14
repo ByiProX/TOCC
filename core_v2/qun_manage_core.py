@@ -77,8 +77,6 @@ def get_group_list(user_info):
         temp_dict.setdefault("is_default", 0)
         chatroom_list = group_chatroom.get(ugr.group_id) or list()
         temp_dict.setdefault("chatroom_list", chatroom_list)
-        # TODO: 根据前端需求加
-        # temp_dict.setdefault("chatroom_list", group_info.get("chatroom_list"))
 
         res.append(temp_dict)
     logger.info(u"获取分组列表. user_id: %s." % user_info.client_id)

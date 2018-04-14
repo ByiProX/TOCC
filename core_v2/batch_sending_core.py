@@ -3,10 +3,13 @@ import logging
 from copy import deepcopy
 from datetime import datetime
 
+import requests
 from sqlalchemy import func, desc
 
 from configs.config import db, ERR_WRONG_ITEM, SUCCESS, ERR_WRONG_USER_ITEM, CONSUMPTION_TASK_TYPE, BatchSendTask, \
-    Chatroom, BATCH_SEND_TASK_STATUS_1
+    Chatroom, BATCH_SEND_TASK_STATUS_1, BATCH_SEND_TASK_STATUS_3, BATCH_SEND_TASK_STATUS_4, UserBotR
+from core.consumption_core import add_task_to_consumption_task
+from core_v2.send_msg import send_msg_to_android
 from models_v2.base_model import BaseModel, CM
 from utils.u_time import datetime_to_timestamp_utc_8
 
@@ -63,7 +66,6 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
         res["task_covering_chatroom_count"] = chatroom_count
         res["task_covering_people_count"] = member_count
         res["task_create_time"] = batch_send_task.create_time
-        # TODO: TBD
         res["task_sended_count"] = chatroom_count
         res["task_sended_failed_count"] = 0
         result.append(res)
@@ -124,7 +126,6 @@ def get_task_detail(batch_send_task_id):
     res["task_covering_chatroom_count"] = batch_send_task.chatroom_count
     res["task_covering_people_count"] = batch_send_task.people_count
     res["task_create_time"] = batch_send_task.create_time
-    # TODO: TBD
     res["task_sended_count"] = batch_send_task.chatroom_count
     res["task_sended_failed_count"] = 0
 
@@ -144,6 +145,10 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     将前端发送过来的任务放入task表，并将任务放入consumption_task
     :return:
     """
+    ubr = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    if not ubr:
+        logger.error(u"该用户没有绑定机器人")
+        return ERR_WRONG_ITEM
 
     chatroom_count = len(chatroom_list)
     member_count = 0
@@ -180,9 +185,18 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     batch_send_task.content_list = content_list
 
     batch_send_task.save()
-    # TODO: Send Task
-    print u'send task'
-    return SUCCESS
+    ubr = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    if not ubr:
+        pass
+    status = send_msg_to_android(ubr.bot_username, content_list, chatroom_list)
+    if status == SUCCESS:
+        logger.info(u"任务发送成功, client_id: %s." % user_info.client_id)
+        batch_send_task.status = BATCH_SEND_TASK_STATUS_3
+        return SUCCESS
+    else:
+        logger.info(u"任务发送失败, client_id: %s." % user_info.client_id)
+        batch_send_task.status = BATCH_SEND_TASK_STATUS_4
+        return SUCCESS
 
 
 def _add_task_to_consumption_task(uqr_info, um_lib, bs_task_info):

@@ -136,7 +136,6 @@ def get_auto_reply_setting(user_info):
         res['task_covering_people_count'] = member_count
         res['task_create_time'] = keywords_info.create_time
         result.append(res)
-        # TODO: TBD
         # res['task_sended_count'] = message_list
         # res['task_sended_failed_count'] = message_list
 
