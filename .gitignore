@@ -8,3 +8,4 @@ logs/
 sandbox/
 test.py
 .DS_Store
+conf.json
