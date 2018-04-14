@@ -19,15 +19,30 @@ def member_get_in_out_member():
     if status != SUCCESS:
         return make_response(status)
 
-    check_time = request.json.get('date_type')
+    # time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()-time.time()%86400-86400*6))
+
+    cur_time = time.time()
+    today_start = int(cur_time-cur_time % 86400)
+    yesterday_start = int(cur_time-cur_time % 86400 - 86400)
+    seven_before = int(cur_time-cur_time % 86400 - 86400*6)
+    thirty_before = int(cur_time-cur_time % 86400 - 86400*29)
+
+    time_dict = [
+        1: today_start,
+        2: yesterday_start,
+        3: seven_before,
+        4: thirty_before,
+        5: 0
+    ]
+
+    check_time = time_dict[request.json.get('date_type')]
     group = request.json.get('chatroomname')
 
     in_list = list()
     out_list = list()
 
     a_member = BaseModel.fetch_one("a_member", "*", where_clause=BaseModel.where_dict({"chatroomname": group}))
-    a_member.create_time = int(time.time())
-    a_member.save()
+
 
     if not a_member:
         pass
