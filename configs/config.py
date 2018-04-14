@@ -54,7 +54,7 @@ class MyResponse(Response):
     def __init__(self, response=None, **kwargs):
         kwargs['headers'] = ''
         headers = kwargs.get('headers')
-        origin = ('Access-Control-Allow-Origin', 'http://www.xuanren360.com')
+        origin = ('Access-Control-Allow-Origin', '*')
         # origin_1 = ('Access-Control-Allow-Origin', 'http://xuanren360.com')
         # origin_2 = ('Access-Control-Allow-Origin', 'http://test.xuanren360.com')
         methods = ('Access-Control-Allow-Methods', 'HEAD, OPTIONS, GET, POST, DELETE, PUT')
