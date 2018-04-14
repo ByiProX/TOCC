@@ -54,7 +54,7 @@ class MyResponse(Response):
     def __init__(self, response=None, **kwargs):
         kwargs['headers'] = ''
         headers = kwargs.get('headers')
-        origin = ('Access-Control-Allow-Origin', '*')
+        origin = ('Access-Control-Allow-Origin', '*.xuanren360.com')
         methods = ('Access-Control-Allow-Methods', 'HEAD, OPTIONS, GET, POST, DELETE, PUT')
         credentials = ('Access-Control-Allow-Credentials', 'true')
         header = ('Access-Control-Allow-Headers', 'x-requested-with,content-type')
@@ -150,7 +150,7 @@ else:
 app = Flask(__name__)
 app.config.from_object(config_map[config_name])
 # 跨域，替换flask原有response，注释下方语句即可关闭
-# app.response_class = MyResponse
+app.response_class = MyResponse
 config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
