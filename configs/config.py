@@ -150,7 +150,7 @@ else:
 app = Flask(__name__)
 app.config.from_object(config_map[config_name])
 # 跨域，替换flask原有response，注释下方语句即可关闭
-app.response_class = MyResponse
+# app.response_class = MyResponse
 config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
