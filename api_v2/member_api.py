@@ -35,7 +35,10 @@ def member_get_in_out_member():
         5: 0
     }
 
-    check_time = time_dict[request.json.get('date_type')]
+    date_type = request.json.get('date_type')
+    if date_type is None:
+        return make_response(ERR_WRONG_ITEM)
+    check_time = time_dict[date_type]
     group = request.json.get('chatroomname')
 
     in_list = list()
