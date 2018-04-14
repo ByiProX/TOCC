@@ -106,13 +106,13 @@ class UserLogin:
                     # switch
                     user_switch = CM(UserSwitch)
                     user_switch.client_id = client.client_id
-                    user_switch.func_send_qun_messages = False
-                    user_switch.func_qun_sign = False
-                    user_switch.func_auto_reply = False
-                    user_switch.func_welcome_message = False
-                    user_switch.func_real_time_quotes = False
-                    user_switch.func_synchronous_announcement = False
-                    user_switch.func_coin_wallet = False
+                    user_switch.func_send_qun_messages = 0
+                    user_switch.func_qun_sign = 0
+                    user_switch.func_auto_reply = 0
+                    user_switch.func_welcome_message = 0
+                    user_switch.func_real_time_quotes = 0
+                    user_switch.func_synchronous_announcement = 0
+                    user_switch.func_coin_wallet = 0
 
                     user_switch.save()
                     self.user_info_up_to_date.save()
@@ -372,11 +372,11 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
 
     user_switch = CM(UserSwitch)
     user_switch.client_id = user_info.client_id
-    user_switch.func_send_qun_messages = True
-    user_switch.func_auto_reply = False
-    user_switch.func_real_time_quotes = True
-    user_switch.func_synchronous_announcement = True
-    user_switch.func_coin_wallet = False
+    user_switch.func_send_qun_messages = 1
+    user_switch.func_auto_reply = 0
+    user_switch.func_real_time_quotes = 1
+    user_switch.func_synchronous_announcement = 1
+    user_switch.func_coin_wallet = 0
     user_switch.save()
 
     logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.client_id, user_username))
