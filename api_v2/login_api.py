@@ -157,7 +157,7 @@ def get_pc_login_qr():
             sign += chr(random.randint(65, 90))
 
     SIGN_DICT.setdefault(sign, None)
-    url_ori = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fauth.html2f&response_type=code&scope=snsapi_userinfo&state=" + sign + "#wechat_redirect"
+    url_ori = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state=" + sign + "#wechat_redirect"
     qr = qrcode.QRCode(
         version = 3,
         error_correction = qrcode.constants.ERROR_CORRECT_H,
