@@ -221,6 +221,7 @@ class BaseModel(object):
         code = response_json.get(u"code")
         # load _id
         if code == 0:
+            print response.content
             msg = response_json.get(u"data").get(u"id")
             self.set_id(msg)
             return True
@@ -241,6 +242,7 @@ class BaseModel(object):
         response_json = json.loads(response.content)
         code = response_json.get(u"code")
         if code == 0:
+            print response.content
             msg = response_json.get(u"data").get(u"id")
             self.set_id(msg)
             return True
