@@ -89,6 +89,8 @@ class UserLogin:
                     client.create_time = datetime_to_timestamp_utc_8(datetime.now())
                     client.save()
 
+                    print client.client_id
+
                     self.user_info_up_to_date.client_id = client.client_id
                     self.user_info_up_to_date.code = self.code
                     self.user_info_up_to_date.create_time = datetime_to_timestamp_utc_8(datetime.now())
@@ -99,13 +101,13 @@ class UserLogin:
 
                     # switch
                     user_switch = CM(UserSwitch)
-                    self.user_info_up_to_date.func_send_qun_messages = False
-                    self.user_info_up_to_date.func_qun_sign = False
-                    self.user_info_up_to_date.func_auto_reply = False
-                    self.user_info_up_to_date.func_welcome_message = False
-                    self.user_info_up_to_date.func_real_time_quotes = False
-                    self.user_info_up_to_date.func_synchronous_announcement = False
-                    self.user_info_up_to_date.func_coin_wallet = False
+                    user_switch.func_send_qun_messages = False
+                    user_switch.func_qun_sign = False
+                    user_switch.func_auto_reply = False
+                    user_switch.func_welcome_message = False
+                    user_switch.func_real_time_quotes = False
+                    user_switch.func_synchronous_announcement = False
+                    user_switch.func_coin_wallet = False
 
                     user_switch.save()
                     self.user_info_up_to_date.save()
