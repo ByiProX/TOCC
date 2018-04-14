@@ -30,7 +30,7 @@ def login_verify_code():
 
     user_login = UserLogin(code)
     status, user_info = user_login.get_user_token()
-    # TODO 这里有bug
+    # TODO 这里有bug by frank5433
     if status == SUCCESS:
         return make_response(status, user_info = user_info.to_json_full())
     else:

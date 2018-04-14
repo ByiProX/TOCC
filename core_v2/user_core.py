@@ -260,7 +260,6 @@ def cal_user_basic_page_info(user_info):
             return ERR_WRONG_ITEM, None
         res = dict()
         res.setdefault("bot_info", {})
-        # TODO: bot_id encode
         res['bot_info'].setdefault('bot_id', bot_info.bot_info_id)
         res['bot_info'].setdefault('chatbot_nickname', ubr_info.chatbot_default_nickname)
         res['bot_info'].setdefault('bot_status', 0 if bot_info.is_alive else -1)

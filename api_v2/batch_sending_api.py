@@ -58,7 +58,6 @@ def app_get_task_detail():
     # if not user_info.func_send_qun_messages:
     #     return make_response(ERR_WRONG_FUNC_STATUS)
 
-    # TODO: 结构修改
     batch_send_task_id = request.json.get('batch_send_task_id')
     if not batch_send_task_id:
         return make_response(ERR_PARAM_SET)
