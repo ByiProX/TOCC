@@ -6,7 +6,7 @@ from configs.config import ERROR_CODE, app
 
 def make_response(*args, **kwargs):
     with app.app_context():
-        print request.headers
+        # print request.headers
         status = args[0]
 
         # a default json
@@ -26,7 +26,8 @@ def make_response(*args, **kwargs):
         #     response_body = jsonify({'err_code': 0, 'content': {'msg': status}})
 
         # origin_2 = ('Access-Control-Allow-Origin', 'http://test.xuanren360.com')
-        if "test.xuanren.com" in request.headers.get("Host"):
+        print request.headers.get("Origin")
+        if "test.xuanren.com" in request.headers.get("Origin"):
             response_body.headers['Access-Control-Allow-Origin'] = 'http://test.xuanren360.com'
         # response_body.headers['Access-Control-Allow-Credentials'] = 'true'
         # response_body.headers['Access-Control-Allow-Methods'] = 'GET, POST'
