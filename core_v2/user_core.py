@@ -13,7 +13,7 @@ from sqlalchemy import func
 from configs.config import SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPIRED, ERR_USER_LOGIN_FAILED, \
     ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM, \
     ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE, MSG_TYPE_TXT, MSG_TYPE_SYS, ERR_INVALID_PARAMS, UserInfo, UserSwitch, \
-    UserBotR, BotInfo, UserQunR, Chatroom, Contact
+    UserBotR, BotInfo, UserQunR, Chatroom, Contact, Client
 from core_v2.wechat_core import wechat_conn
 from models_v2.base_model import BaseModel, CM
 from utils.u_time import datetime_to_timestamp_utc_8
@@ -81,6 +81,14 @@ class UserLogin:
                     self.now_user_info.save()
                     return SUCCESS, self.now_user_info
                 else:
+
+                    # 新用戶注册
+                    client = CM(Client)
+                    client.admin = self.user_info_up_to_date.open_id
+                    client.create_time = datetime_to_timestamp_utc_8(datetime.now())
+                    client.save()
+
+                    self.user_info_up_to_date.client_id = client.client_id
                     self.user_info_up_to_date.code = self.code
                     self.user_info_up_to_date.create_time = datetime_to_timestamp_utc_8(datetime.now())
                     self.user_info_up_to_date.last_login_time = datetime_to_timestamp_utc_8(datetime.now())
