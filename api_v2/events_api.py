@@ -159,6 +159,7 @@ def create_event():
     }
     try:
         create_chatroom_resp = requests.post('http://192.168.1.10/android/send_message', json=create_chatroom_dict)
+        print(create_chatroom_resp.text)
     except Exception as e:
         logger.warning('Create chatroom request error:{}'.format(e))
     # Add chatroom info in relationship.
@@ -170,6 +171,7 @@ def create_event():
     # Save at final.
     events_chatroom.save()
     event.save()
+
     return response({'err_code': 0, 'content': {'event_id': event_id}})
 
 
