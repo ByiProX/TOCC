@@ -39,6 +39,9 @@ def switch_func_auto_reply(user_info, switch):
     switch = 1 if switch else 0
 
     user_switch = BaseModel.fetch_one(UserSwitch, "*", where_clause = BaseModel.where("=", "client_id", user_info.client_id))
+    if not user_switch:
+        logger.error("没有找到用户的开关状态")
+        return ERR_WRONG_ITEM
     if user_switch.func_auto_reply and switch:
         logger.error("目前已为开启状态，无需再次开启. 返回正常.")
         return SUCCESS

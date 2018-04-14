@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import time
 from datetime import timedelta, datetime
 
 from sqlalchemy import func, or_
@@ -334,16 +335,21 @@ def test_msg(message_list):
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
-    bot_info = BaseModel.fetch_one("client_bot_r", '*')
-    bot_info.bot_username = u'wxid_3mxn5zyskbpt22'
-    bot_info.save()
+    # ubr = CM(UserBotR)
+    # ubr.client_id = 1
+    # ubr.bot_username = u'wxid_zy8gemkhx2r222'
+    # ubr.is_work = 1
+    # ubr.create_time = int(time.time())
+    # ubr.save()
+    # bot_info.bot_username = u'wxid_3mxn5zyskbpt22'
+    # bot_info.save()
     # a_member = BaseModel.fetch_by_id("a_member", "5aceeaf0421aa90746779fd6")
     # update_coin_all()
     # exit()
     # now_time = datetime_to_timestamp_utc_8(datetime.now())
     # client = BaseModel.fetch_by_id(u"client", 1)
     # client.save()
-    pass
+    # pass
     # client.client_id = int(client.client_id)
     # client.create_time = long(client.create_time)
     # client.update_time = long(client.update_time)
@@ -354,10 +360,10 @@ if __name__ == '__main__':
     # client.update_time = datetime_to_timestamp_utc_8(datetime.now())
     # client.save()
     # user_list = db.session.query(UserInfo).all()
-
+    #
     # user_old = db.session.query(UserInfo).filter(UserInfo.user_id == 5).first()
     # user_old_json = model_to_dict(user_old, user_old.__class__)
-    # user_old_json['client_id'] = client.client_id
+    # user_old_json['client_id'] = 1
     # user_old_json['last_login_time'] = int(user_old_json['last_login_time']) / 1000
     # user_old_json['token_expired_time'] = int(user_old_json['token_expired_time']) / 1000
     # user_old_json['create_time'] = int(user_old_json['create_time']) / 1000
