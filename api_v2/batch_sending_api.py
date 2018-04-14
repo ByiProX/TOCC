@@ -4,7 +4,8 @@ import logging
 from flask import request
 
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api_v2, ERR_WRONG_FUNC_STATUS
-from core_v2.batch_sending_core import get_batch_sending_task, get_task_detail, create_a_sending_task
+from core_v2.batch_sending_core import get_batch_sending_task, get_task_detail, create_a_sending_task, \
+    delete_batch_sending_task
 from core_v2.user_core import UserLogin
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
@@ -111,5 +112,18 @@ def app_create_a_sending_task():
         return make_response(ERR_PARAM_SET)
 
     status = create_a_sending_task(user_info, chatroom_list, message_list)
+
+    return make_response(status)
+
+
+@main_api_v2.route("/delete_batch_send_task", methods = ['POST'])
+def app_delete_batch_send_task():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    batch_send_task_id = request.json.get('batch_send_task_id')
+    status = delete_batch_sending_task(batch_send_task_id)
 
     return make_response(status)

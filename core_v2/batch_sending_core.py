@@ -22,9 +22,11 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
     result = []
     if task_status:
         where = BaseModel.where_dict({"client_id": user_info.client_id,
-                                      "status": task_status})
+                                      "status": task_status,
+                                      "is_deleted": 0})
     else:
-        where = BaseModel.where_dict({"client_id": user_info.client_id})
+        where = BaseModel.where_dict({"client_id": user_info.client_id,
+                                      "is_deleted": 0})
     batch_send_task_count = BaseModel.count(BatchSendTask, where)
     batch_send_task_list = BaseModel.fetch_all(BatchSendTask, "*", where_clause = where, order_by = BaseModel.order_by({"create_time": "desc"}), page = page_number, pagesize = task_per_page)
     for batch_send_task in batch_send_task_list:
@@ -190,3 +192,14 @@ def _add_task_to_consumption_task(uqr_info, um_lib, bs_task_info):
     status = add_task_to_consumption_task(uqr_info, um_lib, bs_task_info.user_id,
                                           CONSUMPTION_TASK_TYPE["batch_sending_task"], bs_task_info.sending_task_id)
     return status
+
+
+def delete_batch_sending_task(batch_send_task_id):
+    batch_send_task = BaseModel.fetch_by_id(BatchSendTask, batch_send_task_id)
+    if not batch_send_task:
+        return ERR_WRONG_ITEM
+
+    batch_send_task.is_deleted = 1
+    batch_send_task.save()
+
+    return SUCCESS
