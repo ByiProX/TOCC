@@ -146,7 +146,7 @@ def create_event():
     event.from_json(full_event_paras_as_dict)
 
     # Create a chatroom for this event. index = start_index.
-    chatroom_nickname = to_str(event.start_name) + str(event.start_index) + '群'
+    chatroom_nickname = to_str(event.start_name) + str(event.start_index) + u'群'
     bot_username = BaseModel.fetch_one('client_bot_r', '*',
                                        BaseModel.where_dict({'client_id': event.owner})).bot_username
     create_chatroom_dict = {
@@ -158,18 +158,20 @@ def create_event():
         }
     }
     try:
-        create_chatroom_resp = requests.post('http://47.75.83.5/android/send_message', json=create_chatroom_dict)
+        create_chatroom_resp = requests.post('http://192.168.1.10:5000/android/send_message', json=create_chatroom_dict)
+        print(create_chatroom_resp.text)
     except Exception as e:
         logger.warning('Create chatroom request error:{}'.format(e))
     # Add chatroom info in relationship.
     events_chatroom = CM('events_chatroom')
     events_chatroom.index = event.start_index
-    events_chatroom.chatroomname = 'Tobe'
+    events_chatroom.chatroomname = 'default'
     events_chatroom.event_id = event.events_id
 
     # Save at final.
     events_chatroom.save()
     event.save()
+
     return response({'err_code': 0, 'content': {'event_id': event_id}})
 
 
