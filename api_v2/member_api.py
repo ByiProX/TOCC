@@ -27,13 +27,13 @@ def member_get_in_out_member():
     seven_before = int(cur_time-cur_time % 86400 - 86400*6)
     thirty_before = int(cur_time-cur_time % 86400 - 86400*29)
 
-    time_dict = [
+    time_dict = {
         1: today_start,
         2: yesterday_start,
         3: seven_before,
         4: thirty_before,
         5: 0
-    ]
+    }
 
     check_time = time_dict[request.json.get('date_type')]
     group = request.json.get('chatroomname')
