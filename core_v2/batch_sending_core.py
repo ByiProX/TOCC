@@ -26,7 +26,7 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
     else:
         where = BaseModel.where_dict({"client_id": user_info.client_id})
     batch_send_task_count = BaseModel.count(BatchSendTask, where)
-    batch_send_task_list = BaseModel.fetch_all(BatchSendTask, "*", where_clause = where, page = page_number, pagesize = task_per_page)
+    batch_send_task_list = BaseModel.fetch_all(BatchSendTask, "*", where_clause = where, order_by = BaseModel.order_by({"create_time": "desc"}), page = page_number, pagesize = task_per_page)
     for batch_send_task in batch_send_task_list:
         res = dict()
         chatroom_list = batch_send_task.chatroom_list

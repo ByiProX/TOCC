@@ -23,7 +23,6 @@ def app_get_batch_sending_task():
     if status != SUCCESS:
         return make_response(status)
 
-    # TODO: 结构修改
     task_per_page = request.json.get('page_size')
     page_number = request.json.get('page')
     task_status = request.json.get("status")
