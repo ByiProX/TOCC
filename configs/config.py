@@ -154,7 +154,11 @@ app.response_class = MyResponse
 config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
-rds = redis.StrictRedis(host = '192.168.1.191', port = 6379, db = 1, password = "redisRedis_789")
+# rds = redis.StrictRedis(host = '192.168.1.191', port = 6379, db = 1, password = "redisRedis_789")
+# DB_SERVER_URL = u'http://dal.com/'
+
+DB_SERVER_URL = u'http://dal.com:8090/'
+rds = redis.StrictRedis(host = '127.0.0.1', port = 6379, db = 1)
 
 # TODO 此处应换为新公众号的数值
 APP_ID = 'wxc3bc48b4c40651fd'
@@ -365,7 +369,6 @@ BatchSendTask = "batch_send_task"
 Client = "client"
 
 SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
-DB_SERVER_URL = u'http://dal.com/'
 
 CHAT_LOGS_TYPE_0 = 0  # 退群
 CHAT_LOGS_TYPE_1 = 1  # 拉人进群
