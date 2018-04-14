@@ -90,7 +90,10 @@ class UserLogin:
                     client.save()
 
                     _client = BaseModel.fetch_by_id("client", "1")
+                    __client = BaseModel.fetch_one("client", "*")
                     print client.client_id
+                    print _client.client_id
+                    print __client.client_id
 
                     self.user_info_up_to_date.client_id = client.client_id
                     self.user_info_up_to_date.code = self.code
