@@ -105,6 +105,7 @@ class UserLogin:
 
                     # switch
                     user_switch = CM(UserSwitch)
+                    user_switch.client_id = client.client_id
                     user_switch.func_send_qun_messages = False
                     user_switch.func_qun_sign = False
                     user_switch.func_auto_reply = False

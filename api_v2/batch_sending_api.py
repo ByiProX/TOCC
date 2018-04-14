@@ -24,7 +24,7 @@ def app_get_batch_sending_task():
     if status != SUCCESS:
         return make_response(status)
 
-    task_per_page = request.json.get('page_size')
+    task_per_page = request.json.get('pagesize')
     page_number = request.json.get('page')
     task_status = request.json.get("status")
     if not task_per_page:
