@@ -89,6 +89,7 @@ class UserLogin:
                     client.create_time = datetime_to_timestamp_utc_8(datetime.now())
                     client.save()
 
+                    _client = BaseModel.fetch_by_id("client", "1")
                     print client.client_id
 
                     self.user_info_up_to_date.client_id = client.client_id
