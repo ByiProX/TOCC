@@ -40,6 +40,8 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
         member_count = 0
         for chatroomname in chatroom_list:
             chatroom = BaseModel.fetch_one(Chatroom, "member_count", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+            if chatroom is None:
+                continue
             member_count += chatroom.member_count
             chatroom_dict = dict()
             chatroom_dict['chatroom_id'] = chatroom.get_id()

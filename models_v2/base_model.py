@@ -334,6 +334,8 @@ class BaseModel(object):
                         page_count = response_json.get(u"pages").get(u"pageCount")
                         if page > page_count:
                             eof = True
+                    else:
+                        eof = True
                 else:
                     logger.error(u"query failed, content: " + unicode(response.content))
             else:
