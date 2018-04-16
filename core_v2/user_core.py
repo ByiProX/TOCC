@@ -426,7 +426,7 @@ def _get_a_balanced_bot():
     times = 10
     while bot_info is None and times:
         times -= 1
-        bot_username = random.choice(list(bot_status.keys()))
+        bot_username = bot_status[random.random() * len(bot_status.keys())]
         bot_info = BaseModel.fetch_one(BotInfo, '*', where_clause = BaseModel.where_dict({"username": bot_username}))
         bot_status.pop(bot_username)
 
