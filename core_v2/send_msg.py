@@ -19,7 +19,7 @@ def send_msg_to_android(bot_username, message_list, to_list):
     url = ANDROID_SERVER_URL_SEND_MASS_MESSAGE
     logger.info(u"安卓发送任务. url: %s." % url)
     response = requests.post(url = url, json = data)
-    if response.request.status_code == 200:
+    if response.status_code == 200:
         response_json = json.loads(response.content)
         err_code = response_json.get("err_code")
         if err_code == 0:
@@ -34,7 +34,7 @@ def send_ws_to_android(bot_username, data):
     logger.info(u"send_ws_to_android. url: %s." % url)
     response = requests.post(url = url, json = {"bot_username": bot_username,
                                                 "data": data})
-    if response.request.status_code == 200:
+    if response.status_code == 200:
         response_json = json.loads(response.content)
         err_code = response_json.get("err_code")
         if err_code == 0:
