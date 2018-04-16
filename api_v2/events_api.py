@@ -97,7 +97,6 @@ def create_event():
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
     # Check previous init.
-    # temp_check = db.session.query(Event).filter(Event.owner == owner, Event.is_finish == False).first()
     temp_check = BaseModel.fetch_one('events', '*',
                                      BaseModel.where_dict({"owner": owner, "is_finish": 0}))
     if not temp_check:
@@ -114,6 +113,12 @@ def create_event():
             return response({'err_code': -1, 'content': 'Lack of %s' % i})
         else:
             full_event_paras_as_dict[i] = request.json.get(i)
+    # Check if same start_name already exist.        
+    check_events_start_name = BaseModel.fetch_all('events', '*', BaseModel.where_dict({'owner': owner}))
+    for i in check_events_start_name:
+        if i.start_name == full_event_paras_as_dict['start_name']:
+            return response({'err_code': -1, 'content': 'Same start_name already used.'})
+
     # [Fix]
     static_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
     try:
@@ -128,8 +133,8 @@ def create_event():
     else:
         full_event_paras_as_dict['poster_raw'] = ' '
     # Create a full event.
-    # [Improve] string to bytes.
     full_event_paras_as_dict['is_finish'] = 1
+    full_event_paras_as_dict['enough_chatroom'] = 0
     # True -> 1, False ->0
     _temp = full_event_paras_as_dict.copy()
     for k, v in _temp.items():
@@ -137,9 +142,7 @@ def create_event():
             full_event_paras_as_dict[k] = 1
         if v is False:
             full_event_paras_as_dict[k] = 0
-    # event_id = db.session.query(Event).filter(Event.owner == owner, Event.is_finish == False).first().id
-    # db.session.query(Event).filter(Event.owner == owner, Event.is_finish == False).update(full_event_paras_as_dict)
-    # db.session.commit()
+
     event = BaseModel.fetch_one('events', '*',
                                 BaseModel.where_dict({"owner": owner, "is_finish": 0}))
     event_id = event.events_id
@@ -172,7 +175,8 @@ def create_event():
     events_chatroom.chatroom_nickname = chatroom_nickname
     events_chatroom.roomowner = event.owner
 
-    new_thread = threading.Thread(target=rewrite_events_chatroom, args=(event.owner, chatroom_nickname))
+    new_thread = threading.Thread(target=rewrite_events_chatroom,
+                                  args=(event.owner, chatroom_nickname, event.events_id))
     new_thread.setDaemon(True)
     new_thread.start()
 
@@ -181,6 +185,25 @@ def create_event():
     event.save()
 
     return response({'err_code': 0, 'content': {'event_id': event_id}})
+
+
+@app_test.route('/events_same_start_name', methods=['POST'])
+@para_check('token', 'start_name')
+def have_same_start_name():
+    # Check owner or return.
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    try:
+        owner = user_info.username
+    except AttributeError:
+        return response({'err_code': -2, 'content': 'User token error.'})
+    start_name = request.json.get('start_name')
+    # Check if same start_name already exist.
+    check_events_start_name = BaseModel.fetch_all('events', '*', BaseModel.where_dict({'owner': owner}))
+    for i in check_events_start_name:
+        if i.start_name == start_name:
+            return response({'err_code': 0, 'content': False})
+
+    return response({'err_code': 0, 'content': True})
 
 
 @app_test.route('/events_delete', methods=['POST'])
@@ -210,6 +233,7 @@ def get_events_qrcode():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
         owner = user_info.username
+        client_id = user_info.client_id
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
     # Handle.
@@ -218,7 +242,7 @@ def get_events_qrcode():
     # and return its chatroomname.
     event_start = event.start_time
     event_end = event.end_time
-    status = status_detect(event_start, event_end, event.is_work, event.is_finish)
+    status = status_detect(event_start, event_end, event.is_work, event.is_finish, event.enough_chatroom)
     # Add a scan qrcode log.
     add_qrcode_log(event_id)
     # Check which chatroom is available.
@@ -231,7 +255,7 @@ def get_events_qrcode():
             chatroom_info.member_count, chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.atatar_url,
             chatroom_info.update_time)
     for k, v in chatroom_dict.items():
-        if v[0] < 95:
+        if v[0] < 100:
             result = {
                 'err_code': 0,
                 'content': {'event_status': status,
@@ -242,9 +266,15 @@ def get_events_qrcode():
                             }
             }
             return response(result)
-    # Do not have a chatroom < 100, create one.
+    """Do not have a chatroom < 100, create one."""
+    start_name = event.start_name
+    new_thread = threading.Thread(target=create_chatroom_for_scan, args=(event_id, client_id, owner, start_name))
+    new_thread.setDaemon(True)
+    new_thread.start()
 
-    return ' '
+    return response({'err_code': 0,
+                     'content': {'event_status': 4, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
+                                 'qr_end_date': ''}})
 
 
 _modify_need = (
@@ -260,8 +290,6 @@ def modify_event_word():
     para_as_dict = {}
     for i in _modify_need:
         para_as_dict[i] = request.json.get(i)
-    # db.session.query(Event).filter(Event.id == event_id).update(para_as_dict)
-    # db.session.commit()
     event = BaseModel.fetch_by_id('events', event_id)
     event.from_json(para_as_dict)
     event.save()
@@ -296,8 +324,16 @@ def events_detail():
                     'start_name': event.start_name,
                     })
     # Add chatroom info.
-    content['chatrooms'] = [
-        {'chatroom_avatar': 'fake', 'chatroom_name': 'fake', 'chatroom_status': 1, 'chatroom_member_num': 30}]
+    content['chatrooms'] = []
+    event_chatroom_list = BaseModel.fetch_all('events_chatroom', '*',
+                                              BaseModel.where_dict({'event_id': event.events_id}))
+    for i in event_chatroom_list:
+        if i.chatroomname != 'default':
+            this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
+                                                BaseModel.where_dict({'chatroomname': i.chatroomname}))
+            result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': i.chatroomname, 'chatroom_status': 1,
+                      'chatroom_member_num': this_chatroom.member_count}
+            content['chatrooms'].append(result)
 
     _temp = content.copy()
 
@@ -308,7 +344,8 @@ def events_detail():
             content[k] = True
         if v == 0:
             content[k] = False
-    content['event_status'] = status_detect(event.start_time, event.end_time, event.is_work, event.is_finish)
+    content['event_status'] = status_detect(event.start_time, event.end_time, event.is_work, event.is_finish,
+                                            event.enough_chatroom)
     result['content'] = content
     return response(result)
 
@@ -329,25 +366,35 @@ def events_list():
         temp = {}
         today_inc, total_inc = inc_info(i.get_id())
         # Get chatroom info.
-        event_chatrooms = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({"event_id": i.events_id}))
+        event_chatroom_list = BaseModel.fetch_all('events_chatroom', '*',
+                                                  BaseModel.where_dict({"event_id": i.events_id}))
+        total_inc = 0
+        for i in event_chatroom_list:
+            if i.chatroomname != 'default':
+                this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
+                                                    BaseModel.where_dict({'chatroomname': i.chatroomname}))
+                if this_chatroom:
+                    total_inc += this_chatroom.member_count
+                else:
+                    logger.warning('Can not find this chatroom:{}'.format(i.chatroomname))
 
         temp.update({
             'event_id': i.events_id,
             'poster_raw': read_poster_raw(i.poster_raw),
             'event_title': i.event_title,
-            'event_status': status_detect(i.start_time, i.end_time, i.is_work, i.is_finish),
+            'event_status': status_detect(i.start_time, i.end_time, i.is_work, i.is_finish, i.enough_chatroom),
             'start_time': i.start_time,
             'end_time': i.end_time,
             # Need another table to search.
-            'chatroom_total': len(event_chatrooms),  # Just check chatroom list.
+            'chatroom_total': len(event_chatroom_list),  # Just check chatroom list.
             'today_inc': today_inc,
-            'total_inc': 0,  # the people of all chatroom.
+            'total_inc': total_inc,  # the people of all chatroom.
         })
         result['content'].append(temp)
     return response(result)
 
 
-def rewrite_events_chatroom(roomowner, chatroom_nickname):
+def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
     flag = True
     while flag:
         time.sleep(0.1)
@@ -360,6 +407,68 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname):
                 {'roomowner': roomowner, 'chatroom_nickname': chatroom_nickname}))
             events_chatroom.chatroomname = chatroomname
             events_chatroom.save()
+            # Make events have enough chatroom.
+            event = BaseModel.fetch_by_id('events', event_id)
+            event.enough_chatroom = 1
+            event.save()
+            flag = False
+    return ' '
+
+
+def create_chatroom_for_scan(event_id, client_id, owner, start_name):
+    """create_chatroom_for_scan"""
+
+    """Get previous index"""
+    previous_chatroom_list = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'event_id': event_id}))
+    previous_index_list = []
+    for i in previous_chatroom_list:
+        previous_index_list.append(i.index)
+    previous_index_list.sort()
+
+    now_index = previous_index_list[-1] + 1
+
+    # Create a chatroom for this event. index = start_index.
+    chatroom_nickname = to_str(start_name) + str(now_index) + u'群'
+    bot_username = BaseModel.fetch_one('client_bot_r', '*',
+                                       BaseModel.where_dict({'client_id': client_id})).bot_username
+    create_chatroom_dict = {
+        'bot_username': bot_username,
+        'data': {
+            'task': 'create_chatroom',
+            "owner": owner,
+            "chatroom_nickname": chatroom_nickname
+        }
+    }
+    try:
+        create_chatroom_resp = requests.post('http://192.168.1.10:5000/android/send_message', json=create_chatroom_dict)
+        print(create_chatroom_resp.text)
+    except Exception as e:
+        logger.warning('Create chatroom request error:{}'.format(e))
+    # Add chatroom info in relationship.
+    events_chatroom = CM('events_chatroom')
+    events_chatroom.index = now_index
+    events_chatroom.chatroomname = 'default'
+    events_chatroom.event_id = event_id
+    events_chatroom.chatroom_nickname = chatroom_nickname
+    events_chatroom.roomowner = owner
+
+    # Update chatroomname.
+    flag = True
+    while flag:
+        time.sleep(0.1)
+        chatroom = BaseModel.fetch_one('a_chatroom', '*',
+                                       BaseModel.where_dict(
+                                           {'roomowner': owner, 'nickname_real': chatroom_nickname}))
+        if chatroom is not None:
+            chatroomname = chatroom.chatroomname
+            events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
+                {'roomowner': owner, 'chatroom_nickname': chatroom_nickname}))
+            events_chatroom.chatroomname = chatroomname
+            events_chatroom.save()
+            # Make events have enough chatroom.
+            event = BaseModel.fetch_by_id('events', event_id)
+            event.enough_chatroom = 1
+            event.save()
             flag = False
     return ' '
 
@@ -389,7 +498,7 @@ def parameters_check(need_list, *args):
     return True
 
 
-def status_detect(start_time, end_time, is_work, is_finish):
+def status_detect(start_time, end_time, is_work, is_finish, chatroom_enough):
     """Check event status
     0 -> not finish
     1 -> running
@@ -407,6 +516,10 @@ def status_detect(start_time, end_time, is_work, is_finish):
         return 2
     elif now > end_time:
         return 3
+
+    if not chatroom_enough:
+        return 4
+
     return 1
 
 
@@ -416,13 +529,10 @@ def add_qrcode_log(owner):
     new_log.owner = owner
     new_log.scan_time = int(time.time())
     new_log.save()
-    # db.session.add(new_log)
-    # db.session.commit()
 
 
 def inc_info(owner):
     """(today_inc,total_inc)"""
-    # logs = db.session.query(ScanQRcode).filter(ScanQRcode.owner == owner).all()
     logs = BaseModel.fetch_all('events_scan_qrcode_info', '*', BaseModel.where_dict({"owner": owner}))
     flag = int(time.time()) - 86400
     today_inc = 0
