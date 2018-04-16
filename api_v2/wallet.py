@@ -74,6 +74,7 @@ def app_wallets():
     if chatroomname:
         where = BaseModel.where_dict({"client_id": user_info.client_id, "chatroomname": chatroomname})
 
+    total_count = BaseModel.count('wallet', where)
     wallet_list = BaseModel.fetch_all('wallet', '*', where, page=1, pagesize=pagesize, offset=BaseModel.offset(offset), limit=BaseModel.limit(limit))
 
     client_switch = BaseModel.fetch_one('client_switch', '*', BaseModel.where_dict({"client_id": user_info.client_id}))
@@ -106,7 +107,7 @@ def app_wallets():
                     if da['username'] == uinfo['username']:
                         da.update({"uinfo": {"nickname": uinfo['nickname'], "avatar_url": uinfo['avatar_url']}})
 
-    return make_response(SUCCESS, wallet_list=data, switch=switch)
+    return make_response(SUCCESS, wallet_list=data, switch=switch, total_count = total_count)
 
 
 @main_api_v2.route('/wallets_switch', methods=['POST'])
