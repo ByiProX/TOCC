@@ -419,11 +419,12 @@ def _get_a_balanced_bot():
         logger.error(u"没有 alive 的机器人.")
         return None
 
+    alive_bot_username_list = [key for key, value in bot_status if value is True]
     bot_info = None
     times = 10
-    while bot_info is None and times and bot_status.keys():
+    while bot_info is None and times and alive_bot_username_list:
         times -= 1
-        bot_username = random.choice(bot_status.keys())
+        bot_username = random.choice(alive_bot_username_list)
         bot_info = BaseModel.fetch_one(BotInfo, '*', where_clause = BaseModel.where_dict({"username": bot_username}))
         bot_status.pop(bot_username)
 
