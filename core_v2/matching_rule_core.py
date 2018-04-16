@@ -90,8 +90,6 @@ def get_gm_default_rule_dict():
             gm_default_rule_dict["is_full_match"].setdefault(coin.symbol, coin.coin_id)
         if coin.coin_name_cn:
             gm_default_rule_dict["is_full_match"].setdefault(coin.coin_name_cn, coin.coin_id)
-    print gm_default_rule_dict
-    return gm_default_rule_dict
     #
     # qr_quotes_dkr_info_list = db.session.query(RealTimeQuotesDefaultKeywordRelateInfo).all()
     # for qr_quotes_dkr_info in qr_quotes_dkr_info_list:

@@ -61,6 +61,8 @@ def app_wallets():
 
     page = request.json.get('page')
     pagesize = request.json.get('pagesize')
+    limit = request.json.get('limit')
+    offset = request.json.get('offset')
     if not page:
         page = 1
     if not page:
@@ -72,7 +74,7 @@ def app_wallets():
     if chatroomname:
         where = BaseModel.where_dict({"client_id": user_info.client_id, "chatroomname": chatroomname})
 
-    wallet_list = BaseModel.fetch_all('wallet', '*', where, page=1, pagesize=pagesize)
+    wallet_list = BaseModel.fetch_all('wallet', '*', where, page=1, pagesize=pagesize, offset=offset, limit=limit)
 
     client_switch = BaseModel.fetch_one('client_switch', '*', BaseModel.where_dict({"client_id": user_info.client_id}))
 
@@ -134,7 +136,7 @@ def get_wallet_status():
 
     switchModel = BaseModel.fetch_one('client_switch', '*', BaseModel.where_dict({"client_id": user_info.client_id}))
 
-    if switchModel.func_coin_wallet:
+    if switchModel and  switchModel.func_coin_wallet:
         result = True
     else:
         result = False
