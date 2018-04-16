@@ -316,8 +316,9 @@ class BaseModel(object):
             code = response_json.get(u"code")
             if code == 0:
                 data = response_json.get(u"data")
-                if data:
-                    item_list = CM(tablename).from_json(data[0])
+                for item in data:
+                    item_list.append(CM(tablename).from_json(item))
+                # pages = response_json.get(u"pages")
             else:
                 logger.error(u"query failed, content: " + unicode(response.content))
         else:
@@ -371,7 +372,7 @@ class BaseModel(object):
             if code == 0:
                 data = response_json.get(u"data")
                 if data:
-                    item = CM(tablename).from_json(data[0])
+                    item = CM(tablename).from_json(data)
             else:
                 logger.error(u"query failed, content: " + unicode(response.content))
         else:
