@@ -225,8 +225,9 @@ def modify_self_displayname(client_id, chatroomname, bot_username):
     if ubr and ubr.chatbot_default_nickname:
         data_json = dict()
         chatroomnick = ubr.chatbot_default_nickname
-        data_json['chatroomnick'] = chatroomnick
+        data_json['selfdisplayname'] = chatroomnick
         data_json['chatroomname'] = chatroomname
+        data_json['task'] = "update_self_displayname"
         send_ws_to_android(bot_username, data_json)
 
 
