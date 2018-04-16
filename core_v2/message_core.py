@@ -14,7 +14,7 @@ from core_v2.matching_rule_core import get_gm_default_rule_dict, match_message_b
 from core_v2.real_time_quotes_core import match_message_by_coin_keyword
 from core_v2.redis_core import rds_lpush
 from core_v2.coin_wallet_core import check_whether_message_is_a_coin_wallet
-from models_v2.base_model import BaseModel
+from models_v2.base_model import BaseModel, CM
 from utils.u_transformat import str_to_unicode, unicode_to_str
 
 import logging
@@ -30,17 +30,22 @@ def start_listen_new_msg():
 
 
 def route_and_count_msg():
+    gm_rule_dict = get_gm_rule_dict()
+    gm_default_rule_dict = get_gm_default_rule_dict()
     while True:
         a_message = NEW_MSG_Q.get()
-        print 111
-        print a_message.to_json_full()
-        route_msg(a_message)
+        if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
+            gm_rule_dict = get_gm_rule_dict()
+            GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
+
+        if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
+            gm_default_rule_dict = get_gm_default_rule_dict()
+            GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
+        route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
         count_msg(a_message)
 
 
-def route_msg(a_message):
-    gm_rule_dict = get_gm_rule_dict()
-    gm_default_rule_dict = get_gm_default_rule_dict()
+def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
 
     # 判断这个机器人说的话是否是文字或系统消息
     if a_message.type == MSG_TYPE_TXT or a_message.type == MSG_TYPE_SYS or a_message.type == MSG_TYPE_ENTERCHATROOM:

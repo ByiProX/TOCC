@@ -311,6 +311,8 @@ class BaseModel(object):
         #     for key, value in query_clause.iteritems():
         #         url += unicode(key) + u"=" + urlencode(unicode(value)) + u"&"
         response = requests.get(url = url, params = query_clause)
+        if order_by:
+            print response.request.url
         if response.status_code == 200:
             response_json = json.loads(response.content)
             code = response_json.get(u"code")

@@ -8,6 +8,8 @@ from sqlalchemy import func, or_
 
 from configs.config import db, USER_CHATROOM_R_PERMISSION_1, GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, \
     GLOBAL_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, MSG_TYPE_TXT, MSG_TYPE_SYS, UserBotR, Contact
+from core_v2.matching_rule_core import get_gm_rule_dict, get_gm_default_rule_dict
+from core_v2.message_core import route_msg
 from core_v2.user_core import _get_a_balanced_bot
 from crawler.coin_all_crawler_v2 import update_coin_all
 
@@ -335,6 +337,15 @@ def test_msg(message_list):
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
+    message_json = {u'status': 3, u'msg_local_id': u'116', u'is_send': 0, u'reserved': u'', u'msg_svr_id': None,
+                    u'bot_username': u'wxid_3mxn5zyskbpt22', u'is_at': None, u'is_to_friend': 0,
+                    u'content': u'wxid_u391xytt57gc21:\nbtc', u'create_time': 1523872665000,
+                    u'talker': u'4648276167@chatroom', u'real_content': u'btc',
+                    u'real_talker': u'wxid_u391xytt57gc21', u'type': 1}
+    a_message = CM("a_message").from_json(message_json)
+    gm_rule_dict = get_gm_rule_dict()
+    gm_default_rule_dict = get_gm_default_rule_dict()
+    route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
     # ubr = CM(UserBotR)
     # ubr.client_id = 1
     # ubr.bot_username = u'wxid_zy8gemkhx2r222'
