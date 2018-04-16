@@ -79,6 +79,7 @@ def create_event_init():
         'fission_word_2': '区块链行业大咖邀请您在4月28日收听课程【3点钟无眠区块链】 名额有限 快扫码入群吧！ ',
         'condition_word': '3点种无眠区块链共同学习赚钱群，现在限时免费获取听课资格，满员开课哦！ ',
         'pull_people_word': '3点种无眠区块链共同学习赚钱群，现在限时免费获取听课资格，满员开课哦！ ',
+        'event_id': previous_event.events_id,
         'alive_qrcode_url': alive_qrcode_url,
     }
 
@@ -152,8 +153,12 @@ def create_event():
 
     # Create a chatroom for this event. index = start_index.
     chatroom_nickname = event.start_name + str(event.start_index) + u'群'
-    bot_username = BaseModel.fetch_one('client_bot_r', '*',
-                                       BaseModel.where_dict({'client_id': client_id})).bot_username
+    check_bot_username = BaseModel.fetch_one('client_bot_r', '*',
+                                             BaseModel.where_dict({'client_id': client_id}))
+    if check_bot_username:
+        bot_username = check_bot_username.bot_username
+    else:
+        return response({'err_code': -3, 'err_info': 'This client does not have bot.'})
     create_chatroom_dict = {
         'bot_username': bot_username,
         'data': {
@@ -163,7 +168,8 @@ def create_event():
         }
     }
     try:
-        create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=create_chatroom_dict)
+        create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
+                                             json=create_chatroom_dict)
         print(create_chatroom_resp.text)
     except Exception as e:
         logger.warning('Create chatroom request error:{}'.format(e))
@@ -433,8 +439,11 @@ def create_chatroom_for_scan(event_id, client_id, owner, start_name):
 
     # Create a chatroom for this event. index = start_index.
     chatroom_nickname = start_name + str(now_index) + u'群'
-    bot_username = BaseModel.fetch_one('client_bot_r', '*',
-                                       BaseModel.where_dict({'client_id': client_id})).bot_username
+    _bot_username = BaseModel.fetch_one('client_bot_r', '*',
+                                        BaseModel.where_dict({'client_id': client_id}))
+    if _bot_username:
+        bot_username = _bot_username.bot_username
+
     create_chatroom_dict = {
         'bot_username': bot_username,
         'data': {
