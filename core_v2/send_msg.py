@@ -32,7 +32,8 @@ def send_ws_to_android(bot_username, data):
     logger.info(u"send_ws_to_android. data: %s." % json.dumps(data))
     url = ANDROID_SERVER_URL_SEND_MESSAGE
     logger.info(u"send_ws_to_android. url: %s." % url)
-    response = requests.post(url = url, json = data)
+    response = requests.post(url = url, json = {"bot_username": bot_username,
+                                                "data": data})
     response_json = json.loads(response.content)
     err_code = response_json.get("err_code")
     if err_code == 0:
