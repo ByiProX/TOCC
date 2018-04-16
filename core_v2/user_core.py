@@ -426,7 +426,7 @@ def _get_a_balanced_bot():
         times -= 1
         bot_username = random.choice(alive_bot_username_list)
         bot_info = BaseModel.fetch_one(BotInfo, '*', where_clause = BaseModel.where_dict({"username": bot_username}))
-        bot_status.pop(bot_username)
+        alive_bot_username_list.remove(bot_username)
 
     # bot_info_list = db.session.query(BotInfo).all()
     # bot_used_dict = dict()
