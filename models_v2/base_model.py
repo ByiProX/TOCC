@@ -364,7 +364,7 @@ class BaseModel(object):
     def fetch_by_id(tablename, _id):
         url = DB_SERVER_URL + tablename + u'/' + unicode(_id)
         item = None
-        response = requests.get(url = url, params = query_clause)
+        response = requests.get(url = url)
         if response.status_code == 200:
             response_json = json.loads(response.content)
             code = response_json.get(u"code")
