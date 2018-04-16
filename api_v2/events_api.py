@@ -608,7 +608,12 @@ def open_chatroom_name_protect():
                         now_chatroom_info = BaseModel.fetch_one('a_chatroom', '*',
                                                                 BaseModel.where_dict({'chatroomname': j.chatroomname}))
                         if now_chatroom_info.nickname_real != j.chatroom_nickname:
-                            result = {'bot_username': '',
+                            this_client_id = BaseModel.fetch_one('client_member', '*',
+                                                                 BaseModel.where_dict({'username': j.roomowner}))
+                            _bot_username = BaseModel.fetch_one('client_bot_r', '*',
+                                                                BaseModel.where_dict(
+                                                                    {'client_id': this_client_id})).bot_username
+                            result = {'bot_username': _bot_username,
                                       'data': {
                                           "task": "update_chatroom_nick",
                                           "chatroomname": j.chatroomname,
