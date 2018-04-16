@@ -97,4 +97,4 @@ def get_gm_default_rule_dict():
     #         gm_default_rule_dict["is_full_match"].setdefault(qr_quotes_dkr_info.keyword, qr_quotes_dkr_info.ds_id)
     #     else:
     #         gm_default_rule_dict["is_not_full_match"].setdefault(qr_quotes_dkr_info.keyword, qr_quotes_dkr_info.ds_id)
-    # return gm_default_rule_dict
+    return gm_default_rule_dict
