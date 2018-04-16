@@ -380,7 +380,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
 
     logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.client_id, user_username))
     ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
-                                                                                "bot_username": bot_info.username}))
+                                                                                       "bot_username": bot_info.username}))
     if not ubr_info:
         logger.debug(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.client_id)
         ubr_info = CM(UserBotR)

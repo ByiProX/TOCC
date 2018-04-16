@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
+import time
 from flask import request
 
 from configs.config import SUCCESS, main_api_v2, db, BotInfo, Message, NEW_MSG_Q
@@ -45,3 +47,17 @@ def android_new_message():
     # route_msg(a_message)
     # count_msg(a_message)
     return make_response(SUCCESS)
+
+
+@main_api_v2.route("/android/add_bot", methods=['POST'])
+def init_bot_info():
+    verify_json()
+    username = request.json.get('user_nickname')
+    bot_info = CM("bot_info")
+    bot_info.username = username
+    bot_info.create_bot_time = int(time.time())
+    bot_info.alive_detect_time = int(time.time())
+    bot_info.is_alive = 1
+    bot_info.save()
+
+    return make_response(SUCCESS, bot_info.to_json_full())
