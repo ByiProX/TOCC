@@ -9,10 +9,8 @@ import logging
 
 from datetime import datetime
 
-from configs.config import db, CRAWLER_CIRCLE_INTERVAL
-from crawler.blockcc.blockcc_notice_crawler import update_notice_info
-from crawler.blockcc.coin_all_crawler import update_coin_all
-from models.crawler_log import CrawlerLog
+from configs.config import CRAWLER_CIRCLE_INTERVAL
+from crawler.coin_all_crawler_v2 import update_coin_all
 
 logger = logging.getLogger('main')
 
@@ -35,9 +33,9 @@ class CrawlerThread(threading.Thread):
 
                 CrawlerThread._process()
 
-                crawler_log = CrawlerLog(status = True).generate_create_time()
-                db.session.add(crawler_log)
-                db.session.commit()
+                # crawler_log = CrawlerLog(status = True).generate_create_time()
+                # db.session.add(crawler_log)
+                # db.session.commit()
 
                 circle_now_time = time.time()
                 time_to_rest = CRAWLER_CIRCLE_INTERVAL - (circle_now_time - circle_start_time)
@@ -61,7 +59,7 @@ class CrawlerThread(threading.Thread):
     def _process():
         # update_coin_info()
         update_coin_all()
-        update_notice_info()
+        # update_notice_info()
 
 
 crawler_thread = CrawlerThread(thread_id = 'crawler_zclaiqcc')
