@@ -74,7 +74,7 @@ def app_wallets():
     if chatroomname:
         where = BaseModel.where_dict({"client_id": user_info.client_id, "chatroomname": chatroomname})
 
-    wallet_list = BaseModel.fetch_all('wallet', '*', where, page=1, pagesize=pagesize, offset=offset, limit=limit)
+    wallet_list = BaseModel.fetch_all('wallet', '*', where, page=1, pagesize=pagesize, offset=BaseModel.offset(offset), limit=BaseModel.limit(limit))
 
     client_switch = BaseModel.fetch_one('client_switch', '*', BaseModel.where_dict({"client_id": user_info.client_id}))
 
