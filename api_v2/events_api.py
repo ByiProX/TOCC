@@ -372,8 +372,8 @@ def events_list():
         event_chatroom_list = BaseModel.fetch_all('events_chatroom', '*',
                                                   BaseModel.where_dict({"event_id": i.events_id}))
         total_inc = 0
-        for i in event_chatroom_list:
-            if i.chatroomname != 'default':
+        for j in event_chatroom_list:
+            if j.chatroomname != 'default':
                 this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                                     BaseModel.where_dict({'chatroomname': i.chatroomname}))
                 if this_chatroom:
@@ -398,6 +398,7 @@ def events_list():
 
 
 def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
+    print('Rewrite running.')
     flag = True
     while flag:
         time.sleep(0.1)
