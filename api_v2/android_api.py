@@ -5,11 +5,10 @@ import logging
 import time
 from flask import request
 
-from configs.config import SUCCESS, main_api_v2, db, BotInfo, Message, NEW_MSG_Q
-from core_v2.user_core import _bind_bot_success
+from configs.config import SUCCESS, main_api_v2, BotInfo, Message, NEW_MSG_Q, Contact
+from core_v2.user_core import _bind_bot_success, UserLogin
 from core_v2.wechat_core import WechatConn
 from models_v2.base_model import BaseModel, CM
-from utils.u_email import EmailAlert
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 
@@ -61,3 +60,27 @@ def init_bot_info():
     bot_info.save()
 
     return make_response(SUCCESS, bot_info = bot_info.to_json_full())
+
+
+@main_api_v2.route("/android/get_bot_list", methods=['POST'])
+def android_get_bot_list():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    bot_list = list()
+
+    ubr_list = BaseModel.fetch_all("client_bot_r", "*")
+    for ubr in ubr_list:
+        bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"username": ubr.bot_username}))
+        a_contact_bot = BaseModel.fetch_one(Contact, "*", where_clause = BaseModel.where_dict({"username": ubr.bot_username}))
+        if not bot_info:
+            continue
+        bot_info_json = bot_info.to_json_full()
+        if not a_contact_bot:
+            a_contact_bot = CM(a_contact_bot)
+        bot_info_json.update(a_contact_bot.to_json_full())
+        bot_list.append(bot_info_json)
+
+    return make_response(SUCCESS, bot_info_list = bot_list)
