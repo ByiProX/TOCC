@@ -345,12 +345,15 @@ class BaseModel(object):
         #     for key, value in query_clause.iteritems():
         #         url += unicode(key) + u"=" + urlencode(unicode(value)) + u"&"
         response = requests.get(url = url, params = query_clause)
-        response_json = json.loads(response.content)
-        code = response_json.get(u"code")
-        if code == 0:
-            data = response_json.get(u"data")
-            if data:
-                item = CM(tablename).from_json(data[0])
+        if response.status_code == 200:
+            response_json = json.loads(response.content)
+            code = response_json.get(u"code")
+            if code == 0:
+                data = response_json.get(u"data")
+                if data:
+                    item = CM(tablename).from_json(data[0])
+            else:
+                logger.error(u"query failed, content: " + unicode(response.content))
         else:
             logger.error(u"query failed, content: " + unicode(response.content))
         return item
