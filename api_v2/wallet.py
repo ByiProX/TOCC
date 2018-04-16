@@ -86,7 +86,7 @@ def app_wallets():
     data = []
     wxIds = []
     for w in wallet_list:
-        _w = w.to_json()
+        _w = w.to_json_full()
         wxIds.append(_w['username'])
 
         # wxUserInfo = BaseModel.fetch_one('a_contact', 'nickname,avatar_url' ,BaseModel.where_dict({"username":_w['username']}))
