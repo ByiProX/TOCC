@@ -7,7 +7,8 @@ from datetime import datetime
 from sqlalchemy import func
 
 from configs.config import db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, TASK_SEND_TYPE, \
-    ERR_WRONG_USER_ITEM, UserSwitch, Coin
+    ERR_WRONG_USER_ITEM, UserSwitch, Coin, MSG_TYPE_TXT
+from core_v2.send_msg import send_msg_to_android
 from models_v2.base_model import BaseModel
 from utils.u_transformat import str_to_unicode, trim_str
 
@@ -72,7 +73,7 @@ def get_rt_quotes_preview(coin_id):
     # res.setdefault("add_rate", ds_info.change1d.to_eng_string())
     # res.setdefault("change_num", ds_info.volume_ex.to_eng_string())
     # res.setdefault("keyword_list", [])
-    text = _build_a_rs_text_to_send(message_said_username=None, ds_info=ds_info)
+    text = _build_a_rs_text_to_send(message_said_username=None, coin =ds_info)
     res.setdefault("text", text)
     res.setdefault("price", ds_info.price)
     res.setdefault("all_price", ds_info.marketcap)
@@ -102,19 +103,29 @@ def get_rt_quotes_preview(coin_id):
     return SUCCESS, res
 
 
-def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
+def match_message_by_coin_keyword(gm_default_rule_dict, a_message):
     is_match_coin_keyword = False
-    message_chatroomname = message_analysis.talker
-    message_text = str_to_unicode(message_analysis.real_content)
+    message_chatroomname = a_message.talker
+    message_text = str_to_unicode(a_message.real_content)
     message_text = message_text.upper()
-    message_said_username = message_analysis.real_talker
+    message_said_username = a_message.real_talker
+    bot_username = a_message.bot_username
 
     if not message_said_username:
         raise ValueError("没有message_said_username")
 
     if message_text in gm_default_rule_dict['is_full_match']:
         # 已经匹配到了text，执行后续操作
-        print 'send msg coin'
+        logger.info(u"匹配到币种信息. symbol: %s." % message_text)
+        coin = BaseModel.fetch_one(Coin, "*", where_clause = BaseModel.where_dict({"symbol": message_text}))
+        content = _build_a_rs_text_to_send(message_said_username, coin)
+        message_json = dict()
+        message_json["type"] = MSG_TYPE_TXT
+        message_json["content"] = content
+        message_json["seq"] = 0
+        message_list = [message_json]
+        to_list = [message_chatroomname]
+        send_msg_to_android(bot_username, message_list, to_list)
         # activate_rule_and_add_task_to_consumption_task(gm_default_rule_dict['is_full_match'][message_text],
         #                                                message_chatroomname, message_said_username)
         is_match_coin_keyword = True
@@ -122,7 +133,16 @@ def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
 
     for keyword, coin_id in gm_default_rule_dict['is_not_full_match']:
         if keyword in message_text:
-            print 'send msg coin'
+            logger.info(u"匹配到币种信息. symbol: %s." % message_text)
+            coin = BaseModel.fetch_one(Coin, "*", where_clause = BaseModel.where_dict({"symbol": message_text}))
+            content = _build_a_rs_text_to_send(message_said_username, coin)
+            message_json = dict()
+            message_json["type"] = MSG_TYPE_TXT
+            message_json["content"] = content
+            message_json["seq"] = 0
+            message_list = [message_json]
+            to_list = [message_chatroomname]
+            send_msg_to_android(bot_username, message_list, to_list)
             # activate_rule_and_add_task_to_consumption_task(gm_default_rule_dict['is_not_full_match'][message_text],
             #                                                message_chatroomname, message_said_username)
             is_match_coin_keyword = True
@@ -202,12 +222,12 @@ def match_message_by_coin_keyword(gm_default_rule_dict, message_analysis):
 #             return SUCCESS
 
 
-def _build_a_rs_text_to_send(message_said_username, ds_info):
-    res_text = u"\ud83d\udca1" + ds_info.coin_name + u" " + ds_info.coin_name_cn + u" 实时行情\ud83d\udca1 \n"
+def _build_a_rs_text_to_send(message_said_username, coin):
+    res_text = u"\ud83d\udca1" + coin.coin_name + u" " + coin.coin_name_cn + u" 实时行情\ud83d\udca1 \n"
     res_text += u"-------------------------------\n"
 
     # price = decimal_to_str(ds_info.price)
-    price = trim_str(ds_info.price)
+    price = trim_str(coin.price)
     if "." in price:
         p_split = price.split(".")
         if len(p_split[1]) > 4:
@@ -215,12 +235,12 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
     res_text += u"价格：￥" + price + u"\n"
 
     # 市场排名
-    rank = ds_info.rank
+    rank = coin.rank
     res_text += u"排名：第 " + unicode(rank) + u" 名\n"
 
     # 市值计算
     # marketcap = decimal_to_str(ds_info.marketcap)
-    marketcap = trim_str(ds_info.marketcap)
+    marketcap = trim_str(coin.marketcap)
     if "." in marketcap:
         m_s = marketcap.split(".")
         if int(m_s[0]) > 1000000000:
@@ -231,7 +251,7 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
 
     # 流通数量
     # available_supply = decimal_to_str(ds_info.available_supply)
-    available_supply = trim_str(ds_info.available_supply)
+    available_supply = trim_str(coin.available_supply)
     if "." in available_supply:
         m_s = available_supply.split(".")
         if int(m_s[0]) > 1000000000:
@@ -242,12 +262,12 @@ def _build_a_rs_text_to_send(message_said_username, ds_info):
 
     # 24小时涨幅计算
     # hour24changed = decimal_to_str(ds_info.change1d)
-    hour24changed = trim_str(ds_info.change1d)
+    hour24changed = trim_str(coin.change1d)
     if hour24changed[0] != "-":
         hour24changed = "+" + hour24changed
     res_text += u"24小时涨幅：" + hour24changed + u"%\n"
 
     res_text += u"数据来源：" + u"coinmarketcap\n"
-    res_text += u"【" + unicode(datetime.fromtimestamp(ds_info.create_time))[:19] + u"】\n"
+    res_text += u"【" + unicode(datetime.fromtimestamp(coin.create_time))[:19] + u"】\n"
     res_text += u"\ud83d\udcc8 友问币答 YACA_coin"
     return res_text
