@@ -123,7 +123,7 @@ def delete_a_group(group_id, client_id):
     ugr.delete()
     uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": client_id, "group_id": group_id}))
     for uqr in uqr_list:
-        uqr.group_id = u""
+        uqr.group_id = unicode(client_id) + u'_0'
         uqr.save()
 
     logger.info(u"已删除分组. old_group_id: %s. user_id: %s." % (group_id, client_id))
