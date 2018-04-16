@@ -337,6 +337,9 @@ def test_msg(message_list):
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
+    coins = BaseModel.fetch_all("coin", "*")
+    pass
+    exit()
     uqr = BaseModel.fetch_by_id("client_qun_r", "5ad46153f5d7e26589658ba7")
     uqr.group_id = u"4_0"
     uqr.update()

@@ -106,8 +106,10 @@ def count_msg(msg):
         msg_type = msg.type
 
         if msg_type == CONTENT_TYPE_TXT and content.find(u'@') != -1:
-                logger.info(u'| be_at_count')
-                is_at, at_count = extract_msg_be_at(msg, chatroomname)
+            logger.info(u'| be_at_count')
+            is_at, at_count = extract_msg_be_at(msg, chatroomname)
+            if is_at:
+                return
 
         if msg_type == CONTENT_TYPE_ENTERCHATROOM:
             content = str_to_unicode(msg.real_content)
@@ -120,6 +122,10 @@ def count_msg(msg):
                 rds_lpush(chat_logs_type, msg.get_id(), msg.talker, invitor_username, msg.create_time, content)
             else:
                 rds_lpush(chat_logs_type = CHAT_LOGS_ERR_TYPE_0, msg_id = msg.get_id(), err = True)
+
+            return
+        chat_logs_type = CHAT_LOGS_TYPE_2
+        rds_lpush(chat_logs_type, msg.get_id())
 
             # 被邀请入群
             # Content="frank5433"邀请你和"秦思语-Doodod、磊"加入了群聊
@@ -175,7 +181,7 @@ def extract_msg_be_at(msg, chatroomname):
                     logger.info(u'really not find ' + name_be_at)
                     rds_lpush(chat_logs_type = CHAT_LOGS_ERR_TYPE_0, msg_id = msg.get_id(), err = True)
                     # Mark 一个异常，全部异常
-                    return
+                    return False, None
             content_index = offset
 
     if is_at and member_be_at_list:

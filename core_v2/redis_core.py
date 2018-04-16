@@ -8,6 +8,7 @@ logger = logging.getLogger('main')
 
 
 def rds_lpush(chat_logs_type, msg_id, chatroomname = None, username = None, create_time = None, content = None, err = False):
+    logger.info(u"rds_lpush, msg_id: %s." % unicode(msg_id))
     chat_logs = dict()
     chat_logs["type"] = chat_logs_type
     chat_logs["msg_id"] = msg_id
