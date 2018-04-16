@@ -213,17 +213,18 @@ def _extract_enter_chatroom_msg(content):
             print etree_link.get("name")
             link_name = etree_link.get("name")
             etree_member_list = etree_link.find("memberlist")
-            for member in etree_member_list:
-                for attr in member:
-                    if attr.tag == "username":
-                        if link_name == "username":
-                            invitor_username = attr.text
-                        elif link_name == "names":
-                            invited_username_list.append(attr.text)
-                        elif link_name == "adder":
-                            invited_username_list.append(attr.text)
-                        elif link_name == "from":
-                            invitor_username = attr.text
+            if etree_member_list:
+                for member in etree_member_list:
+                    for attr in member:
+                        if attr.tag == "username":
+                            if link_name == "username":
+                                invitor_username = attr.text
+                            elif link_name == "names":
+                                invited_username_list.append(attr.text)
+                            elif link_name == "adder":
+                                invited_username_list.append(attr.text)
+                            elif link_name == "from":
+                                invitor_username = attr.text
 
         return SUCCESS, invitor_username, invitor_nickname, invited_username_list
     except Exception as e:
