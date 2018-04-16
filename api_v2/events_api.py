@@ -333,7 +333,8 @@ def events_detail():
         if i.chatroomname != 'default':
             this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                                 BaseModel.where_dict({'chatroomname': i.chatroomname}))
-            result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': i.chatroomname, 'chatroom_status': 1,
+            result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': i.chatroomname,
+                      'chatroom_status': 1,
                       'chatroom_member_num': this_chatroom.member_count}
             content['chatrooms'].append(result)
 
@@ -592,3 +593,30 @@ def new_file_path(path, ext='', start_index=1, end_index=10000):
             return result
 
     raise Exception('Max Length!')
+
+
+def open_chatroom_name_protect():
+    while True:
+        time.sleep(100)
+        event_list = BaseModel.fetch_all('events', '*')
+        for i in event_list:
+            if i.chatroom_name_protect:
+                event_chatroom_list = BaseModel.fetch_all('events_chatroom', '*',
+                                                          BaseModel.where_dict({'event_id': i.events_id}))
+                for j in event_chatroom_list:
+                    if j.chatroomname != 'default':
+                        now_chatroom_info = BaseModel.fetch_one('a_chatroom', '*',
+                                                                BaseModel.where_dict({'chatroomname': j.chatroomname}))
+                        if now_chatroom_info.nickname_real != j.chatroom_nickname:
+                            result = {'bot_username': '',
+                                      'data': {
+                                          "task": "update_chatroom_nick",
+                                          "chatroomname": j.chatroomname,
+                                          "chatroomnick": j.chatroom_nickname,
+                                      }}
+                            requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+
+
+new_thread_3 = threading.Thread(target=open_chatroom_name_protect)
+new_thread_3.setDaemon(True)
+new_thread_3.start()
