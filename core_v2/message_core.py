@@ -41,11 +41,14 @@ def route_and_count_msg():
         if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
             gm_default_rule_dict = get_gm_default_rule_dict()
             GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
+        print 111
         route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
+        print 222
         count_msg(a_message)
 
 
 def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
+    logger.info("route msg")
 
     # 判断这个机器人说的话是否是文字或系统消息
     if a_message.type == MSG_TYPE_TXT or a_message.type == MSG_TYPE_SYS or a_message.type == MSG_TYPE_ENTERCHATROOM:
@@ -97,6 +100,7 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
 
 
 def count_msg(msg):
+    logger.info("count msg")
     if msg.is_to_friend:
         pass
     else:
