@@ -415,6 +415,8 @@ def _get_a_balanced_bot():
     """
     response = requests.get(ANDROID_SERVER_URL_BOT_STATUS)
     bot_status = json.loads(response.content)
+    print response.content
+    print bot_status.keys()
     if not bot_status.keys():
         logger.error(u"没有 alive 的机器人.")
         return None
