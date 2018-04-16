@@ -349,7 +349,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     #     logger.info(u'但是放宽限制，暂时给予通过')
     #     # return ERR_WRONG_ITEM, None
 
-    user_info_list = CM(UserInfo).fetch_all('*', where_clause = BaseModel.where_dict({"nickname": user_nickname, "username": u""}))
+    user_info_list = CM(UserInfo).fetch_all(UserInfo, '*', where_clause = BaseModel.where_dict({"nickname": user_nickname, "username": u""}))
     if len(user_info_list) > 1:
         logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
