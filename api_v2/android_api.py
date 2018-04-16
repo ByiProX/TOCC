@@ -60,4 +60,4 @@ def init_bot_info():
     bot_info.is_alive = 1
     bot_info.save()
 
-    return make_response(SUCCESS, bot_info.to_json_full())
+    return make_response(SUCCESS, bot_info = bot_info.to_json_full())
