@@ -296,8 +296,10 @@ class BaseModel(object):
         if where_clause:
             query_clause.update(where_clause)
         if limit:
+            print limit
             query_clause.update(limit)
         if offset:
+            print offset
             query_clause.update(offset)
         if order_by:
             query_clause.update(order_by)
@@ -388,7 +390,7 @@ class BaseModel(object):
 
     @staticmethod
     def limit(limit):
-        limit_clause = {"limit", limit}
+        limit_clause = {"limit": limit}
         return limit_clause
 
     @staticmethod
