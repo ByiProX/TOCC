@@ -419,7 +419,7 @@ def _get_a_balanced_bot():
         logger.error(u"没有 alive 的机器人.")
         return None
 
-    alive_bot_username_list = [key for key, value in bot_status if value is True]
+    alive_bot_username_list = [key for key, value in bot_status.iteritems() if value is True]
     bot_info = None
     times = 10
     while bot_info is None and times and alive_bot_username_list:
