@@ -176,7 +176,7 @@ def _save_coin_wallet(a_message, wallet_address):
         logger.error(u"没有找到该群的信息. chatroomname: %s." % chatroomname)
         return ERR_WRONG_ITEM
     chatroom_nick = a_chatroom.nickname
-    uqr_list = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+    uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
     client_id_set = set()
     for uqr in uqr_list:
         client_id_set.add(uqr.client_id)
