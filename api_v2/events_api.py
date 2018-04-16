@@ -2,6 +2,7 @@
 import os
 import time
 import logging
+import threading
 
 import requests
 from flask import request, jsonify
@@ -92,6 +93,7 @@ def create_event():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
         owner = user_info.username
+        client_id = user_info.client_id
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
     # Check previous init.
@@ -148,7 +150,7 @@ def create_event():
     # Create a chatroom for this event. index = start_index.
     chatroom_nickname = to_str(event.start_name) + str(event.start_index) + u'群'
     bot_username = BaseModel.fetch_one('client_bot_r', '*',
-                                       BaseModel.where_dict({'client_id': event.owner})).bot_username
+                                       BaseModel.where_dict({'client_id': client_id})).bot_username
     create_chatroom_dict = {
         'bot_username': bot_username,
         'data': {
@@ -167,6 +169,12 @@ def create_event():
     events_chatroom.index = event.start_index
     events_chatroom.chatroomname = 'default'
     events_chatroom.event_id = event.events_id
+    events_chatroom.chatroom_nickname = chatroom_nickname
+    events_chatroom.roomowner = event.owner
+
+    new_thread = threading.Thread(target=rewrite_events_chatroom, args=(event.owner, chatroom_nickname))
+    new_thread.setDaemon(True)
+    new_thread.start()
 
     # Save at final.
     events_chatroom.save()
@@ -339,6 +347,23 @@ def events_list():
     return response(result)
 
 
+def rewrite_events_chatroom(roomowner, chatroom_nickname):
+    flag = True
+    while flag:
+        time.sleep(0.1)
+        chatroom = BaseModel.fetch_one('a_chatroom', '*',
+                                       BaseModel.where_dict(
+                                           {'roomowner': roomowner, 'nickname_real': chatroom_nickname}))
+        if chatroom is not None:
+            chatroomname = chatroom.chatroomname
+            events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
+                {'roomowner': roomowner, 'chatroom_nickname': chatroom_nickname}))
+            events_chatroom.chatroomname = chatroomname
+            events_chatroom.save()
+            flag = False
+    return ' '
+
+
 def response(body_as_dict):
     """Use make_response or not."""
     response_body = jsonify(body_as_dict)
@@ -366,9 +391,11 @@ def parameters_check(need_list, *args):
 
 def status_detect(start_time, end_time, is_work, is_finish):
     """Check event status
+    0 -> not finish
     1 -> running
     2 -> waiting
     3 -> is over
+    4 -> chatroom not created
     """
     if not is_finish:
         return 0
