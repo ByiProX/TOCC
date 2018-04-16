@@ -12,6 +12,7 @@ from sqlalchemy import desc
 from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITEM, ERR_WRONG_ITEM, \
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE, USER_CHATROOM_R_PERMISSION_1, UserQunR, \
     UserGroupR, UserInfo, BotInfo, UserBotR, Chatroom, MSG_TYPE_ENTERCHATROOM, ERR_UNKNOWN_ERROR
+from core_v2.send_msg import send_ws_to_android
 from core_v2.wechat_core import WechatConn
 from models.qun_friend_models import GroupInfo
 from models_v2.base_model import BaseModel, CM
@@ -211,7 +212,22 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
     else:
         logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. chatroomname: %s." % chatroomname)
 
+    # 修改机器人在群里的群备注
+    modify_self_displayname(user_info.client_id, chatroomname, bot_username)
+
     return SUCCESS, user_info
+
+
+def modify_self_displayname(client_id, chatroomname, bot_username):
+    logger.info(u"尝试修改机器人备注. client_id: %s. chatroomname: %s. bot_username: %s." % (client_id, chatroomname, bot_username))
+    ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": client_id}))
+
+    if ubr and ubr.chatbot_default_nickname:
+        data_json = dict()
+        chatroomnick = ubr.chatbot_default_nickname
+        data_json['chatroomnick'] = chatroomnick
+        data_json['chatroomname'] = chatroomname
+        send_ws_to_android(bot_username, data_json)
 
 
 def check_is_removed(a_message):

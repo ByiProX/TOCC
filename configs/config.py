@@ -158,10 +158,9 @@ app.response_class = MyResponse
 config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
-# rds = redis.StrictRedis(host = '192.168.1.191', port = 6379, db = 1, password = "redisRedis_789")
 # DB_SERVER_URL = u'http://dal.com/'
-
 DB_SERVER_URL = u'http://dal.com:8090/'
+
 rds = redis.StrictRedis(host = '127.0.0.1', port = 6379, db = 1, password = "redisRedis_789")
 
 # TODO 此处应换为新公众号的数值
@@ -393,4 +392,4 @@ SIGN_DICT = dict()
 
 ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.xuanren360.com/android/bot_status"
 ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_mass_message"
-ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.xuanren360.com/android/bot_status"
+ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_message"
