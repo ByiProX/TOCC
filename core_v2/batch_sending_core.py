@@ -160,7 +160,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
             continue
         member_count += chatroom.member_count
 
-    if chatroom_count == 0 or member_count == 0:
+    if chatroom_count == 0:
         logger.error(u"没有发送对象, 批量发送任务创建失败")
         return ERR_WRONG_ITEM
 
