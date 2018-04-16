@@ -39,10 +39,10 @@ def app_get_rt_quotes_list_and_status():
     if status != SUCCESS:
         return make_response(status)
 
-    task_per_page = request.json.get('page_size')
+    task_per_page = request.json.get('pagesize')
     page_number = request.json.get('page')
     if not task_per_page:
-        logger.warning("没有收到page_size，设置为10")
+        logger.warning("没有收到pagesize，设置为10")
         task_per_page = 10
     if page_number is None:
         logger.warning("没有收到page_number，设置为0")
