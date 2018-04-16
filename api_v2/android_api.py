@@ -52,7 +52,7 @@ def android_new_message():
 @main_api_v2.route("/android/add_bot", methods=['POST'])
 def init_bot_info():
     verify_json()
-    username = request.json.get('user_nickname')
+    username = request.json.get('username')
     bot_info = CM("bot_info")
     bot_info.username = username
     bot_info.create_bot_time = int(time.time())
