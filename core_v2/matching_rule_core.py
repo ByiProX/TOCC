@@ -52,7 +52,7 @@ def match_message_by_rule(gm_rule_dict, a_message):
     for matching_rule in gm_rule_dict[chatroomname]:
         for match_type, keywords_list in matching_rule.get("keywords").iteritems():
             if match_type == "precise" and content in keywords_list:
-                reply_content_list = gm_rule_dict[chatroomname].get("reply_content")
+                reply_content_list = matching_rule.get("reply_content")
                 status_flag = send_msg_to_android(a_message.bot_username, reply_content_list, [chatroomname])
                 if status_flag == SUCCESS:
                     logger.info(u"自动回复任务发送成功, bot_username: %s." % a_message.bot_username)
