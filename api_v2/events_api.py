@@ -163,7 +163,7 @@ def create_event():
         }
     }
     try:
-        create_chatroom_resp = requests.post('http://192.168.1.10:5000/android/send_message', json=create_chatroom_dict)
+        create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=create_chatroom_dict)
         print(create_chatroom_resp.text)
     except Exception as e:
         logger.warning('Create chatroom request error:{}'.format(e))
