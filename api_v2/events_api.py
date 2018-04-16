@@ -151,7 +151,7 @@ def create_event():
     event.from_json(full_event_paras_as_dict)
 
     # Create a chatroom for this event. index = start_index.
-    chatroom_nickname = to_str(event.start_name) + str(event.start_index) + u'群'
+    chatroom_nickname = event.start_name + str(event.start_index) + u'群'
     bot_username = BaseModel.fetch_one('client_bot_r', '*',
                                        BaseModel.where_dict({'client_id': client_id})).bot_username
     create_chatroom_dict = {
@@ -432,7 +432,7 @@ def create_chatroom_for_scan(event_id, client_id, owner, start_name):
     now_index = previous_index_list[-1] + 1
 
     # Create a chatroom for this event. index = start_index.
-    chatroom_nickname = to_str(start_name) + str(now_index) + u'群'
+    chatroom_nickname = start_name + str(now_index) + u'群'
     bot_username = BaseModel.fetch_one('client_bot_r', '*',
                                        BaseModel.where_dict({'client_id': client_id})).bot_username
     create_chatroom_dict = {
@@ -566,7 +566,7 @@ def to_str(obj):
     elif isinstance(obj, bytes):
         return obj.decode()
     elif isinstance(obj, unicode):
-        return obj.decode()
+        return obj
     else:
         raise TypeError('Only support (bytes, str). Type:%s' % type(obj))
 
