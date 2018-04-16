@@ -415,9 +415,14 @@ def _get_a_balanced_bot():
     """
     response = requests.get(ANDROID_SERVER_URL_BOT_STATUS)
     bot_status = json.loads(response.content)
+    if not bot_status.keys():
+        logger.error(u"没有 alive 的机器人.")
+        return None
 
     bot_info = None
-    while bot_info is None:
+    times = 10
+    while bot_info is None and times:
+        times -= 1
         bot_username = random.choice(bot_status.keys())
         bot_info = BaseModel.fetch_one(BotInfo, '*', where_clause = BaseModel.where_dict({"username": bot_username}))
         bot_status.pop(bot_username)
