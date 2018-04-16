@@ -317,7 +317,7 @@ class BaseModel(object):
             if code == 0:
                 data = response_json.get(u"data")
                 if data:
-                    item = CM(tablename).from_json(data[0])
+                    item_list = CM(tablename).from_json(data[0])
             else:
                 logger.error(u"query failed, content: " + unicode(response.content))
         else:
