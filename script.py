@@ -337,6 +337,9 @@ def test_msg(message_list):
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
+    uqr = BaseModel.fetch_by_id("client_qun_r", "5ad46153f5d7e26589658ba7")
+    uqr.group_id = u"4_0"
+    uqr.update()
     message_json = {u'status': 3, u'msg_local_id': u'116', u'is_send': 0, u'reserved': u'', u'msg_svr_id': None,
                     u'bot_username': u'wxid_3mxn5zyskbpt22', u'is_at': None, u'is_to_friend': 0,
                     u'content': u'wxid_u391xytt57gc21:\nbtc', u'create_time': 1523872665000,
