@@ -43,6 +43,7 @@ def android_new_message():
     verify_json()
     a_message = CM(Message).from_json(request.json)
     NEW_MSG_Q.put(a_message)
+    logger.info(u"NEW_MSG_Q.put(a_message)")
     # route_msg(a_message)
     # count_msg(a_message)
     return make_response(SUCCESS)
