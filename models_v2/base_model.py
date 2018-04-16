@@ -305,6 +305,8 @@ class BaseModel(object):
             query_clause.update(order_by)
 
         query_clause.update(kwargs)
+        query_clause.setdefault("pagesize", 100)
+        query_clause.setdefault("page", 1)
 
         item_list = list()
         url = DB_SERVER_URL + tablename + u's'
@@ -312,21 +314,28 @@ class BaseModel(object):
         #     url += u"?"
         #     for key, value in query_clause.iteritems():
         #         url += unicode(key) + u"=" + urlencode(unicode(value)) + u"&"
-        response = requests.get(url = url, params = query_clause)
-        if order_by:
-            print response.request.url
-        if response.status_code == 200:
-            response_json = json.loads(response.content)
-            code = response_json.get(u"code")
-            if code == 0:
-                data = response_json.get(u"data")
-                for item in data:
-                    item_list.append(CM(tablename).from_json(item))
-                # pages = response_json.get(u"pages")
+        page = 1
+        eof = False
+        while not eof:
+            response = requests.get(url = url, params = query_clause)
+            if order_by:
+                print response.request.url
+            if response.status_code == 200:
+                response_json = json.loads(response.content)
+                code = response_json.get(u"code")
+                if code == 0:
+                    data = response_json.get(u"data")
+                    for item in data:
+                        item_list.append(CM(tablename).from_json(item))
+                    pages = response_json.get(u"pages")
+                    if pages and response_json.get(u"pages").get(u"pageCount"):
+                        page_count = response_json.get(u"pages").get(u"pageCount")
+                        if page >= page_count:
+                            eof = True
+                else:
+                    logger.error(u"query failed, content: " + unicode(response.content))
             else:
                 logger.error(u"query failed, content: " + unicode(response.content))
-        else:
-            logger.error(u"query failed, content: " + unicode(response.content))
         return item_list
 
     @staticmethod
