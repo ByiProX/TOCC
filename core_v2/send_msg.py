@@ -25,6 +25,7 @@ def send_msg_to_android(bot_username, message_list, to_list):
         if err_code == 0:
             return SUCCESS
     logger.info(u"任务发送失败. bot_username: %s." % bot_username)
+    logger.info(u"任务发送失败. response.content: %s." % response.content)
     return ERR_UNKNOWN_ERROR
 
 
@@ -40,4 +41,5 @@ def send_ws_to_android(bot_username, data):
         if err_code == 0:
             return SUCCESS
     logger.info(u"send_ws_to_android failed. bot_username: %s." % bot_username)
+    logger.info(u"send_ws_to_android failed. response.content: %s." % response.content)
     return ERR_UNKNOWN_ERROR
