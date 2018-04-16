@@ -49,10 +49,12 @@ def android_new_message():
     return make_response(SUCCESS)
 
 
-@main_api_v2.route("/android/add_bot", methods=['POST'])
+@main_api_v2.route("/android/add_bot", methods=['GET', 'POST'])
 def init_bot_info():
-    verify_json()
-    username = request.json.get('username')
+    if request.method == 'POST':
+        username = request.json.get('username')
+    else:
+        username = request.args.get("username")
     bot_info = CM("bot_info")
     bot_info.username = username
     bot_info.create_bot_time = int(time.time())
