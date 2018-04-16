@@ -155,7 +155,7 @@ def check_whether_message_is_add_qun(a_message):
 
     if msg_type == MSG_TYPE_ENTERCHATROOM and content.find(u'邀请你') != -1:
         is_add_qun = True
-        status, user_nickname, invitor_username = extract_enter_chatroom_msg(content)
+        status, invitor_username, user_nickname = extract_enter_chatroom_msg(content)
         if status == SUCCESS:
             bot_username = a_message.bot_username
             logger.info(u"发现加群. user_nickname: %s. chatroomname: %s." % (user_nickname, a_message.talker))
