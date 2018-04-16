@@ -267,6 +267,8 @@ def get_events_qrcode():
             }
             return response(result)
     """Do not have a chatroom < 100, create one."""
+    event.enough_chatroom = 0
+    event.save()
     start_name = event.start_name
     new_thread = threading.Thread(target=create_chatroom_for_scan, args=(event_id, client_id, owner, start_name))
     new_thread.setDaemon(True)
