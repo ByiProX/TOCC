@@ -33,7 +33,9 @@ def route_and_count_msg():
     gm_rule_dict = get_gm_rule_dict()
     gm_default_rule_dict = get_gm_default_rule_dict()
     while True:
+        print 000
         a_message = NEW_MSG_Q.get()
+        print 111
         if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
             gm_rule_dict = get_gm_rule_dict()
             GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
@@ -41,9 +43,9 @@ def route_and_count_msg():
         if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
             gm_default_rule_dict = get_gm_default_rule_dict()
             GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
-        print 111
-        route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
         print 222
+        route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
+        print 333
         count_msg(a_message)
 
 

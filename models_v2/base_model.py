@@ -318,6 +318,8 @@ class BaseModel(object):
         eof = False
         while not eof:
             response = requests.get(url = url, params = query_clause)
+            page += 1
+            query_clause["page"] = page
             if order_by:
                 print response.request.url
             if response.status_code == 200:
@@ -330,7 +332,7 @@ class BaseModel(object):
                     pages = response_json.get(u"pages")
                     if pages and response_json.get(u"pages").get(u"pageCount"):
                         page_count = response_json.get(u"pages").get(u"pageCount")
-                        if page >= page_count:
+                        if page > page_count:
                             eof = True
                 else:
                     logger.error(u"query failed, content: " + unicode(response.content))
