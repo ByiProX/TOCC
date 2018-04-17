@@ -114,6 +114,9 @@ def create_event():
             return response({'err_code': -1, 'content': 'Lack of %s' % i})
         else:
             full_event_paras_as_dict[i] = request.json.get(i)
+    # Fix time is float.
+    full_event_paras_as_dict['start_time'] = int(full_event_paras_as_dict['start_time'])
+    full_event_paras_as_dict['end_time'] = int(full_event_paras_as_dict['end_time'])
     # Check if same start_name already exist.        
     check_events_start_name = BaseModel.fetch_all('events', '*', BaseModel.where_dict({'owner': owner}))
     for i in check_events_start_name:
@@ -132,7 +135,7 @@ def create_event():
             f.write(request.json.get('poster_raw'))
         full_event_paras_as_dict['poster_raw'] = new_file
     else:
-        full_event_paras_as_dict['poster_raw'] = ' '
+        full_event_paras_as_dict['poster_raw'] = ''
     # Create a full event.
     full_event_paras_as_dict['is_finish'] = 1
     full_event_paras_as_dict['enough_chatroom'] = 0
@@ -368,7 +371,6 @@ def events_detail():
             content[k] = True
         if v == 0:
             content[k] = False
-
 
     content['event_status'] = status_detect(event.start_time, event.end_time, event.is_work, event.is_finish,
                                             event.enough_chatroom)
