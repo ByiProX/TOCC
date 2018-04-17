@@ -254,21 +254,24 @@ def get_events_qrcode():
     chatroom_dict = {}
     for i in chatroom_list:
         chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
-        chatroom_dict[i.chatroomname] = (
-            chatroom_info.member_count, chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.atatar_url,
-            chatroom_info.update_time)
-    for k, v in chatroom_dict.items():
-        if v[0] < 100:
-            result = {
-                'err_code': 0,
-                'content': {'event_status': status,
-                            'chatroom_qr': v[1],
-                            'chatroom_name': v[2],
-                            'chatroom_avatar': v[3],
-                            'qr_end_date': v[4],
-                            }
-            }
-            return response(result)
+        if chatroom_info:
+            chatroom_dict[i.chatroomname] = (
+                chatroom_info.member_count, chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.atatar_url,
+                chatroom_info.update_time)
+
+    if chatroom_dict:
+        for k, v in chatroom_dict.items():
+            if v[0] < 100:
+                result = {
+                    'err_code': 0,
+                    'content': {'event_status': status,
+                                'chatroom_qr': v[1],
+                                'chatroom_name': v[2],
+                                'chatroom_avatar': v[3],
+                                'qr_end_date': v[4],
+                                }
+                }
+                return response(result)
     """Do not have a chatroom < 100, create one."""
     event.enough_chatroom = 0
     event.save()
@@ -316,7 +319,8 @@ def modify_event_word():
                 para_as_dict['poster_raw'] = new_file
         else:
             para_as_dict['poster_raw'] = ''
-
+    if event is None:
+        return response({'err_code': -2, 'content': 'event_id error!'})
     event.from_json(para_as_dict)
     event.save()
     return response({'err_code': 0, 'content': 'SUCCESS'})
