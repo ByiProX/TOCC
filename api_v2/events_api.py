@@ -141,6 +141,7 @@ def create_event():
     poster_raw = request.json.get('poster_raw')
     if poster_raw:
         try:
+            poster_raw = poster_raw.replace('data:image/png;base64,', '')
             img_url = put_img_to_oss(event_id, poster_raw)
         except Exception as e:
             return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
@@ -319,6 +320,7 @@ def modify_event_word():
     poster_raw = para_as_dict.get('poster_raw')
     if poster_raw:
         try:
+            poster_raw = poster_raw.replace('data:image/png;base64,', '')
             img_url = put_img_to_oss(event_id, poster_raw)
         except Exception as e:
             return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
