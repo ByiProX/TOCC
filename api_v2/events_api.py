@@ -250,7 +250,10 @@ def get_events_qrcode():
     add_qrcode_log(event_id)
     # Check which chatroom is available.
     chatroom_list = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'event_id': event_id}))
-
+    if not chatroom_list:
+        return response({'err_code': 0,
+                         'content': {'event_status': 4, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
+                                     'qr_end_date': ''}})
     chatroom_dict = {}
     for i in chatroom_list:
         chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
@@ -450,7 +453,7 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
 
 def create_chatroom_for_scan(event_id, client_id, owner, start_name):
     """create_chatroom_for_scan"""
-
+    print("Running create_chatroom_for_scan")
     """Get previous index"""
     previous_chatroom_list = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'event_id': event_id}))
     previous_index_list = []
