@@ -137,12 +137,7 @@ def create_event():
     full_event_paras_as_dict['is_finish'] = 1
     full_event_paras_as_dict['enough_chatroom'] = 0
     # True -> 1, False ->0
-    _temp = full_event_paras_as_dict.copy()
-    for k, v in _temp.items():
-        if v is True:
-            full_event_paras_as_dict[k] = 1
-        if v is False:
-            full_event_paras_as_dict[k] = 0
+    full_event_paras_as_dict = true_false_to_10(full_event_paras_as_dict)
 
     event = BaseModel.fetch_one('events', '*',
                                 BaseModel.where_dict({"owner": owner, "is_finish": 0}))
@@ -226,7 +221,6 @@ def disable_events():
         return response({'err_code': -2, 'content': 'Logical error.'})
     else:
         temp_check.is_work = 0
-        # db.session.commit()
         temp_check.save()
         return response({'err_code': 0, 'content': 'SUCCESS'})
 
@@ -301,6 +295,8 @@ def modify_event_word():
         if k in _modify_need:
             para_as_dict[k] = v
 
+    para_as_dict = true_false_to_10(para_as_dict)
+
     event = BaseModel.fetch_by_id('events', event_id)
 
     # Save poster_raw
@@ -372,6 +368,8 @@ def events_detail():
             content[k] = True
         if v == 0:
             content[k] = False
+
+
     content['event_status'] = status_detect(event.start_time, event.end_time, event.is_work, event.is_finish,
                                             event.enough_chatroom)
     result['content'] = content
@@ -601,6 +599,30 @@ def to_str(obj):
         return obj
     else:
         raise TypeError('Only support (bytes, str). Type:%s' % type(obj))
+
+
+def true_false_to_10(data_as_dict, exc_list=()):
+    for k, v in data_as_dict.items():
+        if k in exc_list:
+            continue
+        if v is True:
+            data_as_dict[k] = 1
+        elif v is False:
+            data_as_dict[k] = 0
+
+    return data_as_dict
+
+
+def _10_to_true_false(data_as_dict, exc_list=()):
+    for k, v in data_as_dict.items():
+        if k in exc_list:
+            continue
+        if v == 1:
+            data_as_dict[k] = True
+        elif v == 0:
+            data_as_dict[k] = False
+
+    return data_as_dict
 
 
 def read_poster_raw(_str):
