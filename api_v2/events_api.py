@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
 import time
+import base64
 import logging
 import threading
 
 import requests
+import oss2
 from flask import request, jsonify
 from functools import wraps
 
@@ -123,19 +125,6 @@ def create_event():
         if i.start_name == full_event_paras_as_dict['start_name']:
             return response({'err_code': -1, 'content': 'Same start_name already used.'})
 
-    # [Fix]
-    static_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
-    try:
-        os.mkdir(static_path)
-    except Exception:
-        pass
-    new_file = new_file_path(static_path)
-    if request.json.get('poster_raw'):
-        with open(new_file, 'wb') as f:
-            f.write(request.json.get('poster_raw'))
-        full_event_paras_as_dict['poster_raw'] = new_file
-    else:
-        full_event_paras_as_dict['poster_raw'] = ''
     # Create a full event.
     full_event_paras_as_dict['is_finish'] = 1
     full_event_paras_as_dict['enough_chatroom'] = 0
@@ -147,6 +136,15 @@ def create_event():
     event_id = event.events_id
     # Fix is_work
     full_event_paras_as_dict.update({'is_work': 1})
+    # Save poster raw.
+    # [Fix]
+    poster_raw = request.json.get('poster_raw')
+    if poster_raw:
+        img_url = put_img_to_oss(event_id, poster_raw)
+        full_event_paras_as_dict['poster_raw'] = img_url
+    else:
+        full_event_paras_as_dict['poster_raw'] = ''
+
     event.from_json(full_event_paras_as_dict)
 
     # Create a chatroom for this event. index = start_index.
@@ -259,7 +257,7 @@ def get_events_qrcode():
         return response({'err_code': 0,
                          'content': {'event_status': 4, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
                                      'qr_end_date': ''}})
-        
+
     chatroom_dict = {}
     for i in chatroom_list:
         chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
@@ -316,18 +314,10 @@ def modify_event_word():
 
     # Save poster_raw
     if para_as_dict.get('poster_raw'):
-        static_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
-        try:
-            os.mkdir(static_path)
-        except Exception:
-            pass
-        new_file = new_file_path(static_path)
-        if request.json.get('poster_raw'):
-            with open(new_file, 'wb') as f:
-                f.write(request.json.get('poster_raw'))
-                para_as_dict['poster_raw'] = new_file
-        else:
-            para_as_dict['poster_raw'] = ''
+        img_url = put_img_to_oss(event_id, para_as_dict['poster_raw'])
+        para_as_dict['poster_raw'] = img_url
+    else:
+        para_as_dict['poster_raw'] = ''
     if event is None:
         return response({'err_code': -2, 'content': 'event_id error!'})
     event.from_json(para_as_dict)
@@ -344,7 +334,7 @@ def events_detail():
         return response({'err_code': -2, 'content': 'No this event.'})
     result = {'err_code': 0}
     content = {}
-    content.update({'poster_raw': read_poster_raw(event.poster_raw),
+    content.update({'poster_raw': event.poster_raw,
                     'event_title': event.event_title,
                     'alive_qrcode_url': event.alive_qrcode_url,
                     'need_fission': event.need_fission,
@@ -421,7 +411,7 @@ def events_list():
 
         temp.update({
             'event_id': i.events_id,
-            'poster_raw': read_poster_raw(i.poster_raw),
+            'poster_raw': i.poster_raw,
             'event_title': i.event_title,
             'event_status': status_detect(i.start_time, i.end_time, i.is_work, i.is_finish, i.enough_chatroom),
             'start_time': i.start_time,
@@ -690,6 +680,17 @@ def open_chatroom_name_protect():
                                           "chatroomnick": j.chatroom_nickname,
                                       }}
                             requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+
+
+def put_img_to_oss(file_name, data_as_string):
+    img_name = str(file_name) + '.jpg'
+
+    endpoint = 'oss-cn-beijing.aliyuncs.com'
+    auth = oss2.Auth('LTAIfwRTXLl6vMbX', 'kvSS9E4Ty7nvHHlGukaknJUtfICuen')
+    bucket = oss2.Bucket(auth, endpoint, 'ywbdposter')
+    bucket.put_object(img_name, base64.b64decode(data_as_string))
+
+    return 'http://ywbdposter.oss-cn-beijing.aliyuncs.com/' + img_name
 
 
 new_thread_3 = threading.Thread(target=open_chatroom_name_protect)
