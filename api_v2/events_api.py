@@ -205,9 +205,9 @@ def have_same_start_name():
     check_events_start_name = BaseModel.fetch_all('events', '*', BaseModel.where_dict({'owner': owner}))
     for i in check_events_start_name:
         if i.start_name == start_name:
-            return response({'err_code': 0, 'content': False})
+            return response({'err_code': 0, 'content': True})
 
-    return response({'err_code': 0, 'content': True})
+    return response({'err_code': 0, 'content': False})
 
 
 @app_test.route('/events_delete', methods=['POST'])
