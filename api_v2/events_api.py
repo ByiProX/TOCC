@@ -285,20 +285,39 @@ def get_events_qrcode():
                                  'qr_end_date': ''}})
 
 
-_modify_need = (
-    'need_fission', 'need_condition_word', 'need_pull_people', 'fission_word_1', 'fission_word_2',
-    'condition_word', 'pull_people_word', 'event_title', 'start_time', 'end_time', 'start_index',
-    'chatroom_name_protect', 'chatroom_repeat_protect', 'poster_raw', 'start_name')
-
-
 @app_test.route('/events_modify_word', methods=['POST'])
-@para_check(_modify_need, 'token', 'event_id', )
+@para_check('token', 'event_id', )
 def modify_event_word():
+    _modify_need = (
+        'need_fission', 'need_condition_word', 'need_pull_people', 'fission_word_1', 'fission_word_2',
+        'condition_word', 'pull_people_word', 'event_title', 'start_time', 'end_time',
+        'chatroom_name_protect', 'poster_raw', 'start_name')
     event_id = request.json.get('event_id')
     para_as_dict = {}
-    for i in _modify_need:
-        para_as_dict[i] = request.json.get(i)
+
+    values_as_dict = dict(request.json)
+
+    for k, v in values_as_dict.items():
+        if k in _modify_need:
+            para_as_dict[k] = v
+
     event = BaseModel.fetch_by_id('events', event_id)
+
+    # Save poster_raw
+    if para_as_dict.get('poster_raw'):
+        static_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
+        try:
+            os.mkdir(static_path)
+        except Exception:
+            pass
+        new_file = new_file_path(static_path)
+        if request.json.get('poster_raw'):
+            with open(new_file, 'wb') as f:
+                f.write(request.json.get('poster_raw'))
+                para_as_dict['poster_raw'] = new_file
+        else:
+            para_as_dict['poster_raw'] = ''
+
     event.from_json(para_as_dict)
     event.save()
     return response({'err_code': 0, 'content': 'SUCCESS'})
@@ -443,6 +462,9 @@ def create_chatroom_for_scan(event_id, client_id, owner, start_name):
                                         BaseModel.where_dict({'client_id': client_id}))
     if _bot_username:
         bot_username = _bot_username.bot_username
+    else:
+        logger.warning('Error when create_chatroom_for_scan')
+        return 0
 
     create_chatroom_dict = {
         'bot_username': bot_username,
@@ -453,7 +475,8 @@ def create_chatroom_for_scan(event_id, client_id, owner, start_name):
         }
     }
     try:
-        create_chatroom_resp = requests.post('http://192.168.1.10:5000/android/send_message', json=create_chatroom_dict)
+        create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
+                                             json=create_chatroom_dict)
         print(create_chatroom_resp.text)
     except Exception as e:
         logger.warning('Create chatroom request error:{}'.format(e))
