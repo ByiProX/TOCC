@@ -152,11 +152,11 @@ def create_event():
     check_bot_username = BaseModel.fetch_one('client_bot_r', '*',
                                              BaseModel.where_dict({'client_id': client_id}))
     if check_bot_username:
-        bot_username = check_bot_username.bot_username
+        _bot_username = check_bot_username.bot_username
     else:
         return response({'err_code': -3, 'err_info': 'This client does not have bot.'})
     create_chatroom_dict = {
-        'bot_username': bot_username,
+        'bot_username': _bot_username,
         'data': {
             'task': 'create_chatroom',
             "owner": event.owner,
