@@ -48,7 +48,8 @@ def create_event_init():
             if i.is_finish == 0:
                 previous_event = BaseModel.fetch_one('events', '*',
                                                      BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-                alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html?event_id={}&response_type=code&scope=snsapi_userinfo&state=#wechat_redirect'.format(previous_event.events_id)
+                alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html?event_id={}&response_type=code&scope=snsapi_userinfo&state=#wechat_redirect'.format(
+                    previous_event.events_id)
                 event_id = previous_event.events_id
                 return response({'err_code': 0, 'content': {'alive_qrcode_url': alive_qrcode_url,
                                                             'fission_word_1': '嗨！恭喜您即将获取「3点钟无眠区块链」听课资格！ 1.转发以上图片+文字到朋友圈或者100以上群聊中 2.不要屏蔽好友，转发后截图发至本群 3.转发后在本群等待听课即可 分享图片及内容如下 ↓↓↓↓↓ ',
@@ -65,7 +66,8 @@ def create_event_init():
     # Add QRcode URL.
     previous_event = BaseModel.fetch_one('events', '*',
                                          BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-    alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html?event_id={}&response_type=code&scope=snsapi_userinfo&state=#wechat_redirect'.format(previous_event.events_id)
+    alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html?event_id={}&response_type=code&scope=snsapi_userinfo&state=#wechat_redirect'.format(
+        previous_event.events_id)
     previous_event.alive_qrcode_url = alive_qrcode_url
     previous_event.update()
     # Static word.
@@ -164,9 +166,12 @@ def create_event():
     try:
         create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
                                              json=create_chatroom_dict)
-        print(create_chatroom_resp.text)
+        if dict(create_chatroom_resp.json())['err_code'] == -1:
+            return response({'err_code': -3, 'err_info': 'Bot dead.'})
     except Exception as e:
         logger.warning('Create chatroom request error:{}'.format(e))
+        return response({'err_code': -3, 'err_info': 'Bot dead:e'})
+
     # Add chatroom info in relationship.
     events_chatroom = CM('events_chatroom')
     events_chatroom.index = event.start_index
@@ -395,7 +400,6 @@ def events_list():
         return response({'err_code': -2, 'content': 'User token error.'})
     # events = db.session.query(Event).filter(Event.owner == owner).all()
     events = BaseModel.fetch_all('events', '*', BaseModel.where_dict({"owner": owner}))
-
 
     result = {'err_code': 0, 'content': []}
     for i in events:
