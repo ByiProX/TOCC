@@ -232,6 +232,8 @@ def get_events_qrcode():
 
     # Handle.
     event = BaseModel.fetch_by_id('events', event_id)
+    if event is None:
+        return {'err_code': -3, 'err_info': 'Fake event_id'}
     # Use event_id search chatroom list, then get a prepared chatroom
     # and return its chatroomname.
     event_start = event.start_time
@@ -305,6 +307,8 @@ def modify_event_word():
     para_as_dict = true_false_to_10(para_as_dict)
 
     event = BaseModel.fetch_by_id('events', event_id)
+    if event is None:
+        return {'err_code': -3, 'err_info': 'Wrong event_id.'}
 
     # Save poster_raw
     poster_raw = para_as_dict.get('poster_raw')
@@ -391,6 +395,7 @@ def events_list():
         return response({'err_code': -2, 'content': 'User token error.'})
     # events = db.session.query(Event).filter(Event.owner == owner).all()
     events = BaseModel.fetch_all('events', '*', BaseModel.where_dict({"owner": owner}))
+
 
     result = {'err_code': 0, 'content': []}
     for i in events:
