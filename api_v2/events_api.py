@@ -42,16 +42,13 @@ def create_event_init():
     except AttributeError:
         return response({'err_code': -2, 'content': 'Wrong user.'})
     # Check if previous event is not finished.
-    # event_instance = Event.query.filter(Event.owner == owner).all()
     event_instance = BaseModel.fetch_all('events', '*', BaseModel.where_dict({"owner": owner}))
     if event_instance:
         for i in event_instance:
             if i.is_finish == 0:
-                # previous_event = db.session.query(Event).filter(Event.owner == owner,
-                #                                                 Event.is_finish == False).first()
                 previous_event = BaseModel.fetch_one('events', '*',
                                                      BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-                alive_qrcode_url = 'http://imtagger.com/www/#/pull-group-qr/%s' % previous_event.events_id
+                alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html?event_id=%s&response_type=code&scope=snsapi_userinfo&state=#wechat_redirect' % previous_event.events_id
                 event_id = previous_event.events_id
                 return response({'err_code': 0, 'content': {'alive_qrcode_url': alive_qrcode_url,
                                                             'fission_word_1': '嗨！恭喜您即将获取「3点钟无眠区块链」听课资格！ 1.转发以上图片+文字到朋友圈或者100以上群聊中 2.不要屏蔽好友，转发后截图发至本群 3.转发后在本群等待听课即可 分享图片及内容如下 ↓↓↓↓↓ ',
@@ -60,20 +57,16 @@ def create_event_init():
                                                             'pull_people_word': '3点种无眠区块链共同学习赚钱群，现在限时免费获取听课资格，满员开课哦！ ',
                                                             'event_id': event_id}})
     # Create base event.
-    # new_event = Event(owner=owner)
-    # db.session.add(new_event)
-    # db.session.commit()
+
     new_event = CM('events')
     new_event.owner = owner
     new_event.is_finish = 0
     new_event.save()
     # Add QRcode URL.
-    # previous_event = db.session.query(Event).filter(Event.owner == owner, Event.is_finish == False).first()
     previous_event = BaseModel.fetch_one('events', '*',
                                          BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-    alive_qrcode_url = 'http://imtagger.com/www/#/pull-group-qr/%s' % previous_event.events_id
+    alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html?event_id=%s&response_type=code&scope=snsapi_userinfo&state=#wechat_redirect' % previous_event.events_id
     previous_event.alive_qrcode_url = alive_qrcode_url
-    # db.session.commit()
     previous_event.update()
     # Static word.
     result = {
@@ -99,6 +92,7 @@ def create_event():
         client_id = user_info.client_id
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
+
     # Check previous init.
     temp_check = BaseModel.fetch_one('events', '*',
                                      BaseModel.where_dict({"owner": owner, "is_finish": 0}))
@@ -231,16 +225,11 @@ def disable_events():
 
 
 @app_test.route('/events_qrcode', methods=['POST'])
-@para_check('token', 'event_id')
+@para_check('event_id', )
 def get_events_qrcode():
     """Get event base info (for qrcode)."""
     event_id = request.json.get('event_id')
-    status, user_info = UserLogin.verify_token(request.json.get('token'))
-    try:
-        owner = user_info.username
-        client_id = user_info.client_id
-    except AttributeError:
-        return response({'err_code': -2, 'content': 'User token error.'})
+
     # Handle.
     event = BaseModel.fetch_by_id('events', event_id)
     # Use event_id search chatroom list, then get a prepared chatroom
@@ -285,6 +274,7 @@ def get_events_qrcode():
                 return response(result)
     """Do not have a chatroom < 100, create one."""
     event.enough_chatroom = 0
+    owner = event.owner
     event.save()
     start_name = event.start_name
     new_thread = threading.Thread(target=create_chatroom_for_scan, args=(event_id, client_id, owner, start_name))
