@@ -47,10 +47,9 @@ class WechatConn:
             res_json = json.loads(res.content, strict=False)
 
             if self.access_token is None:
-                access_token = CM(AccessToken).from_json(res_json)
-                self.access_token = access_token
-            else:
-                self.access_token.from_json(res_json)
+                self.access_token = CM(AccessToken)
+            self.access_token.token = res_json.get("access_token")
+            self.access_token.expired_time = now + res_json.get("expires_in")
             self.access_token.save()
 
         return self.access_token

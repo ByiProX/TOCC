@@ -200,7 +200,7 @@ def update_coin_all():
         new_coin.save()
     for none_coin_symbol in none_coin_symbol_set:
         none_coin = old_coin_dict[none_coin_symbol]
-        none_coin.is_integral = False
+        none_coin.is_integral = 0
         none_coin.save()
 
     if len(diff_coin_symbol_set) > 0:
