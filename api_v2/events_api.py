@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
 import time
+import base64
 import logging
 import threading
 
 import requests
+import oss2
 from flask import request, jsonify
 from functools import wraps
 
@@ -114,41 +116,39 @@ def create_event():
             return response({'err_code': -1, 'content': 'Lack of %s' % i})
         else:
             full_event_paras_as_dict[i] = request.json.get(i)
+    # Fix time is float.
+    full_event_paras_as_dict['start_time'] = int(full_event_paras_as_dict['start_time'])
+    full_event_paras_as_dict['end_time'] = int(full_event_paras_as_dict['end_time'])
     # Check if same start_name already exist.        
     check_events_start_name = BaseModel.fetch_all('events', '*', BaseModel.where_dict({'owner': owner}))
     for i in check_events_start_name:
         if i.start_name == full_event_paras_as_dict['start_name']:
             return response({'err_code': -1, 'content': 'Same start_name already used.'})
 
-    # [Fix]
-    static_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
-    try:
-        os.mkdir(static_path)
-    except Exception:
-        pass
-    new_file = new_file_path(static_path)
-    if request.json.get('poster_raw'):
-        with open(new_file, 'wb') as f:
-            f.write(request.json.get('poster_raw'))
-        full_event_paras_as_dict['poster_raw'] = new_file
-    else:
-        full_event_paras_as_dict['poster_raw'] = ' '
     # Create a full event.
     full_event_paras_as_dict['is_finish'] = 1
     full_event_paras_as_dict['enough_chatroom'] = 0
     # True -> 1, False ->0
-    _temp = full_event_paras_as_dict.copy()
-    for k, v in _temp.items():
-        if v is True:
-            full_event_paras_as_dict[k] = 1
-        if v is False:
-            full_event_paras_as_dict[k] = 0
+    full_event_paras_as_dict = true_false_to_10(full_event_paras_as_dict)
 
     event = BaseModel.fetch_one('events', '*',
                                 BaseModel.where_dict({"owner": owner, "is_finish": 0}))
     event_id = event.events_id
     # Fix is_work
     full_event_paras_as_dict.update({'is_work': 1})
+    # Save poster raw.
+    # [Fix]
+    poster_raw = request.json.get('poster_raw')
+    if poster_raw:
+        try:
+            poster_raw = poster_raw.replace('data:image/png;base64,', '')
+            img_url = put_img_to_oss(event_id, poster_raw)
+        except Exception as e:
+            return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
+        full_event_paras_as_dict['poster_raw'] = img_url
+    else:
+        full_event_paras_as_dict['poster_raw'] = ''
+
     event.from_json(full_event_paras_as_dict)
 
     # Create a chatroom for this event. index = start_index.
@@ -207,9 +207,9 @@ def have_same_start_name():
     check_events_start_name = BaseModel.fetch_all('events', '*', BaseModel.where_dict({'owner': owner}))
     for i in check_events_start_name:
         if i.start_name == start_name:
-            return response({'err_code': 0, 'content': False})
+            return response({'err_code': 0, 'content': True})
 
-    return response({'err_code': 0, 'content': True})
+    return response({'err_code': 0, 'content': False})
 
 
 @app_test.route('/events_delete', methods=['POST'])
@@ -226,7 +226,6 @@ def disable_events():
         return response({'err_code': -2, 'content': 'Logical error.'})
     else:
         temp_check.is_work = 0
-        # db.session.commit()
         temp_check.save()
         return response({'err_code': 0, 'content': 'SUCCESS'})
 
@@ -253,25 +252,37 @@ def get_events_qrcode():
     add_qrcode_log(event_id)
     # Check which chatroom is available.
     chatroom_list = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'event_id': event_id}))
+    # Not a available chatroom, so it is in base create status.
+    in_base_status = True
+    for i in chatroom_list:
+        if i.chatroomname != 'default':
+            in_base_status = False
+    if in_base_status:
+        return response({'err_code': 0,
+                         'content': {'event_status': 4, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
+                                     'qr_end_date': ''}})
 
     chatroom_dict = {}
     for i in chatroom_list:
         chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
-        chatroom_dict[i.chatroomname] = (
-            chatroom_info.member_count, chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.atatar_url,
-            chatroom_info.update_time)
-    for k, v in chatroom_dict.items():
-        if v[0] < 100:
-            result = {
-                'err_code': 0,
-                'content': {'event_status': status,
-                            'chatroom_qr': v[1],
-                            'chatroom_name': v[2],
-                            'chatroom_avatar': v[3],
-                            'qr_end_date': v[4],
-                            }
-            }
-            return response(result)
+        if chatroom_info:
+            chatroom_dict[i.chatroomname] = (
+                chatroom_info.member_count, chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.atatar_url,
+                chatroom_info.update_time)
+
+    if chatroom_dict:
+        for k, v in chatroom_dict.items():
+            if v[0] < 100:
+                result = {
+                    'err_code': 0,
+                    'content': {'event_status': status,
+                                'chatroom_qr': v[1],
+                                'chatroom_name': v[2],
+                                'chatroom_avatar': v[3],
+                                'qr_end_date': v[4],
+                                }
+                }
+                return response(result)
     """Do not have a chatroom < 100, create one."""
     event.enough_chatroom = 0
     event.save()
@@ -285,20 +296,40 @@ def get_events_qrcode():
                                  'qr_end_date': ''}})
 
 
-_modify_need = (
-    'need_fission', 'need_condition_word', 'need_pull_people', 'fission_word_1', 'fission_word_2',
-    'condition_word', 'pull_people_word', 'event_title', 'start_time', 'end_time', 'start_index',
-    'chatroom_name_protect', 'chatroom_repeat_protect', 'poster_raw', 'start_name')
-
-
 @app_test.route('/events_modify_word', methods=['POST'])
-@para_check(_modify_need, 'token', 'event_id', )
+@para_check('token', 'event_id', )
 def modify_event_word():
+    _modify_need = (
+        'need_fission', 'need_condition_word', 'need_pull_people', 'fission_word_1', 'fission_word_2',
+        'condition_word', 'pull_people_word', 'event_title', 'start_time', 'end_time',
+        'chatroom_name_protect', 'poster_raw', 'start_name')
     event_id = request.json.get('event_id')
     para_as_dict = {}
-    for i in _modify_need:
-        para_as_dict[i] = request.json.get(i)
+
+    values_as_dict = dict(request.json)
+
+    for k, v in values_as_dict.items():
+        if k in _modify_need:
+            para_as_dict[k] = v
+
+    para_as_dict = true_false_to_10(para_as_dict)
+
     event = BaseModel.fetch_by_id('events', event_id)
+
+    # Save poster_raw
+    poster_raw = para_as_dict.get('poster_raw')
+    if poster_raw:
+        try:
+            poster_raw = poster_raw.replace('data:image/png;base64,', '')
+            img_url = put_img_to_oss(event_id, poster_raw)
+        except Exception as e:
+            return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
+        para_as_dict['poster_raw'] = img_url
+    else:
+        para_as_dict['poster_raw'] = ''
+
+    if event is None:
+        return response({'err_code': -2, 'content': 'event_id error!'})
     event.from_json(para_as_dict)
     event.save()
     return response({'err_code': 0, 'content': 'SUCCESS'})
@@ -313,7 +344,7 @@ def events_detail():
         return response({'err_code': -2, 'content': 'No this event.'})
     result = {'err_code': 0}
     content = {}
-    content.update({'poster_raw': read_poster_raw(event.poster_raw),
+    content.update({'poster_raw': event.poster_raw,
                     'event_title': event.event_title,
                     'alive_qrcode_url': event.alive_qrcode_url,
                     'need_fission': event.need_fission,
@@ -353,6 +384,7 @@ def events_detail():
             content[k] = True
         if v == 0:
             content[k] = False
+
     content['event_status'] = status_detect(event.start_time, event.end_time, event.is_work, event.is_finish,
                                             event.enough_chatroom)
     result['content'] = content
@@ -389,7 +421,7 @@ def events_list():
 
         temp.update({
             'event_id': i.events_id,
-            'poster_raw': read_poster_raw(i.poster_raw),
+            'poster_raw': i.poster_raw,
             'event_title': i.event_title,
             'event_status': status_detect(i.start_time, i.end_time, i.is_work, i.is_finish, i.enough_chatroom),
             'start_time': i.start_time,
@@ -427,7 +459,7 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
 
 def create_chatroom_for_scan(event_id, client_id, owner, start_name):
     """create_chatroom_for_scan"""
-
+    print("Running create_chatroom_for_scan")
     """Get previous index"""
     previous_chatroom_list = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'event_id': event_id}))
     previous_index_list = []
@@ -443,6 +475,9 @@ def create_chatroom_for_scan(event_id, client_id, owner, start_name):
                                         BaseModel.where_dict({'client_id': client_id}))
     if _bot_username:
         bot_username = _bot_username.bot_username
+    else:
+        logger.warning('Error when create_chatroom_for_scan')
+        return 0
 
     create_chatroom_dict = {
         'bot_username': bot_username,
@@ -453,7 +488,8 @@ def create_chatroom_for_scan(event_id, client_id, owner, start_name):
         }
     }
     try:
-        create_chatroom_resp = requests.post('http://192.168.1.10:5000/android/send_message', json=create_chatroom_dict)
+        create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
+                                             json=create_chatroom_dict)
         print(create_chatroom_resp.text)
     except Exception as e:
         logger.warning('Create chatroom request error:{}'.format(e))
@@ -580,6 +616,30 @@ def to_str(obj):
         raise TypeError('Only support (bytes, str). Type:%s' % type(obj))
 
 
+def true_false_to_10(data_as_dict, exc_list=()):
+    for k, v in data_as_dict.items():
+        if k in exc_list:
+            continue
+        if v is True:
+            data_as_dict[k] = 1
+        elif v is False:
+            data_as_dict[k] = 0
+
+    return data_as_dict
+
+
+def _10_to_true_false(data_as_dict, exc_list=()):
+    for k, v in data_as_dict.items():
+        if k in exc_list:
+            continue
+        if v == 1:
+            data_as_dict[k] = True
+        elif v == 0:
+            data_as_dict[k] = False
+
+    return data_as_dict
+
+
 def read_poster_raw(_str):
     if not _str:
         return ''
@@ -630,6 +690,17 @@ def open_chatroom_name_protect():
                                           "chatroomnick": j.chatroom_nickname,
                                       }}
                             requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+
+
+def put_img_to_oss(file_name, data_as_string):
+    img_name = str(file_name) + '.jpg'
+
+    endpoint = 'oss-cn-beijing.aliyuncs.com'
+    auth = oss2.Auth('LTAIfwRTXLl6vMbX', 'kvSS9E4Ty7nvHHlGukaknJUtfICuen')
+    bucket = oss2.Bucket(auth, endpoint, 'ywbdposter')
+    bucket.put_object(img_name, base64.b64decode(data_as_string))
+
+    return 'http://ywbdposter.oss-cn-beijing.aliyuncs.com/' + img_name
 
 
 new_thread_3 = threading.Thread(target=open_chatroom_name_protect)
