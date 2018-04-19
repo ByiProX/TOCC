@@ -110,7 +110,6 @@ def count_msg(msg):
         chatroomname = msg.talker
         username = msg.real_talker
         msg_type = msg.type
-        logger.info("count_msg content::: "  ) 
         logger.info(u"msg id is : %s. " % msg.to_json())
         logger.info(u"msg content is : %s. " % msg.msg_local_id)
 
@@ -134,7 +133,8 @@ def count_msg(msg):
 
             return
         chat_logs_type = CHAT_LOGS_TYPE_2
-        rds_lpush(chat_logs_type, msg.get_id())
+        #rds_lpush(chat_logs_type, msg.get_id())
+        rds_lpush(chat_logs_type, msg.msg_local_id)
 
             # 被邀请入群
             # Content="frank5433"邀请你和"秦思语-Doodod、磊"加入了群聊
