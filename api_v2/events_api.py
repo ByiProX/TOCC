@@ -48,7 +48,7 @@ def create_event_init():
             if i.is_finish == 0:
                 previous_event = BaseModel.fetch_one('events', '*',
                                                      BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-                alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html?event_id={}&response_type=code&scope=snsapi_userinfo&state=#wechat_redirect'.format(
+                alive_qrcode_url = 'http://test2.xuanren360.com/chatroom.html?event_id={}'.format(
                     previous_event.events_id)
                 event_id = previous_event.events_id
                 return response({'err_code': 0, 'content': {'alive_qrcode_url': alive_qrcode_url,
@@ -66,8 +66,7 @@ def create_event_init():
     # Add QRcode URL.
     previous_event = BaseModel.fetch_one('events', '*',
                                          BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-    alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html?event_id={}&response_type=code&scope=snsapi_userinfo&state=#wechat_redirect'.format(
-        previous_event.events_id)
+    alive_qrcode_url = 'http://test2.xuanren360.com/chatroom.html?event_id={}'.format(previous_event.events_id)
     previous_event.alive_qrcode_url = alive_qrcode_url
     previous_event.update()
     # Static word.
@@ -217,7 +216,7 @@ def disable_events():
     # Check token and event_id.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     owner = user_info.username
-    event_id = int(request.json.get('event_id'))
+    event_id = request.json.get('event_id')
     # Search event.
     # temp_check = db.session.query(Event).filter(Event.owner == owner, Event.id == event_id).first()
     temp_check = BaseModel.fetch_by_id('events', event_id)
@@ -237,6 +236,7 @@ def get_events_qrcode():
 
     # Handle.
     event = BaseModel.fetch_by_id('events', event_id)
+    print(event)
     if event is None:
         return {'err_code': -3, 'err_info': 'Fake event_id'}
     # Use event_id search chatroom list, then get a prepared chatroom
@@ -252,6 +252,7 @@ def get_events_qrcode():
     in_base_status = True
     for i in chatroom_list:
         if i.chatroomname != 'default':
+            print(i.chatroomname)
             in_base_status = False
     if in_base_status:
         return response({'err_code': 0,
@@ -282,6 +283,7 @@ def get_events_qrcode():
     """Do not have a chatroom < 100, create one."""
     event.enough_chatroom = 0
     owner = event.owner
+    client_id = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': owner}))
     event.save()
     start_name = event.start_name
     new_thread = threading.Thread(target=create_chatroom_for_scan, args=(event_id, client_id, owner, start_name))
