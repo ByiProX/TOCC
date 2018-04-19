@@ -230,15 +230,30 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
     return SUCCESS, ubr_info
 
 
+def modelList2Arr(mlist):
+    ret = []
+    if mlist:
+        for li in mlist:
+            ret.append(li.to_json())
+    return ret
+
+
+
 def cal_user_basic_page_info(user_info):
-    ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id})) 
+    logger.info(u"ubr_info ::: %s." % ubr_info.to_json())
+   
 
     if ubr_info:
         chatroomname_set = set()
         uqr_list = BaseModel.fetch_all(UserQunR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+         
+        logger.info(u"\n\n\n uqr_list::: %s." % modelList2Arr(uqr_list))
         for uqr in uqr_list:
             chatroomname_set.add(uqr.chatroomname)
         qun_count = len(chatroomname_set)
+        
+        logger.info(u"\n\n\n chatroomname_set::: %s." % chatroomname_set)
         if not chatroomname_set:
             # 目前没有控制的群，不需要下一步统计
             logger.debug(u"无绑定群. user_id: %s." % user_info.client_id)
@@ -247,6 +262,9 @@ def cal_user_basic_page_info(user_info):
             chatroomname_list = list(chatroomname_set)
             chatroom_list = BaseModel.fetch_all(Chatroom, select_colums = ["chatroomname", "member_count"], where_clause = BaseModel.where("in", "chatroomname", chatroomname_list))
             member_count = 0
+            
+            logger.info(u"\n\n\n chatroomname_list  %s." % modelList2Arr(chatroomname_list))
+            logger.info(u"\n\n\n chatroom_list::: %s." % modelList2Arr(chatroom_list))
             for chatroom in chatroom_list:
                 member_count += chatroom.member_count
 
