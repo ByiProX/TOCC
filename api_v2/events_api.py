@@ -320,7 +320,7 @@ def modify_event_word():
 
     event = BaseModel.fetch_by_id('events', event_id)
     if event is None:
-        return {'err_code': -3, 'err_info': 'Wrong event_id.'}
+        return response({'err_code': -3, 'err_info': 'Wrong event_id.'})
 
     # Same start_name check.
     new_start_name = request.json.get('start_name')
@@ -331,7 +331,7 @@ def modify_event_word():
         all_event = BaseModel.fetch_all('events', '*', BaseModel.where_dict({'owner': owner}))
         for i in all_event:
             if i.start_name == new_start_name:
-                return {'err_code': -3, 'err_info': 'Start name already exist.'}
+                return response({'err_code': -3, 'err_info': 'Start name already exist.'})
 
     # Save poster_raw
     poster_raw = para_as_dict.get('poster_raw')
