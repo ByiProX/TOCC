@@ -296,6 +296,13 @@ def get_events_qrcode():
 @app_test.route('/events_modify_word', methods=['POST'])
 @para_check('token', 'event_id', )
 def modify_event_word():
+    # Check owner or return.
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    try:
+        owner = user_info.username
+    except AttributeError:
+        return response({'err_code': -2, 'content': 'User token error.'})
+
     _modify_need = (
         'need_fission', 'need_condition_word', 'need_pull_people', 'fission_word_1', 'fission_word_2',
         'condition_word', 'pull_people_word', 'event_title', 'start_time', 'end_time',
@@ -314,6 +321,17 @@ def modify_event_word():
     event = BaseModel.fetch_by_id('events', event_id)
     if event is None:
         return {'err_code': -3, 'err_info': 'Wrong event_id.'}
+
+    # Same start_name check.
+    new_start_name = request.json.get('start_name')
+    if event.start_name == new_start_name:
+        # Don't modify start_name.
+        pass
+    else:
+        all_event = BaseModel.fetch_all('events', '*', BaseModel.where_dict({'owner': owner}))
+        for i in all_event:
+            if i.start_name == new_start_name:
+                return {'err_code': -3, 'err_info': 'Start name already exist.'}
 
     # Save poster_raw
     poster_raw = para_as_dict.get('poster_raw')
