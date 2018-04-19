@@ -13,6 +13,9 @@ from core_v2.user_core import UserLogin, cal_user_basic_page_info, add_a_pre_rel
     set_bot_name
 from utils.u_response import make_response
 
+from core_v2.wechat_core import WechatConn
+
+
 
 @main_api_v2.route('/verify_code', methods=['POST'])
 def login_verify_code():
@@ -206,3 +209,21 @@ def verify_pc_login_qr():
         return make_response(SUCCESS, token = token, is_login = True)
 
     return make_response(SUCCESS, is_login = False)
+
+
+# add by Quentin
+@main_api_v2.route("/get_signature", methods=['POST'])
+def get_signature_():
+    url = request.json.get("url")
+
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    if url is None:
+        return make_response(ERR_INVALID_PARAMS)
+
+    wechat_conn = WechatConn()
+    timestamp, noncestr, signature = wechat_conn.get_signature_from_access_token(url)
+
+    return make_response(SUCCESS, timestamp=timestamp, noncestr=noncestr, signature=signature)
