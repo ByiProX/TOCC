@@ -43,7 +43,7 @@ def android_new_message():
     verify_json()
     a_message = CM(Message).from_json(request.json)
     
-    logger.info(u"android/new_message is:: %s. " % request.json)
+    logger.info(u"android/new_message is:: %s. " % a_message.to_json() )
     NEW_MSG_Q.put(a_message)
     logger.info(u"NEW_MSG_Q.put(a_message)")
     # route_msg(a_message)
