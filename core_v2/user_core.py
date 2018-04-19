@@ -266,7 +266,8 @@ def cal_user_basic_page_info(user_info):
             logger.info(u"\n\n\n chatroomname_list  %s." % chatroomname_list)
             logger.info(u"\n\n\n chatroom_list::: %s." % modelList2Arr(chatroom_list))
             for chatroom in chatroom_list:
-                member_count += chatroom.member_count
+                if chatroom.member_count:
+                    member_count += chatroom.member_count
 
         bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"username": ubr_info.bot_username}))
         if not bot_info:
