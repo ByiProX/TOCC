@@ -229,15 +229,15 @@ def disable_events():
 
 
 @app_test.route('/events_qrcode', methods=['POST'])
+@para_check('event_id', )
 def get_events_qrcode():
     """Get event base info (for qrcode)."""
     event_id = request.json.get('event_id')
-    if not event_id:
-        return {'err_code': -1, 'err_info': 'Lack of event_id'}
+
     # Handle.
     event = BaseModel.fetch_by_id('events', event_id)
     if event is None:
-        return {'err_code': -3, 'err_info': 'Fake event_id'}
+        return response({'err_code': -3, 'err_info': 'Fake event_id'})
     # Use event_id search chatroom list, then get a prepared chatroom
     # and return its chatroomname.
     event_start = event.start_time
@@ -251,7 +251,6 @@ def get_events_qrcode():
     in_base_status = True
     for i in chatroom_list:
         if i.chatroomname != 'default':
-            print(i.chatroomname)
             in_base_status = False
     if in_base_status:
         return response({'err_code': 0,
