@@ -110,6 +110,9 @@ def count_msg(msg):
         chatroomname = msg.talker
         username = msg.real_talker
         msg_type = msg.type
+        logger.info("count_msg content::: "  ) 
+        logger.info(u"msg id is : %s. " % msg.to_json())
+        logger.info(u"msg content is : %s. " % msg.msg_local_id)
 
         if msg_type == CONTENT_TYPE_TXT and content.find(u'@') != -1:
             logger.info(u'| be_at_count')
