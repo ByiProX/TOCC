@@ -263,7 +263,7 @@ def cal_user_basic_page_info(user_info):
             chatroom_list = BaseModel.fetch_all(Chatroom, select_colums = ["chatroomname", "member_count"], where_clause = BaseModel.where("in", "chatroomname", chatroomname_list))
             member_count = 0
             
-            logger.info(u"\n\n\n chatroomname_list  %s." % modelList2Arr(chatroomname_list))
+            logger.info(u"\n\n\n chatroomname_list  %s." % chatroomname_list)
             logger.info(u"\n\n\n chatroom_list::: %s." % modelList2Arr(chatroom_list))
             for chatroom in chatroom_list:
                 member_count += chatroom.member_count
