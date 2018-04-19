@@ -42,7 +42,8 @@ class WechatConn:
 
     # 获取基础 access_token
     def get_access_token(self):
-        now = datetime.now()
+        # now = datetime.now()
+        now = int(time.time())
 
         if not self.access_token or self.access_token.expired_time <= now:
             url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' + \
