@@ -180,7 +180,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     for i, message in enumerate(message_list):
         message_dict = dict()
         message_dict["type"] = message.get("send_type")
-        message_dict["text"] = message.get("text")
+        message_dict["content"] = message.get("text")
         message_dict["seq"] = i
         content_list.append(message_dict)
 
