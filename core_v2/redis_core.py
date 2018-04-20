@@ -20,6 +20,8 @@ def rds_lpush(chat_logs_type, msg_id, chatroomname = None, username = None, crea
         chat_logs["time"] = create_time
         chat_logs["content"] = content
         queue_name = "ct_logs"
+    
+    logger.info(u"ct_logs will lpush  : %s. " % chat_logs)
     rds.lpush(queue_name, json.dumps(chat_logs))
 
 
