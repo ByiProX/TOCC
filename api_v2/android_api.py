@@ -3,7 +3,6 @@
 import logging
 
 import time
-import json
 from flask import request
 
 from configs.config import SUCCESS, main_api_v2, BotInfo, Message, NEW_MSG_Q, Contact
@@ -42,13 +41,10 @@ def android_add_friend():
 @main_api_v2.route("/android/new_message", methods=['POST'])
 def android_new_message():
     verify_json()
-    msg_json = dict(request.json)
-    logger.info(u"request.json  : %s. " % msg_json)
-    if msg_json.get('a_message_id'):
-        msg_json['_id'] = msg_json.get('a_message_id')
-
-    a_message = CM(Message).from_json(msg_json)
-    logger.info(u"NEW_MSG_Q before put  : %s. " % a_message.to_json())
+    logger.info(u"request.jsonis : %s. " % request.json)
+    a_message = CM(Message).from_json(request.json)
+    a_message.a_message_id = request.json.get('a_message_id')
+    logger.info(u"a_message model is : %s. " % a_message.to_json())
     NEW_MSG_Q.put(a_message)
     logger.info(u"NEW_MSG_Q.put(a_message)")
     # route_msg(a_message)
