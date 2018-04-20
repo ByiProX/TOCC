@@ -24,7 +24,11 @@ logger = logging.getLogger('main')
 
 class WechatConn:
     def __init__(self):
-        self.access_token = BaseModel.fetch_one(AccessToken, '*', where_clause = BaseModel.where(">", "expired_time", datetime_to_timestamp_utc_8(datetime.now())))
+        try:
+            self.access_token = BaseModel.fetch_one(AccessToken, '*', where_clause = BaseModel.where(">", "expired_time", datetime_to_timestamp_utc_8(datetime.now())))
+        except Exception, ex:
+            _msg = ex.message
+            print _msg
 
     def wechat_get(self, url, **kwargs):
         return self._wechat_requst('GET', url=url, **kwargs)
