@@ -121,13 +121,20 @@ def chatroom_statistics_chatroom():
     table = 'statistics_chatroom_hour'
     _timestamp = int(time.time())
     _where = []
+    #if (date_type == 1):
+    #    run_hour = int(time.strftime('%H', time.localtime(time.time())))
+    #    last_update_time = _timestamp - 600
+    #    if (run_hour == 0):
+    #        return make_response(SUCCESS, chatroom_list = [], last_update_time = last_update_time)
+    #    _where = ["and", ["<=", "run_hour", run_hour], ["=", "client_id", user_info.client_id],
+    #              ["in", "chatroomname", chatroomname_list]]
     if (date_type == 1):
-        run_hour = int(time.strftime('%H', time.localtime(time.time())))
-        last_update_time = _timestamp - 600
-        if (run_hour == 0):
-            return make_response(SUCCESS, chatroom_list = [], last_update_time = last_update_time)
-        _where = ["and", ["<=", "run_hour", run_hour], ["=", "client_id", user_info.client_id],
+        timestamp_diff = getTimeStamp(0)
+        last_update_time = timestamp_diff + 600
+        # _where ={"date":timestamp_diff,"client_id":user_info.client_id}
+        _where = ["and", ["=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
                   ["in", "chatroomname", chatroomname_list]]
+        table = 'statistics_chatroom_daily'
     elif (date_type == 2):
         timestamp_diff = getTimeStamp(1)
         last_update_time = timestamp_diff + 600
