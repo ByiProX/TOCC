@@ -111,7 +111,7 @@ def count_msg(msg):
         username = msg.real_talker
         msg_type = msg.type 
         logger.info(u"msg id is : %s. " % msg.to_json())
-        logger.info(u"msg content is : %s. " % msg.msg_local_id)
+        logger.info(u"msg content is : %s. " % msg.a_message_id)
 
         if msg_type == CONTENT_TYPE_TXT and content.find(u'@') != -1:
             logger.info(u'| be_at_count')
