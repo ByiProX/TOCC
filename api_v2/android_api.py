@@ -43,7 +43,7 @@ def android_new_message():
     verify_json()
     logger.info(u"request.jsonis : %s. " % request.json)
     a_message = CM(Message).from_json(request.json)
-    a_message.set_id(a_message_id)
+    a_message.set_id(request.json.get(a_message_id))
     
     logger.info(u"a_message model is : %s. " % a_message.to_json())
     NEW_MSG_Q.put(a_message)
