@@ -15,6 +15,8 @@ from utils.u_response import make_response
 
 # from core_v2.wechat_core import WechatConn
 from core_v2.wechat_core import wechat_conn
+import logging
+logger = logging.getLogger('main')
 
 
 @main_api_v2.route('/verify_code', methods=['POST'])
@@ -213,7 +215,7 @@ def verify_pc_login_qr():
 
 # add by Quentin
 @main_api_v2.route("/get_signature", methods=['POST'])
-def get_signature_():
+def get_signature():
     url = request.json.get("url")
 
     status, user_info = UserLogin.verify_token(request.json.get('token'))
@@ -222,7 +224,10 @@ def get_signature_():
 
     if url is None:
         return make_response(ERR_INVALID_PARAMS)
+    try:
+        timestamp, noncestr, signature = wechat_conn.get_signature_from_access_token(url)
+        return make_response(SUCCESS, timestamp=timestamp, noncestr=noncestr, signature=signature)
+    except Exception as e:
+        logger.error('ERROR  %s' % e)
+        return make_response(ERR_INVALID_PARAMS)
 
-    timestamp, noncestr, signature = wechat_conn.get_signature_from_access_token(url)
-
-    return make_response(SUCCESS, timestamp=timestamp, noncestr=noncestr, signature=signature)

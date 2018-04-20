@@ -133,21 +133,21 @@ class WechatConn:
                 self.access_token.token = res_json.get("access_token")
                 self.access_token.expired_time = now + res_json.get("expires_in")
                 self.access_token.update()
-                return self.access_token
+                return self.access_token.token
             if self.access_token is None:
                 self.access_token = CM(AccessToken)
                 self.access_token.token = res_json.get("access_token")
                 self.access_token.expired_time = now + res_json.get("expires_in")
                 self.access_token.save()
-                return self.access_token
+                return self.access_token.token
         else:
-            return self.access_token
+            return self.access_token.token
 
     def get_signature_from_access_token(self, url):
         try:
             access_token = self.get_access_token_V2()
-        except:
-            logger.error('get_access_token ERROR')
+        except Exception as e:
+            logger.error('get_access_token ERROR %s' % e)
             return
         jsapi_ticket_url = 'https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=%s&type=jsapi' % access_token
 
@@ -158,8 +158,8 @@ class WechatConn:
                     'timestamp': int(time.time()),
                     'url': url
             }
-        except:
-            logger.error('wechat_get(jsapi_ticket_url) ERROR')
+        except Exception as e:
+            logger.error('wechat_get(jsapi_ticket_url) ERROR  %s' % e)
             return
 
         sorted_params = sorted(args.keys(), key=lambda d: d[0], reverse=False)
