@@ -117,18 +117,26 @@ class WechatConn:
     # https: // mp.weixin.qq.com / wiki?t = resource / res_main & id = mp1421141115
 
     def get_signature_from_access_token(self, url):
-        access_token = self.get_access_token()
+        try:
+            access_token = self.get_access_token()
+        except:
+            logger.error('get_access_token ERROR')
+            return
         jsapi_ticket_url = 'https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=%s&type=jsapi' % access_token
-        res = self.wechat_get(jsapi_ticket_url)
 
-        args = {'jsapi_ticket': json.loads(res.content)['ticket'],
-                'noncestr': ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16)),
-                'timestamp': int(time.time()),
-                'url': url
-        }
+        try:
+            res = self.wechat_get(jsapi_ticket_url)
+            args = {'jsapi_ticket': json.loads(res.content)['ticket'],
+                    'noncestr': ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16)),
+                    'timestamp': int(time.time()),
+                    'url': url
+            }
+        except:
+            logger.error('wechat_get(jsapi_ticket_url) ERROR')
+            return
 
         sorted_params = sorted(args.keys(), key=lambda d: d[0], reverse=False)
-        joined_string = '&'.join([args[sorted_param] for sorted_param in sorted_params])
+        joined_string = '&'.join([sorted_param + '=' + str(args[sorted_param]) for sorted_param in sorted_params])
         signature = hashlib.sha1(joined_string).hexdigest()
 
         return [args['timestamp'], args['noncestr'], signature]
