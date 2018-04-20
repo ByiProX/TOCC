@@ -3,6 +3,7 @@
 import logging
 
 import time
+import json
 from flask import request
 
 from configs.config import SUCCESS, main_api_v2, BotInfo, Message, NEW_MSG_Q, Contact
@@ -46,7 +47,7 @@ def android_new_message():
     if msg_json.get('a_message_id'):
         msg_json['_id'] = msg_json.get('a_message_id')
 
-    a_message = CM(Message).from_json(msg_json)
+    a_message = CM(Message).from_json(json.dumps(msg_json))
     logger.info(u"NEW_MSG_Q before put  : %s. " % a_message.to_json())
     NEW_MSG_Q.put(a_message)
     logger.info(u"NEW_MSG_Q.put(a_message)")
