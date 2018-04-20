@@ -128,17 +128,17 @@ class WechatConn:
             res = self.wechat_get(url=url)
             res_json = json.loads(res.content, strict=False)
 
-            if self.access_token.expired_time <= now:
-                self.access_token = BaseModel.fetch_all('access_token', '*')[0]
-                self.access_token.token = res_json.get("access_token")
-                self.access_token.expired_time = now + res_json.get("expires_in")
-                self.access_token.update()
-                return self.access_token.token
             if self.access_token is None:
                 self.access_token = CM(AccessToken)
                 self.access_token.token = res_json.get("access_token")
                 self.access_token.expired_time = now + res_json.get("expires_in")
                 self.access_token.save()
+                return self.access_token.token
+            elif self.access_token.expired_time <= now:
+                self.access_token = BaseModel.fetch_all('access_token', '*')[0]
+                self.access_token.token = res_json.get("access_token")
+                self.access_token.expired_time = now + res_json.get("expires_in")
+                self.access_token.update()
                 return self.access_token.token
         else:
             return self.access_token.token
