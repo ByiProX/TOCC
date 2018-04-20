@@ -13,7 +13,7 @@ from core_v2.user_core import UserLogin, cal_user_basic_page_info, add_a_pre_rel
     set_bot_name
 from utils.u_response import make_response
 
-# from core_v2.wechat_core import WechatConn
+from core_v2.wechat_core import WechatConn
 
 
 
@@ -223,7 +223,7 @@ def get_signature_():
     if url is None:
         return make_response(ERR_INVALID_PARAMS)
 
-    # wechat_conn = WechatConn()
+    wechat_conn = WechatConn()
     timestamp, noncestr, signature = wechat_conn.get_signature_from_access_token(url)
 
     return make_response(SUCCESS, timestamp=timestamp, noncestr=noncestr, signature=signature)
