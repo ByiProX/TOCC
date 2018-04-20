@@ -22,7 +22,8 @@ def rds_lpush(chat_logs_type, msg_id, chatroomname = None, username = None, crea
         queue_name = "ct_logs"
     
     logger.info(u"ct_logs will lpush  : %s. " % chat_logs)
-    rds.lpush(queue_name, json.dumps(chat_logs))
+    ret = rds.lpush(queue_name, json.dumps(chat_logs))
+    logger.info(u"ct_logs lpush result : %s. " % ret)
 
 
 if __name__ == '__main__':
