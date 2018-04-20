@@ -35,6 +35,7 @@ def route_and_count_msg():
     while True:
         print 000
         a_message = NEW_MSG_Q.get()
+        logger.info(u"NEW_MSG_Q get ret : %s. " % a_message.to_json())
         print 111
         if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
             gm_rule_dict = get_gm_rule_dict()
@@ -110,7 +111,7 @@ def count_msg(msg):
         chatroomname = msg.talker
         username = msg.real_talker
         msg_type = msg.type 
-        logger.info(u"msg contentis : %s. " % msg.to_json())
+        logger.info(u"msg content is : %s. " % msg.to_json())
         logger.info(u"msg id is : %s. " % msg.get_id())
 
         if msg_type == CONTENT_TYPE_TXT and content.find(u'@') != -1:
