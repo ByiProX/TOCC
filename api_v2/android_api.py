@@ -44,6 +44,7 @@ def android_new_message():
     logger.info(u"request.jsonis : %s. " % request.json)
     a_message = CM(Message).from_json(request.json)
     a_message.set_id(request.json.get('a_message_id'))
+    a_message.create_time = int(a_message.create_time / 1000)
     
     logger.info(u"a_message model is : %s. " % a_message.to_json())
     NEW_MSG_Q.put(a_message)
