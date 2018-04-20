@@ -27,6 +27,7 @@ class WechatConn:
         try:
             self.access_token = BaseModel.fetch_one(AccessToken, '*', where_clause = BaseModel.where(">", "expired_time", datetime_to_timestamp_utc_8(datetime.now())))
         except Exception, ex:
+            self.access_token = None
             _msg = ex.message
             print _msg
 
@@ -115,14 +116,36 @@ class WechatConn:
         wrapped_url = '<a href="' + url + '"> ' + txt + '</a>'
         return wrapped_url
 
-
-    #### add by quentin
+    #### add by quentintin
     # reference:
     # https: // mp.weixin.qq.com / wiki?t = resource / res_main & id = mp1421141115
+    def get_access_token_V2(self):
+        now = int(time.time())
+        if not self.access_token or self.access_token.expired_time <= now:
+            url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' + \
+                  APP_ID + '&secret=' + APP_SECRET
+
+            res = self.wechat_get(url=url)
+            res_json = json.loads(res.content, strict=False)
+
+            if self.access_token.expired_time <= now:
+                self.access_token = BaseModel.fetch_all('access_token', '*')[0]
+                self.access_token.token = res_json.get("access_token")
+                self.access_token.expired_time = now + res_json.get("expires_in")
+                self.access_token.update()
+                return self.access_token
+            if self.access_token is None:
+                self.access_token = CM(AccessToken)
+                self.access_token.token = res_json.get("access_token")
+                self.access_token.expired_time = now + res_json.get("expires_in")
+                self.access_token.save()
+                return self.access_token
+        else:
+            return self.access_token
 
     def get_signature_from_access_token(self, url):
         try:
-            access_token = self.get_access_token()
+            access_token = self.get_access_token_V2()
         except:
             logger.error('get_access_token ERROR')
             return
@@ -130,7 +153,7 @@ class WechatConn:
 
         try:
             res = self.wechat_get(jsapi_ticket_url)
-            args = {'jsapi_ticket': json.loads(res.content)['ticket'],
+            args = {'jsapi_ticket': json.loads(res.content).get('ticket'),
                     'noncestr': ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16)),
                     'timestamp': int(time.time()),
                     'url': url
