@@ -262,7 +262,7 @@ def get_events_qrcode():
         chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
         if chatroom_info:
             chatroom_dict[i.chatroomname] = (
-                chatroom_info.member_count, chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.atatar_url,
+                chatroom_info.member_count, chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.avatar_url,
                 chatroom_info.update_time)
 
     if chatroom_dict:
