@@ -389,7 +389,7 @@ def events_detail():
                                                 BaseModel.where_dict({'chatroomname': i.chatroomname}))
             _result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': i.chatroomname,
                        'chatroom_status': 1,
-                       'chatroom_member_num': len(this_chatroom.memberlist)}
+                       'chatroom_member_num': len(this_chatroom.memberlist.split(';'))}
             content_chatrooms.append(_result)
     content['chatrooms'] = content_chatrooms
 
