@@ -390,8 +390,8 @@ def events_detail():
             this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                                 BaseModel.where_dict({'chatroomname': i.chatroomname}))
             _result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': i.chatroomname,
-                      'chatroom_status': 1,
-                      'chatroom_member_num': this_chatroom.member_count}
+                       'chatroom_status': 1,
+                       'chatroom_member_num': this_chatroom.member_count}
             content_chatrooms.append(_result)
     content['chatrooms'] = content_chatrooms
 
@@ -434,8 +434,9 @@ def events_list():
             if j.chatroomname != 'default':
                 this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                                     BaseModel.where_dict({'chatroomname': j.chatroomname}))
-                print('xxxxxxxxx')
+
                 if this_chatroom:
+                    print('This member count:', this_chatroom.member_count)
                     total_inc += this_chatroom.member_count
                 else:
                     logger.warning('Can not find this chatroom:{}'.format(j.chatroomname))
