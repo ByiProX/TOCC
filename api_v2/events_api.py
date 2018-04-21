@@ -30,7 +30,6 @@ def para_check(need_list, *parameters):
 
     return _wrapper
 
-
 @app_test.route('/events_init', methods=['POST'])
 @para_check('token')
 def create_event_init():
@@ -185,8 +184,8 @@ def create_event():
     new_thread.start()
 
     # Save at final.
-    events_chatroom.save()
-    event.save()
+    if not events_chatroom.save() or not event.save():
+        return response({'err_code': -3, 'err_info': 'Save error!'})
 
     return response({'err_code': 0, 'content': {'event_id': event_id}})
 
@@ -455,11 +454,17 @@ def events_list():
 def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
     print('Rewrite running.')
     flag = True
+    # Get roomowner's bot_username
+    client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': roomowner}))
+    client_id = client_member.client_id
+    client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': client_id}))
+    bot_username = client_bot_r.bot_username
+
     while flag:
-        time.sleep(0.1)
+        time.sleep(2)
         chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                        BaseModel.where_dict(
-                                           {'roomowner': roomowner, 'nickname_real': chatroom_nickname}))
+                                           {'roomowner': bot_username, 'nickname_real': chatroom_nickname}))
         if chatroom is not None:
             chatroomname = chatroom.chatroomname
             events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
@@ -471,6 +476,7 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
             event.enough_chatroom = 1
             event.save()
             flag = False
+    print('Rewrite ok.')
     return ' '
 
 
@@ -723,3 +729,8 @@ def put_img_to_oss(file_name, data_as_string):
 new_thread_3 = threading.Thread(target=open_chatroom_name_protect)
 new_thread_3.setDaemon(True)
 new_thread_3.start()
+
+new_thread = threading.Thread(target=rewrite_events_chatroom,
+                              args=('wxid_gm8v2kgzu19b21', 'lileitest1群', '5ad838a1f5d7e20df4071e5f'))
+new_thread.setDaemon(True)
+new_thread.start()

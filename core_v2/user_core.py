@@ -240,8 +240,7 @@ def modelList2Arr(mlist):
 
 
 def cal_user_basic_page_info(user_info):
-    ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id})) 
-    logger.info(u"ubr_info ::: %s." % ubr_info.to_json())
+    ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
    
 
     if ubr_info:

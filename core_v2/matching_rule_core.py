@@ -86,6 +86,8 @@ def get_gm_default_rule_dict():
     # 目前先用主表来判断
     coin_list = BaseModel.fetch_all(Coin, "*", where_clause = {"is_integral": 1})
     for coin in coin_list:
+        if coin.symbol in ["OK", "YES"]:
+            continue
         if coin.symbol:
             gm_default_rule_dict["is_full_match"].setdefault(coin.symbol, coin.coin_id)
         if coin.coin_name_cn:
