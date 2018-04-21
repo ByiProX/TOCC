@@ -262,7 +262,7 @@ def get_events_qrcode():
         chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
         if chatroom_info:
             chatroom_dict[i.chatroomname] = (
-                chatroom_info.member_count, chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.avatar_url,
+                len(chatroom_info.memberlist.split(';')), chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.avatar_url,
                 chatroom_info.update_time)
 
     if chatroom_dict:
@@ -434,8 +434,8 @@ def events_list():
                                                     BaseModel.where_dict({'chatroomname': j.chatroomname}))
 
                 if this_chatroom:
-                    if this_chatroom.member_count:
-                        total_inc += this_chatroom.member_count
+                    if this_chatroom.memberlist:
+                        total_inc += len(this_chatroom.memberlist.split(';'))
                 else:
                     logger.warning('Can not find this chatroom:{}'.format(j.chatroomname))
 
