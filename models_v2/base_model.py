@@ -290,6 +290,8 @@ class BaseModel(object):
 
     @staticmethod
     def fetch_all(tablename, select_colums, where_clause = None, limit = None, offset = None, order_by = None, **kwargs):
+        
+        logger.error(u"fetch_all params: : %s " % tablename)
         query_clause = dict()
         if not select_colums == '*':
             if not isinstance(select_colums, list):
