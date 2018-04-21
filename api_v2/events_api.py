@@ -30,6 +30,7 @@ def para_check(need_list, *parameters):
 
     return _wrapper
 
+
 @app_test.route('/events_init', methods=['POST'])
 @para_check('token')
 def create_event_init():
@@ -452,7 +453,7 @@ def events_list():
 
 
 def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
-    print('Rewrite running.')
+    print('Rewrite running,{},{},{}'.format(roomowner, chatroom_nickname, event_id))
     flag = True
     # Get roomowner's bot_username
     client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': roomowner}))
@@ -730,7 +731,12 @@ new_thread_3 = threading.Thread(target=open_chatroom_name_protect)
 new_thread_3.setDaemon(True)
 new_thread_3.start()
 
-new_thread = threading.Thread(target=rewrite_events_chatroom,
-                              args=('wxid_gm8v2kgzu19b21', 'lileitest1群', '5ad838a1f5d7e20df4071e5f'))
-new_thread.setDaemon(True)
-new_thread.start()
+
+def events_chatroomname_check():
+    chatrooms = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'chatroomname': 'default'}))
+
+    for i in chatrooms:
+        new_thread = threading.Thread(target=rewrite_events_chatroom,
+                                      args=(i.roomowner, i.chatroom_nickname, i.event_id))
+        new_thread.setDaemon(True)
+        new_thread.start()
