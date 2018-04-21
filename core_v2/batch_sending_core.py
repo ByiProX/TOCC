@@ -58,7 +58,7 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
         for content in content_list:
             message_json = dict()
             message_json["task_send_type"] = content.get("type")
-            message_json["text"] = content.get("text")
+            message_json["text"] = content.get("content")
             message_json["seq"] = content.get("seq")
             message_list.append(message_json)
 
