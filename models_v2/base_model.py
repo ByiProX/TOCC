@@ -26,6 +26,7 @@ class BaseModel(object):
 
     @staticmethod
     def create_model(tablename):
+        print 'create_model,table:::' , tablename,DB_RULE
         base_model = BaseModel(tablename, DB_RULE[tablename])
         return base_model
 
@@ -380,11 +381,11 @@ class BaseModel(object):
         response = requests.get(url = url, params = query_clause)
         if response.status_code == 200:
             response_json = json.loads(response.content)
-            print "response_json::::",response_json
             code = response_json.get(u"code")
             if code == 0:
                 data = response_json.get(u"data")
                 if data:
+
                     item = CM(tablename).from_json(data[0])
             else:
                 logger.error(u"fetch_one  url : : %s " % url )
