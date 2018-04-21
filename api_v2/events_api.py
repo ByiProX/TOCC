@@ -256,17 +256,15 @@ def get_events_qrcode():
         return response({'err_code': 0,
                          'content': {'event_status': 4, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
                                      'qr_end_date': ''}})
-    print(in_base_status)
+
     chatroom_dict = {}
     for i in chatroom_list:
-        print(555)
         chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
         if chatroom_info:
-            print(666)
             chatroom_dict[i.chatroomname] = (
                 chatroom_info.member_count, chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.avatar_url,
                 chatroom_info.update_time)
-    print(chatroom_dict)
+
     if chatroom_dict:
         for k, v in chatroom_dict.items():
             if v[0] < 100:
@@ -436,10 +434,7 @@ def events_list():
                                                     BaseModel.where_dict({'chatroomname': j.chatroomname}))
 
                 if this_chatroom:
-                    print('This member count:', this_chatroom.member_count)
                     total_inc += this_chatroom.member_count
-                    print(total_inc)
-                    print(i.events_id)
                 else:
                     logger.warning('Can not find this chatroom:{}'.format(j.chatroomname))
 
@@ -521,7 +516,6 @@ def create_chatroom_for_scan(event_id, client_id, owner, start_name):
     try:
         create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
                                              json=create_chatroom_dict)
-        print(create_chatroom_resp.text)
     except Exception as e:
         logger.warning('Create chatroom request error:{}'.format(e))
     # Add chatroom info in relationship.
@@ -533,23 +527,7 @@ def create_chatroom_for_scan(event_id, client_id, owner, start_name):
     events_chatroom.roomowner = owner
 
     # Update chatroomname.
-    flag = True
-    while flag:
-        time.sleep(0.1)
-        chatroom = BaseModel.fetch_one('a_chatroom', '*',
-                                       BaseModel.where_dict(
-                                           {'roomowner': owner, 'nickname_real': chatroom_nickname}))
-        if chatroom is not None:
-            chatroomname = chatroom.chatroomname
-            events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
-                {'roomowner': owner, 'chatroom_nickname': chatroom_nickname}))
-            events_chatroom.chatroomname = chatroomname
-            events_chatroom.save()
-            # Make events have enough chatroom.
-            event = BaseModel.fetch_by_id('events', event_id)
-            event.enough_chatroom = 1
-            event.save()
-            flag = False
+    rewrite_events_chatroom(owner, chatroom_nickname, event_id)
     return ' '
 
 
