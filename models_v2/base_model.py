@@ -317,7 +317,7 @@ class BaseModel(object):
         #     for key, value in query_clause.iteritems():
         #         url += unicode(key) + u"=" + urlencode(unicode(value)) + u"&"
         page = 1
-        errTry = 1
+        errTry = 1 
         eof = False
         while not eof:
             if errTry>=3:
