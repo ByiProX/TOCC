@@ -405,6 +405,7 @@ def events_detail():
     content['event_status'] = status_detect(event.start_time, event.end_time, event.is_work, event.is_finish,
                                             event.enough_chatroom)
     result['content'] = content
+    print(result)
     return response(result)
 
 
