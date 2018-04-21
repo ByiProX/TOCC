@@ -55,6 +55,7 @@ class BaseModel(object):
         return __attrs, __required
 
     def from_json(self, data_json):
+        print 'from json:::',data_json
         for key in data_json.keys():
             if key == u'_id':
                 _id = data_json.get(key).get(u"$oid")
