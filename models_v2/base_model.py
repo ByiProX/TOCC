@@ -314,7 +314,7 @@ class BaseModel(object):
         item_list = list()
         url = DB_SERVER_URL + tablename + u's'
         
-        logger.error(u"fetch_all params: : %s ::: %s" % tablename % url)
+        logger.error(u"fetch_all  url : : %s " % url )
         # if query_clause:
         #     url += u"?"
         #     for key, value in query_clause.iteritems():
@@ -347,10 +347,10 @@ class BaseModel(object):
                         eof = True
                 else:
                     errTry += 1
-                    logger.error(u"query failed, content: " + unicode(response.content) + url)
+                    logger.error(u"query failed, content: " + unicode(response.content))
             else:
                 errTry += 1
-                logger.error(u"query failed, content: " + unicode(response.content)+ url)
+                logger.error(u"query failed, content: " + unicode(response.content))
         return item_list
 
     @staticmethod
@@ -384,9 +384,11 @@ class BaseModel(object):
                 if data:
                     item = CM(tablename).from_json(data[0])
             else:
-                logger.error(u"query failed, content: " + unicode(response.content) + url)
+                logger.error(u"fetch_one  url : : %s " % url )
+                logger.error(u"query failed, content: " + unicode(response.content))
         else:
-            logger.error(u"query failed, content: " + unicode(response.content) + url)
+            logger.error(u"fetch_one  url : : %s " % url )
+            logger.error(u"query failed, content: " + unicode(response.content))
         return item
 
     @staticmethod
@@ -402,8 +404,10 @@ class BaseModel(object):
                 if data:
                     item = CM(tablename).from_json(data)
             else:
+                logger.error(u"fetch_by_id  url : : %s " % url )
                 logger.error(u"query failed, content: " + unicode(response.content))
         else:
+            logger.error(u"fetch_by_id  url : : %s " % url )
             logger.error(u"query failed, content: " + unicode(response.content))
         return item
 
