@@ -55,7 +55,6 @@ class BaseModel(object):
         return __attrs, __required
 
     def from_json(self, data_json):
-        print 'from json:::',data_json
         for key in data_json.keys():
             if key == u'_id':
                 _id = data_json.get(key).get(u"$oid")
@@ -388,8 +387,8 @@ class BaseModel(object):
                 data = response_json.get(u"data")
                 if data:
                     print 'response_json data::',data[0]
+                    print 'CM(tablename):::',CM(tablename)
                     item = CM(tablename).from_json(data[0])
-                    print 'item:::',item.to_json()
             else:
                 logger.error(u"fetch_one  url : : %s " % url )
                 logger.error(u"query failed, content: " + unicode(response.content))
