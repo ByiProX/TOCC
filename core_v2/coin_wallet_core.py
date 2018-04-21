@@ -157,9 +157,11 @@ def check_whether_message_is_a_coin_wallet(a_message):
     message_text = str_to_unicode(a_message.real_content).strip()
     # 此处正则为0x开头的由这些东西组成的从头到尾的字符串
     if re.match('^0x[0-9a-zA-Z]+$', message_text) and 6 <= len(message_text) < 250:
+        logger.info("find cion addr  message_text:::"+message_text)
         _save_coin_wallet(a_message, message_text)
         return True
     else:
+        logger.info("not find and message_text===:::"+message_text)
         fa = message_text.find(u"钱包#")
         if fa == -1:
             return False
