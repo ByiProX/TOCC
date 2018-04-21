@@ -317,8 +317,12 @@ class BaseModel(object):
         #     for key, value in query_clause.iteritems():
         #         url += unicode(key) + u"=" + urlencode(unicode(value)) + u"&"
         page = 1
+        errTry = 1
         eof = False
         while not eof:
+            if errTry>=3:
+                eof = True
+                return item_list
             response = requests.get(url = url, params = query_clause)
             page += 1
             query_clause["page"] = page
@@ -339,8 +343,10 @@ class BaseModel(object):
                     else:
                         eof = True
                 else:
+                    errTry += 1
                     logger.error(u"query failed, content: " + unicode(response.content))
             else:
+                errTry += 1
                 logger.error(u"query failed, content: " + unicode(response.content))
         return item_list
 
