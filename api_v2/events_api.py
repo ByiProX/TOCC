@@ -30,7 +30,6 @@ def para_check(need_list, *parameters):
 
     return _wrapper
 
-
 @app_test.route('/events_init', methods=['POST'])
 @para_check('token')
 def create_event_init():

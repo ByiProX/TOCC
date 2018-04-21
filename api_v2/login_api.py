@@ -213,7 +213,7 @@ def verify_pc_login_qr():
     return make_response(SUCCESS, is_login = False)
 
 
-# add by Quentin
+# add by Quentin below
 @main_api_v2.route("/get_signature", methods=['POST'])
 def get_signature():
     url = request.json.get("url")
@@ -230,4 +230,24 @@ def get_signature():
     except Exception as e:
         logger.error('ERROR  %s' % e)
         return make_response(ERR_INVALID_PARAMS)
+
+
+@main_api_v2.route("/make_pic_2_qr", methods=['POST'])
+def make_pic_2_qr():
+    pic_url = request.json.get('url')
+
+    qr = qrcode.QRCode(
+        version=3,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=8,
+        border=3,
+    )
+    qr.add_data(pic_url)
+    qr.make()
+    img = qr.make_image()
+    buffer = cStringIO.StringIO()
+    img.save(buffer, format="PNG")
+    b64qr = base64.b64encode(buffer.getvalue())
+
+    return make_response(SUCCESS, qr=b64qr)
 
