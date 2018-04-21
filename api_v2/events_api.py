@@ -425,7 +425,7 @@ def events_list():
     result = {'err_code': 0, 'content': []}
     for i in events:
         temp = {}
-        today_inc, total_inc = inc_info(i.get_id())
+        today_inc, all_inc = inc_info(i.get_id())
         # Get chatroom info.
         event_chatroom_list = BaseModel.fetch_all('events_chatroom', '*',
                                                   BaseModel.where_dict({"event_id": i.events_id}))
@@ -438,6 +438,8 @@ def events_list():
                 if this_chatroom:
                     print('This member count:', this_chatroom.member_count)
                     total_inc += this_chatroom.member_count
+                    print(total_inc)
+                    print(i.events_id)
                 else:
                     logger.warning('Can not find this chatroom:{}'.format(j.chatroomname))
 
