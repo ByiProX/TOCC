@@ -256,7 +256,7 @@ def get_events_qrcode():
         return response({'err_code': 0,
                          'content': {'event_status': 4, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
                                      'qr_end_date': ''}})
-
+    print(in_base_status)
     chatroom_dict = {}
     for i in chatroom_list:
         print(555)
