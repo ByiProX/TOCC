@@ -185,7 +185,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
         message_dict["seq"] = i
         content_list.append(message_dict)
 
-    batch_send_task.content_list = json.loads(content_list)
+    batch_send_task.content_list = content_list
 
     batch_send_task.save()
     ubr = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
