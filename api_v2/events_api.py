@@ -185,8 +185,8 @@ def create_event():
     new_thread.start()
 
     # Save at final.
-    events_chatroom.save()
-    event.save()
+    if not events_chatroom.save() or not event.save():
+        return response({'err_code': -3, 'err_info': 'Save error!'})
 
     return response({'err_code': 0, 'content': {'event_id': event_id}})
 
