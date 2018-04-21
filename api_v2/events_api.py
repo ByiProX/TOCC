@@ -180,7 +180,7 @@ def create_event():
     events_chatroom.roomowner = event.owner
 
     new_thread = threading.Thread(target=rewrite_events_chatroom,
-                                  args=(_bot_username, chatroom_nickname, event.events_id))
+                                  args=(event.owner, chatroom_nickname, event.events_id))
     new_thread.setDaemon(True)
     new_thread.start()
 
@@ -455,11 +455,15 @@ def events_list():
 def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
     print('Rewrite running.')
     flag = True
+    # Get roomowner's bot_username
+    client_id = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': roomowner})).client_id
+    bot_username = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': client_id})).bot_username
+
     while flag:
         time.sleep(2)
         chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                        BaseModel.where_dict(
-                                           {'roomowner': roomowner, 'nickname_real': chatroom_nickname}))
+                                           {'roomowner': bot_username, 'nickname_real': chatroom_nickname}))
         if chatroom is not None:
             chatroomname = chatroom.chatroomname
             events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
@@ -726,6 +730,6 @@ new_thread_3.setDaemon(True)
 new_thread_3.start()
 
 new_thread = threading.Thread(target=rewrite_events_chatroom,
-                              args=('wxid_3mxn5zyskbpt22', 'lileitest1群', '5ad838a1f5d7e20df4071e5f'))
+                              args=('wxid_gm8v2kgzu19b21', 'lileitest1群', '5ad838a1f5d7e20df4071e5f'))
 new_thread.setDaemon(True)
 new_thread.start()
