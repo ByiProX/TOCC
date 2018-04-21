@@ -291,7 +291,6 @@ class BaseModel(object):
     @staticmethod
     def fetch_all(tablename, select_colums, where_clause = None, limit = None, offset = None, order_by = None, **kwargs):
         
-        logger.error(u"fetch_all params: : %s " % tablename)
         query_clause = dict()
         if not select_colums == '*':
             if not isinstance(select_colums, list):
@@ -314,6 +313,8 @@ class BaseModel(object):
 
         item_list = list()
         url = DB_SERVER_URL + tablename + u's'
+        
+        logger.error(u"fetch_all params: : %s ::: %s" % tablename % url)
         # if query_clause:
         #     url += u"?"
         #     for key, value in query_clause.iteritems():
