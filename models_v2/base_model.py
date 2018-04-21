@@ -26,8 +26,6 @@ class BaseModel(object):
 
     @staticmethod
     def create_model(tablename):
-        if tablename != 'coin':
-           print 'create_model,table:::' , tablename
         base_model = BaseModel(tablename, DB_RULE[tablename])
         return base_model
 
@@ -292,7 +290,7 @@ class BaseModel(object):
 
     @staticmethod
     def fetch_all(tablename, select_colums, where_clause = None, limit = None, offset = None, order_by = None, **kwargs):
-        
+         
         query_clause = dict()
         if not select_colums == '*':
             if not isinstance(select_colums, list):
@@ -315,8 +313,7 @@ class BaseModel(object):
 
         item_list = list()
         url = DB_SERVER_URL + tablename + u's'
-        
-        logger.error(u"fetch_all  url : : %s " % url )
+        logger.info(u"request url : " + url)
         # if query_clause:
         #     url += u"?"
         #     for key, value in query_clause.iteritems():
@@ -373,8 +370,6 @@ class BaseModel(object):
 
         item = None
         url = DB_SERVER_URL + tablename + u's'
-        print 'url::::',url
-        print query_clause
         # if query_clause:
         #     url += u"?"
         #     for key, value in query_clause.iteritems():
@@ -386,14 +381,10 @@ class BaseModel(object):
             if code == 0:
                 data = response_json.get(u"data")
                 if data:
-                    print 'response_json data::',data[0]
-                    print 'CM(tablename):::',CM(tablename)
                     item = CM(tablename).from_json(data[0])
             else:
-                logger.error(u"fetch_one  url : : %s " % url )
                 logger.error(u"query failed, content: " + unicode(response.content))
         else:
-            logger.error(u"fetch_one  url : : %s " % url )
             logger.error(u"query failed, content: " + unicode(response.content))
         return item
 
@@ -410,10 +401,8 @@ class BaseModel(object):
                 if data:
                     item = CM(tablename).from_json(data)
             else:
-                logger.error(u"fetch_by_id  url : : %s " % url )
                 logger.error(u"query failed, content: " + unicode(response.content))
         else:
-            logger.error(u"fetch_by_id  url : : %s " % url )
             logger.error(u"query failed, content: " + unicode(response.content))
         return item
 
@@ -477,6 +466,7 @@ def extract_from_json():
             DB_RULE.update(json.load(f))
 
 extract_from_json()
+
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
