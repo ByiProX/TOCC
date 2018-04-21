@@ -347,10 +347,10 @@ class BaseModel(object):
                         eof = True
                 else:
                     errTry += 1
-                    logger.error(u"query failed, content: " + unicode(response.content))
+                    logger.error(u"query failed, content: " + unicode(response.content) + url)
             else:
                 errTry += 1
-                logger.error(u"query failed, content: " + unicode(response.content))
+                logger.error(u"query failed, content: " + unicode(response.content)+ url)
         return item_list
 
     @staticmethod
@@ -384,9 +384,9 @@ class BaseModel(object):
                 if data:
                     item = CM(tablename).from_json(data[0])
             else:
-                logger.error(u"query failed, content: " + unicode(response.content))
+                logger.error(u"query failed, content: " + unicode(response.content) + url)
         else:
-            logger.error(u"query failed, content: " + unicode(response.content))
+            logger.error(u"query failed, content: " + unicode(response.content) + url)
         return item
 
     @staticmethod
