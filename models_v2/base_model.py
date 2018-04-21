@@ -26,7 +26,7 @@ class BaseModel(object):
 
     @staticmethod
     def create_model(tablename):
-        print 'create_model,table:::' , tablename,DB_RULE
+        print 'create_model,table:::' , tablename
         base_model = BaseModel(tablename, DB_RULE[tablename])
         return base_model
 
