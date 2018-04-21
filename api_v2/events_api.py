@@ -434,7 +434,8 @@ def events_list():
                                                     BaseModel.where_dict({'chatroomname': j.chatroomname}))
 
                 if this_chatroom:
-                    total_inc += this_chatroom.member_count
+                    if this_chatroom.member_count:
+                        total_inc += this_chatroom.member_count
                 else:
                     logger.warning('Can not find this chatroom:{}'.format(j.chatroomname))
 
