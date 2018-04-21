@@ -259,8 +259,10 @@ def get_events_qrcode():
 
     chatroom_dict = {}
     for i in chatroom_list:
+        print(555)
         chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
         if chatroom_info:
+            print(666)
             chatroom_dict[i.chatroomname] = (
                 chatroom_info.member_count, chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.avatar_url,
                 chatroom_info.update_time)
