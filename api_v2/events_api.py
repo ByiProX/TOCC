@@ -432,11 +432,11 @@ def events_list():
         for j in event_chatroom_list:
             if j.chatroomname != 'default':
                 this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
-                                                    BaseModel.where_dict({'chatroomname': i.chatroomname}))
+                                                    BaseModel.where_dict({'chatroomname': j.chatroomname}))
                 if this_chatroom:
                     total_inc += this_chatroom.member_count
                 else:
-                    logger.warning('Can not find this chatroom:{}'.format(i.chatroomname))
+                    logger.warning('Can not find this chatroom:{}'.format(j.chatroomname))
 
         temp.update({
             'event_id': i.events_id,
