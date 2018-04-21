@@ -413,7 +413,6 @@ def events_detail():
 
 
 @app_test.route('/events_list', methods=['POST'])
-@para_check('token')
 def events_list():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
@@ -435,6 +434,7 @@ def events_list():
             if j.chatroomname != 'default':
                 this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                                     BaseModel.where_dict({'chatroomname': j.chatroomname}))
+                print('xxxxxxxxx')
                 if this_chatroom:
                     total_inc += this_chatroom.member_count
                 else:
