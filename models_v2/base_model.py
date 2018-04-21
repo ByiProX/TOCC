@@ -472,6 +472,12 @@ class BaseModel(object):
 
 CM = BaseModel.create_model
 
+def extract_from_json():
+        with open("conf.json", "r") as f:
+            DB_RULE.update(json.load(f))
+
+extract_from_json()
+
 if __name__ == '__main__':
     BaseModel.extract_from_json()
     now_time = datetime_to_timestamp_utc_8(datetime.now())
