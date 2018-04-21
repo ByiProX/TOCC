@@ -264,7 +264,7 @@ def get_events_qrcode():
             chatroom_dict[i.chatroomname] = (
                 chatroom_info.member_count, chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.avatar_url,
                 chatroom_info.update_time)
-
+    print(chatroom_dict)
     if chatroom_dict:
         for k, v in chatroom_dict.items():
             if v[0] < 100:
