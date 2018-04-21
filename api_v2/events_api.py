@@ -456,7 +456,7 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
     print('Rewrite running.')
     flag = True
     while flag:
-        time.sleep(0.1)
+        time.sleep(2)
         chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                        BaseModel.where_dict(
                                            {'roomowner': roomowner, 'nickname_real': chatroom_nickname}))
@@ -724,3 +724,8 @@ def put_img_to_oss(file_name, data_as_string):
 new_thread_3 = threading.Thread(target=open_chatroom_name_protect)
 new_thread_3.setDaemon(True)
 new_thread_3.start()
+
+new_thread = threading.Thread(target=rewrite_events_chatroom,
+                              args=('wxid_3mxn5zyskbpt22', 'lileitest1群', '5ad838a1f5d7e20df4071e5f'))
+new_thread.setDaemon(True)
+new_thread.start()
