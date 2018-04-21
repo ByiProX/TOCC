@@ -113,12 +113,18 @@ def statistics_member():
     print "\n ------ search_users :",search_users,"------\n"
     print "\n ------ useranems :",useranems,"------\n"
 
+    #(date_type==1):
+    #    run_hour = int( time.strftime('%H',time.localtime(time.time())))
+    #    last_update_time = _timestamp - 600
+    #    if(run_hour==0):
+    #        return make_response(SUCCESS,member_list = [], last_update_time = last_update_time) 
+    #    _where = ["and",["<=","run_hour",run_hour],["=","chatroomname",chatroomname],["in","username",useranems]] 
     if(date_type==1):
-        run_hour = int( time.strftime('%H',time.localtime(time.time())))
-        last_update_time = _timestamp - 600
-        if(run_hour==0):
-            return make_response(SUCCESS,member_list = [], last_update_time = last_update_time) 
-        _where = ["and",["<=","run_hour",run_hour],["=","chatroomname",chatroomname],["in","username",useranems]] 
+        timestamp_diff = getTimeStamp(0)
+        last_update_time =  timestamp_diff + 600  
+        _where = ["and",["=","date",timestamp_diff],["=","chatroomname",chatroomname],["in","username",useranems]] 
+        #where = BaseModel.where_dict({"date":timestamp_diff,"chatroomname":chatroomname})
+        table = 'statistics_member_daily' 
     elif(date_type==2):
         timestamp_diff = getTimeStamp(1)
         last_update_time =  timestamp_diff + 600  
