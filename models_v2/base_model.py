@@ -388,6 +388,7 @@ class BaseModel(object):
                 if data:
                     print 'response_json data::',data[0]
                     item = CM(tablename).from_json(data[0])
+                    print 'item:::',item.to_json()
             else:
                 logger.error(u"fetch_one  url : : %s " % url )
                 logger.error(u"query failed, content: " + unicode(response.content))
