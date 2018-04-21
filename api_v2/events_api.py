@@ -381,6 +381,7 @@ def events_detail():
                     })
     # Add chatroom info.
     content['chatrooms'] = []
+    content_chatrooms = []
     event_chatroom_list = BaseModel.fetch_all('events_chatroom', '*',
                                               BaseModel.where_dict({'event_id': event.events_id}))
     for i in event_chatroom_list:
@@ -390,7 +391,8 @@ def events_detail():
             result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': i.chatroomname,
                       'chatroom_status': 1,
                       'chatroom_member_num': this_chatroom.member_count}
-            content['chatrooms'].append(result)
+            content_chatrooms.append(result)
+    content['chatrooms'] = content_chatrooms
 
     _temp = content.copy()
 
@@ -405,7 +407,7 @@ def events_detail():
     content['event_status'] = status_detect(event.start_time, event.end_time, event.is_work, event.is_finish,
                                             event.enough_chatroom)
     result['content'] = content
-    print(type(result), result['content'])
+
     return response(result)
 
 
