@@ -153,7 +153,7 @@ class WechatConn:
         now = int(time.time())
         if not self.jsapi_ticket or self.jsapi_ticket.expired_time <= now:
             res = self.wechat_get(jsapi_ticket_url)
-            res_json = json.loads(res.content)
+            res_json = json.loads(res.content, strict=False)
 
             if self.jsapi_ticket is None:
                 self.jsapi_ticket = CM(JsapiTicket)
@@ -163,7 +163,7 @@ class WechatConn:
                 return self.jsapi_ticket.ticket
             elif self.jsapi_ticket.expired_time <= now:
                 self.jsapi_ticket = BaseModel.fetch_all('jsapi_ticket', '*')[0]
-                self.jsapi_ticket.ticket = res_json.get("jsapi_ticket")
+                self.jsapi_ticket.ticket = res_json.get("ticket")
                 self.jsapi_ticket.expired_time = now + res_json.get("expires_in")
                 self.jsapi_ticket.update()
                 return self.jsapi_ticket.ticket
