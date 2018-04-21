@@ -371,7 +371,7 @@ class BaseModel(object):
 
         item = None
         url = DB_SERVER_URL + tablename + u's'
-        logger.error(u"fetch_one  url : : %s " % url )
+        print 'url::::',url
         print query_clause
         # if query_clause:
         #     url += u"?"
