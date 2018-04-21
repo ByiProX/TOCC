@@ -180,7 +180,7 @@ def create_event():
     events_chatroom.roomowner = event.owner
 
     new_thread = threading.Thread(target=rewrite_events_chatroom,
-                                  args=(event.owner, chatroom_nickname, event.events_id))
+                                  args=(_bot_username, chatroom_nickname, event.events_id))
     new_thread.setDaemon(True)
     new_thread.start()
 
@@ -471,6 +471,7 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
             event.enough_chatroom = 1
             event.save()
             flag = False
+    print('Rewrite ok.')
     return ' '
 
 
