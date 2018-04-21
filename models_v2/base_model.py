@@ -386,7 +386,7 @@ class BaseModel(object):
             if code == 0:
                 data = response_json.get(u"data")
                 if data:
-
+                    print 'response_json data::',data[0]
                     item = CM(tablename).from_json(data[0])
             else:
                 logger.error(u"fetch_one  url : : %s " % url )
