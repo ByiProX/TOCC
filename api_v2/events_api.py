@@ -453,10 +453,10 @@ def events_list():
 
 def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
     print('Rewrite running.')
+    print 'roomowner:::',roomowner
     flag = True
     # Get roomowner's bot_username
     client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': roomowner}))
-    print 'roomowner:::',roomowner
     print client_member.to_json()
 
     client_id = client_member.client_id
