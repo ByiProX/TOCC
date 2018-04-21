@@ -740,3 +740,6 @@ def events_chatroomname_check():
                                       args=(i.roomowner, i.chatroom_nickname, i.event_id))
         new_thread.setDaemon(True)
         new_thread.start()
+
+
+events_chatroomname_check()
