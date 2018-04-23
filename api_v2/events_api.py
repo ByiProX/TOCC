@@ -48,7 +48,7 @@ def create_event_init():
             if i.is_finish == 0:
                 previous_event = BaseModel.fetch_one('events', '*',
                                                      BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-                alive_qrcode_url = 'http://test2.xuanren360.com/chatroom.html?event_id={}'.format(
+                alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect'.format(
                     previous_event.events_id)
                 event_id = previous_event.events_id
                 return response({'err_code': 0, 'content': {'alive_qrcode_url': alive_qrcode_url,
@@ -66,7 +66,7 @@ def create_event_init():
     # Add QRcode URL.
     previous_event = BaseModel.fetch_one('events', '*',
                                          BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-    alive_qrcode_url = 'http://test2.xuanren360.com/chatroom.html?event_id={}'.format(previous_event.events_id)
+    alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect'.format(previous_event.events_id)
     previous_event.alive_qrcode_url = alive_qrcode_url
     previous_event.update()
     # Static word.
@@ -233,10 +233,13 @@ def disable_events():
 
 
 @app_test.route('/events_qrcode', methods=['POST'])
-@para_check('event_id', )
+@para_check('event_id', 'code', 'app_name')
 def get_events_qrcode():
     """Get event base info (for qrcode)."""
     event_id = request.json.get('event_id')
+    user_login = UserLogin(request.json.get('code'), request.json.get('app_name'))
+    status, user_info = user_login.get_user_token()
+    user_nickname = user_info.nick_name
 
     # Handle.
     event = BaseModel.fetch_by_id('events', event_id)
