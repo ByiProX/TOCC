@@ -393,6 +393,7 @@ def get_active_chatroom_count():
 
     chatroom_statis = BaseModel.fetch_all(table, '*', where_clause = BaseModel.where_dict(_where))
     chatroomnames = [r.chatroomname for r in chatroom_statis]
+    print "chatroomnames", chatroomnames
     active_chatroom_count = len(chatroom_statis)
     non_active_chatroom_count = BaseModel.count(Chatroom, where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]))
 
