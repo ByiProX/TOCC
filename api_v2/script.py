@@ -17,7 +17,7 @@ def script():
     # uqr = BaseModel.fetch_by_id("client_qun_r", "5ad46153f5d7e26589658ba7")
     # uqr.group_id = u"4_0"
     # uqr.update()
-    user_info_list = BaseModel.fetch_all("client_members", "*")
+    user_info_list = BaseModel.fetch_all("client_member", "*")
     for user_info in user_info_list:
         user_info.app = "yaca"
         user_info.save()

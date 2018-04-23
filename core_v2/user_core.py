@@ -174,6 +174,7 @@ class UserLogin:
             self.user_info_up_to_date.avatar_url = res_json.get('avatar_url')
 
             self.user_info_up_to_date.username = ""
+            self.user_info_up_to_date.app = self.app
 
         # 获取wechat端信息失败
         else:

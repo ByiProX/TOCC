@@ -191,6 +191,7 @@ def get_chatroom_list():
 @main_api_v2.route('/wallets_delete', methods=['POST'])
 @para_check('id', 'token')
 def app_wallets_delete():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
