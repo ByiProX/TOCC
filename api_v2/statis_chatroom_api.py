@@ -321,7 +321,7 @@ def get_active_chatroom_count():
     chatroomnames = [r.chatroomname for r in chatroom_statis]
     print "chatroomnames", chatroomnames
     active_chatroom_count = len(chatroom_statis)
-    total_count = BaseModel.count(Chatroom, where_clause = BaseModel.where_dict({"client_id", user_info.client_id}))
+    total_count = BaseModel.count(Chatroom, where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
     non_active_chatroom_count = total_count - active_chatroom_count
 
     return make_response(SUCCESS, active_chatroom_count = active_chatroom_count, non_active_chatroom_count = non_active_chatroom_count)
