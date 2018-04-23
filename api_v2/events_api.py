@@ -162,6 +162,15 @@ def create_event():
             "chatroom_nickname": chatroom_nickname
         }
     }
+    # Try create chatroom.
+    try:
+        create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
+                                             json=create_chatroom_dict)
+        if dict(create_chatroom_resp.json())['err_code'] == -1:
+            return response({'err_code': -3, 'err_info': 'Bot dead.'})
+    except Exception as e:
+        logger.warning('Create chatroom request error:{}'.format(e))
+        return response({'err_code': -3, 'err_info': 'Bot dead:e'})
 
     # Add chatroom relationship info in events_chatroom.
     events_chatroom = CM('events_chatroom')
@@ -182,15 +191,6 @@ def create_event():
     if not events_chatroom_save_success or not event_save_success:
         return response(
             {'err_code': -3, 'err_info': 'Save error:%s,%s' % (events_chatroom_save_success, event_save_success)})
-
-    try:
-        create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
-                                             json=create_chatroom_dict)
-        if dict(create_chatroom_resp.json())['err_code'] == -1:
-            return response({'err_code': -3, 'err_info': 'Bot dead.'})
-    except Exception as e:
-        logger.warning('Create chatroom request error:{}'.format(e))
-        return response({'err_code': -3, 'err_info': 'Bot dead:e'})
 
     return response({'err_code': 0, 'content': {'event_id': event_id}})
 
