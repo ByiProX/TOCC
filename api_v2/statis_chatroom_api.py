@@ -47,8 +47,7 @@ def getQunInfo(chatroomnames):
         qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname','member_count', 'avatar_url'],BaseModel.where("in", "chatroomname", chatroomnames))
         if (qunInfo):
             for qf in qunInfo:
-                _qfjson = qf.to_json()
-                print '6666666666', _qfjson
+                _qfjson = qf.to_json() 
                 ret[_qfjson["chatroomname"]] = _qfjson
     return ret
 
@@ -268,6 +267,7 @@ def sumList(chatroomlist):
                 ret[cm['chatroomname']]['out_count'] = ret[cm['chatroomname']]['out_count'] + cm['chatroomname']['out_count']
             else:
                 ret['chatroomname'] = cm
+    print "ret:;------------------",ret
     for i in ret:
         arr.append(ret[i])
     return arr
