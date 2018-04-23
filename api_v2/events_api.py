@@ -341,12 +341,13 @@ def modify_event_word():
     # Save poster_raw
     poster_raw = para_as_dict.get('poster_raw')
     if poster_raw:
-        try:
-            poster_raw = poster_raw.replace('data:image/png;base64,', '')
-            img_url = put_img_to_oss(event_id, poster_raw)
-        except Exception as e:
-            return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
-        para_as_dict['poster_raw'] = img_url
+        if 'http://ywbdposter.oss-cn-beijing.aliyuncs.com' not in poster_raw:
+            try:
+                poster_raw = poster_raw.replace('data:image/png;base64,', '')
+                img_url = put_img_to_oss(event_id, poster_raw)
+            except Exception as e:
+                return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
+            para_as_dict['poster_raw'] = img_url
     else:
         para_as_dict['poster_raw'] = ''
 
@@ -709,16 +710,56 @@ def open_chatroom_name_protect():
 
 
 def send_chatroom_welcome_word():
+    # Base status.
     chatroom_status_dict = dict()
+    chatroom_task_status_dict = dict()
+
+    def send_message(_bot_username, to, _type, content):
+        result = {'bot_username': _bot_username,
+                  'data': {
+                      "task": "send_message",
+                      "to": to,
+                      "type": _type,
+                      "content": content,
+                  }}
+
     while True:
-        # Get event which need send welcome_word
+        # Get all event.
         event_list = BaseModel.fetch_all('events', '*',
-                                         BaseModel.where_dict({'is_finish': 1, 'is_work': 1, 'need_fission': 1}))
+                                         BaseModel.where_dict({'is_finish': 1, 'is_work': 1, 'enough_chatroom': 1}))
+        previous_chatroom_status_dict = chatroom_status_dict
         for event in event_list:
             event_id = event.events_id
             # Get all chatroom in this event.
             chatroom_list = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'event_id': event_id}))
-            pass
+            for chatroom in chatroom_list:
+                if chatroom.chatroomname == 'default':
+                    continue
+                # Update status
+                this_chatroom = BaseModel.fetch_one('a_chatroom', 'memberlist',
+                                                    BaseModel.where_dict({'chatroomname': chatroom.chatroomname}))
+
+                if not this_chatroom:
+                    logger.warning('member_count ERROR!!! Can not find this_chatroom:%s' % chatroom.chatroomname)
+                    member_count = 0
+                else:
+                    member_count = len(this_chatroom.memberlist.split(';'))
+
+                chatroom_status_dict[chatroom.chatroomname] = member_count
+                need_fission,need_condition_word,need_pull_people = event.need_fission, event.need_condition_word, event.need_pull_people
+                # If previous chatroom list also have same chatroomname.
+                if previous_chatroom_status_dict.get(chatroom.chatroomname):
+                    previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
+                    now_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
+                    if previous_chatroom_member_count - now_chatroom_member_count > 0 and need_fission:
+                        # Send welcome message.
+                        pass
+                    if now_chatroom_member_count in (30, 50, 80) and need_pull_people:
+                        # Change chatroomnotice.
+                        pass
+                    if now_chatroom_member_count == 100 and need_condition_word:
+                        # Full people notice.
+                        pass
 
 
 def put_img_to_oss(file_name, data_as_string):
