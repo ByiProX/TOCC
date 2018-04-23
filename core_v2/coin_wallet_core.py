@@ -177,7 +177,8 @@ def _save_coin_wallet(a_message, wallet_address):
     if not a_chatroom:
         logger.error(u"没有找到该群的信息. chatroomname: %s." % chatroomname)
         return ERR_WRONG_ITEM
-    chatroom_nick = a_chatroom.nickname
+    # chatroom_nick = a_chatroom.nickname byquentin
+    chatroom_nickname = a_chatroom.nickname
     uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
     client_id_set = set()
     for uqr in uqr_list:
@@ -199,7 +200,8 @@ def _save_coin_wallet(a_message, wallet_address):
             wallet = CM(Wallet)
             wallet.client_id = client_id
             wallet.chatroomname = chatroomname
-            wallet.chatroom_nick = chatroom_nick
+            # wallet.chatroom_nick = chatroom_nick by quentin
+            wallet.chatroom_nickname = chatroom_nickname
             wallet.username = username
             wallet.address_count = 0
             wallet.create_time = now_time

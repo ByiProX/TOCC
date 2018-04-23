@@ -173,11 +173,12 @@ def get_chatroom_list():
         if _address is None:
             _address = ''
 
+        # by qurntin 将chatroom_nick 修改为 chatroom_nickname
         if keyword in _user_nick or keyword in _address:
             if i.chatroomname not in _chatroom_name_list:
                 _chatroom_name_list.append(i.chatroomname)
                 result['content']['chatroom_list'].append(
-                    {'chatroom_nickname': i.chatroom_nick, 'chatroomname': i.chatroomname})
+                    {'chatroom_nickname': i.chatroom_nickname, 'chatroomname': i.chatroomname})
 
     return response(result)
 
