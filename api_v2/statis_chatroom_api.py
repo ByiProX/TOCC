@@ -205,6 +205,7 @@ def chatroom_statistics_chatroom():
     if cacheData:
         print "cache hit"
         cacheData = json.loads(cacheData)
+        cacheData = sumList(cacheData)
         for cd in cacheData:
             return make_response(SUCCESS, chatroom_list = cacheData[cd], last_update_time = cd)
 
