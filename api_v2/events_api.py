@@ -162,16 +162,8 @@ def create_event():
             "chatroom_nickname": chatroom_nickname
         }
     }
-    try:
-        create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
-                                             json=create_chatroom_dict)
-        if dict(create_chatroom_resp.json())['err_code'] == -1:
-            return response({'err_code': -3, 'err_info': 'Bot dead.'})
-    except Exception as e:
-        logger.warning('Create chatroom request error:{}'.format(e))
-        return response({'err_code': -3, 'err_info': 'Bot dead:e'})
 
-    # Add chatroom info in relationship.
+    # Add chatroom relationship info in events_chatroom.
     events_chatroom = CM('events_chatroom')
     events_chatroom.index = event.start_index
     events_chatroom.chatroomname = 'default'
@@ -185,8 +177,20 @@ def create_event():
     new_thread.start()
 
     # Save at final.
-    if not events_chatroom.save() or not event.save():
-        return response({'err_code': -3, 'err_info': 'Save error!'})
+    events_chatroom_save_success = events_chatroom.save()
+    event_save_success = event.save()
+    if not events_chatroom_save_success or not event_save_success:
+        return response(
+            {'err_code': -3, 'err_info': 'Save error:%s,%s' % (events_chatroom_save_success, event_save_success)})
+
+    try:
+        create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
+                                             json=create_chatroom_dict)
+        if dict(create_chatroom_resp.json())['err_code'] == -1:
+            return response({'err_code': -3, 'err_info': 'Bot dead.'})
+    except Exception as e:
+        logger.warning('Create chatroom request error:{}'.format(e))
+        return response({'err_code': -3, 'err_info': 'Bot dead:e'})
 
     return response({'err_code': 0, 'content': {'event_id': event_id}})
 
@@ -262,7 +266,8 @@ def get_events_qrcode():
         chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
         if chatroom_info:
             chatroom_dict[i.chatroomname] = (
-                len(chatroom_info.memberlist.split(';')), chatroom_info.qrcode, chatroom_info.nickname_real, chatroom_info.avatar_url,
+                len(chatroom_info.memberlist.split(';')), chatroom_info.qrcode, chatroom_info.nickname_real,
+                chatroom_info.avatar_url,
                 chatroom_info.update_time)
 
     if chatroom_dict:
@@ -727,5 +732,4 @@ def events_chatroomname_check():
         new_thread.setDaemon(True)
         new_thread.start()
 
-
-events_chatroomname_check()
+# events_chatroomname_check()
