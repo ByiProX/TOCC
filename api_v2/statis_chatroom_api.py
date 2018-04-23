@@ -240,7 +240,7 @@ def chatroom_statistics_chatroom():
         rds.expire(cache_key, 10)
 
     if not is_active:
-        chatroom_list = BaseModel.fetch_all(Chatroom, "*", where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]))
+        chatroom_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]))
         chatroom_json_list = []
         for chatroom in chatroom_list:
             chatroom_json = chatroom.to_json_full()
@@ -321,7 +321,8 @@ def get_active_chatroom_count():
     chatroomnames = [r.chatroomname for r in chatroom_statis]
     print "chatroomnames", chatroomnames
     active_chatroom_count = len(chatroom_statis)
-    total_count = BaseModel.count(UserQunR, where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
-    non_active_chatroom_count = total_count - active_chatroom_count
+    non_active_chatroom_count = BaseModel.count(UserQunR, where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]))
+    # total_count = BaseModel.count(UserQunR, where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    # non_active_chatroom_count = total_count - active_chatroom_count
 
     return make_response(SUCCESS, active_chatroom_count = active_chatroom_count, non_active_chatroom_count = non_active_chatroom_count)
