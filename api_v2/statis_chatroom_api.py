@@ -240,12 +240,13 @@ def chatroom_statistics_chatroom():
         rds.expire(cache_key, 10)
 
     if not is_active:
-        chatroom_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]))
+        uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]), page = 1, pagesize = pagesize, orderBy = order)
+        chatroomname_list = [r.chatroomname for r in uqr_list]
+        qunInfo = getQunInfo(chatroomname_list)
         chatroom_json_list = []
-        for chatroom in chatroom_list:
+        for chatroom in qunInfo:
             chatroom_json = chatroom.to_json_full()
             chatroom_json_list.append(chatroom_json)
-        total_count = len(chatroom_list)
         return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
     return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
 
