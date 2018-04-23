@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from sqlalchemy import desc
-
-from configs.config import CONSUMPTION_TASK_TYPE, SUCCESS, Keywords, Coin
+from configs.config import SUCCESS, Keywords, Coin
 from core_v2.send_msg import send_msg_to_android
 from models_v2.base_model import BaseModel
 from utils.u_transformat import str_to_unicode
@@ -55,15 +53,22 @@ def match_message_by_rule(gm_rule_dict, a_message):
                 reply_content_list = matching_rule.get("reply_content")
                 status_flag = send_msg_to_android(a_message.bot_username, reply_content_list, [chatroomname])
                 if status_flag == SUCCESS:
-                    logger.info(u"自动回复任务发送成功, bot_username: %s." % a_message.bot_username)
+                    logger.info(u"精准匹配，自动回复任务发送成功, bot_username: %s." % a_message.bot_username)
                     break
                 else:
-                    logger.info(u"自动回复任务发送失败, bot_username: %s." % a_message.bot_username)
+                    logger.info(u"精准匹配，自动回复任务发送失败, bot_username: %s." % a_message.bot_username)
                     break
             if match_type == "fuzzy":
-                # Mark
-                # 暂时没有该类型
-                pass
+                for keyword in keywords_list:
+                    if content in keyword:
+                        reply_content_list = matching_rule.get("reply_content")
+                        status_flag = send_msg_to_android(a_message.bot_username, reply_content_list, [chatroomname])
+                        if status_flag == SUCCESS:
+                            logger.info(u"模糊匹配，自动回复任务发送成功, bot_username: %s." % a_message.bot_username)
+                            break
+                        else:
+                            logger.info(u"模糊匹配，自动回复任务发送失败, bot_username: %s." % a_message.bot_username)
+                            break
 
     if status_flag is False:
         return False

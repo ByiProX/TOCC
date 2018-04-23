@@ -211,7 +211,7 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
     keyword_dict['fuzzy'] = fuzzy
 
     keywords_info.keywords = keyword_dict
-    print keyword_dict
+    # print keyword_dict
     keywords_info.reply_content = reply_content_list
     keywords_info.chatroom_list = chatroomname_list
     keywords_info.save()
