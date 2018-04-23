@@ -708,6 +708,19 @@ def open_chatroom_name_protect():
                             requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
 
 
+def send_chatroom_welcome_word():
+    chatroom_status_dict = dict()
+    while True:
+        # Get event which need send welcome_word
+        event_list = BaseModel.fetch_all('events', '*',
+                                         BaseModel.where_dict({'is_finish': 1, 'is_work': 1, 'need_fission': 1}))
+        for event in event_list:
+            event_id = event.events_id
+            # Get all chatroom in this event.
+            chatroom_list = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'event_id': event_id}))
+            pass
+
+
 def put_img_to_oss(file_name, data_as_string):
     img_name = str(file_name) + '.jpg'
 
