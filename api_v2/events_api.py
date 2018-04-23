@@ -758,21 +758,18 @@ def event_chatroom_send_word():
         __bot_username = client_bot_r.bot_username
 
         return __bot_username
-    print('--1')
+
     while True:
         time.sleep(0.5)
         # Get all event.
         event_list = BaseModel.fetch_all('events', '*',
                                          BaseModel.where_dict({'is_finish': 1, 'is_work': 1, 'enough_chatroom': 1}))
         previous_chatroom_status_dict = chatroom_status_dict.copy()
-        print('--2')
         for event in event_list:
-            print('--3')
             event_id = event.events_id
             # Get all chatroom in this event.
             chatroom_list = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'event_id': event_id}))
             for chatroom in chatroom_list:
-                print('--4')
                 if chatroom.chatroomname == 'default':
                     continue
                 # Update status
@@ -792,6 +789,7 @@ def event_chatroom_send_word():
                     print('--5')
                     previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
                     now_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
+                    print(previous_chatroom_member_count,now_chatroom_member_count)
                     if now_chatroom_member_count > previous_chatroom_member_count and need_fission:
                         # Send welcome message.
                         this_bot_username = get_owner_bot_username(event.owner)
