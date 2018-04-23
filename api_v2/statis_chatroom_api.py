@@ -204,6 +204,7 @@ def chatroom_statistics_chatroom():
         order = order[0] + '_count' + ' ' + order[1]
 
     cacheData = rds.get(cache_key)
+    cacheData = 0
     if cacheData:
         print "cache hit"
         cacheData = json.loads(cacheData)
