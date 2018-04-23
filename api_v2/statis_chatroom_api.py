@@ -266,7 +266,7 @@ def sumList(chatroomlist):
                 ret[cm['chatroomname']]['in_count'] = ret[cm['chatroomname']]['in_count'] + cm['chatroomname']['in_count']
                 ret[cm['chatroomname']]['out_count'] = ret[cm['chatroomname']]['out_count'] + cm['chatroomname']['out_count']
             else:
-                ret['chatroomname'] = cm
+                ret[cm['chatroomname']] = cm
     print "ret:;------------------",ret
     for i in ret:
         arr.append(ret[i])
