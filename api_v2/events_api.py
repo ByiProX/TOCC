@@ -392,7 +392,7 @@ def events_detail():
         if i.chatroomname != 'default':
             this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                                 BaseModel.where_dict({'chatroomname': i.chatroomname}))
-            _result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': i.chatroomname,
+            _result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': i.chatroom_nickname,
                        'chatroom_status': 1,
                        'chatroom_member_num': len(this_chatroom.memberlist.split(';'))}
             content_chatrooms.append(_result)
@@ -422,7 +422,6 @@ def events_list():
         owner = user_info.username
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
-    # events = db.session.query(Event).filter(Event.owner == owner).all()
     events = BaseModel.fetch_all('events', '*', BaseModel.where_dict({"owner": owner}))
 
     result = {'err_code': 0, 'content': []}
@@ -433,8 +432,10 @@ def events_list():
         event_chatroom_list = BaseModel.fetch_all('events_chatroom', '*',
                                                   BaseModel.where_dict({"event_id": i.events_id}))
         total_inc = 0
+        chatroom_total = 0
         for j in event_chatroom_list:
             if j.chatroomname != 'default':
+                chatroom_total += 1
                 this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                                     BaseModel.where_dict({'chatroomname': j.chatroomname}))
 
@@ -452,7 +453,7 @@ def events_list():
             'start_time': i.start_time,
             'end_time': i.end_time,
             # Need another table to search.
-            'chatroom_total': len(event_chatroom_list),  # Just check chatroom list.
+            'chatroom_total': chatroom_total,
             'today_inc': today_inc,
             'total_inc': total_inc,  # the people of all chatroom.
         })
