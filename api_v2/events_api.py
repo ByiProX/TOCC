@@ -709,10 +709,33 @@ def open_chatroom_name_protect():
                             requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
 
 
-def send_chatroom_welcome_word():
+def event_chatroom_send_word():
+    print('event_chatroom_send_word Running.')
     # Base status.
     chatroom_status_dict = dict()
     chatroom_task_status_dict = dict()
+    event_list = BaseModel.fetch_all('events', '*',
+                                     BaseModel.where_dict({'is_finish': 1, 'is_work': 1, 'enough_chatroom': 1}))
+    for event in event_list:
+        event_id = event.events_id
+        # Get all chatroom in this event.
+        chatroom_list = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'event_id': event_id}))
+        for chatroom in chatroom_list:
+            if chatroom.chatroomname == 'default':
+                continue
+            # Update status
+            this_chatroom = BaseModel.fetch_one('a_chatroom', 'memberlist',
+                                                BaseModel.where_dict({'chatroomname': chatroom.chatroomname}))
+
+            if not this_chatroom:
+                logger.warning('member_count ERROR!!! Can not find this_chatroom:%s' % chatroom.chatroomname)
+                member_count = 0
+            else:
+                member_count = len(this_chatroom.memberlist.split(';'))
+
+            chatroom_status_dict[chatroom.chatroomname] = member_count
+            chatroom_task_status_dict[chatroom.chatroomname] = [0, 0, 0, 0]  # 30 50 80 100 task-status
+    print(chatroom_status_dict)
 
     def send_message(_bot_username, to, _type, content):
         result = {'bot_username': _bot_username,
@@ -722,12 +745,26 @@ def send_chatroom_welcome_word():
                       "type": _type,
                       "content": content,
                   }}
+        resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+        print('send_message_666:%s' % result)
+        if dict(resp.json())['err_code'] == -1:
+            logger.warning('event_chatroom_send_word ERROR,because bot dead!')
+
+    def get_owner_bot_username(roomowner):
+        # Get roomowner's bot_username
+        client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': roomowner}))
+        _client_id = client_member.client_id
+        client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': _client_id}))
+        __bot_username = client_bot_r.bot_username
+
+        return __bot_username
 
     while True:
+        time.sleep(0.5)
         # Get all event.
         event_list = BaseModel.fetch_all('events', '*',
                                          BaseModel.where_dict({'is_finish': 1, 'is_work': 1, 'enough_chatroom': 1}))
-        previous_chatroom_status_dict = chatroom_status_dict
+        previous_chatroom_status_dict = chatroom_status_dict.copy()
         for event in event_list:
             event_id = event.events_id
             # Get all chatroom in this event.
@@ -746,14 +783,16 @@ def send_chatroom_welcome_word():
                     member_count = len(this_chatroom.memberlist.split(';'))
 
                 chatroom_status_dict[chatroom.chatroomname] = member_count
-                need_fission,need_condition_word,need_pull_people = event.need_fission, event.need_condition_word, event.need_pull_people
+                need_fission, need_condition_word, need_pull_people = event.need_fission, event.need_condition_word, event.need_pull_people
                 # If previous chatroom list also have same chatroomname.
                 if previous_chatroom_status_dict.get(chatroom.chatroomname):
                     previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
-                    now_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
-                    if previous_chatroom_member_count - now_chatroom_member_count > 0 and need_fission:
+                    now_chatroom_member_count = chatroom_status_dict[chatroom.chatroomname]
+                    if now_chatroom_member_count > previous_chatroom_member_count and need_fission:
                         # Send welcome message.
-                        pass
+                        this_bot_username = get_owner_bot_username(event.owner)
+                        send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_1)
+                        send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_2)
                     if now_chatroom_member_count in (30, 50, 80) and need_pull_people:
                         # Change chatroomnotice.
                         pass
@@ -772,6 +811,10 @@ def put_img_to_oss(file_name, data_as_string):
 
     return 'http://ywbdposter.oss-cn-beijing.aliyuncs.com/' + img_name
 
+
+new_thread_2 = threading.Thread(target=event_chatroom_send_word)
+new_thread_2.setDaemon(True)
+new_thread_2.start()
 
 new_thread_3 = threading.Thread(target=open_chatroom_name_protect)
 new_thread_3.setDaemon(True)
