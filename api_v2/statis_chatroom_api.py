@@ -242,7 +242,8 @@ def chatroom_statistics_chatroom():
     if not is_active:
         uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]), page = 1, pagesize = pagesize, orderBy = order)
         chatroomname_list = [r.chatroomname for r in uqr_list]
-        qunInfo = getQunInfo(chatroomname_list)
+        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname','member_count', 'avatar_url'],
+                                      BaseModel.where("in", "chatroomname", chatroomname_list))
         chatroom_json_list = []
         for chatroom in qunInfo:
             chatroom_json = chatroom.to_json_full()
