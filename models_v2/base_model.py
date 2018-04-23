@@ -461,9 +461,11 @@ class BaseModel(object):
 
 CM = BaseModel.create_model
 
+
 def extract_from_json():
-        with open("conf.json", "r") as f:
-            DB_RULE.update(json.load(f))
+    with open("conf.json", "r") as f:
+        DB_RULE.update(json.load(f))
+
 
 extract_from_json()
 
