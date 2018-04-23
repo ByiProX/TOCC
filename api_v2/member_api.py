@@ -58,6 +58,7 @@ def member_get_in_out_member():
             if not member['is_deleted']:
                 try:
                     if check_time <= member_info.create_time:
+                        member.update(member_info.to_json_full())
                         in_list.append(member)
                 except AttributeError:
                     pass
@@ -65,6 +66,7 @@ def member_get_in_out_member():
             else:
                 try:
                     if check_time <= member_info.update_time:
+                        member.update(member_info.to_json_full())
                         out_list.append(member)
                 except AttributeError:
                     pass
