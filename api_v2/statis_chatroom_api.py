@@ -205,9 +205,9 @@ def chatroom_statistics_chatroom():
     if cacheData:
         print "cache hit"
         cacheData = json.loads(cacheData)
-        cacheData = sumList(cacheData)
         for cd in cacheData:
-            return make_response(SUCCESS, chatroom_list = cacheData[cd], last_update_time = cd)
+            cacheDataList = sumList(cacheData[cd])
+            return make_response(SUCCESS, chatroom_list = cacheDataList, last_update_time = cd)
 
     _where = BaseModel.where_dict(_where)
 
