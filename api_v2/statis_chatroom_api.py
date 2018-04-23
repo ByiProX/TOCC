@@ -15,7 +15,7 @@ from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 from configs.config import SUCCESS, main_api_v2, rds, db, DEFAULT_PAGE, DEFAULT_PAGE_SIZE, ERR_INVALID_PARAMS, \
     ERR_WRONG_ITEM, \
-    SCOPE_WEEK, SCOPE_ALL, USER_CHATROOM_R_PERMISSION_1, Chatroom
+    SCOPE_WEEK, SCOPE_ALL, USER_CHATROOM_R_PERMISSION_1, Chatroom, UserQunR
 
 from models_v2.base_model import *
 
@@ -321,7 +321,7 @@ def get_active_chatroom_count():
     chatroomnames = [r.chatroomname for r in chatroom_statis]
     print "chatroomnames", chatroomnames
     active_chatroom_count = len(chatroom_statis)
-    total_count = BaseModel.count(Chatroom, where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    total_count = BaseModel.count(UserQunR, where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
     non_active_chatroom_count = total_count - active_chatroom_count
 
     return make_response(SUCCESS, active_chatroom_count = active_chatroom_count, non_active_chatroom_count = non_active_chatroom_count)
