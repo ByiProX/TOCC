@@ -392,7 +392,7 @@ def events_detail():
         if i.chatroomname != 'default':
             this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                                 BaseModel.where_dict({'chatroomname': i.chatroomname}))
-            _result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': i.nickname_real,
+            _result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': i.chatroom_nickname,
                        'chatroom_status': 1,
                        'chatroom_member_num': len(this_chatroom.memberlist.split(';'))}
             content_chatrooms.append(_result)
