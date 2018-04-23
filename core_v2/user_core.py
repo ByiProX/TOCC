@@ -156,10 +156,10 @@ class UserLogin:
             return ERR_USER_TOKEN, None
 
     def _get_user_info_from_wechat(self):
-        we_conn = wechat_conn_dict.get(user_info.app)
+        we_conn = wechat_conn_dict.get(self.app)
         if we_conn is None:
             logger.info(
-                u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (user_info.app, json.dumps(wechat_conn_dict.keys())))
+                u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (self.app, json.dumps(wechat_conn_dict.keys())))
         res_json = we_conn.get_user_info(open_id=self.open_id, user_access_token=self.user_access_token)
 
         if res_json.get('openid'):
