@@ -260,11 +260,14 @@ def sumList(chatroomlist):
         for cm in chatroomlist:
             print "cm['chatroomname']:::",cm['chatroomname'],"\n"
             if ret.has_key(cm['chatroomname']):
-                ret[cm['chatroomname']]['active_count'] = int(ret[cm['chatroomname']]['active_count'] )+ int(cm['chatroomname']['active_count'])
+                print ret[cm['chatroomname']]
+                '''
+                ret[cm['chatroomname']]['active_count'] = ret[cm['chatroomname']]['active_count'] + cm['chatroomname']['active_count']
                 ret[cm['chatroomname']]['at_count'] = ret[cm['chatroomname']]['at_count'] + cm['chatroomname']['at_count']
                 ret[cm['chatroomname']]['speak_count'] = ret[cm['chatroomname']]['speak_count'] + cm['chatroomname']['speak_count']
                 ret[cm['chatroomname']]['in_count'] = ret[cm['chatroomname']]['in_count'] + cm['chatroomname']['in_count']
                 ret[cm['chatroomname']]['out_count'] = ret[cm['chatroomname']]['out_count'] + cm['chatroomname']['out_count']
+                '''
             else:
                 ret[cm['chatroomname']] = cm
     print "ret:;------------------",ret,"\n\n"
