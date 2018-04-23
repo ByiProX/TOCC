@@ -72,6 +72,7 @@ def getClientQunWithGroup(client_id, group_id, page = 1, pagesize = 30, order = 
 
 @main_api_v2.route('/statistics_chatroomone', methods = ['POST'])
 def statistics_chatroomone():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -86,6 +87,7 @@ def statistics_chatroomone():
 # 根据group id 获取群list
 @main_api_v2.route('/statistics_chatroom_qun', methods = ['POST'])
 def chatroom_statistics_chatroom_qun():
+    verify_json()
     group_id = request.json.get('group_id')
     if not group_id:
         return make_response(ERR_INVALID_PARAMS)
@@ -104,6 +106,7 @@ def chatroom_statistics_chatroom_qun():
 # 获取 group list
 @main_api_v2.route('/statistics_chatroom_group', methods = ['POST'])
 def chatroom_statistics_chatroom_group():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -113,7 +116,7 @@ def chatroom_statistics_chatroom_group():
 
 @main_api_v2.route('/statistics_chatroom', methods = ['POST'])
 def chatroom_statistics_chatroom():
-    # verify_json()
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -248,7 +251,7 @@ def chatroom_statistics_chatroom():
 
 @main_api_v2.route('/get_non_active_chatroom_list', methods = ['POST'])
 def get_non_active_chatroom_list():
-    # verify_json()
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -323,7 +326,7 @@ def get_non_active_chatroom_list():
 
 @main_api_v2.route('/get_active_chatroom_count', methods = ['POST'])
 def get_active_chatroom_count():
-    # verify_json()
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
