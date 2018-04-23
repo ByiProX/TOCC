@@ -118,27 +118,24 @@ def statistics_member():
     #    last_update_time = _timestamp - 600
     #    if(run_hour==0):
     #        return make_response(SUCCESS,member_list = [], last_update_time = last_update_time) 
-    #    _where = ["and",["<=","run_hour",run_hour],["=","chatroomname",chatroomname],["in","username",useranems]] 
+    #    _where = ["and",["<=","run_hour",run_hour],["=","chatroomname",chatroomname],["in","username",useranems]]
+    last_update_time = int(time.time()) - 600
     if(date_type==1):
         timestamp_diff = getTimeStamp(0)
-        last_update_time =  timestamp_diff + 600  
         _where = ["and",["=","date",timestamp_diff],["=","chatroomname",chatroomname],["in","username",useranems]] 
         #where = BaseModel.where_dict({"date":timestamp_diff,"chatroomname":chatroomname})
         table = 'statistics_member_daily' 
     elif(date_type==2):
         timestamp_diff = getTimeStamp(1)
-        last_update_time =  timestamp_diff + 600  
         _where = ["and",["=","date",timestamp_diff],["=","chatroomname",chatroomname],["in","username",useranems]] 
         #where = BaseModel.where_dict({"date":timestamp_diff,"chatroomname":chatroomname})
         table = 'statistics_member_daily' 
     elif(date_type==3):
         timestamp_diff = getTimeStamp(7)
-        last_update_time =  getTimeStamp(1) + 600 
         table = 'statistics_member_daily' 
         _where = ["and",[">=","date",timestamp_diff],["=","chatroomname",chatroomname],["in","username",useranems]] 
     elif(date_type==4):
         timestamp_diff = getTimeStamp(30)
-        last_update_time =  getTimeStamp(1) + 600 
         table = 'statistics_member_daily' 
         _where = ["and",[">=","date",timestamp_diff],["=","chatroomname",chatroomname],["in","username",useranems]]  
     elif(date_type==5):
