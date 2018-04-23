@@ -245,83 +245,9 @@ def chatroom_statistics_chatroom():
         for chatroom in chatroom_list:
             chatroom_json = chatroom.to_json_full()
             chatroom_json_list.append(chatroom_json)
+        total_count = len(chatroom_list)
         return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
     return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
-
-
-@main_api_v2.route('/get_non_active_chatroom_list', methods = ['POST'])
-def get_non_active_chatroom_list():
-    verify_json()
-    status, user_info = UserLogin.verify_token(request.json.get('token'))
-    if status != SUCCESS:
-        return make_response(status)
-
-    # group_id 群分组ID ， cache key =  dateType_clientId_groupId,
-    # cache value= {time():data}  cache 10分钟
-
-    group_id = request.json.get('group_id', '')
-    chatroomname_list = []
-    _where = []
-    if group_id:
-        cache_key = 'c_' + group_id
-        # 这里需要根据groupId 取 qunID list，或者前端post过来 qunID list
-        qunList = getClientQunWithGroup(user_info.client_id, group_id)
-        for qli in qunList:
-            chatroomname_list.append(qli['chatroomname'])
-
-    # date_type=1 今日实时，每10分钟计算一次，cache 10分钟
-    # date_type=2 昨日，从daily取，cache10分钟
-    # date_type3=7日，从daily计算过去7天，cache 10分钟
-    # date_type4=30日，从daily计算过去30天，cache 10分钟
-    # date_type=5 全部，从total表取，cache10分钟
-    #   cache key=  dateType_clientId, cache value= {time():data}
-    date_type = request.json.get('date_type', 1)
-    table = 'statistics_chatroom_hour'
-    # if (date_type == 1):
-    #    run_hour = int(time.strftime('%H', time.localtime(time.time())))
-    #    last_update_time = _timestamp - 600
-    #    if (run_hour == 0):
-    #        return make_response(SUCCESS, chatroom_list = [], last_update_time = last_update_time)
-    #    _where = ["and", ["<=", "run_hour", run_hour], ["=", "client_id", user_info.client_id],
-    #              ["in", "chatroomname", chatroomname_list]]
-    if (date_type == 1):
-        timestamp_diff = getTimeStamp(0)
-        last_update_time = timestamp_diff + 600
-        # _where ={"date":timestamp_diff,"client_id":user_info.client_id}
-        _where = ["and", ["=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
-                  ["in", "chatroomname", chatroomname_list]]
-        table = 'statistics_chatroom_daily'
-    elif (date_type == 2):
-        timestamp_diff = getTimeStamp(1)
-        last_update_time = timestamp_diff + 600
-        # _where ={"date":timestamp_diff,"client_id":user_info.client_id}
-        _where = ["and", ["=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
-                  ["in", "chatroomname", chatroomname_list]]
-        table = 'statistics_chatroom_daily'
-    elif (date_type == 3):
-        timestamp_diff = getTimeStamp(7)
-        last_update_time = getTimeStamp(1) + 600
-        table = 'statistics_chatroom_daily'
-        _where = ["and", [">=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
-                  ["in", "chatroomname", chatroomname_list]]
-    elif (date_type == 4):
-        timestamp_diff = getTimeStamp(30)
-        last_update_time = getTimeStamp(1) + 600
-        table = 'statistics_chatroom_daily'
-        _where = ["and", [">=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
-                  ["in", "chatroomname", chatroomname_list]]
-    elif (date_type == 5):
-        last_update_time = getTimeStamp(1) + 1200
-        table = 'statistics_chatroom_total'
-        # _where ={"client_id":user_info.client_id}
-        _where = ["and", ["=", "client_id", user_info.client_id], ["in", "chatroomname", chatroomname_list]]
-
-    chatroom_statis = BaseModel.fetch_all(table, '*', where_clause = BaseModel.where_dict(_where))
-    chatroomnames = [r.chatroomname for r in chatroom_statis]
-
-    chatroom_list = BaseModel.fetch_all(Chatroom, "*", where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]))
-
-    return make_response(SUCCESS, chatroom_list = [r.to_json_full for r in chatroom_list])
 
 
 @main_api_v2.route('/get_active_chatroom_count', methods = ['POST'])
@@ -395,6 +321,7 @@ def get_active_chatroom_count():
     chatroomnames = [r.chatroomname for r in chatroom_statis]
     print "chatroomnames", chatroomnames
     active_chatroom_count = len(chatroom_statis)
-    non_active_chatroom_count = BaseModel.count(Chatroom, where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]))
+    total_count = BaseModel.count(Chatroom, where_clause = BaseModel.where_dict({"client_id", user_info.client_id}))
+    non_active_chatroom_count = total_count - active_chatroom_count
 
     return make_response(SUCCESS, active_chatroom_count = active_chatroom_count, non_active_chatroom_count = non_active_chatroom_count)
