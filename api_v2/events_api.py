@@ -786,10 +786,8 @@ def event_chatroom_send_word():
                 need_fission, need_condition_word, need_pull_people = event.need_fission, event.need_condition_word, event.need_pull_people
                 # If previous chatroom list also have same chatroomname.
                 if previous_chatroom_status_dict.get(chatroom.chatroomname):
-                    print('--5')
                     previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
-                    now_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
-                    print(previous_chatroom_member_count,now_chatroom_member_count)
+                    now_chatroom_member_count = chatroom_status_dict[chatroom.chatroomname]
                     if now_chatroom_member_count > previous_chatroom_member_count and need_fission:
                         # Send welcome message.
                         this_bot_username = get_owner_bot_username(event.owner)
