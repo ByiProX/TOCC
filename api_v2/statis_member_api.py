@@ -1,28 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import threading
-import time 
-from copy import copy
+import time
  
 from flask import request
-from sqlalchemy import func
 
-from core.send_task_and_ws_setting_core import check_chatroom_members_info
 from core_v2.user_core import UserLogin
-from models.android_db_models import AMember, AContact
-from models.chatroom_member_models import MemberInfo, MemberOverview, MemberInviteMember, MemberAtMember, ChatroomInfo
-from models.message_ext_models import MessageAnalysis
-from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
-from configs.config import SUCCESS, main_api_v2, db, rds, DEFAULT_PAGE, DEFAULT_PAGE_SIZE, ERR_INVALID_PARAMS, \
-    ERR_INVALID_MEMBER, ERR_WRONG_ITEM
-from utils.u_time import datetime_to_timestamp_utc_8
+from configs.config import SUCCESS, main_api_v2, rds, ERR_INVALID_PARAMS, ERR_WRONG_ITEM, Member, Contact
 
 from models_v2.base_model import *
 
-import datetime 
-from urllib import urlencode,quote
+import datetime
 
 logger = logging.getLogger('main')
  
@@ -216,10 +205,16 @@ def statistics_member():
         rds.set(cache_key,json.dumps({last_update_time:member_json_list}))
         rds.expire(cache_key,10)
 
+    a_member = BaseModel.fetch_one(Member, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+    members = a_member.memebrs
+    member_username_all = {member.get("username") for member in members}
+    member_username_non_active_list = list(member_username_all - set(wxIds))
+    member_non_active_list = BaseModel.fetch_all(Contact, "*", where_clause = BaseModel.where("in", "username", member_username_non_active_list))
+    for member in member_non_active_list:
+        member_json = member.to_json_full()
+        member_json_list.append(member_json)
+
     return make_response(SUCCESS, member_list = member_json_list, last_update_time = last_update_time)
-
-
-
 
 
 @main_api_v2.route('/statistics_memberone', methods = ['POST'])
