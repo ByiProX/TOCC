@@ -33,15 +33,35 @@ def modelList2Arr(mlist):
 
 
 def getGrouplist(client_id):
-    ret = {}
+    ret = []
     if client_id:
-        groupList = BaseModel.fetch_all('client_group_r', ['group_name', 'group_id', 'status'],
+        dataList = BaseModel.fetch_all('client_group_r', ['group_name', 'group_id', 'status'],
                                         BaseModel.where("=", "client_id", client_id))
-        return modelList2Arr(groupList)
+        return modelList2Arr(dataList)
+
+
+# chatroomnames must array
+def getQunInfo(chatroomnames):
+    ret = {}
+    if chatroomnames:
+        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname','member_count', 'avatar_url'],
+                                      BaseModel.where("in", "chatroomname", chatroomnames))
+        if (qunInfo):
+            for qf in qunInfo:
+                _qfjson = qf.to_json()
+                print '6666666666', _qfjson
+                ret[_qfjson["chatroomname"]] = _qfjson
+    return ret
+
+
+def getTimeStamp(d_diff = 0):
+    day_diff = str(datetime.date.today() - datetime.timedelta(days = d_diff))
+    time_arr = time.strptime(str(day_diff), "%Y-%m-%d")
+    return int(time.mktime(time_arr))
 
 
 def getClientQunWithGroup(client_id, group_id, page = 1, pagesize = 30, order = ''):
-    ret = {}
+    ret = []
     if group_id:
         _where = ["and", ["=", "client_id", client_id], ["=", "group_id", group_id]]
         _where = BaseModel.where_dict(_where)
@@ -216,23 +236,3 @@ def chatroom_statistics_chatroom():
         rds.expire(cache_key, 10)
 
     return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
-
-
-# chatroomnames must array
-def getQunInfo(chatroomnames):
-    ret = {}
-    if chatroomnames:
-        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname', 'avatar_url'],
-                                      BaseModel.where("in", "chatroomname", chatroomnames))
-        if (qunInfo):
-            for qf in qunInfo:
-                _qfjson = qf.to_json()
-                print '6666666666', _qfjson
-                ret[_qfjson["chatroomname"]] = _qfjson
-    return ret
-
-
-def getTimeStamp(d_diff = 0):
-    day_diff = str(datetime.date.today() - datetime.timedelta(days = d_diff))
-    time_arr = time.strptime(str(day_diff), "%Y-%m-%d")
-    return int(time.mktime(time_arr))
