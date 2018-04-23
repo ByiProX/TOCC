@@ -189,13 +189,13 @@ def get_chatroom_list():
 
 
 @main_api_v2.route('/wallets_delete', methods=['POST'])
-@para_check('wallet_id', 'token')
+@para_check('id', 'token')
 def app_wallets_delete():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
 
-    _id = request.json.get('wallet_id')
+    _id = request.json.get('id')
     if _id is None:
         return make_response(ERR_PARAM_SET)
 
