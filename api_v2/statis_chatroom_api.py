@@ -42,7 +42,7 @@ def getGrouplist(client_id):
 
 # chatroomnames must array
 def getQunInfo(chatroomnames):
-    ret = {}
+    ret = []
     if chatroomnames:
         qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname','member_count', 'avatar_url'],
                                       BaseModel.where("in", "chatroomname", chatroomnames))
