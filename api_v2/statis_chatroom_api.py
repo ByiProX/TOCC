@@ -231,8 +231,7 @@ def chatroom_statistics_chatroom():
     if (len(qunInfo) > 0):
         for ctlist in chatroom_json_list:
             if qunInfo.has_key(ctlist['chatroomname']):
-                ctlist.update(qunInfo[ctlist['chatroomname']])
-                print '9999999999', ctlist, '00000000000'
+                ctlist.update(qunInfo[ctlist['chatroomname']]) 
 
     if (len(chatroom_json_list) > 0):
         rds.set(cache_key, json.dumps({last_update_time: chatroom_json_list}))
@@ -260,6 +259,7 @@ def sumList(chatroomlist):
     ret = {}
     if chatroomlist:
         for cm in chatroomlist:
+            print "cm['chatroomname']:::",cm['chatroomname'],"\n"
             if ret.has_key(cm['chatroomname']):
                 ret[cm['chatroomname']]['active_count'] = ret[cm['chatroomname']]['active_count'] + cm['chatroomname']['active_count']
                 ret[cm['chatroomname']]['at_count'] = ret[cm['chatroomname']]['at_count'] + cm['chatroomname']['at_count']
