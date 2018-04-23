@@ -11,10 +11,9 @@ from configs.config import main_api_v2, ERR_PARAM_SET, ERR_INVALID_PARAMS, SUCCE
     ERR_SET_LENGTH_WRONG, SIGN_DICT, ERR_ALREADY_LOGIN
 from core_v2.user_core import UserLogin, cal_user_basic_page_info, add_a_pre_relate_user_bot_info, get_bot_qr_code, \
     set_bot_name
+from core_v2.wechat_core import wechat_conn_dict
 from utils.u_response import make_response
 
-# from core_v2.wechat_core import WechatConn
-from core_v2.wechat_core import wechat_conn
 import logging
 logger = logging.getLogger('main')
 
@@ -33,7 +32,9 @@ def login_verify_code():
     if not code:
         return make_response(ERR_INVALID_PARAMS)
 
-    user_login = UserLogin(code)
+    # http://www.xuanren360.com
+    app_name = request.headers.get("Origin")
+    user_login = UserLogin(code, app_name)
     status, user_info = user_login.get_user_token()
     # TODO 这里有bug by frank5433
     if status == SUCCESS:
@@ -187,7 +188,9 @@ def pc_login():
     if sign is None or sign not in SIGN_DICT or code is None:
         return make_response(ERR_INVALID_PARAMS)
 
-    user_login = UserLogin(code)
+    # http://www.xuanren360.com
+    app_name = request.headers.get("Origin")
+    user_login = UserLogin(code, app_name)
     status, user_info = user_login.get_user_token()
 
     if status == SUCCESS:
@@ -225,7 +228,10 @@ def get_signature():
     if url is None:
         return make_response(ERR_INVALID_PARAMS)
     try:
-        timestamp, noncestr, signature = wechat_conn.get_signature_from_access_token(url)
+        we_conn = wechat_conn_dict.get(user_info.app)
+        if we_conn is None:
+            logger.info(u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (user_info.app, json.dumps(wechat_conn_dict.keys())))
+        timestamp, noncestr, signature = we_conn.get_signature_from_access_token(url)
         return make_response(SUCCESS, timestamp=timestamp, noncestr=noncestr, signature=signature)
     except Exception as e:
         logger.error('ERROR  %s' % e)

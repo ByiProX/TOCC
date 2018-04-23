@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 import time
 import traceback
@@ -13,7 +14,7 @@ from configs.config import db, SUCCESS, WARN_HAS_DEFAULT_QUN, ERR_WRONG_USER_ITE
     ERR_RENAME_OR_DELETE_DEFAULT_GROUP, MSG_TYPE_SYS, ERR_HAVE_SAME_PEOPLE, USER_CHATROOM_R_PERMISSION_1, UserQunR, \
     UserGroupR, UserInfo, BotInfo, UserBotR, Chatroom, MSG_TYPE_ENTERCHATROOM, ERR_UNKNOWN_ERROR
 from core_v2.send_msg import send_ws_to_android
-from core_v2.wechat_core import WechatConn
+from core_v2.wechat_core import WechatConn, wechat_conn_dict
 from models.qun_friend_models import GroupInfo
 from models_v2.base_model import BaseModel, CM
 from utils.u_email import EmailAlert
@@ -161,7 +162,9 @@ def check_whether_message_is_add_qun(a_message):
             bot_username = a_message.bot_username
             logger.info(u"发现加群. user_nickname: %s. chatroomname: %s." % (user_nickname, a_message.talker))
             status, user_info = _bind_qun_success(a_message.talker, user_nickname, bot_username, invitor_username)
-            we_conn = WechatConn()
+            we_conn = wechat_conn_dict.get(user_info.app)
+            if we_conn is None:
+                logger.info(u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (user_info.app, json.dumps(wechat_conn_dict.keys())))
             if status == SUCCESS:
                 we_conn.send_txt_to_follower("恭喜！友问币答小助手已经进入您的群了，可立即使用啦\n想再次试用？再次把我拉进群就好啦", user_info.open_id)
             else:

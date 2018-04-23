@@ -6,7 +6,7 @@ from datetime import datetime
 import json
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-from configs.config import APP_ID, APP_SECRET, AccessToken, JsapiTicket
+from configs.config import AccessToken, JsapiTicket, APP_YACA, APP_INFO_DICT
 from models_v2.base_model import BaseModel, CM
 from utils.u_model_json_str import unicode_to_str
 
@@ -23,10 +23,13 @@ logger = logging.getLogger('main')
 
 
 class WechatConn:
-    def __init__(self):
+    def __init__(self, app, app_id, app_secret):
+        self.app = app
+        self.APP_ID = app_id
+        self.APP_SECRET = app_secret
         try:
-            self.access_token = BaseModel.fetch_one(AccessToken, '*', where_clause = BaseModel.where(">", "expired_time", datetime_to_timestamp_utc_8(datetime.now())))
-            self.jsapi_ticket = BaseModel.fetch_one(JsapiTicket, '*', where_clause = BaseModel.where(">", "expired_time", datetime_to_timestamp_utc_8(datetime.now())))
+            self.access_token = BaseModel.fetch_one(AccessToken, '*', where_clause = BaseModel.where("and", json.dumps([">", "expired_time", datetime_to_timestamp_utc_8(datetime.now())]), json.dumps(["=", "app", self.app])))
+            self.jsapi_ticket = BaseModel.fetch_one(JsapiTicket, '*', where_clause = BaseModel.where("and", json.dumps([">", "expired_time", datetime_to_timestamp_utc_8(datetime.now())]), json.dumps(["=", "app", self.app])))
         except Exception, ex:
             self.access_token = None
             self.jsapi_ticket = None
@@ -71,7 +74,7 @@ class WechatConn:
 
     def get_open_id_by_code(self, code):
         url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + \
-              APP_ID + '&secret=' + APP_SECRET + '&code=' + code + '&grant_type=authorization_code'
+              self.APP_ID + '&secret=' + self.APP_SECRET + '&code=' + code + '&grant_type=authorization_code'
         res = self.wechat_get(url=url)
         res_json = json.loads(res.content, strict=False)
         return res_json
@@ -128,7 +131,7 @@ class WechatConn:
         now = int(time.time())
         if not self.access_token or self.access_token.expired_time <= now:
             url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' + \
-                  APP_ID + '&secret=' + APP_SECRET
+                  self.APP_ID + '&secret=' + self.APP_SECRET
 
             res = self.wechat_get(url=url)
             res_json = json.loads(res.content, strict=False)
@@ -199,4 +202,7 @@ class WechatConn:
         return [args['timestamp'], args['noncestr'], signature]
 
 
-wechat_conn = WechatConn()
+wechat_conn_dict = dict()
+for key in APP_INFO_DICT.keys():
+    wechat_conn = WechatConn(app = key, app_id = APP_INFO_DICT[key].get("APP_ID"), app_secret = APP_INFO_DICT[key].get("APP_SECRET"))
+    wechat_conn_dict[key] = wechat_conn

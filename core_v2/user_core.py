@@ -14,7 +14,7 @@ from configs.config import SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPI
     ERR_USER_TOKEN, ERR_MAXIMUM_BOT, ERR_NO_ALIVE_BOT, INFO_NO_USED_BOT, ERR_WRONG_ITEM, ERR_WRONG_USER_ITEM, \
     ERR_NO_BOT_QR_CODE, ERR_HAVE_SAME_PEOPLE, MSG_TYPE_TXT, MSG_TYPE_SYS, ERR_INVALID_PARAMS, UserInfo, UserSwitch, \
     UserBotR, BotInfo, UserQunR, Chatroom, Contact, Client, ANDROID_SERVER_URL_BOT_STATUS
-from core_v2.wechat_core import wechat_conn
+from core_v2.wechat_core import wechat_conn_dict
 from models_v2.base_model import BaseModel, CM
 from utils.u_time import datetime_to_timestamp_utc_8
 
@@ -22,12 +22,13 @@ logger = logging.getLogger('main')
 
 
 class UserLogin:
-    def __init__(self, code):
+    def __init__(self, code, app_name):
         self.code = code
         self.open_id = ""
         self.user_access_token = ""
         self.now_user_info = None
         self.user_info_up_to_date = None
+        self.app = app_name
 
         self._get_open_id_and_user_access_token()
 
@@ -35,7 +36,11 @@ class UserLogin:
         """
         根据前端微信返回的code，去wechat的api处调用open_id
         """
-        res_json = wechat_conn.get_open_id_by_code(code=self.code)
+        we_conn = wechat_conn_dict.get(self.app)
+        if we_conn is None:
+            logger.info(
+                u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (self.app, json.dumps(wechat_conn_dict.keys())))
+        res_json = we_conn.get_open_id_by_code(code=self.code)
         self.open_id = res_json.get('openid')
         self.user_access_token = res_json.get('access_token')
 
@@ -151,7 +156,11 @@ class UserLogin:
             return ERR_USER_TOKEN, None
 
     def _get_user_info_from_wechat(self):
-        res_json = wechat_conn.get_user_info(open_id=self.open_id, user_access_token=self.user_access_token)
+        we_conn = wechat_conn_dict.get(user_info.app)
+        if we_conn is None:
+            logger.info(
+                u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (user_info.app, json.dumps(wechat_conn_dict.keys())))
+        res_json = we_conn.get_user_info(open_id=self.open_id, user_access_token=self.user_access_token)
 
         if res_json.get('openid'):
             self.user_info_up_to_date = CM(UserInfo)

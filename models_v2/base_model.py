@@ -313,7 +313,7 @@ class BaseModel(object):
 
         item_list = list()
         url = DB_SERVER_URL + tablename + u's'
-        logger.info(u"request url : " + url)
+        # logger.info(u"request url : " + url)
         # if query_clause:
         #     url += u"?"
         #     for key, value in query_clause.iteritems():
