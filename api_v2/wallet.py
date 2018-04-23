@@ -6,6 +6,7 @@ from flask import request, jsonify
 
 from configs.config import ERR_PARAM_SET, main_api_v2
 from core_v2.user_core import UserLogin
+from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 
 from models_v2.base_model import *
@@ -55,6 +56,7 @@ def response(body_as_dict):
 
 @main_api_v2.route('/wallets', methods=['POST'])
 def app_wallets():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -112,6 +114,7 @@ def app_wallets():
 
 @main_api_v2.route('/wallets_switch', methods=['POST'])
 def app_wallets_switch():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -132,6 +135,7 @@ def app_wallets_switch():
 @main_api_v2.route('/get_wallet_status', methods=['POST'])
 @para_check('token')
 def get_wallet_status():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -149,6 +153,7 @@ def get_wallet_status():
 @main_api_v2.route('/get_wallet_chatroom_list', methods=['POST'])
 @para_check('token', 'keyword')
 def get_chatroom_list():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)

@@ -9,6 +9,7 @@ from flask import request
 from configs.config import SUCCESS, ERR_PARAM_SET, main_api_v2, UserSwitch, ERR_WRONG_ITEM
 from core_v2.user_core import UserLogin
 from models_v2.base_model import BaseModel
+from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 
 logger = logging.getLogger('main')
@@ -16,6 +17,7 @@ logger = logging.getLogger('main')
 
 @main_api_v2.route('/switch_func_real_time_quotes', methods=['POST'])
 def app_switch_func_real_time_quotes():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -35,6 +37,7 @@ def app_switch_func_real_time_quotes():
 
 @main_api_v2.route('/get_rt_quotes_list_and_status', methods=['POST'])
 def app_get_rt_quotes_list_and_status():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -58,6 +61,7 @@ def app_get_rt_quotes_list_and_status():
 
 @main_api_v2.route('/get_func_real_time_quotes_status', methods=['POST'])
 def app_get_func_real_time_quotes_status():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -72,6 +76,7 @@ def app_get_func_real_time_quotes_status():
 
 @main_api_v2.route('/get_rt_quotes_preview', methods=['POST'])
 def app_get_rt_quotes_preview():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)

@@ -12,6 +12,7 @@ from configs.config import main_api_v2, ERR_PARAM_SET, ERR_INVALID_PARAMS, SUCCE
 from core_v2.user_core import UserLogin, cal_user_basic_page_info, add_a_pre_relate_user_bot_info, get_bot_qr_code, \
     set_bot_name
 from core_v2.wechat_core import wechat_conn_dict
+from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 
 import logging
@@ -20,6 +21,7 @@ logger = logging.getLogger('main')
 
 @main_api_v2.route('/verify_code', methods=['POST'])
 def login_verify_code():
+    verify_json()
     """
     用于验证
     code: 微信传入的code
@@ -29,11 +31,10 @@ def login_verify_code():
         return make_response(ERR_PARAM_SET)
     data_json = json.loads(request.data)
     code = data_json.get('code')
+    app_name = data_json.get('app_name')
     if not code:
         return make_response(ERR_INVALID_PARAMS)
 
-    # http://www.xuanren360.com
-    app_name = request.headers.get("Origin")
     user_login = UserLogin(code, app_name)
     status, user_info = user_login.get_user_token()
     # TODO 这里有bug by frank5433
@@ -45,6 +46,7 @@ def login_verify_code():
 
 @main_api_v2.route("/get_user_info", methods = ['POST'])
 def app_get_user_info():
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -58,6 +60,7 @@ def app_get_user_basic_info():
     读取用户管理界面的所有的信息
     {"token":"test_token_123"}
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -79,6 +82,7 @@ def app_initial_robot_nickname():
     用于设置robot名字,并返回二维码
     {"token":"test_token_123","bot_nickname":"测试呀测试"}
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -106,6 +110,7 @@ def app_set_robot_nickname():
     """
     用于设置rebot名字
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -131,6 +136,7 @@ def app_get_bot_qr_code():
     提供前端一个二维码
     :return:
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -182,14 +188,14 @@ def get_pc_login_qr():
 
 @main_api_v2.route("/pc_login", methods = ['POST'])
 def pc_login():
+    verify_json()
     sign = request.json.get("sign")
     code = request.json.get("code")
+    app_name = request.json.get('app_name')
 
     if sign is None or sign not in SIGN_DICT or code is None:
         return make_response(ERR_INVALID_PARAMS)
 
-    # http://www.xuanren360.com
-    app_name = request.headers.get("Origin")
     user_login = UserLogin(code, app_name)
     status, user_info = user_login.get_user_token()
 
@@ -200,6 +206,7 @@ def pc_login():
 
 @main_api_v2.route("/verify_pc_login_qr", methods=['POST'])
 def verify_pc_login_qr():
+    verify_json()
     sign = request.json.get("sign")
 
     if sign is None or sign not in SIGN_DICT:
@@ -219,6 +226,7 @@ def verify_pc_login_qr():
 # add by Quentin below
 @main_api_v2.route("/get_signature", methods=['POST'])
 def get_signature():
+    verify_json()
     url = request.json.get("url")
 
     status, user_info = UserLogin.verify_token(request.json.get('token'))
@@ -240,6 +248,7 @@ def get_signature():
 
 @main_api_v2.route("/make_pic_2_qr", methods=['POST'])
 def make_pic_2_qr():
+    verify_json()
     pic_url = request.json.get('url')
 
     qr = qrcode.QRCode(

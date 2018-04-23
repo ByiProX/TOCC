@@ -5,6 +5,7 @@ from configs.config import SUCCESS, ERR_PARAM_SET, main_api_v2, ERR_SET_LENGTH_W
 from core_v2.qun_manage_core import create_new_group, get_group_list, rename_a_group, delete_a_group, \
     transfer_qun_into_a_group
 from core_v2.user_core import UserLogin
+from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 
 
@@ -14,6 +15,7 @@ def app_add_a_group():
     为一个用户新增一个组
     :return:
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -42,6 +44,7 @@ def app_get_group_list():
     :return:
     """
 
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -60,6 +63,7 @@ def app_rename_a_group():
     将一个已有分组改名
     :return:
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -87,6 +91,7 @@ def app_delete_a_group():
     删除一个分组
     :return:
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
@@ -109,6 +114,7 @@ def app_transfer_qun_into_group():
     将一个群从一个组里面移动到另一个群里面
     :return:
     """
+    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
