@@ -746,6 +746,7 @@ def event_chatroom_send_word():
                       "content": content,
                   }}
         resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+        print('send_message_666:%s' % result)
         if dict(resp.json())['err_code'] == -1:
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
