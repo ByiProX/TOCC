@@ -259,17 +259,30 @@ def sumList(chatroomlist):
     if chatroomlist:
         for cm in chatroomlist: 
             if ret.has_key(cm['chatroomname']): 
-                print "\nfind:::",cm,"::::::::::\n\n"
-                if not  ret[cm['chatroomname']]['active_count'] is None  and not cm['chatroomname']['active_count'] is None:
+               
+                try:
                     ret[cm['chatroomname']]['active_count'] = ret[cm['chatroomname']]['active_count'] + cm['chatroomname']['active_count']
-                if ret[cm['chatroomname']]['at_count']:
+                except: 
+                    print 'err'
+                try:
                     ret[cm['chatroomname']]['at_count'] = ret[cm['chatroomname']]['at_count'] + cm['chatroomname']['at_count']
-                if ret[cm['chatroomname']]['speak_count']:
+                except: 
+                    print 'err'
+                try:
+                    ret[cm['chatroomname']]['speak_count']:
                     ret[cm['chatroomname']]['speak_count'] = ret[cm['chatroomname']]['speak_count'] + cm['chatroomname']['speak_count']
-                if ret[cm['chatroomname']]['in_count']:
+                except: 
+                    print 'err'
+                try:
+                    ret[cm['chatroomname']]['in_count']:
                     ret[cm['chatroomname']]['in_count'] = ret[cm['chatroomname']]['in_count'] + cm['chatroomname']['in_count']
-                if ret[cm['chatroomname']]['out_count']:
+                except: 
+                    print 'err'
+                try:
+                    ret[cm['chatroomname']]['out_count']:
                     ret[cm['chatroomname']]['out_count'] = ret[cm['chatroomname']]['out_count'] + cm['chatroomname']['out_count']
+                except: 
+                    print 'err'
                 
             else:
                 ret[cm['chatroomname']] = cm
