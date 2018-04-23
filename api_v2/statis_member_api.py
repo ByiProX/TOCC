@@ -206,7 +206,10 @@ def statistics_member():
         rds.expire(cache_key,10)
 
     a_member = BaseModel.fetch_one(Member, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
-    members = a_member.memebrs
+    if hasattr(a_member,'memebrs'):
+        members = a_member.memebrs
+    else:
+        members = []
     member_username_all = {member.get("username") for member in members}
     member_username_non_active_list = list(member_username_all - set(wxIds))
     member_non_active_list = BaseModel.fetch_all(Contact, "*", where_clause = BaseModel.where("in", "username", member_username_non_active_list))
