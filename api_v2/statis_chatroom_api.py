@@ -275,7 +275,7 @@ def get_non_active_chatroom_list():
         # 这里需要根据groupId 取 qunID list，或者前端post过来 qunID list
         _where = ["and", ["=", "client_id", user_info.client_id], ["=", "group_id", group_id]]
         _where = BaseModel.where_dict(_where)
-        qunList = BaseModel.fetch_all('client_qun_r', ['chatroomname', 'group_id', 'group_info', 'status'], _where)
+        qunList = modelList2Arr(BaseModel.fetch_all('client_qun_r', ['chatroomname', 'group_id', 'group_info', 'status'], _where))
         # qunList = getClientQunWithGroup(user_info.client_id, group_id)
         for qli in qunList:
             chatroomname_list.append(qli['chatroomname'])
@@ -365,7 +365,7 @@ def get_active_chatroom_count():
         # 这里需要根据groupId 取 qunID list，或者前端post过来 qunID list
         _where = ["and", ["=", "client_id", client_id], ["=", "group_id", group_id]]
         _where = BaseModel.where_dict(_where)
-        qunList = BaseModel.fetch_all('client_qun_r', ['chatroomname', 'group_id', 'group_info', 'status'], _where)
+        qunList = modelList2Arr(BaseModel.fetch_all('client_qun_r', ['chatroomname', 'group_id', 'group_info', 'status'], _where))
         # qunList = getClientQunWithGroup(user_info.client_id, group_id)
         for qli in qunList:
             chatroomname_list.append(qli['chatroomname'])
