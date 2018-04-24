@@ -343,21 +343,18 @@ def modify_event_word():
     # Save poster_raw
     poster_raw = para_as_dict.get('poster_raw')
     if poster_raw:
-        print('--2')
         if 'http://ywbdposter.oss-cn-beijing.aliyuncs.com' not in poster_raw:
             try:
                 poster_raw = poster_raw.replace('data:image/png;base64,', '')
                 img_url = put_img_to_oss(event_id, poster_raw)
             except Exception as e:
                 return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
-            print(img_url)
             para_as_dict['poster_raw'] = img_url
     else:
-        print('--3')
         para_as_dict['poster_raw'] = ''
 
     event.from_json(para_as_dict)
-    print(event.save())
+    event.save()
 
     return response({'err_code': 0, 'content': 'SUCCESS'})
 
@@ -463,6 +460,7 @@ def events_list():
             'total_inc': total_inc,  # the people of all chatroom.
         })
         result['content'].append(temp)
+        result['content'] = result['content'].reverse()
     return response(result)
 
 
@@ -739,7 +737,6 @@ def event_chatroom_send_word():
 
             chatroom_status_dict[chatroom.chatroomname] = member_count
             chatroom_task_status_dict[chatroom.chatroomname] = [0, 0, 0, 0]  # 30 50 80 100 task-status
-    print(chatroom_status_dict)
 
     def send_message(_bot_username, to, _type, content):
         result = {'bot_username': _bot_username,
@@ -750,7 +747,6 @@ def event_chatroom_send_word():
                       "content": content,
                   }}
         resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
-        print('send_message_666:%s' % result)
         if dict(resp.json())['err_code'] == -1:
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
