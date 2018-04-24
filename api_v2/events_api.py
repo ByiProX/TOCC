@@ -302,7 +302,7 @@ def get_events_qrcode():
     owner = event.owner
     this_client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': owner}))
     _client_id = this_client_member.client_id
-    print('--client_id:',_client_id)
+    print('--client_id:', _client_id)
     event.save()
     start_name = event.start_name
     new_thread = threading.Thread(target=create_chatroom_for_scan, args=(event_id, _client_id, owner, start_name))
@@ -498,6 +498,9 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
             chatroomname = chatroom.chatroomname
             events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
                 {'roomowner': roomowner, 'chatroom_nickname': chatroom_nickname}))
+            if events_chatroom is None:
+                logger.warning('Rewrite running failed because events_chatroom have not field!')
+                return 0
             events_chatroom.chatroomname = chatroomname
             events_chatroom.save()
             # Make events have enough chatroom.
@@ -505,6 +508,9 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
             event.enough_chatroom = 1
             event.save()
             flag = False
+        else:
+            logger.warning('Rewrite running failed because a_chatroom have not field!')
+            return 0
     print('Rewrite ok.')
     return ' '
 
@@ -520,18 +526,18 @@ def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
     previous_index_list.sort()
 
     now_index = previous_index_list[-1] + 1
-    print('--now_index',now_index)
+    print('--now_index', now_index)
     # Create a chatroom for this event. index = start_index.
     chatroom_nickname = start_name + str(now_index) + u'群'
     _bot_username = BaseModel.fetch_one('client_bot_r', '*',
-                                        BaseModel.where_dict({'client_id': __client_id})).bot_username
-    print('--bot_username',_bot_username)
+                                        BaseModel.where_dict({'client_id': __client_id}))
+
     if _bot_username:
         __bot_username = _bot_username.bot_username
     else:
         logger.warning('Error when create_chatroom_for_scan')
         return 0
-
+    print('--bot_username', __bot_username)
     create_chatroom_dict = {
         'bot_username': __bot_username,
         'data': {
@@ -553,7 +559,7 @@ def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
     events_chatroom.event_id = event_id
     events_chatroom.chatroom_nickname = chatroom_nickname
     events_chatroom.roomowner = owner
-
+    events_chatroom.save()
     # Update chatroomname.
     rewrite_events_chatroom(owner, chatroom_nickname, event_id)
     return ' '
@@ -848,4 +854,5 @@ def events_chatroomname_check():
         new_thread.setDaemon(True)
         new_thread.start()
 
-# events_chatroomname_check()
+
+events_chatroomname_check()
