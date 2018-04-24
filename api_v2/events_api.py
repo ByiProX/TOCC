@@ -301,6 +301,7 @@ def get_events_qrcode():
     event.enough_chatroom = 0
     owner = event.owner
     _client_id = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': owner}))
+    print('--client_id:',_client_id)
     event.save()
     start_name = event.start_name
     new_thread = threading.Thread(target=create_chatroom_for_scan, args=(event_id, _client_id, owner, start_name))
@@ -507,7 +508,7 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
     return ' '
 
 
-def create_chatroom_for_scan(event_id, client_id, owner, start_name):
+def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
     """create_chatroom_for_scan"""
     print("Running create_chatroom_for_scan")
     """Get previous index"""
@@ -518,11 +519,12 @@ def create_chatroom_for_scan(event_id, client_id, owner, start_name):
     previous_index_list.sort()
 
     now_index = previous_index_list[-1] + 1
-
+    print('--now_index',now_index)
     # Create a chatroom for this event. index = start_index.
     chatroom_nickname = start_name + str(now_index) + u'群'
     _bot_username = BaseModel.fetch_one('client_bot_r', '*',
-                                        BaseModel.where_dict({'client_id': client_id}))
+                                        BaseModel.where_dict({'client_id': __client_id}))
+    print('--bot_username',_bot_username)
     if _bot_username:
         __bot_username = _bot_username.bot_username
     else:
