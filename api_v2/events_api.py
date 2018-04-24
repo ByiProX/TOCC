@@ -529,11 +529,11 @@ def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
     print('--now_index', now_index)
     # Create a chatroom for this event. index = start_index.
     chatroom_nickname = start_name + str(now_index) + u'群'
-    _bot_username = BaseModel.fetch_one('client_bot_r', '*',
-                                        BaseModel.where_dict({'client_id': __client_id}))
+    client_bot_r = BaseModel.fetch_one('client_bot_r', '*',
+                                       BaseModel.where_dict({'client_id': __client_id}))
 
-    if _bot_username:
-        __bot_username = _bot_username.bot_username
+    if client_bot_r:
+        __bot_username = client_bot_r.bot_username
     else:
         logger.warning('Error when create_chatroom_for_scan')
         return 0
