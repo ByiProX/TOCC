@@ -209,7 +209,11 @@ def statistics_member():
         members = a_member.memebrs
     else:
         members = []
-    member_username_all = {member.get("username") for member in members if member.get("is_deleted") == 0}
+    print "members", members
+    member_username_all = set()
+    for member in members:
+        if member.get("is_deleted") == 0:
+            member_username_all.add(member.get("username"))
     print "member_username_all", member_username_all
     member_username_non_active_list = list(member_username_all - set(wxIds))
     print "member_username_non_active_list", member_username_non_active_list
