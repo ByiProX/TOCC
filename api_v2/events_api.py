@@ -286,7 +286,7 @@ def get_events_qrcode():
                 member_list = this_chatroom.memberlist.split(';')
 
         for k, v in chatroom_dict.items():
-            if v[0] < 6:
+            if v[0] < 100:
                 result = {
                     'err_code': 0,
                     'content': {'event_status': status,
@@ -302,7 +302,7 @@ def get_events_qrcode():
     owner = event.owner
     this_client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': owner}))
     _client_id = this_client_member.client_id
-    print('--client_id:', _client_id)
+
     event.save()
     start_name = event.start_name
     new_thread = threading.Thread(target=create_chatroom_for_scan, args=(event_id, _client_id, owner, start_name))
@@ -356,7 +356,7 @@ def modify_event_word():
 
     # Save poster_raw
     poster_raw = para_as_dict.get('poster_raw')
-    if poster_raw:
+    if poster_raw is not None:
         if 'http://ywbdposter.oss-cn-beijing.aliyuncs.com' not in poster_raw:
             try:
                 poster_raw = poster_raw.replace('data:image/png;base64,', '')
@@ -365,7 +365,8 @@ def modify_event_word():
                 return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
             para_as_dict['poster_raw'] = img_url
     else:
-        para_as_dict['poster_raw'] = ''
+        # poster_raw is None.
+        pass
 
     event.from_json(para_as_dict)
     event.save()
@@ -526,7 +527,7 @@ def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
     previous_index_list.sort()
 
     now_index = previous_index_list[-1] + 1
-    print('--now_index', now_index)
+
     # Create a chatroom for this event. index = start_index.
     chatroom_nickname = start_name + str(now_index) + u'群'
     client_bot_r = BaseModel.fetch_one('client_bot_r', '*',
@@ -537,7 +538,7 @@ def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
     else:
         logger.warning('Error when create_chatroom_for_scan')
         return 0
-    print('--bot_username', __bot_username)
+
     create_chatroom_dict = {
         'bot_username': __bot_username,
         'data': {
@@ -784,7 +785,7 @@ def event_chatroom_send_word():
         return __bot_username
 
     while True:
-        time.sleep(0.5)
+        time.sleep(1)
         # Get all event.
         event_list = BaseModel.fetch_all('events', '*',
                                          BaseModel.where_dict({'is_finish': 1, 'is_work': 1, 'enough_chatroom': 1}))
@@ -812,6 +813,7 @@ def event_chatroom_send_word():
                 if previous_chatroom_status_dict.get(chatroom.chatroomname):
                     previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
                     now_chatroom_member_count = chatroom_status_dict[chatroom.chatroomname]
+                    # print(previous_chatroom_member_count, now_chatroom_member_count)
                     if now_chatroom_member_count > previous_chatroom_member_count and need_fission:
                         # Send welcome message.
                         this_bot_username = get_owner_bot_username(event.owner)
