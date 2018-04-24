@@ -44,10 +44,12 @@ def getGrouplist(client_id):
 def getQunInfo(chatroomnames):
     ret = {}
     if chatroomnames:
-        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname','member_count', 'avatar_url'],BaseModel.where("in", "chatroomname", chatroomnames))
+        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname','member_count', 'avatar_url'],
+                                      BaseModel.where("in", "chatroomname", chatroomnames))
         if (qunInfo):
             for qf in qunInfo:
-                _qfjson = qf.to_json() 
+                _qfjson = qf.to_json()
+                print '6666666666', _qfjson
                 ret[_qfjson["chatroomname"]] = _qfjson
     return ret
 
@@ -66,7 +68,7 @@ def getClientQunWithGroup(client_id, group_id, page = 1, pagesize = 30, order = 
         qunList = BaseModel.fetch_all('client_qun_r', ['chatroomname', 'group_id', 'group_info', 'status'], _where,
                                       page = 1, pagesize = pagesize, orderBy = order)
         return modelList2Arr(qunList)
- 
+
 
 @main_api_v2.route('/statistics_chatroomone', methods = ['POST'])
 def statistics_chatroomone():
@@ -206,8 +208,7 @@ def chatroom_statistics_chatroom():
         print "cache hit"
         cacheData = json.loads(cacheData)
         for cd in cacheData:
-            cacheDataList = sumList(cacheData[cd])
-            return make_response(SUCCESS, chatroom_list = cacheDataList, last_update_time = cd)
+            return make_response(SUCCESS, chatroom_list = cacheData[cd], last_update_time = cd)
 
     _where = BaseModel.where_dict(_where)
 
@@ -231,7 +232,8 @@ def chatroom_statistics_chatroom():
     if (len(qunInfo) > 0):
         for ctlist in chatroom_json_list:
             if qunInfo.has_key(ctlist['chatroomname']):
-                ctlist.update(qunInfo[ctlist['chatroomname']]) 
+                ctlist.update(qunInfo[ctlist['chatroomname']])
+                print '9999999999', ctlist, '00000000000'
 
     if (len(chatroom_json_list) > 0):
         rds.set(cache_key, json.dumps({last_update_time: chatroom_json_list}))
@@ -247,49 +249,7 @@ def chatroom_statistics_chatroom():
             chatroom_json = chatroom.to_json_full()
             chatroom_json_list.append(chatroom_json)
         return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
-    
-    ret_chatroom = sumList(chatroom_json_list)
-    return make_response(SUCCESS, chatroom_list = ret_chatroom, last_update_time = last_update_time)
-
-
-
-
-def sumList(chatroomlist):
-    arr = []
-    ret = {}
-    if chatroomlist:
-        for cm in chatroomlist: 
-            if (cm['chatroomname']  is not None) and  (ret.has_key(cm['chatroomname'])): 
-               
-                try:
-                    ret[cm['chatroomname']]['active_count'] = ret[cm['chatroomname']]['active_count'] + cm['chatroomname']['active_count']
-                except: 
-                    print 'err'
-                try:
-                    ret[cm['chatroomname']]['at_count'] = ret[cm['chatroomname']]['at_count'] + cm['chatroomname']['at_count']
-                except: 
-                    print 'err'
-                try: 
-                    ret[cm['chatroomname']]['speak_count'] = ret[cm['chatroomname']]['speak_count'] + cm['chatroomname']['speak_count']
-                except:  
-                    print 'err'
-                try: 
-                    ret[cm['chatroomname']]['in_count'] = ret[cm['chatroomname']]['in_count'] + cm['chatroomname']['in_count']
-                except: 
-                    print 'err'
-                try: 
-                    ret[cm['chatroomname']]['out_count'] = ret[cm['chatroomname']]['out_count'] + cm['chatroomname']['out_count']
-                except: 
-                    print 'err'
-                
-            else:
-                ret[cm['chatroomname']] = cm
-    print "ret:;------------------",ret,"\n\n"
-    for i in ret:
-        arr.append(ret[i])
-    return arr
-
-
+    return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
 
 
 @main_api_v2.route("/get_non_active_chatroom_list", methods = ['POSt'])
