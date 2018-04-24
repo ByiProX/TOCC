@@ -210,6 +210,7 @@ def statistics_member():
     print "members", members
     member_username_all = set()
     for member in members:
+        member = json.loads(member)
         if member.get("is_deleted") == 0:
             member_username_all.add(member.get("username"))
     print "member_username_all", member_username_all
