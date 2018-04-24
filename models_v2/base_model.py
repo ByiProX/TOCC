@@ -289,9 +289,9 @@ class BaseModel(object):
         return count
 
     @staticmethod
-    def fetch_all(tablename, select_colums, where_clause = None, limit = None, offset = None, order_by = None, **kwargs):
-         
+    def fetch_all(tablename, select_colums, where_clause = None, limit = None, offset = None, order_by = None, page = None, pagesize = None, **kwargs):
         query_clause = dict()
+        total_flag = True
         if not select_colums == '*':
             if not isinstance(select_colums, list):
                 select_colums = [select_colums]
@@ -299,13 +299,20 @@ class BaseModel(object):
         if where_clause:
             query_clause.update(where_clause)
         if limit:
-            print limit
             query_clause.update(limit)
+            total_flag = False
         if offset:
-            print offset
             query_clause.update(offset)
+            total_flag = False
         if order_by:
             query_clause.update(order_by)
+            total_flag = False
+        if page:
+            query_clause.update({"page": page})
+            total_flag = False
+        if page:
+            query_clause.update({"pagesize": pagesize})
+            total_flag = False
 
         query_clause.update(kwargs)
         query_clause.setdefault("pagesize", 100)
@@ -350,6 +357,9 @@ class BaseModel(object):
             else:
                 errTry += 1
                 logger.error(u"query failed, content: " + unicode(response.content))
+
+            if not total_flag:
+                break
         return item_list
 
     @staticmethod
