@@ -168,10 +168,10 @@ def statistics_member():
     # if (len(member_statis) <= 0):
     #     return make_response(SUCCESS, member_list = [], last_update_time = last_update_time)
 
-    member_client_id = member_statis[0].client_id
-    # memberfirst['client_id'] = 2
-    if (member_client_id != user_info.client_id):
-        return make_response(ERR_WRONG_ITEM)
+    # member_client_id = member_statis[0].client_id
+    # # memberfirst['client_id'] = 2
+    # if (member_client_id != user_info.client_id):
+    #     return make_response(ERR_WRONG_ITEM)
 
     if len(useranems) > 0:
         wxIds = useranems
