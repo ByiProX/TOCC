@@ -275,6 +275,7 @@ class BaseModel(object):
         query_clause = dict()
         query_clause.update({"count": 1})
         if where_clause:
+            print where_clause
             query_clause.update(where_clause)
         query_clause.update(kwargs)
         url = DB_SERVER_URL + tablename + u's'
