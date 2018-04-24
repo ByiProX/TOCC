@@ -48,7 +48,8 @@ def create_event_init():
             if i.is_finish == 0:
                 previous_event = BaseModel.fetch_one('events', '*',
                                                      BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-                alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect'.format(previous_event.events_id)
+                alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect'.format(
+                    previous_event.events_id)
                 event_id = previous_event.events_id
                 return response({'err_code': 0, 'content': {'alive_qrcode_url': alive_qrcode_url,
                                                             'fission_word_1': '嗨！恭喜您即将获取「3点钟无眠区块链」听课资格！ 1.转发以上图片+文字到朋友圈或者100以上群聊中 2.不要屏蔽好友，转发后截图发至本群 3.转发后在本群等待听课即可 分享图片及内容如下 ↓↓↓↓↓ ',
@@ -65,7 +66,8 @@ def create_event_init():
     # Add QRcode URL.
     previous_event = BaseModel.fetch_one('events', '*',
                                          BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-    alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect'.format(previous_event.events_id)
+    alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect'.format(
+        previous_event.events_id)
     previous_event.alive_qrcode_url = alive_qrcode_url
     previous_event.save()
     # Static word.
@@ -264,6 +266,7 @@ def get_events_qrcode():
                                      'qr_end_date': ''}})
 
     chatroom_dict = {}
+    chatroomname_list = []
     for i in chatroom_list:
         chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
         if chatroom_info:
@@ -271,8 +274,17 @@ def get_events_qrcode():
                 len(chatroom_info.memberlist.split(';')), chatroom_info.qrcode, chatroom_info.nickname_real,
                 chatroom_info.avatar_url,
                 chatroom_info.update_time)
+            chatroomname_list.append(i.chatroomname)
 
     if chatroom_dict:
+        # Have enough chatroom. if open repeat protect, check this one whether already exist in a chatroom.
+        # TODO
+        if event.chatroom_repeat_protect and False:
+            for i in chatroomname_list:
+                this_chatroom = BaseModel.fetch_one('a_chatroom', 'memberlist',
+                                                    BaseModel.where_dict({'chatroomname': i}))
+                member_list = this_chatroom.memberlist.split(';')
+
         for k, v in chatroom_dict.items():
             if v[0] < 100:
                 result = {
