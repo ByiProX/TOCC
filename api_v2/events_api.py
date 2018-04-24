@@ -286,7 +286,7 @@ def get_events_qrcode():
                 member_list = this_chatroom.memberlist.split(';')
 
         for k, v in chatroom_dict.items():
-            if v[0] < 6:
+            if v[0] < 100:
                 result = {
                     'err_code': 0,
                     'content': {'event_status': status,
