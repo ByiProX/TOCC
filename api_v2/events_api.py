@@ -302,7 +302,7 @@ def get_events_qrcode():
     owner = event.owner
     this_client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': owner}))
     _client_id = this_client_member.client_id
-    print('--client_id:', _client_id)
+
     event.save()
     start_name = event.start_name
     new_thread = threading.Thread(target=create_chatroom_for_scan, args=(event_id, _client_id, owner, start_name))
@@ -526,7 +526,7 @@ def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
     previous_index_list.sort()
 
     now_index = previous_index_list[-1] + 1
-    print('--now_index', now_index)
+
     # Create a chatroom for this event. index = start_index.
     chatroom_nickname = start_name + str(now_index) + u'群'
     client_bot_r = BaseModel.fetch_one('client_bot_r', '*',
@@ -537,7 +537,7 @@ def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
     else:
         logger.warning('Error when create_chatroom_for_scan')
         return 0
-    print('--bot_username', __bot_username)
+
     create_chatroom_dict = {
         'bot_username': __bot_username,
         'data': {
@@ -812,7 +812,7 @@ def event_chatroom_send_word():
                 if previous_chatroom_status_dict.get(chatroom.chatroomname):
                     previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
                     now_chatroom_member_count = chatroom_status_dict[chatroom.chatroomname]
-                    print(previous_chatroom_member_count, now_chatroom_member_count)
+                    # print(previous_chatroom_member_count, now_chatroom_member_count)
                     if now_chatroom_member_count > previous_chatroom_member_count and need_fission:
                         # Send welcome message.
                         this_bot_username = get_owner_bot_username(event.owner)
