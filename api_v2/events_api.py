@@ -460,7 +460,7 @@ def events_list():
             'total_inc': total_inc,  # the people of all chatroom.
         })
         result['content'].append(temp)
-        result['content'] = result['content'].reverse()
+    result['content'] = result['content'].reverse()
     return response(result)
 
 
