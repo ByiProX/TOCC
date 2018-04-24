@@ -206,7 +206,7 @@ def statistics_member():
     a_member = BaseModel.fetch_one(Member, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
     a_member_json = a_member.to_json()
     print "a_member", a_member_json
-    members = a_member_json.get("members")
+    members = json.loads(a_member_json.get("members"))
     print "members", members
     member_username_all = set()
     for member in members:
