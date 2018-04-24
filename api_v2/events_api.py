@@ -343,20 +343,22 @@ def modify_event_word():
     # Save poster_raw
     poster_raw = para_as_dict.get('poster_raw')
     if poster_raw:
+        print('--2')
         if 'http://ywbdposter.oss-cn-beijing.aliyuncs.com' not in poster_raw:
             try:
                 poster_raw = poster_raw.replace('data:image/png;base64,', '')
                 img_url = put_img_to_oss(event_id, poster_raw)
             except Exception as e:
                 return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
+            print(img_url)
             para_as_dict['poster_raw'] = img_url
     else:
+        print('--3')
         para_as_dict['poster_raw'] = ''
 
-    if event is None:
-        return response({'err_code': -2, 'content': 'event_id error!'})
     event.from_json(para_as_dict)
-    event.save()
+    print(event.save())
+
     return response({'err_code': 0, 'content': 'SUCCESS'})
 
 
