@@ -784,7 +784,7 @@ def event_chatroom_send_word():
         return __bot_username
 
     while True:
-        time.sleep(0.5)
+        time.sleep(1)
         # Get all event.
         event_list = BaseModel.fetch_all('events', '*',
                                          BaseModel.where_dict({'is_finish': 1, 'is_work': 1, 'enough_chatroom': 1}))
@@ -856,4 +856,4 @@ def events_chatroomname_check():
         new_thread.start()
 
 
-events_chatroomname_check()
+# events_chatroomname_check()
