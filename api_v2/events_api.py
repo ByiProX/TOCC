@@ -812,6 +812,7 @@ def event_chatroom_send_word():
                 if previous_chatroom_status_dict.get(chatroom.chatroomname):
                     previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
                     now_chatroom_member_count = chatroom_status_dict[chatroom.chatroomname]
+                    print(previous_chatroom_member_count, now_chatroom_member_count)
                     if now_chatroom_member_count > previous_chatroom_member_count and need_fission:
                         # Send welcome message.
                         this_bot_username = get_owner_bot_username(event.owner)
