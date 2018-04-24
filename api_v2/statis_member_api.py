@@ -204,15 +204,18 @@ def statistics_member():
         rds.expire(cache_key, 10)
 
     a_member = BaseModel.fetch_one(Member, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
-    print a_member.to_json_full()
+    print "a_member", json.dumps(a_member.to_json_full())
     if hasattr(a_member, 'memebrs'):
         members = a_member.memebrs
     else:
         members = []
     member_username_all = {member.get("username") for member in members if member.get("is_deleted") == 0}
+    print "member_username_all", member_username_all
     member_username_non_active_list = list(member_username_all - set(wxIds))
+    print "member_username_non_active_list", member_username_non_active_list
     member_non_active_list = BaseModel.fetch_all(Contact, "*", where_clause = BaseModel.where("in", "username",
                                                                                               member_username_non_active_list))
+    print "member_non_active_list", modelList2Arr(member_non_active_list)
     for member in member_non_active_list:
         member_json = member.to_json_full()
         member_json_list.append(member_json)
