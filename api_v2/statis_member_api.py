@@ -204,11 +204,9 @@ def statistics_member():
         rds.expire(cache_key, 10)
 
     a_member = BaseModel.fetch_one(Member, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
-    print "a_member", json.dumps(a_member.to_json_full())
-    if hasattr(a_member, 'memebrs'):
-        members = a_member.memebrs
-    else:
-        members = []
+    a_member_json = a_member.to_json()
+    print "a_member", json.dumps(a_member_json)
+    members = a_member_json.get("members")
     print "members", members
     member_username_all = set()
     for member in members:
