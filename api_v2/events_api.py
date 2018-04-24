@@ -286,7 +286,7 @@ def get_events_qrcode():
                 member_list = this_chatroom.memberlist.split(';')
 
         for k, v in chatroom_dict.items():
-            if v[0] < 100:
+            if v[0] < 6:
                 result = {
                     'err_code': 0,
                     'content': {'event_status': status,
@@ -300,10 +300,10 @@ def get_events_qrcode():
     """Do not have a chatroom < 100, create one."""
     event.enough_chatroom = 0
     owner = event.owner
-    client_id = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': owner}))
+    _client_id = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': owner}))
     event.save()
     start_name = event.start_name
-    new_thread = threading.Thread(target=create_chatroom_for_scan, args=(event_id, client_id, owner, start_name))
+    new_thread = threading.Thread(target=create_chatroom_for_scan, args=(event_id, _client_id, owner, start_name))
     new_thread.setDaemon(True)
     new_thread.start()
 
@@ -524,13 +524,13 @@ def create_chatroom_for_scan(event_id, client_id, owner, start_name):
     _bot_username = BaseModel.fetch_one('client_bot_r', '*',
                                         BaseModel.where_dict({'client_id': client_id}))
     if _bot_username:
-        bot_username = _bot_username.bot_username
+        __bot_username = _bot_username.bot_username
     else:
         logger.warning('Error when create_chatroom_for_scan')
         return 0
 
     create_chatroom_dict = {
-        'bot_username': bot_username,
+        'bot_username': __bot_username,
         'data': {
             'task': 'create_chatroom',
             "owner": owner,
@@ -540,6 +540,7 @@ def create_chatroom_for_scan(event_id, client_id, owner, start_name):
     try:
         create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
                                              json=create_chatroom_dict)
+        logger.info('create_chatroom_resp(for scan):', create_chatroom_resp)
     except Exception as e:
         logger.warning('Create chatroom request error:{}'.format(e))
     # Add chatroom info in relationship.
