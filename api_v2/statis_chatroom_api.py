@@ -217,6 +217,13 @@ def chatroom_statistics_chatroom():
     print "------_where:::-----------\n", _where, order, "-----------------\n"
 
     chatroom_statis = BaseModel.fetch_all(table, '*', _where, page = page, pagesize = pagesize, orderBy = order)
+
+    if chatroomname and not chatroom_statis:
+        chatroom_info = BaseModel.fetch_one(Chatroom, "*", BaseModel.where_dict({"chatroomname": chatroomname}))
+        if chatroom_info:
+            chatroom_json = chatroom_info.to_json()
+        return make_response(SUCCESS, chatroom_list = [chatroom_json], last_update_time = last_update_time)
+
     chatroom_json_list = []
     if (len(chatroom_statis) < 1):
         return make_response(SUCCESS, chatroom_list = [], last_update_time = last_update_time)
