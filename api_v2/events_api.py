@@ -356,7 +356,7 @@ def modify_event_word():
 
     # Save poster_raw
     poster_raw = para_as_dict.get('poster_raw')
-    if poster_raw:
+    if poster_raw is not None:
         if 'http://ywbdposter.oss-cn-beijing.aliyuncs.com' not in poster_raw:
             try:
                 poster_raw = poster_raw.replace('data:image/png;base64,', '')
@@ -365,7 +365,8 @@ def modify_event_word():
                 return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
             para_as_dict['poster_raw'] = img_url
     else:
-        para_as_dict['poster_raw'] = ''
+        # poster_raw is None.
+        pass
 
     event.from_json(para_as_dict)
     event.save()
