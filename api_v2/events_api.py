@@ -300,7 +300,8 @@ def get_events_qrcode():
     """Do not have a chatroom < 100, create one."""
     event.enough_chatroom = 0
     owner = event.owner
-    _client_id = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': owner}))
+    this_client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': owner}))
+    _client_id = this_client_member.client_id
     print('--client_id:',_client_id)
     event.save()
     start_name = event.start_name
