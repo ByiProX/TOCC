@@ -165,8 +165,8 @@ def statistics_member():
 
     print "\n ------member_statis = -----------\n", modelList2Arr(member_statis), "-----------------\n"
 
-    if (len(member_statis) <= 0):
-        return make_response(SUCCESS, member_list = [], last_update_time = last_update_time)
+    # if (len(member_statis) <= 0):
+    #     return make_response(SUCCESS, member_list = [], last_update_time = last_update_time)
 
     member_client_id = member_statis[0].client_id
     # memberfirst['client_id'] = 2

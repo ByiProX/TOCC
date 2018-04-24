@@ -44,7 +44,7 @@ def getGrouplist(client_id):
 def getQunInfo(chatroomnames):
     ret = {}
     if chatroomnames:
-        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname','member_count', 'avatar_url'],
+        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname','member_count', 'avatar_url', "create_time", "update_time"],
                                       BaseModel.where("in", "chatroomname", chatroomnames))
         if (qunInfo):
             for qf in qunInfo:
@@ -220,6 +220,7 @@ def chatroom_statistics_chatroom():
 
     if chatroomname and not chatroom_statis:
         chatroom_info = BaseModel.fetch_one(Chatroom, "*", BaseModel.where_dict({"chatroomname": chatroomname}))
+        chatroom_json = CM(Chatroom).to_json()
         if chatroom_info:
             chatroom_json = chatroom_info.to_json()
         return make_response(SUCCESS, chatroom_list = [chatroom_json], last_update_time = last_update_time)
