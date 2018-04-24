@@ -418,6 +418,7 @@ def events_detail():
 
 
 @app_test.route('/events_list', methods=['POST'])
+@para_check('token', )
 def events_list():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
@@ -460,7 +461,8 @@ def events_list():
             'total_inc': total_inc,  # the people of all chatroom.
         })
         result['content'].append(temp)
-    result['content'] = result['content'].reverse()
+    result['content'].reverse()
+
     return response(result)
 
 
