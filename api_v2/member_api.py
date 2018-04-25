@@ -10,9 +10,10 @@ from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 import time
 
+
 #####################
 
-@main_api_v2.route("/get_in_out_members", methods = ['POST'])
+@main_api_v2.route("/get_in_out_members", methods=['POST'])
 def member_get_in_out_member():
     verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
@@ -22,10 +23,10 @@ def member_get_in_out_member():
     # time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()-time.time()%86400-86400*6))
 
     cur_time = time.time()
-    today_start = int(cur_time-cur_time % 86400)
-    yesterday_start = int(cur_time-cur_time % 86400 - 86400)
-    seven_before = int(cur_time-cur_time % 86400 - 86400*6)
-    thirty_before = int(cur_time-cur_time % 86400 - 86400*29)
+    today_start = int(cur_time - cur_time % 86400)
+    yesterday_start = int(cur_time - cur_time % 86400 - 86400)
+    seven_before = int(cur_time - cur_time % 86400 - 86400 * 6)
+    thirty_before = int(cur_time - cur_time % 86400 - 86400 * 29)
 
     time_dict = {
         1: today_start,
@@ -46,14 +47,14 @@ def member_get_in_out_member():
 
     a_member = BaseModel.fetch_one("a_member", "*", where_clause=BaseModel.where_dict({"chatroomname": group}))
 
-
     if not a_member:
         pass
         # return make_response(ERR_WRONG_ITEM)
     else:
         members = a_member.members
         for member in members:
-            member_info = BaseModel.fetch_one("a_contact", "*", where_clause=BaseModel.where_dict({"username": member['username']}))
+            member_info = BaseModel.fetch_one("a_contact", "*",
+                                              where_clause=BaseModel.where_dict({"username": member['username']}))
 
             if not member['is_deleted']:
                 try:
@@ -73,4 +74,4 @@ def member_get_in_out_member():
 
     last_update_time = int(time.time())
 
-    return make_response(SUCCESS, in_list = in_list, out_list = out_list, last_update_time = last_update_time)
+    return make_response(SUCCESS, in_list=in_list, out_list=out_list, last_update_time=last_update_time)
