@@ -60,7 +60,7 @@ def match_message_by_rule(gm_rule_dict, a_message):
                     break
             if match_type == "fuzzy":
                 for keyword in keywords_list:
-                    if content in keyword:
+                    if keyword in content and (u'@' + keyword) not in content:
                         reply_content_list = matching_rule.get("reply_content")
                         status_flag = send_msg_to_android(a_message.bot_username, reply_content_list, [chatroomname])
                         if status_flag == SUCCESS:
