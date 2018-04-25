@@ -102,6 +102,8 @@ def sensitive_rule_list():
         chatroom_list = []
         for chatroomname in rule.chatroom_name_list:
             this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': chatroomname}))
+            if this_chatroom is None:
+                return response({'err_code': -3, 'err_info': 'Invalid chatroomname:%s' % chatroomname})
             avatar_url = this_chatroom.avatar_url
             nickname = this_chatroom.nickname_real
             chatroom_list.append(
