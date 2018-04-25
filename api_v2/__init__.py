@@ -12,5 +12,6 @@ import statis_chatroom_api
 import statis_member_api
 import member_api
 import script
+import sensitive_api
 
 api_str = ""
