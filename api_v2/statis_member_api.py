@@ -195,6 +195,7 @@ def statistics_member():
         wxIds = []
 
     for st in member_statis:
+        st.username = st.get_id()
         _stjson = st.to_json_full()
         wxIds.append(_stjson['username'])
         member_json_list.append(_stjson)
