@@ -313,8 +313,8 @@ class BaseModel(object):
         if page:
             query_clause.update({"pagesize": pagesize})
             total_flag = False
-        if group:
-            query_clause.update({"group": group})
+        # if group:
+        #     query_clause.update({"group": group})
 
         query_clause.update(kwargs)
         query_clause.setdefault("pagesize", 100)
