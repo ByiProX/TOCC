@@ -127,8 +127,8 @@ def sensitive_message_log():
 
     """
     date_type
-    -> 1 今日零时
-    -> 2 昨日零时
+    -> 1 今天
+    -> 2 昨天
     -> 3 近7天
     -> 4 近30天
     -> 5 全部
@@ -140,12 +140,20 @@ def sensitive_message_log():
     thirty_before = int(cur_time - cur_time % 86400 - 86400 * 29)
 
     time_dict = {
-        1: today_start,
-        2: yesterday_start,
-        3: seven_before,
-        4: thirty_before,
+        1: (today_start, now),
+        2: (yesterday_start, today_start),
+        3: (seven_before, now),
+        4: (thirty_before, now),
+        5: (0, now)
     }
 
     time_limit = time_dict[date_type]
 
-    all_log_list = BaseModel.fetch_all('sensitive_message_log', '*', BaseModel.where(">", "create", time_limit))
+    all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
+                                       BaseModel.and_(BaseModel.where(">", "create_time", time_limit[0]),
+                                                      BaseModel.where("<", "create_time", time_limit[1])), page=page,
+                                       pagesize=pagesize)
+
+    for log in all_log_list:
+        print(log)
+
