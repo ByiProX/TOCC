@@ -223,6 +223,7 @@ def chatroom_statistics_chatroom():
 
     print "cache_key::::::::::::", cache_key
     cache_key = hashlib.md5(cache_key)
+    cache_key = hashlib.md5(json.dumps(request.json))
     cacheData = rds.get(cache_key)
     # cacheData = 0
     if cacheData:
