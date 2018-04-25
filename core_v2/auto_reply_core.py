@@ -118,7 +118,8 @@ def get_auto_reply_setting(user_info):
             chatroom = BaseModel.fetch_one(Chatroom, "member_count", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
             if not chatroom:
                 continue
-            member_count += chatroom.member_count
+            if chatroom.member_count:
+                member_count += chatroom.member_count
             chatroom_dict = dict()
             chatroom_dict['chatroom_id'] = chatroom.get_id()
             chatroom_dict['chatroom_nickname'] = chatroom.nickname
