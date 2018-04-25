@@ -224,6 +224,7 @@ def chatroom_statistics_chatroom():
     print "cache_key::::::::::::", cache_key
     cache_key = hashlib.md5(cache_key)
     cacheData = rds.get(cache_key)
+    cacheData = 0
     if cacheData:
         print "cache hit"
         cacheData = json.loads(cacheData)
