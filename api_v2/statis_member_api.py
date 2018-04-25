@@ -117,6 +117,7 @@ def statistics_member():
         timestamp_diff = getTimeStamp(1)
         _where = ["and", ["=", "date", timestamp_diff], ["=", "chatroomname", chatroomname],
                   ["in", "username", useranems]]
+        print 'date_type == 2:::: where::',_where
         # where = BaseModel.where_dict({"date":timestamp_diff,"chatroomname":chatroomname})
         table = 'statistics_member_daily'
     elif (date_type == 3):

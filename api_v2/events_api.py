@@ -2,10 +2,8 @@
 import os
 import time
 import base64
-import logging
 import threading
 
-import requests
 import oss2
 from flask import request, jsonify
 from functools import wraps
