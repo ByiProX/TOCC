@@ -220,26 +220,27 @@ def statistics_member():
         rds.expire(cache_key, 60)
 
     a_member = BaseModel.fetch_one(Member, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
-    a_member_json = a_member.to_json()
-    print "a_member", a_member_json
-    members = json.loads(a_member_json.get("members"))
-    print "members", members
-    member_username_all = set()
-    for member in members:
-        print member
-        print "type_member", type(member)
-        # member = json.loads(member)
-        if member.get("is_deleted") == 0:
-            member_username_all.add(member.get("username"))
-    print "member_username_all", member_username_all
-    member_username_non_active_list = list(member_username_all - set(wxIds))
-    print "member_username_non_active_list", member_username_non_active_list
-    member_non_active_list = BaseModel.fetch_all(Contact, "*", where_clause = BaseModel.where("in", "username",
-                                                                                              member_username_non_active_list))
-    print "member_non_active_list", modelList2Arr(member_non_active_list)
-    for member in member_non_active_list:
-        member_json = member.to_json_full()
-        member_json_list.append(member_json)
+    if a_member :
+        a_member_json = a_member.to_json()
+        print "a_member", a_member_json
+        members = json.loads(a_member_json.get("members"))
+        print "members", members
+        member_username_all = set()
+        for member in members:
+            print member
+            print "type_member", type(member)
+            # member = json.loads(member)
+            if member.get("is_deleted") == 0:
+                member_username_all.add(member.get("username"))
+        print "member_username_all", member_username_all
+        member_username_non_active_list = list(member_username_all - set(wxIds))
+        print "member_username_non_active_list", member_username_non_active_list
+        member_non_active_list = BaseModel.fetch_all(Contact, "*", where_clause = BaseModel.where("in", "username",
+                                                                                                  member_username_non_active_list))
+        print "member_non_active_list", modelList2Arr(member_non_active_list)
+        for member in member_non_active_list:
+            member_json = member.to_json_full()
+            member_json_list.append(member_json)
 
     return make_response(SUCCESS, member_list = member_json_list, last_update_time = last_update_time)
 
