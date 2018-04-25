@@ -88,7 +88,7 @@ class WechatConn:
 
     def _send_to_follower(self, data):
         access_token = self.get_access_token()
-        url = 'https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=' + str(access_token.token)
+        url = 'https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=' + str(access_token)
         headers = {
             'content-type': 'application/json;charset=utf-8'
         }
@@ -138,6 +138,7 @@ class WechatConn:
 
             if self.access_token is None:
                 self.access_token = CM(AccessToken)
+                self.access_token.app = self.app
                 self.access_token.token = res_json.get("access_token")
                 self.access_token.expired_time = now + res_json.get("expires_in")
                 self.access_token.save()
