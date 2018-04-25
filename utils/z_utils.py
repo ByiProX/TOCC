@@ -44,3 +44,27 @@ def response(body_as_dict):
     """Use make_response or not."""
     response_body = jsonify(body_as_dict)
     return response_body
+
+
+def true_false_to_10(data_as_dict, exc_list=()):
+    for k, v in data_as_dict.items():
+        if k in exc_list:
+            continue
+        if v is True:
+            data_as_dict[k] = 1
+        elif v is False:
+            data_as_dict[k] = 0
+
+    return data_as_dict
+
+
+def _10_to_true_false(data_as_dict, exc_list=()):
+    for k, v in data_as_dict.items():
+        if k in exc_list:
+            continue
+        if v == 1:
+            data_as_dict[k] = True
+        elif v == 0:
+            data_as_dict[k] = False
+
+    return data_as_dict
