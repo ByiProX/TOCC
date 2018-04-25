@@ -31,6 +31,7 @@ def create_or_modify_sensitive_rule():
         previous_rule.save()
         modified_rule = BaseModel.fetch_by_id('sensitive_message_rule', rule_id)
         modified_rule_result = {
+            'rule_id': rule_id,
             'chatroom_name_list': modified_rule.chatroom_name_list,
             'sensitive_word_list': modified_rule.sensitive_word_list,
             'owner_list': modified_rule.owner_list,
@@ -48,6 +49,7 @@ def create_or_modify_sensitive_rule():
         new_rule.save()
         created_rule = BaseModel.fetch_by_id('sensitive_message_rule', new_rule.sensitive_message_rule_id)
         created_rule_result = {
+            'rule_id': new_rule.sensitive_message_rule_id,
             'chatroom_name_list': created_rule.chatroom_name_list,
             'sensitive_word_list': created_rule.sensitive_word_list,
             'owner_list': created_rule.owner_list,
