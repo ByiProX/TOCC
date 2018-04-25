@@ -177,7 +177,7 @@ def chatroom_statistics_chatroom():
         table = 'statistics_chatroom_daily'
         _where = ["and", [">=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
                   ["in", "chatroomname", chatroomname_list]]
-        group_by = json.dumps({"_id": "&chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
+        group_by = json.dumps({"_id": "$chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
                     "in_count": {"$sum": {"$multiply": ["$in_count"]}},
                     "out_count": {"$sum": {"$multiply": ["$out_count"]}},
                     "memberchange_count": {"$sum": {"$multiply": ["$memberchange_count"]}},
@@ -187,7 +187,7 @@ def chatroom_statistics_chatroom():
         table = 'statistics_chatroom_daily'
         _where = ["and", [">=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
                   ["in", "chatroomname", chatroomname_list]]
-        group_by = json.dumps({"_id": "&chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
+        group_by = json.dumps({"_id": "$chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
                     "in_count": {"$sum": {"$multiply": ["$in_count"]}},
                     "out_count": {"$sum": {"$multiply": ["$out_count"]}},
                     "memberchange_count": {"$sum": {"$multiply": ["$memberchange_count"]}},
@@ -197,7 +197,7 @@ def chatroom_statistics_chatroom():
         table = 'statistics_chatroom_total'
         # _where ={"client_id":user_info.client_id}
         _where = ["and", ["=", "client_id", user_info.client_id], ["in", "chatroomname", chatroomname_list]]
-        group_by = json.dumps({"_id": "&chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
+        group_by = json.dumps({"_id": "$chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
                     "in_count": {"$sum": {"$multiply": ["$in_count"]}},
                     "out_count": {"$sum": {"$multiply": ["$out_count"]}},
                     "memberchange_count": {"$sum": {"$multiply": ["$memberchange_count"]}},
