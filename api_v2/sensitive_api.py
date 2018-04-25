@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+import time
 
 from flask import request
 from configs.config import main_api_v2
 from core_v2.user_core import UserLogin
 from models_v2.base_model import *
 from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false
+from utils.u_time import datetime_to_timestamp_utc_8, get_today_0
 
 
 @main_api_v2.route('/sensitive_rule', methods=['POST'])
@@ -116,5 +118,34 @@ def sensitive_rule_list():
 
 
 @main_api_v2.route('/sensitive_message_log', methods=['POST'])
+@para_check("token", "date_type", "page", "pagesize")
 def sensitive_message_log():
-    pass
+    now = int(time.time())
+    date_type = request.json.get('date_type')
+    page = request.json.get('page')
+    pagesize = request.json.get('pagesize')
+
+    """
+    date_type
+    -> 1 今日零时
+    -> 2 昨日零时
+    -> 3 近7天
+    -> 4 近30天
+    -> 5 全部
+    """
+    cur_time = time.time()
+    today_start = int(cur_time - cur_time % 86400)
+    yesterday_start = int(cur_time - cur_time % 86400 - 86400)
+    seven_before = int(cur_time - cur_time % 86400 - 86400 * 6)
+    thirty_before = int(cur_time - cur_time % 86400 - 86400 * 29)
+
+    time_dict = {
+        1: today_start,
+        2: yesterday_start,
+        3: seven_before,
+        4: thirty_before,
+    }
+
+    time_limit = time_dict[date_type]
+
+    all_log_list = BaseModel.fetch_all('sensitive_message_log', '*', BaseModel.where(">", "create", time_limit))

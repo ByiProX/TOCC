@@ -855,4 +855,4 @@ def events_chatroomname_check():
         new_thread.start()
 
 
-events_chatroomname_check()
+# events_chatroomname_check()
