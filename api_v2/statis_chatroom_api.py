@@ -221,9 +221,9 @@ def chatroom_statistics_chatroom():
         order = order.split('_')
         order = order[0] + '_count' + ' ' + order[1]
 
-    print "cache_key::::::::::::", cache_key
     cache_key = hashlib.md5(cache_key)
     cache_key = hashlib.md5(json.dumps(request.json))
+    print "cache_key::::::::::::", cache_key
     cacheData = rds.get(cache_key)
     # cacheData = 0
     if cacheData:
