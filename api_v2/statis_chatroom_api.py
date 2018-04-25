@@ -131,8 +131,9 @@ def chatroom_statistics_chatroom():
     is_active = request.json.get('is_active', True)
     group_id = request.json.get('group_id', '')
     chatroomname_list = []
+    cache_key = ""
     if group_id:
-        cache_key = 'c_' + group_id
+        cache_key += 'c_' + group_id
         # 这里需要根据groupId 取 qunID list，或者前端post过来 qunID list
         qunList = getClientQunWithGroup(user_info.client_id, group_id, page = page, pagesize = pagesize, order = order)
         for qli in qunList:
@@ -189,7 +190,7 @@ def chatroom_statistics_chatroom():
         # _where ={"client_id":user_info.client_id}
         _where = ["and", ["=", "client_id", user_info.client_id], ["in", "chatroomname", chatroomname_list]]
 
-    cache_key = '_st' + str(date_type) + '_' + str(user_info.client_id)
+    cache_key += '_st' + str(date_type) + '_' + str(user_info.client_id)
 
     # 群ID，cache key = dateType_clientId_chatroomname ,cache 10分钟
     chatroomname = request.json.get('chatroomname')
@@ -204,6 +205,7 @@ def chatroom_statistics_chatroom():
         order = order.split('_')
         order = order[0] + '_count' + ' ' + order[1]
 
+    print "cache_key::::::::::::", cache_key
     cache_key = hashlib.md5(cache_key)
     cacheData = rds.get(cache_key)
     if cacheData:
