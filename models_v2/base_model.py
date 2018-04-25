@@ -335,9 +335,10 @@ class BaseModel(object):
                 eof = True
                 return item_list
             response = requests.get(url = url, params = query_clause)
+            # print response.request.url
             page += 1
             query_clause["page"] = page
-            if order_by:
+            if group:
                 print response.request.url
             if response.status_code == 200:
                 response_json = json.loads(response.content)
