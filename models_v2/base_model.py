@@ -289,7 +289,7 @@ class BaseModel(object):
         return count
 
     @staticmethod
-    def fetch_all(tablename, select_colums, where_clause = None, limit = None, offset = None, order_by = None, page = None, pagesize = None, **kwargs):
+    def fetch_all(tablename, select_colums, where_clause = None, limit = None, offset = None, order_by = None, page = None, pagesize = None, group = None, **kwargs):
         query_clause = dict()
         total_flag = True
         if not select_colums == '*':
@@ -313,6 +313,8 @@ class BaseModel(object):
         if page:
             query_clause.update({"pagesize": pagesize})
             total_flag = False
+        if group:
+            query_clause.update({"group": group})
 
         query_clause.update(kwargs)
         query_clause.setdefault("pagesize", 100)

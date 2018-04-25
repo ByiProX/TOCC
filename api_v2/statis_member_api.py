@@ -106,6 +106,7 @@ def statistics_member():
     #    if(run_hour==0):
     #        return make_response(SUCCESS,member_list = [], last_update_time = last_update_time) 
     #    _where = ["and",["<=","run_hour",run_hour],["=","chatroomname",chatroomname],["in","username",useranems]]
+    group_by = None
     last_update_time = int(time.time()) - 600
     if (date_type == 1):
         timestamp_diff = getTimeStamp(0)
@@ -125,17 +126,26 @@ def statistics_member():
         table = 'statistics_member_daily'
         _where = ["and", [">=", "date", timestamp_diff], ["=", "chatroomname", chatroomname],
                   ["in", "username", useranems]]
+        group_by = json.dumps({"_id": "$username", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
+                               "be_at_count": {"$sum": {"$multiply": ["$be_at_count"]}},
+                               "invitation_count": {"$sum": {"$multiply": ["$invitation_count"]}}})
     elif (date_type == 4):
         timestamp_diff = getTimeStamp(30)
         table = 'statistics_member_daily'
         _where = ["and", [">=", "date", timestamp_diff], ["=", "chatroomname", chatroomname],
                   ["in", "username", useranems]]
+        group_by = json.dumps({"_id": "$username", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
+                               "be_at_count": {"$sum": {"$multiply": ["$be_at_count"]}},
+                               "invitation_count": {"$sum": {"$multiply": ["$invitation_count"]}}})
     elif (date_type == 5):
         table = 'statistics_member_total'
         last_update_time = getTimeStamp(1) + 1200
         # where = BaseModel.where("=", "chatroomname", chatroomname)
         # _where ={"chatroomname":chatroomname}
         _where = ["and", ["=", "chatroomname", chatroomname], ["in", "username", useranems]]
+        group_by = json.dumps({"_id": "$username", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
+                               "be_at_count": {"$sum": {"$multiply": ["$be_at_count"]}},
+                               "invitation_count": {"$sum": {"$multiply": ["$invitation_count"]}}})
 
     cache_key = cache_key + '_' + str(date_type)
 
@@ -161,7 +171,7 @@ def statistics_member():
     print "\n ------_where value = -----------\n", _where, order, "-----------------\n"
     _where = BaseModel.where_dict(_where)
 
-    member_statis = BaseModel.fetch_all(table, '*', _where, page = page, pagesize = pagesize, orderBy = order)
+    member_statis = BaseModel.fetch_all(table, '*', _where, page = page, pagesize = pagesize, orderBy = order, group = group_by)
     member_json_list = []
 
     print "\n ------member_statis = -----------\n", modelList2Arr(member_statis), "-----------------\n"
