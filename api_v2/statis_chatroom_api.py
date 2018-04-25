@@ -222,7 +222,10 @@ def chatroom_statistics_chatroom():
         order = order[0] + '_count' + ' ' + order[1]
 
     cache_key = hashlib.md5(cache_key)
-    cache_key = hashlib.md5(json.dumps(request.json))
+    md5_2 = hashlib.md5()
+    md5_2.update(json.dumps(request.json))
+    print md5_2.hexdigest()
+    cache_key = md5_2.hexdigest()
     print "cache_key::::::::::::", cache_key
     cacheData = rds.get(cache_key)
     # cacheData = 0
