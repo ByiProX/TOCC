@@ -121,9 +121,9 @@ def sensitive_rule_list():
 @para_check("token", "date_type", "page", "pagesize")
 def sensitive_message_log():
     now = int(time.time())
-    date_type = request.json.get('date_type')
-    page = request.json.get('page')
-    pagesize = request.json.get('pagesize')
+    date_type = int(request.json.get('date_type'))
+    page = int(request.json.get('page'))
+    pagesize = int(request.json.get('pagesize'))
 
     """
     date_type
@@ -157,3 +157,4 @@ def sensitive_message_log():
     for log in all_log_list:
         print(log)
 
+    return '666'
