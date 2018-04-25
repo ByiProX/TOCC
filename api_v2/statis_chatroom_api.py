@@ -159,23 +159,21 @@ def chatroom_statistics_chatroom():
     #    _where = ["and", ["<=", "run_hour", run_hour], ["=", "client_id", user_info.client_id],
     #              ["in", "chatroomname", chatroomname_list]]
     group_by = None
+    last_update_time = int(time.time()) - 600
     if (date_type == 1):
         timestamp_diff = getTimeStamp(0)
-        last_update_time = timestamp_diff + 600
         # _where ={"date":timestamp_diff,"client_id":user_info.client_id}
         _where = ["and", ["=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
                   ["in", "chatroomname", chatroomname_list]]
         table = 'statistics_chatroom_daily'
     elif (date_type == 2):
         timestamp_diff = getTimeStamp(1)
-        last_update_time = timestamp_diff + 600
         # _where ={"date":timestamp_diff,"client_id":user_info.client_id}
         _where = ["and", ["=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
                   ["in", "chatroomname", chatroomname_list]]
         table = 'statistics_chatroom_daily'
     elif (date_type == 3):
         timestamp_diff = getTimeStamp(7)
-        last_update_time = getTimeStamp(1) + 600
         table = 'statistics_chatroom_daily'
         _where = ["and", [">=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
                   ["in", "chatroomname", chatroomname_list]]
@@ -186,7 +184,6 @@ def chatroom_statistics_chatroom():
                     "active_count": {"$avg": "$active_count"}, "invo_count": {"$avg": "$invo_count"}})
     elif (date_type == 4):
         timestamp_diff = getTimeStamp(30)
-        last_update_time = getTimeStamp(1) + 600
         table = 'statistics_chatroom_daily'
         _where = ["and", [">=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
                   ["in", "chatroomname", chatroomname_list]]
@@ -270,7 +267,7 @@ def chatroom_statistics_chatroom():
 
     if (len(chatroom_json_list) > 0):
         rds.set(cache_key, json.dumps({last_update_time: chatroom_json_list}))
-        rds.expire(cache_key, 10)
+        rds.expire(cache_key, 60)
 
     if not is_active:
         uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]), page = 1, pagesize = pagesize)

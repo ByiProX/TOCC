@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import hashlib
 import logging
 import time
 
@@ -160,8 +160,12 @@ def statistics_member():
         order = order.split('_')
         order = order[0] + '_count' + ' ' + order[1]
 
+    md5_2 = hashlib.md5()
+    md5_2.update(json.dumps(request.json))
+    print md5_2.hexdigest()
+    cache_key = md5_2.hexdigest()
     cacheData = rds.get(cache_key)
-    cacheData = 0
+    # cacheData = 0
     if cacheData:
         print "cache hit"
         cacheData = json.loads(cacheData)
@@ -212,7 +216,7 @@ def statistics_member():
 
     if (len(member_json_list) > 0):
         rds.set(cache_key, json.dumps({last_update_time: member_json_list}))
-        rds.expire(cache_key, 10)
+        rds.expire(cache_key, 60)
 
     a_member = BaseModel.fetch_one(Member, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
     a_member_json = a_member.to_json()
