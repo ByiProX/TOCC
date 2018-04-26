@@ -6,7 +6,7 @@ from configs.config import main_api_v2
 from core_v2.user_core import UserLogin
 from models_v2.base_model import *
 from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false
-
+from configs.config import GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG
 
 @main_api_v2.route('/sensitive_rule', methods=['POST'])
 @para_check("token", "chatroom_name_list", "sensitive_word_list")
@@ -17,7 +17,7 @@ def create_or_modify_sensitive_rule():
         owner = user_info.username
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
-
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG = False
     if request.json.get('rule_id') is not None:
         # Modify rule.
         rule_id = request.json.get('rule_id')
@@ -76,6 +76,7 @@ def sensitive_rule_delete():
         'owner_list': this_rule.owner_list,
         'is_work': this_rule.is_work
     }
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG = False
     return response({'err_code': 0, 'content': _10_to_true_false(this_rule_result)})
 
 
