@@ -171,8 +171,8 @@ def sensitive_message_log():
             'sensitive_word': log.sensitive_word,
             'message': {
                 'chatroom_nickname': chatroom_nickname,
-                'avatar_url': chatroom_avatar_url
-                'chatroomname': log.chatroomname
+                'avatar_url': chatroom_avatar_url,
+                'chatroomname': log.chatroomname,
             },
             'speaker': {
                 'speaker_nickname': speaker_nickname,
