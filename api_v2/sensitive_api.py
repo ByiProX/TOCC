@@ -174,7 +174,8 @@ def sensitive_message_log():
                     all_log_list.append(log)
 
     result = {'err_code': 0}
-    content = []
+    content = {}
+    message_list = []
 
     # all_log_length = len(all_log_list)
     # if pagesize>all_log_length:
@@ -210,9 +211,11 @@ def sensitive_message_log():
             },
 
         }
-        content.append(temp)
+        message_list.append(temp)
+    content['last_update_time'] = int(time.time())
+    content['total_count'] = total_count
+    content['message_list'] = message_list
+
     result['content'] = content
-    result['last_update_time'] = int(time.time())
-    result['total_count'] = total_count
 
     return response(result)
