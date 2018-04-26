@@ -170,16 +170,20 @@ def sensitive_message_log():
         temp = {
             'sensitive_word': log.sensitive_word,
             'message': {
-                'chatroom_nickname': chatroom_nickname,
-                'avatar_url': chatroom_avatar_url,
-                'chatroomname': log.chatroomname,
+                'content': log.content,
+                'chatroom': {
+                    'chatroom_nickname': chatroom_nickname,
+                    'avatar_url': chatroom_avatar_url,
+                    'chatroomname': log.chatroomname,
+                }
             },
             'speaker': {
                 'speaker_nickname': speaker_nickname,
                 'avatar_url': speaker_avatar_url,
-                'speaker_id': log.speaker_username
+                'speaker_id': log.speaker_username,
+                'date': int(time.time()),
             },
-            'date': int(time.time()),
+
         }
         content.append(temp)
     result['content'] = content
