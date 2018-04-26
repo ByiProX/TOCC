@@ -503,6 +503,7 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
                       '说话人:%s\n' \
                       '所在群:%s\n' \
                       '敏感内容:%s\n' % (
-                          datetime.datetime.now(), speaker_nickname, chatroom_nickname, new_a_message.real_content)
+                          unicode(datetime.datetime.now()), speaker_nickname, chatroom_nickname,
+                          new_a_message.real_content)
 
     send_message(owner_bot_username, owner, 1, message_content)
