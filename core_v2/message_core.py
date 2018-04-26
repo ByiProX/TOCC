@@ -395,11 +395,14 @@ def update_members(chatroomname, create_time=None, save_flag=False):
 
 def check_and_add_sensitive_word_log(a_message):
     print('------check_and_add_sensitive_word_log-----')
-    msg_content = a_message.real_content
+    # Check if in this chatroom.
+    monitor_chatroom_list = SENSITIVE_WORD_RULE_DICT.keys()
+    talk_chatroom = a_message.talker
+    if talk_chatroom in monitor_chatroom_list:
+        print('CHECK OK!!!')
+
     return 0
-    for k in SENSITIVE_WORD_RULE_DICT.keys():
-        if k in msg_content:
-            print()
+
 
 
 def update_sensitive_word_list():
