@@ -17,7 +17,7 @@ def create_or_modify_sensitive_rule():
         owner = user_info.username
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
-    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG = False
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG = True
     if request.json.get('rule_id') is not None:
         # Modify rule.
         rule_id = request.json.get('rule_id')
@@ -76,7 +76,7 @@ def sensitive_rule_delete():
         'owner_list': this_rule.owner_list,
         'is_work': this_rule.is_work
     }
-    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG = False
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG = True
     return response({'err_code': 0, 'content': _10_to_true_false(this_rule_result)})
 
 
