@@ -41,7 +41,6 @@ def route_and_count_msg():
         if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
             gm_rule_dict = get_gm_rule_dict()
             GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
-
         if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
             gm_default_rule_dict = get_gm_default_rule_dict()
             GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
@@ -435,3 +434,4 @@ def update_sensitive_word_list():
     print('------------------------------')
     print(SENSITIVE_WORD_RULE_DICT)
     print('------------------------------')
+    print(SENSITIVE_WORD_RULE_DICT.keys())
