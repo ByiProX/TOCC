@@ -189,6 +189,11 @@ def sensitive_message_log():
 
         chatroom_nickname = this_chatroom.nickname_real if this_chatroom else 'None'
         chatroom_avatar_url = this_chatroom.avatar_url if this_chatroom else 'None'
+        _chatroom_memberlist = this_chatroom.memberlist if this_chatroom else None
+        if _chatroom_memberlist:
+            chatroom_membercount = len(_chatroom_memberlist.split(';'))
+        else:
+            chatroom_membercount = 0
 
         speaker_nickname = this_speaker.nickname if this_speaker else 'None'
         speaker_avatar_url = this_speaker.avatar_url if this_speaker else 'None'
@@ -201,14 +206,15 @@ def sensitive_message_log():
                     'chatroom_nickname': chatroom_nickname,
                     'avatar_url': chatroom_avatar_url,
                     'chatroomname': log.chatroomname,
-                }
+                    'member_count': chatroom_membercount,
+                },
+                'speaker': {
+                    'speaker_nickname': speaker_nickname,
+                    'avatar_url': speaker_avatar_url,
+                    'speaker_id': log.speaker_username,
+                },
+                'date': int(time.time()),
             },
-            'speaker': {
-                'speaker_nickname': speaker_nickname,
-                'avatar_url': speaker_avatar_url,
-                'speaker_id': log.speaker_username,
-            },
-            'date': int(time.time()),
         }
         message_list.append(temp)
     content['last_update_time'] = int(time.time())
