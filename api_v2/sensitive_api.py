@@ -159,7 +159,7 @@ def sensitive_message_log():
 
     for log in all_log_list:
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': log.chatroomname}))
-        this_speaker = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': log.username}))
+        this_speaker = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': log.speaker_username}))
 
         chatroom_nickname = this_chatroom.nickname_real if this_chatroom else 'None'
         chatroom_avatar_url = this_chatroom.avatar_url if this_chatroom else 'None'
@@ -177,7 +177,7 @@ def sensitive_message_log():
             'speaker': {
                 'speaker_nickname': speaker_nickname,
                 'avatar_url': speaker_avatar_url,
-                'speaker_id': log.username
+                'speaker_id': log.speaker_username
             },
             'date': int(time.time()),
         }

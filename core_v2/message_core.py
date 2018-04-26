@@ -485,7 +485,7 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
     new_log.sensitive_word = sensitive_word
 
     new_log.chatroomname = new_a_message.talker
-    new_log.username = new_a_message.real_talker
+    new_log.speaker_username = new_a_message.real_talker
     new_log.content = new_a_message.real_content
 
     new_log.save()
