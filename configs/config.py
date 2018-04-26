@@ -292,6 +292,8 @@ GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG = "global_user_matching_rules_update_flag
 GLOBAL_RULES_UPDATE_FLAG.setdefault(GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, True)
 GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG = "global_matching_default_rules_update_flag"
 GLOBAL_RULES_UPDATE_FLAG.setdefault(GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, True)
+GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG = "global_sensitive_word_rules_flag"
+GLOBAL_RULES_UPDATE_FLAG.setdefault(GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, True)
 GLOBAL_NOTICE_UPDATE_FLAG = "global_notice_update_flag"
 GLOBAL_RULES_UPDATE_FLAG.setdefault(GLOBAL_NOTICE_UPDATE_FLAG, {})
 GLOBAL_RULES_UPDATE_FLAG[GLOBAL_NOTICE_UPDATE_FLAG].setdefault("block.cc", True)
@@ -398,6 +400,7 @@ BATCH_SEND_TASK_STATUS_4 = 4  # 失败
 NEW_MSG_Q = Queue()
 
 SIGN_DICT = dict()
+SENSITIVE_WORD_RULE_DICT = dict()
 
 ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.xuanren360.com/android/bot_status"
 ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_mass_message"

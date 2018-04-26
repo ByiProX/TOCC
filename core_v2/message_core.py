@@ -8,7 +8,8 @@ from xml.etree import ElementTree
 from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT_TYPE_TXT, CHAT_LOGS_TYPE_2, \
     CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, Member, Contact, CHAT_LOGS_ERR_TYPE_0, GLOBAL_RULES_UPDATE_FLAG, \
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, NEW_MSG_Q, \
-    MSG_TYPE_ENTERCHATROOM, SUCCESS, ERR_UNKNOWN_ERROR, CONTENT_TYPE_ENTERCHATROOM
+    MSG_TYPE_ENTERCHATROOM, SUCCESS, ERR_UNKNOWN_ERROR, CONTENT_TYPE_ENTERCHATROOM, \
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, SENSITIVE_WORD_RULE_DICT
 from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core_v2.matching_rule_core import get_gm_default_rule_dict, match_message_by_rule, get_gm_rule_dict
 from core_v2.real_time_quotes_core import match_message_by_coin_keyword
@@ -44,6 +45,10 @@ def route_and_count_msg():
         if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
             gm_default_rule_dict = get_gm_default_rule_dict()
             GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
+        if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG]:
+            update_sensitive_word_list()
+            GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG] = False
+
         print 222
         route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
         print 333
@@ -63,6 +68,10 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
     # TODO 当有两个机器人的时候，这里不仅要判断是否是自己说的，还是要判断是否是其他机器人说的
     if a_message.is_send == 1:
         return
+
+    # Check if contain sensitive word.
+    if not a_message.is_to_friend and a_message.type == MSG_TYPE_TXT:
+        check_and_add_sensitive_word_log(a_message)
 
     # is_add_friend
     # is_add_friend = check_whether_message_is_add_friend(message_analysis)
@@ -384,5 +393,34 @@ def update_members(chatroomname, create_time=None, save_flag=False):
     pass
 
 
-def is_contain_keyword(content):
-    pass
+def check_and_add_sensitive_word_log(a_message):
+    if a_message.is_to_friend:
+        return False
+
+
+def update_sensitive_word_list():
+    """
+    SENSITIVE_WORD_RULE_DICT:
+    {
+        "sensitive_word":[[real_owner_as_string,rule_id],[real_owner_as_string,rule_id],]
+    }
+    """
+    rule_list = BaseModel.fetch_all('sensitive_message_rule', '*', BaseModel.where_dict({'is_work': 1}))
+    for rule in rule_list:
+        for sensitive_word in rule.sensitive_word_list:
+            if SENSITIVE_WORD_RULE_DICT.get(sensitive_word) is None:
+                # Add a new sensitive_word to a list of owner.
+                SENSITIVE_WORD_RULE_DICT[sensitive_word] = [[rule.owner_list[0], rule.sensitive_message_rule_id], ]
+            else:
+                # Update.
+                new_rule = True
+                for i in SENSITIVE_WORD_RULE_DICT[sensitive_word]:
+                    if rule.owner_list[0] == i[0] and rule.sensitive_message_rule_id == i[1]:
+                        new_rule = False
+
+                if new_rule:
+                    SENSITIVE_WORD_RULE_DICT[sensitive_word].append(
+                        [rule.owner_list[0], rule.sensitive_message_rule_id], )
+    print('------------------------------')
+    print(SENSITIVE_WORD_RULE_DICT)
+    print('------------------------------')
