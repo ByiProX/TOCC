@@ -838,11 +838,11 @@ def put_img_to_oss(file_name, data_as_string):
 
 new_thread_2 = threading.Thread(target=event_chatroom_send_word)
 new_thread_2.setDaemon(True)
-# new_thread_2.start()
+new_thread_2.start()
 
 new_thread_3 = threading.Thread(target=open_chatroom_name_protect)
 new_thread_3.setDaemon(True)
-# new_thread_3.start()
+new_thread_3.start()
 
 
 def events_chatroomname_check():
