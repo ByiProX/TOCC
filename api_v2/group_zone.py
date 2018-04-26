@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from flask import request
-
 from configs.config import main_api_v2, SUCCESS, ERR_WRONG_ITEM
 from core_v2.user_core import UserLogin
 from models_v2.base_model import BaseModel
