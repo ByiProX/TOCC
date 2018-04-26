@@ -207,9 +207,8 @@ def sensitive_message_log():
                 'speaker_nickname': speaker_nickname,
                 'avatar_url': speaker_avatar_url,
                 'speaker_id': log.speaker_username,
-                'date': int(time.time()),
             },
-
+            'date': int(time.time()),
         }
         message_list.append(temp)
     content['last_update_time'] = int(time.time())
