@@ -414,7 +414,8 @@ def update_sensitive_word_list():
     }
     """
     rule_list = BaseModel.fetch_all('sensitive_message_rule', '*', BaseModel.where_dict({'is_work': 1}))
-    global SENSITIVE_WORD_RULE_DICT = {}
+    global SENSITIVE_WORD_RULE_DICT
+    SENSITIVE_WORD_RULE_DICT = {}
 
     for rule in rule_list:
         for chatroomname in rule.chatroom_name_list:
