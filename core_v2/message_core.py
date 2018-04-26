@@ -418,7 +418,7 @@ def check_and_add_sensitive_word_log(a_message):
                 for owner in owner_list:
                     new_thread = threading.Thread(target=add_and_send_sensitive_word_log,
                                                   args=(
-                                                      sensitive_word, a_message, owner, rule.sensitive_message_rule_id))
+                                                      sensitive_word, a_message, owner, rule[2]))
                     new_thread.setDaemon(True)
                     new_thread.start()
 
