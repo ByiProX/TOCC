@@ -121,6 +121,13 @@ def sensitive_rule_list():
 @main_api_v2.route('/sensitive_message_log', methods=['POST'])
 @para_check("token", "date_type", "page", "pagesize")
 def sensitive_message_log():
+    # Check owner or return.
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    try:
+        owner = user_info.username
+    except AttributeError:
+        return response({'err_code': -2, 'content': 'User token error.'})
+
     now = int(time.time())
     date_type = int(request.json.get('date_type'))
     page = int(request.json.get('page'))
@@ -150,10 +157,23 @@ def sensitive_message_log():
 
     time_limit = time_dict[date_type]
 
-    all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
-                                       BaseModel.and_(BaseModel.where(">", "create_time", time_limit[0]),
-                                                      BaseModel.where("<", "create_time", time_limit[1])), page=page,
-                                       pagesize=pagesize)
+    print('---time_limit', time_limit)
+    all_log_list = []
+
+    all_rule = BaseModel.fetch_all('sensitive_message_rule', '*', BaseModel.where_dict({'is_work': 1}))
+
+    for rule in all_rule:
+        owner_list = rule.owner_list
+        this_owner = owner_list[0]
+        if this_owner == owner:
+            owner_all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
+                                                     BaseModel.and_(BaseModel.where(">", "create_time", time_limit[0]),
+                                                                    BaseModel.where("<", "create_time", time_limit[1])),
+                                                     page=page,
+                                                     pagesize=pagesize)
+            for i in owner_all_log_list:
+                all_log_list.append(i)
+
     result = {'err_code': 0}
     content = []
 
