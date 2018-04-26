@@ -168,16 +168,19 @@ def sensitive_message_log():
         if this_owner == owner:
             owner_all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
                                                      BaseModel.and_([">", "create_time", time_limit[0]],
-                                                                    ["<", "create_time", time_limit[1]]),
-                                                     page=page,
-                                                     pagesize=pagesize)
+                                                                    ["<", "create_time", time_limit[1]]))
             for log in owner_all_log_list:
-                print(rule.sensitive_message_rule_id, log.rule_id)
-                if rule.sensitive_message_rule_id == log.rule_id:
+                if rule.sensitive_message_rule_id == log.rule_id and log.sensitive_word in rule.sensitive_word_list:
                     all_log_list.append(log)
 
     result = {'err_code': 0}
     content = []
+
+    # all_log_length = len(all_log_list)
+    # if pagesize>all_log_length:
+    #     pass
+    # elif pagesize < all_log_length:
+
 
     for log in all_log_list:
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': log.chatroomname}))
