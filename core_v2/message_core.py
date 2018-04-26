@@ -496,8 +496,8 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
     speaker_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                            BaseModel.where_dict({'chatroomname': new_a_message.talker}))
 
-    speaker_nickname = speaker.nickname if speaker else None
-    chatroom_nickname = speaker_chatroom.nickname_real if speaker_chatroom else None
+    speaker_nickname = speaker.nickname if speaker else u'None'
+    chatroom_nickname = speaker_chatroom.nickname_real if speaker_chatroom else u'None'
 
     message_content = u'时间:%s\n' \
                       u'说话人:%s\n' \
