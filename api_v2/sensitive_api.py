@@ -171,8 +171,9 @@ def sensitive_message_log():
                                                                     BaseModel.where("<", "create_time", time_limit[1])),
                                                      page=page,
                                                      pagesize=pagesize)
-            for i in owner_all_log_list:
-                all_log_list.append(i)
+            for log in owner_all_log_list:
+                if rule.sensitive_message_rule_id == log.rule_id:
+                    all_log_list.append(log)
 
     result = {'err_code': 0}
     content = []
