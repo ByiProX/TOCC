@@ -341,8 +341,9 @@ class BaseModel(object):
             # print response.request.url
             page += 1
             query_clause["page"] = page
-            if group:
-                print response.request.url
+            # if group:
+            #     print response.request.url
+            print response.request.url
             if response.status_code == 200:
                 response_json = json.loads(response.content)
                 code = response_json.get(u"code")
@@ -462,7 +463,7 @@ class BaseModel(object):
         where_clause_list.append('and')
         where_clause_list.append(where_clause1)
         where_clause_list.append(where_clause2)
-        where_clause = {"where": where_clause_list}
+        where_clause = {"where": json.dumps(where_clause_list)}
         return where_clause
 
     @staticmethod
