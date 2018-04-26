@@ -180,9 +180,9 @@ def sensitive_message_log():
     # if pagesize>all_log_length:
     #     pass
     # elif pagesize < all_log_length:
-
-
+    total_count = 0
     for log in all_log_list:
+        total_count += 1
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': log.chatroomname}))
         this_speaker = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': log.speaker_username}))
 
@@ -212,5 +212,7 @@ def sensitive_message_log():
         }
         content.append(temp)
     result['content'] = content
+    result['last_update_time'] = int(time.time())
+    result['total_count'] = total_count
 
     return response(result)
