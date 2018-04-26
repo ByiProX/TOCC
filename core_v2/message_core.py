@@ -394,34 +394,40 @@ def update_members(chatroomname, create_time=None, save_flag=False):
 
 
 def check_and_add_sensitive_word_log(a_message):
-    if a_message.is_to_friend:
-        return False
+    print('------check_and_add_sensitive_word_log-----')
+    msg_content = a_message.real_content
+    return 0
+    for k in SENSITIVE_WORD_RULE_DICT.keys():
+        if k in msg_content:
+            print()
 
 
 def update_sensitive_word_list():
     """
     SENSITIVE_WORD_RULE_DICT:
     {
-        "sensitive_word":[[real_owner_as_string,rule_id],[real_owner_as_string,rule_id],]
+        "chatroomname":[[sensitive_word_list,owner_list,rule_id],[sensitive_word_list,owner_list,rule_id],]
     }
     """
     rule_list = BaseModel.fetch_all('sensitive_message_rule', '*', BaseModel.where_dict({'is_work': 1}))
     SENSITIVE_WORD_RULE_DICT = {}
+
     for rule in rule_list:
-        for sensitive_word in rule.sensitive_word_list:
-            if SENSITIVE_WORD_RULE_DICT.get(sensitive_word) is None:
-                # Add a new sensitive_word to a list of owner.
-                SENSITIVE_WORD_RULE_DICT[sensitive_word] = [[rule.owner_list[0], rule.sensitive_message_rule_id], ]
+        for chatroomname in rule.chatroom_name_list:
+            if SENSITIVE_WORD_RULE_DICT.get(chatroomname) is None:
+                # Create new rule.
+                SENSITIVE_WORD_RULE_DICT[chatroomname] = [
+                    [rule.sensitive_word_list, rule.owner_list, rule.sensitive_message_rule_id], ]
             else:
                 # Update.
                 new_rule = True
-                for i in SENSITIVE_WORD_RULE_DICT[sensitive_word]:
-                    if rule.owner_list[0] == i[0] and rule.sensitive_message_rule_id == i[1]:
+                for i in SENSITIVE_WORD_RULE_DICT[chatroomname]:
+                    if rule.sensitive_message_rule_id == i[2]:
                         new_rule = False
-
                 if new_rule:
-                    SENSITIVE_WORD_RULE_DICT[sensitive_word].append(
-                        [rule.owner_list[0], rule.sensitive_message_rule_id], )
+                    SENSITIVE_WORD_RULE_DICT[chatroomname].append(
+                        [rule.sensitive_word_list, rule.owner_list, rule.sensitive_message_rule_id])
+
     print('------------------------------')
     print(SENSITIVE_WORD_RULE_DICT)
     print('------------------------------')
