@@ -6,7 +6,8 @@ from configs.config import main_api_v2
 from core_v2.user_core import UserLogin
 from models_v2.base_model import *
 from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false
-from configs.config import GLOBAL_RULES_UPDATE_FLAG,GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG
+from configs.config import GLOBAL_RULES_UPDATE_FLAG, GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG
+
 
 @main_api_v2.route('/sensitive_rule', methods=['POST'])
 @para_check("token", "chatroom_name_list", "sensitive_word_list")
@@ -153,8 +154,34 @@ def sensitive_message_log():
                                        BaseModel.and_(BaseModel.where(">", "create_time", time_limit[0]),
                                                       BaseModel.where("<", "create_time", time_limit[1])), page=page,
                                        pagesize=pagesize)
+    result = {'err_code': 0}
+    content = []
 
     for log in all_log_list:
-        print(log)
+        this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': log.chatroomname}))
+        this_speaker = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': log.username}))
 
-    return '666'
+        chatroom_nickname = this_chatroom.nickname_real if this_chatroom else 'None'
+        chatroom_avatar_url = this_chatroom.avatar_url if this_chatroom else 'None'
+
+        speaker_nickname = this_speaker.nickname if this_speaker else 'None'
+        speaker_avatar_url = this_speaker.avatar_url if this_speaker else 'None'
+
+        temp = {
+            'sensitive_word': log.sensitive_word,
+            'message': {
+                'chatroom_nickname': chatroom_nickname,
+                'avatar_url': chatroom_avatar_url
+                'chatroomname': log.chatroomname
+            },
+            'speaker': {
+                'speaker_nickname': speaker_nickname,
+                'avatar_url': speaker_avatar_url,
+                'speaker_id': log.username
+            },
+            'date': int(time.time()),
+        }
+        content.append(temp)
+    result['content'] = content
+
+    return response(result)
