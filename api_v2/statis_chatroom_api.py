@@ -251,7 +251,8 @@ def chatroom_statistics_chatroom():
 
     chatroomnames = []
     for st in chatroom_statis:
-        st.chatroomname = st.get_id()
+        if group_by:
+            st.chatroomname = st.get_id()
         _stjson = st.to_json_full()
         print _stjson
         chatroomnames.append(_stjson['chatroomname'])
