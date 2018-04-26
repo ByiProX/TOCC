@@ -1,5 +1,5 @@
+# -*- coding: utf-8 -*-
 from flask import request
-
 from configs.config import main_api_v2, SUCCESS, ERR_WRONG_ITEM
 from core_v2.user_core import UserLogin
 from models_v2.base_model import BaseModel
@@ -34,14 +34,17 @@ def get_group_zone_list():
     except:
         return make_response(ERR_WRONG_ITEM)
 
-    for client_qun in client_quns:
-        try:
+    try:
+        for client_qun in client_quns:
             chatroom_info = BaseModel.fetch_one("a_chatroom", "*",
                                                 where_clause=BaseModel.where_dict({"chatroomname": client_qun.chatroomname}))
-            client_qun.nickname_real = chatroom_info.nickname_real
+            if chatroom_info.nickname_real:
+                client_qun.nickname_real = chatroom_info.nickname_real
+            else:
+                client_qun.nickname_real = "未命名的群"
             client_qun.member_count = chatroom_info.member_count
-        except:
-            return make_response(ERR_WRONG_ITEM)
+    except:
+        return make_response(ERR_WRONG_ITEM)
 
     return make_response(SUCCESS, client_quns_list=client_quns)
 

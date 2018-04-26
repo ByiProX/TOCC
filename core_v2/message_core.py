@@ -9,7 +9,7 @@ from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT
     CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, Member, Contact, CHAT_LOGS_ERR_TYPE_0, GLOBAL_RULES_UPDATE_FLAG, \
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, NEW_MSG_Q, \
     MSG_TYPE_ENTERCHATROOM, SUCCESS, ERR_UNKNOWN_ERROR, CONTENT_TYPE_ENTERCHATROOM, \
-    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, SENSITIVE_WORD_RULE_DICT
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG
 from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core_v2.matching_rule_core import get_gm_default_rule_dict, match_message_by_rule, get_gm_rule_dict
 from core_v2.real_time_quotes_core import match_message_by_coin_keyword
@@ -21,6 +21,7 @@ from utils.u_transformat import str_to_unicode, unicode_to_str
 import logging
 
 logger = logging.getLogger('main')
+SENSITIVE_WORD_RULE_DICT = {}
 
 
 def start_listen_new_msg():
@@ -41,7 +42,6 @@ def route_and_count_msg():
         if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
             gm_rule_dict = get_gm_rule_dict()
             GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
-
         if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
             gm_default_rule_dict = get_gm_default_rule_dict()
             GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
@@ -398,11 +398,22 @@ def check_and_add_sensitive_word_log(a_message):
     # Check if in this chatroom.
     monitor_chatroom_list = SENSITIVE_WORD_RULE_DICT.keys()
     talk_chatroom = a_message.talker
-    if talk_chatroom in monitor_chatroom_list:
-        print('CHECK OK!!!')
+    a_message_content = a_message.real_content
+
+    if talk_chatroom not in monitor_chatroom_list:
+        return 0
+    all_rule = SENSITIVE_WORD_RULE_DICT[talk_chatroom]
+    for rule in all_rule:
+        sensitive_word_list = rule[0]
+        owner_list = rule[1]
+        for sensitive_word in sensitive_word_list:
+            if sensitive_word in a_message_content:
+                # Catch a sensitive word.
+                print('Catch OK!!!')
+                for owner in owner_list:
+                    pass
 
     return 0
-
 
 
 def update_sensitive_word_list():
@@ -413,6 +424,7 @@ def update_sensitive_word_list():
     }
     """
     rule_list = BaseModel.fetch_all('sensitive_message_rule', '*', BaseModel.where_dict({'is_work': 1}))
+    global SENSITIVE_WORD_RULE_DICT
     SENSITIVE_WORD_RULE_DICT = {}
 
     for rule in rule_list:
@@ -431,6 +443,6 @@ def update_sensitive_word_list():
                     SENSITIVE_WORD_RULE_DICT[chatroomname].append(
                         [rule.sensitive_word_list, rule.owner_list, rule.sensitive_message_rule_id])
 
-    print('------------------------------')
-    print(SENSITIVE_WORD_RULE_DICT)
-    print('------------------------------')
+
+def add_and_send_sensitive_word_log(sensitive_word, _a_message, owner, rule_id):
+    pass
