@@ -158,7 +158,7 @@ def sensitive_message_log():
     time_limit = time_dict[date_type]
 
     print('---time_limit', time_limit)
-    all_log_list = []
+    _all_log_list = []
 
     all_rule = BaseModel.fetch_all('sensitive_message_rule', '*', BaseModel.where_dict({'is_work': 1}))
 
@@ -168,20 +168,17 @@ def sensitive_message_log():
         if this_owner == owner:
             owner_all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
                                                      BaseModel.and_([">", "create_time", time_limit[0]],
-                                                                    ["<", "create_time", time_limit[1]]), page=page,
-                                                     pagesize=pagesize)
+                                                                    ["<", "create_time", time_limit[1]]),)
             for log in owner_all_log_list:
                 if rule.sensitive_message_rule_id == log.rule_id and log.sensitive_word in rule.sensitive_word_list:
-                    all_log_list.append(log)
+                    _all_log_list.append(log)
 
     result = {'err_code': 0}
     content = {}
     message_list = []
 
-    # all_log_length = len(all_log_list)
-    # if pagesize>all_log_length:
-    #     pass
-    # elif pagesize < all_log_length:
+    all_log_list = _all_log_list[(page-1)*pagesize:page*pagesize]
+
     total_count = 0
     for log in all_log_list:
         total_count += 1
