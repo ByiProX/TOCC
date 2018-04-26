@@ -168,7 +168,8 @@ def sensitive_message_log():
         if this_owner == owner:
             owner_all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
                                                      BaseModel.and_([">", "create_time", time_limit[0]],
-                                                                    ["<", "create_time", time_limit[1]]))
+                                                                    ["<", "create_time", time_limit[1]]), page=page,
+                                                     pagesize=pagesize)
             for log in owner_all_log_list:
                 if rule.sensitive_message_rule_id == log.rule_id and log.sensitive_word in rule.sensitive_word_list:
                     all_log_list.append(log)
