@@ -398,11 +398,11 @@ def check_and_add_sensitive_word_log(a_message):
     # Check if in this chatroom.
     monitor_chatroom_list = SENSITIVE_WORD_RULE_DICT.keys()
     talk_chatroom = a_message.talker
+    print(monitor_chatroom_list, talk_chatroom)
     if talk_chatroom in monitor_chatroom_list:
         print('CHECK OK!!!')
 
     return 0
-
 
 
 def update_sensitive_word_list():
