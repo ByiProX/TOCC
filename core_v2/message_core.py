@@ -406,6 +406,7 @@ def update_sensitive_word_list():
     }
     """
     rule_list = BaseModel.fetch_all('sensitive_message_rule', '*', BaseModel.where_dict({'is_work': 1}))
+    SENSITIVE_WORD_RULE_DICT = {}
     for rule in rule_list:
         for sensitive_word in rule.sensitive_word_list:
             if SENSITIVE_WORD_RULE_DICT.get(sensitive_word) is None:
