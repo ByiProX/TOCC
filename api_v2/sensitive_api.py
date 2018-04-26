@@ -6,7 +6,6 @@ from configs.config import main_api_v2
 from core_v2.user_core import UserLogin
 from models_v2.base_model import *
 from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false
-from utils.u_time import datetime_to_timestamp_utc_8, get_today_0
 
 
 @main_api_v2.route('/sensitive_rule', methods=['POST'])
