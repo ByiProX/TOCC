@@ -343,7 +343,7 @@ class BaseModel(object):
             query_clause["page"] = page
             # if group:
             #     print response.request.url
-
+            print response.request.url
             if response.status_code == 200:
                 response_json = json.loads(response.content)
                 code = response_json.get(u"code")
