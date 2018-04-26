@@ -499,8 +499,8 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
     speaker_nickname = speaker.nickname if speaker else u'None'
     chatroom_nickname = speaker_chatroom.nickname_real if speaker_chatroom else u'None'
     print(
-        str_to_unicode(datetime.datetime.now()), str_to_unicode(speaker_nickname),
-        str_to_unicode(chatroom_nickname), str_to_unicode(new_a_message.real_content))
+        datetime.datetime.now(), speaker_nickname,
+        chatroom_nickname, new_a_message.real_content)
     message_content = u'时间:%s\n' \
                       u'说话人:%s\n' \
                       u'所在群:%s\n' \
