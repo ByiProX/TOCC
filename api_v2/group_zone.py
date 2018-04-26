@@ -19,6 +19,11 @@ MSG_TYPE_SHARE = 49
 MSG_TYPE_SYS = 10000
 MSG_TYPE_ENTERCHATROOM = 570425393
 
+MSG_TYPE_DICT = {
+    1:
+
+}
+
 
 @main_api_v2.route("/group_zone_lists", methods=['POST'])
 def get_group_zone_list():
@@ -31,18 +36,22 @@ def get_group_zone_list():
     try:
         client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                           where_clause=BaseModel.where_dict({"client_id": client_id}))
+        client_quns = [client_qun.to_json_full() for client_qun in client_quns]
+
     except:
         return make_response(ERR_WRONG_ITEM)
 
     try:
         for client_qun in client_quns:
             chatroom_info = BaseModel.fetch_one("a_chatroom", "*",
-                                                where_clause=BaseModel.where_dict({"chatroomname": client_qun.chatroomname}))
-            if chatroom_info.nickname_real:
-                client_qun.nickname_real = chatroom_info.nickname_real
-            else:
-                client_qun.nickname_real = "未命名的群"
-            client_qun.member_count = chatroom_info.member_count
+                                                where_clause=BaseModel.where_dict({"chatroomname": client_qun.get('chatroomname')}))
+
+
+            # client_qun_to_dict = client_qun.to_json_full()
+            client_qun.update(chatroom_info.to_json_full())
+
+            # client_qun.nickname_real = chatroom_info.nickname_real if chatroom_info.nickname_real else None
+            # client_qun.member_count = chatroom_info.member_count
     except:
         return make_response(ERR_WRONG_ITEM)
 
@@ -56,10 +65,14 @@ def get_group_zone_sources():
     if status != SUCCESS:
         return make_response(status)
 
-    for client_qun in client_quns:
-        messages = BaseModel.fetch_all("a_message", "*", where_clause=BaseModel.where_dict({"talker": client_qun}))
+    talker = request.json.get('talker')
+    keyword = request.json.get('keyword')
+    source_type = request.json.get('source_type')
+    page = request.json.get('page')
+    pagesize = request.json.get('pagesize')
 
 
+    messages = BaseModel.fetch_all('a_message', '*', _where, page = page, pagesize = pagesize, orderBy = order, group = group_by)
 
 
 
