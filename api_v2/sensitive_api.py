@@ -6,7 +6,8 @@ from configs.config import main_api_v2
 from core_v2.user_core import UserLogin
 from models_v2.base_model import *
 from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false
-from configs.config import GLOBAL_RULES_UPDATE_FLAG,GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG
+from configs.config import GLOBAL_RULES_UPDATE_FLAG, GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG
+
 
 @main_api_v2.route('/sensitive_rule', methods=['POST'])
 @para_check("token", "chatroom_name_list", "sensitive_word_list")
@@ -120,6 +121,13 @@ def sensitive_rule_list():
 @main_api_v2.route('/sensitive_message_log', methods=['POST'])
 @para_check("token", "date_type", "page", "pagesize")
 def sensitive_message_log():
+    # Check owner or return.
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    try:
+        owner = user_info.username
+    except AttributeError:
+        return response({'err_code': -2, 'content': 'User token error.'})
+
     now = int(time.time())
     date_type = int(request.json.get('date_type'))
     page = int(request.json.get('page'))
@@ -149,12 +157,56 @@ def sensitive_message_log():
 
     time_limit = time_dict[date_type]
 
-    all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
-                                       BaseModel.and_(BaseModel.where(">", "create_time", time_limit[0]),
-                                                      BaseModel.where("<", "create_time", time_limit[1])), page=page,
-                                       pagesize=pagesize)
+    print('---time_limit', time_limit)
+    all_log_list = []
+
+    all_rule = BaseModel.fetch_all('sensitive_message_rule', '*', BaseModel.where_dict({'is_work': 1}))
+
+    for rule in all_rule:
+        owner_list = rule.owner_list
+        this_owner = owner_list[0]
+        if this_owner == owner:
+            owner_all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
+                                                     BaseModel.and_(BaseModel.where(">", "create_time", time_limit[0]),
+                                                                    BaseModel.where("<", "create_time", time_limit[1])),
+                                                     page=page,
+                                                     pagesize=pagesize)
+            for log in owner_all_log_list:
+                if rule.sensitive_message_rule_id == log.rule_id:
+                    all_log_list.append(log)
+
+    result = {'err_code': 0}
+    content = []
 
     for log in all_log_list:
-        print(log)
+        this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': log.chatroomname}))
+        this_speaker = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': log.speaker_username}))
 
-    return '666'
+        chatroom_nickname = this_chatroom.nickname_real if this_chatroom else 'None'
+        chatroom_avatar_url = this_chatroom.avatar_url if this_chatroom else 'None'
+
+        speaker_nickname = this_speaker.nickname if this_speaker else 'None'
+        speaker_avatar_url = this_speaker.avatar_url if this_speaker else 'None'
+
+        temp = {
+            'sensitive_word': log.sensitive_word,
+            'message': {
+                'content': log.content,
+                'chatroom': {
+                    'chatroom_nickname': chatroom_nickname,
+                    'avatar_url': chatroom_avatar_url,
+                    'chatroomname': log.chatroomname,
+                }
+            },
+            'speaker': {
+                'speaker_nickname': speaker_nickname,
+                'avatar_url': speaker_avatar_url,
+                'speaker_id': log.speaker_username,
+                'date': int(time.time()),
+            },
+
+        }
+        content.append(temp)
+    result['content'] = content
+
+    return response(result)

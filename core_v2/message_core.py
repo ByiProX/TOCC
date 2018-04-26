@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 import copy
+import time
 import json
+import datetime
 import threading
 import traceback
+
+import requests
+
 from xml.etree import ElementTree
 
 from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT_TYPE_TXT, CHAT_LOGS_TYPE_2, \
@@ -411,7 +416,11 @@ def check_and_add_sensitive_word_log(a_message):
                 # Catch a sensitive word.
                 print('Catch OK!!!')
                 for owner in owner_list:
-                    pass
+                    new_thread = threading.Thread(target=add_and_send_sensitive_word_log,
+                                                  args=(
+                                                      sensitive_word, a_message, owner, rule[2]))
+                    new_thread.setDaemon(True)
+                    new_thread.start()
 
     return 0
 
@@ -444,5 +453,57 @@ def update_sensitive_word_list():
                         [rule.sensitive_word_list, rule.owner_list, rule.sensitive_message_rule_id])
 
 
-def add_and_send_sensitive_word_log(sensitive_word, _a_message, owner, rule_id):
-    pass
+def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_id):
+    print("---add_and_send_sensitive_word_log---")
+
+    def send_message(_bot_username, to, _type, content):
+        result = {'bot_username': _bot_username,
+                  'data': {
+                      "task": "send_message",
+                      "to": to,
+                      "type": _type,
+                      "content": content,
+                  }}
+        resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+        if dict(resp.json())['err_code'] == -1:
+            logger.warning('event_chatroom_send_word ERROR,because bot dead!')
+
+    def get_owner_bot_username(_owner):
+        # Get owner's bot_username
+        client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': _owner}))
+        _client_id = client_member.client_id
+        client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': _client_id}))
+        __bot_username = client_bot_r.bot_username
+        return __bot_username
+
+    new_log = CM("sensitive_message_log")
+    new_log.create_time = int(time.time())
+
+    new_log.rule_id = rule_id
+    new_log.a_message_id = new_a_message.a_message_id
+    new_log.owner = owner
+    new_log.sensitive_word = sensitive_word
+
+    new_log.chatroomname = new_a_message.talker
+    new_log.speaker_username = new_a_message.real_talker
+    new_log.content = new_a_message.real_content
+
+    new_log.save()
+
+    # Send this log.
+    owner_bot_username = get_owner_bot_username(owner)
+    speaker = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': new_a_message.real_talker}))
+    speaker_chatroom = BaseModel.fetch_one('a_chatroom', '*',
+                                           BaseModel.where_dict({'chatroomname': new_a_message.talker}))
+
+    speaker_nickname = speaker.nickname if speaker else u'None'
+    chatroom_nickname = speaker_chatroom.nickname_real if speaker_chatroom else u'None'
+
+    message_content = u'时间:%s\n' \
+                      u'说话人:%s\n' \
+                      u'所在群:%s\n' \
+                      u'敏感内容:%s\n' % (
+                          unicode(datetime.datetime.now()), str_to_unicode(speaker_nickname),
+                          str_to_unicode(chatroom_nickname), str_to_unicode(new_a_message.real_content))
+
+    send_message(owner_bot_username, owner, 1, message_content)
