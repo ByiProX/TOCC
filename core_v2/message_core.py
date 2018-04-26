@@ -405,9 +405,13 @@ def check_and_add_sensitive_word_log(a_message):
     all_rule = SENSITIVE_WORD_RULE_DICT[talk_chatroom]
     for rule in all_rule:
         sensitive_word_list = rule[0]
+        owner_list = rule[1]
         for sensitive_word in sensitive_word_list:
             if sensitive_word in a_message_content:
-                print('CHECK OK!!!')
+                # Catch a sensitive word.
+                print('Catch OK!!!')
+                for owner in owner_list:
+                    pass
 
     return 0
 
@@ -439,6 +443,6 @@ def update_sensitive_word_list():
                     SENSITIVE_WORD_RULE_DICT[chatroomname].append(
                         [rule.sensitive_word_list, rule.owner_list, rule.sensitive_message_rule_id])
 
-    print('------------------------------')
-    print(SENSITIVE_WORD_RULE_DICT)
-    print('------------------------------')
+
+def add_and_send_sensitive_word_log(sensitive_word, _a_message, owner, rule_id):
+    pass
