@@ -479,37 +479,41 @@ def events_list():
     return response(result)
 
 
-def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id):
+def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False):
     print('Rewrite running')
-    flag = True
-    # Get roomowner's bot_username
-    client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': roomowner}))
-    client_id = client_member.client_id
-    client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': client_id}))
-    bot_username = client_bot_r.bot_username
+    try:
+        flag = True
+        # Get roomowner's bot_username
+        client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': roomowner}))
+        client_id = client_member.client_id
+        client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': client_id}))
+        bot_username = client_bot_r.bot_username
 
-    while flag:
-        time.sleep(2)
-        chatroom = BaseModel.fetch_one('a_chatroom', '*',
-                                       BaseModel.where_dict(
-                                           {'roomowner': bot_username, 'nickname_real': chatroom_nickname}))
-        if chatroom is not None:
-            chatroomname = chatroom.chatroomname
-            events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
-                {'roomowner': roomowner, 'chatroom_nickname': chatroom_nickname}))
-            if events_chatroom is None:
-                logger.warning('Rewrite running failed because events_chatroom have not field!')
+        while flag:
+            time.sleep(2)
+            chatroom = BaseModel.fetch_one('a_chatroom', '*',
+                                           BaseModel.where_dict(
+                                               {'roomowner': bot_username, 'nickname_real': chatroom_nickname}))
+            if chatroom is not None:
+                chatroomname = chatroom.chatroomname
+                events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
+                    {'roomowner': roomowner, 'chatroom_nickname': chatroom_nickname}))
+                if events_chatroom is None:
+                    logger.warning('Rewrite running failed because events_chatroom have not field!')
+                    return 0
+                events_chatroom.chatroomname = chatroomname
+                events_chatroom.save()
+                # Make events have enough chatroom.
+                event = BaseModel.fetch_by_id('events', event_id)
+                event.enough_chatroom = 1
+                event.save()
+                flag = False
+            else:
+                logger.warning('Rewrite running failed because a_chatroom have not field!')
                 return 0
-            events_chatroom.chatroomname = chatroomname
-            events_chatroom.save()
-            # Make events have enough chatroom.
-            event = BaseModel.fetch_by_id('events', event_id)
-            event.enough_chatroom = 1
-            event.save()
-            flag = False
-        else:
-            logger.warning('Rewrite running failed because a_chatroom have not field!')
-            return 0
+    except Exception as e:
+        if not silent:
+            raise e
     print('Rewrite ok.')
     return ' '
 
@@ -736,6 +740,11 @@ def open_chatroom_name_protect():
 
 def event_chatroom_send_word():
     print('event_chatroom_send_word Running.')
+    """
+    chatroom_status_dict:{
+            'chatroomname':()
+    }
+    """
     # Base status.
     chatroom_status_dict = dict()
     chatroom_task_status_dict = dict()
@@ -819,7 +828,13 @@ def event_chatroom_send_word():
                         send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_2)
                     if now_chatroom_member_count in (30, 50, 80) and need_pull_people:
                         # Change chatroomnotice.
-                        pass
+                        for index, value in enumerate([30, 50, 80]):
+                            if now_chatroom_member_count == value and not \
+                                    chatroom_task_status_dict[chatroom.chatroomname][index]:
+                                chatroom_task_status_dict[chatroom.chatroomname][index] = 1
+                                # Do
+                                pass
+
                     if now_chatroom_member_count == 100 and need_condition_word:
                         # Full people notice.
                         pass
@@ -850,9 +865,9 @@ def events_chatroomname_check():
 
     for i in chatrooms:
         new_thread = threading.Thread(target=rewrite_events_chatroom,
-                                      args=(i.roomowner, i.chatroom_nickname, i.event_id))
+                                      args=(i.roomowner, i.chatroom_nickname, i.event_id,True))
         new_thread.setDaemon(True)
         new_thread.start()
 
 
-# events_chatroomname_check()
+events_chatroomname_check()
