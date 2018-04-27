@@ -894,4 +894,4 @@ def events_chatroomname_check():
         time.sleep(100)
 
 
-events_chatroomname_check()
+# events_chatroomname_check()
