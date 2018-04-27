@@ -40,24 +40,27 @@ def route_and_count_msg():
     gm_rule_dict = get_gm_rule_dict()
     gm_default_rule_dict = get_gm_default_rule_dict()
     while True:
-        print 000
-        a_message = NEW_MSG_Q.get()
-        logger.info(u"NEW_MSG_Q get ret : %s. " % a_message.to_json())
-        print 111
-        if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
-            gm_rule_dict = get_gm_rule_dict()
-            GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
-        if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
-            gm_default_rule_dict = get_gm_default_rule_dict()
-            GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
-        if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG]:
-            update_sensitive_word_list()
-            GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG] = False
+        try:
+            print 000
+            a_message = NEW_MSG_Q.get()
+            logger.info(u"NEW_MSG_Q get ret : %s. " % a_message.to_json())
+            print 111
+            if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
+                gm_rule_dict = get_gm_rule_dict()
+                GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
+            if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
+                gm_default_rule_dict = get_gm_default_rule_dict()
+                GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
+            if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG]:
+                update_sensitive_word_list()
+                GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG] = False
 
-        print 222
-        route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
-        print 333
-        count_msg(a_message)
+            print 222
+            route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
+            print 333
+            count_msg(a_message)
+        except:
+            logger.error(u"route_and_count_msg error")
 
 
 def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
