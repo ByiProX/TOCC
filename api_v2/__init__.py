@@ -13,5 +13,6 @@ import statis_member_api
 import member_api
 import script
 import sensitive_api
+import group_zone
 
 api_str = ""
