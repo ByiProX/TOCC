@@ -414,10 +414,10 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
         ubr_info = CM(UserBotR)
         ubr_info.client_id = user_info.client_id
         ubr_info.bot_username = bot_info.username
-        ubr_info.is_work = True
+        ubr_info.is_work = 1
         ubr_info.save()
 
-    ubr_info.is_work = True
+    ubr_info.is_work = 1
     ubr_info.save()
 
     # set_default_group(user_info.client_id)
