@@ -160,8 +160,10 @@ def check_whether_message_is_add_qun(a_message):
         status, invitor_username, user_nickname = extract_enter_chatroom_msg(content)
         if status == SUCCESS:
             bot_username = a_message.bot_username
-            logger.info(u"发现加群. user_nickname: %s. chatroomname: %s." % (user_nickname, a_message.talker))
+            logger.info(u"发现加群. user_nickname: %s. chatroomname: %s. invitor_username: %s." % (user_nickname, a_message.talker, invitor_username))
             status, user_info = _bind_qun_success(a_message.talker, user_nickname, bot_username, invitor_username)
+            if not user_info:
+                return is_add_qun
             we_conn = wechat_conn_dict.get(user_info.app)
             if we_conn is None:
                 logger.info(u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (user_info.app, json.dumps(wechat_conn_dict.keys())))
