@@ -135,6 +135,7 @@ def get_coin_all():
 
 
 def update_coin_all():
+    logger.info("update_coin_all")
     coin_list = get_coin_all()
     usdcny_str = dollar_currency_rate()
     usdcny = str_to_decimal(usdcny_str)
