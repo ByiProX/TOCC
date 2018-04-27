@@ -791,6 +791,17 @@ def event_chatroom_send_word():
 
         return __bot_username
 
+    def change_chatroom_notice(_bot_username, chatroomname, chatroomnotice):
+        result = {'bot_username': _bot_username,
+                  'data': {
+                      "task": "update_chatroom_notice",
+                      "chatroomname": chatroomname,
+                      "chatroomnotice": chatroomnotice,
+                  }}
+        resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+        if dict(resp.json())['err_code'] == -1:
+            logger.warning('event_chatroom_send_word ERROR,because bot dead!')
+
     while True:
         time.sleep(3)
         # Get all event.
@@ -833,11 +844,17 @@ def event_chatroom_send_word():
                                     chatroom_task_status_dict[chatroom.chatroomname][index]:
                                 chatroom_task_status_dict[chatroom.chatroomname][index] = 1
                                 # Do
-                                pass
+                                this_bot_username = get_owner_bot_username(event.owner)
+                                change_chatroom_notice(this_bot_username, chatroom.chatroomname, event.pull_people_word)
 
                     if now_chatroom_member_count == 100 and need_condition_word:
                         # Full people notice.
-                        pass
+                        if not chatroom_task_status_dict[chatroom.chatroomname][3]:
+                            chatroom_task_status_dict[chatroom.chatroomname][3] = 1
+                            # Do
+                            this_bot_username = get_owner_bot_username(event.owner)
+                            send_message(this_bot_username, chatroom.chatroomname, 1, event.condition_word)
+
 
 
 def put_img_to_oss(file_name, data_as_string):
@@ -865,7 +882,7 @@ def events_chatroomname_check():
 
     for i in chatrooms:
         new_thread = threading.Thread(target=rewrite_events_chatroom,
-                                      args=(i.roomowner, i.chatroom_nickname, i.event_id,True))
+                                      args=(i.roomowner, i.chatroom_nickname, i.event_id, True))
         new_thread.setDaemon(True)
         new_thread.start()
 
