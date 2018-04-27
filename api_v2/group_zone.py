@@ -96,7 +96,7 @@ def get_group_zone_sources():
                                             where_clause=BaseModel.where_dict(
                                                 {"chatroomname": source.talker}
                                             ))[0]
-        source.update(chatroom_info)
+        source.update(chatroom_info.to_json_full())
 
     return make_response(SUCCESS, sources=sources)
 
