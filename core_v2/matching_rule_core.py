@@ -84,9 +84,9 @@ def get_gm_default_rule_dict():
     :return:
     """
 
-    gm_default_rule_dict = {}
-    gm_default_rule_dict.setdefault("is_full_match", {})
-    gm_default_rule_dict.setdefault("is_not_full_match", {})
+    _gm_default_rule_dict = {}
+    _gm_default_rule_dict.setdefault("is_full_match", {})
+    _gm_default_rule_dict.setdefault("is_not_full_match", {})
 
     # 目前先用主表来判断
     coin_list = BaseModel.fetch_all(Coin, "*", where_clause = {"is_integral": 1})
@@ -94,9 +94,9 @@ def get_gm_default_rule_dict():
         if coin.symbol in ["OK", "YES"]:
             continue
         if coin.symbol:
-            gm_default_rule_dict["is_full_match"].setdefault(coin.symbol, coin.coin_id)
+            _gm_default_rule_dict["is_full_match"].setdefault(coin.symbol, coin.coin_id)
         if coin.coin_name_cn:
-            gm_default_rule_dict["is_full_match"].setdefault(coin.coin_name_cn, coin.coin_id)
+            _gm_default_rule_dict["is_full_match"].setdefault(coin.coin_name_cn, coin.coin_id)
     #
     # qr_quotes_dkr_info_list = db.session.query(RealTimeQuotesDefaultKeywordRelateInfo).all()
     # for qr_quotes_dkr_info in qr_quotes_dkr_info_list:
@@ -104,4 +104,8 @@ def get_gm_default_rule_dict():
     #         gm_default_rule_dict["is_full_match"].setdefault(qr_quotes_dkr_info.keyword, qr_quotes_dkr_info.ds_id)
     #     else:
     #         gm_default_rule_dict["is_not_full_match"].setdefault(qr_quotes_dkr_info.keyword, qr_quotes_dkr_info.ds_id)
-    return gm_default_rule_dict
+    return _gm_default_rule_dict
+
+
+gm_rule_dict = get_gm_rule_dict()
+gm_default_rule_dict = get_gm_default_rule_dict()

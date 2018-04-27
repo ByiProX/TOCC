@@ -5,7 +5,11 @@ import logging
 import time
 from flask import request
 
-from configs.config import SUCCESS, main_api_v2, BotInfo, Message, NEW_MSG_Q, Contact
+from configs.config import SUCCESS, main_api_v2, BotInfo, Message, NEW_MSG_Q, Contact, GLOBAL_RULES_UPDATE_FLAG, \
+    GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, \
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG
+from core_v2.matching_rule_core import gm_rule_dict, gm_default_rule_dict, get_gm_rule_dict, get_gm_default_rule_dict
+from core_v2.message_core import route_msg, count_msg, update_sensitive_word_list
 from core_v2.user_core import _bind_bot_success, UserLogin
 from core_v2.wechat_core import WechatConn, wechat_conn_dict
 from models_v2.base_model import BaseModel, CM
@@ -47,9 +51,23 @@ def android_new_message():
     a_message = CM(Message).from_json(request.json)
     a_message.set_id(request.json.get('a_message_id'))
     a_message.create_time = int(a_message.create_time / 1000)
-    
-    NEW_MSG_Q.put(a_message)
-    logger.info(u"NEW_MSG_Q.put(a_message)")
+
+    global gm_rule_dict
+    global gm_default_rule_dict
+
+    if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
+        gm_rule_dict = get_gm_rule_dict()
+        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG] = False
+    if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG]:
+        gm_default_rule_dict = get_gm_default_rule_dict()
+        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG] = False
+    if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG]:
+        update_sensitive_word_list()
+        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG] = False
+    route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
+    count_msg(a_message)
+    # NEW_MSG_Q.put(a_message)
+    # logger.info(u"NEW_MSG_Q.put(a_message)")
     # route_msg(a_message)
     # count_msg(a_message)
     return make_response(SUCCESS)

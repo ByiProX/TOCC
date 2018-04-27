@@ -53,7 +53,7 @@ def initial_all():
 logger = logging.getLogger('main')
 # production_thread.start()
 crawler_thread.start()
-start_listen_new_msg()
+# start_listen_new_msg()
 BaseModel.extract_from_json()
 
 # 开启环境监测线程
