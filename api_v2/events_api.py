@@ -483,6 +483,10 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False
     print('Rewrite running')
     try:
         flag = True
+        events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
+            {'roomowner': roomowner, 'chatroom_nickname': chatroom_nickname}))
+        if events_chatroom.chatroomname != 'default':
+            return 0
         # Get roomowner's bot_username
         client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': roomowner}))
         client_id = client_member.client_id
@@ -856,7 +860,6 @@ def event_chatroom_send_word():
                             send_message(this_bot_username, chatroom.chatroomname, 1, event.condition_word)
 
 
-
 def put_img_to_oss(file_name, data_as_string):
     img_name = str(file_name) + '.jpg'
 
@@ -878,13 +881,17 @@ new_thread_3.start()
 
 
 def events_chatroomname_check():
-    chatrooms = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'chatroomname': 'default'}))
-
-    for i in chatrooms:
-        new_thread = threading.Thread(target=rewrite_events_chatroom,
-                                      args=(i.roomowner, i.chatroom_nickname, i.event_id, True))
-        new_thread.setDaemon(True)
-        new_thread.start()
+    index_list = []
+    while True:
+        chatroom_list = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'chatroomname': 'default'}))
+        for i in chatroom_list:
+            if i.index not in index_list:
+                index_list.append(i.index)
+                new_thread = threading.Thread(target=rewrite_events_chatroom,
+                                              args=(i.roomowner, i.chatroom_nickname, i.event_id, True))
+                new_thread.setDaemon(True)
+                new_thread.start()
+        time.sleep(100)
 
 
 events_chatroomname_check()
