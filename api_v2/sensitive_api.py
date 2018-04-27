@@ -217,6 +217,7 @@ def sensitive_message_log():
         message_list.append(temp)
     content['last_update_time'] = int(time.time())
     content['total_count'] = total_count
+    message_list.reverse()
     content['message_list'] = message_list
 
     result['content'] = content
