@@ -21,9 +21,9 @@ MSG_TYPE_ENTERCHATROOM = 570425393
 
 MSG_TYPE_DICK = {
     1: ['.txt', '.pdf', '.doc', '.xls'],
-    2: [],
+    2: ['http://', 'https://'],
     3: ['.mp4', 'mov'],
-    4: ['.png', '.jpg', '.jpeg']
+    4: ['.png', '.jpg', '.jpeg', '.gif']
 
 }
 
@@ -73,16 +73,8 @@ def get_group_zone_sources():
     try:
         client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                           where_clause=BaseModel.where_dict({"client_id": client_id}))
-        # client_quns_name_list = [client_qun.chatroomname for client_qun in client_quns]
     except:
         return make_response(ERR_WRONG_ITEM)
-    # 获取所有的群空间
-    # if not talker:
-    #     sources = BaseModel.fetch_all('a_members', '*',
-    #                                   where_clause=BaseModel.where('in', 'talker', client_quns_name),
-    #                                   page=page, pagesize=pagesize,
-    #                                   order_by=BaseModel.order_by({"create_time": order_type}),
-    #                                   )
 
     if not talker:
         client_quns_name_list = [client_qun.chatroomname for client_qun in client_quns]
@@ -92,7 +84,7 @@ def get_group_zone_sources():
     sources = BaseModel.fetch_all('a_message', '*',
                                   where_clause=BaseModel.and_(
                                       ['in', 'talker', client_quns_name_list],
-                                      ['=', 'type', source_type],
+                                      ['in', 'type', [43, 1]],
                                       ['like', 'real_content', keyword]),
                                   page=page, pagesize=pagesize,
                                   order_by=BaseModel.order_by({"create_time": order_type})
