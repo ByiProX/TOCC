@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 import time
 
 from flask import request
@@ -19,6 +20,12 @@ def create_or_modify_sensitive_rule():
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
     GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG] = True
+    # Use regular expression check chatroom_name_list.
+    _chatroom_name_list = request.json.get('chatroom_name_list')
+    for i in _chatroom_name_list:
+        if not re.match('[0-9]+@chatroom', i):
+            return response({'err_code': -2, 'content': 'chatroomname error:%s.' % i})
+
     if request.json.get('rule_id') is not None:
         # Modify rule.
         rule_id = request.json.get('rule_id')
