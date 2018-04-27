@@ -250,7 +250,7 @@ class BaseModel(object):
             return True
         else:
             logger.error(u"update failed, content: " + unicode(response.content))
-            logger.error(u"insert failed, self.json: " + json.dumps(self.to_json_full()))
+            logger.error(u"update failed, self.json: " + json.dumps(self.to_json_full()))
             return False
         # return self
 

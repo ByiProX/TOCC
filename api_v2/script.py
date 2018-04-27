@@ -6,6 +6,7 @@ import time
 from flask import request
 
 from configs.config import main_api_v2, SUCCESS, UserInfo
+from crawler.coin_all_crawler_v2 import update_coin_all
 from models_v2.base_model import BaseModel
 from utils.u_response import make_response
 
@@ -21,7 +22,8 @@ def script():
     # for user_info in user_info_list:
     #     user_info.app = "yaca"
     #     user_info.save()
-    user_info = BaseModel.fetch_one(UserInfo, "*", where_clause = BaseModel.where_dict({"client_id": 15}))
-    user_info.username = u"ada390859"
-    user_info.save()
+    # user_info = BaseModel.fetch_one(UserInfo, "*", where_clause = BaseModel.where_dict({"client_id": 15}))
+    # user_info.username = u"ada390859"
+    # user_info.save()
+    update_coin_all()
     return make_response(SUCCESS)
