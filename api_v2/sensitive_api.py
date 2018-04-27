@@ -211,7 +211,7 @@ def sensitive_message_log():
                     'avatar_url': speaker_avatar_url,
                     'speaker_id': log.speaker_username,
                 },
-                'date': int(time.time()),
+                'date': int(log.create_time),
             },
         }
         message_list.append(temp)
