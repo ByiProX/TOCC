@@ -314,13 +314,13 @@ class BaseModel(object):
             query_clause.update({"page": page})
             total_flag = False
         if page:
-            query_clause.update({"pagesize": pagesize})
+            query_clause.update({"pageSize": pagesize})
             total_flag = False
         if group:
             query_clause.update({"group": group})
 
         query_clause.update(kwargs)
-        query_clause.setdefault("pagesize", 100)
+        query_clause.setdefault("pageSize", 100)
         query_clause.setdefault("page", 1)
 
         item_list = list()
