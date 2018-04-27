@@ -457,21 +457,31 @@ class BaseModel(object):
         where_clause = {"where": json.dumps(where_clause_list)}
         return where_clause
 
+    # @staticmethod
+    # def and_(where_clause1, where_clause2):
+    #     where_clause_list = list()
+    #     where_clause_list.append('and')
+    #     where_clause_list.append(where_clause1)
+    #     where_clause_list.append(where_clause2)
+    #     where_clause = {"where": json.dumps(where_clause_list)}
+    #     return where_clause
+
+    # 这样好用一点，请组织审查，建议'or_'同样修改
     @staticmethod
-    def and_(where_clause1, where_clause2):
+    def and_(*where_clauses):
         where_clause_list = list()
         where_clause_list.append('and')
-        where_clause_list.append(where_clause1)
-        where_clause_list.append(where_clause2)
+        for where_clause in where_clauses:
+            where_clause_list.append(where_clause)
         where_clause = {"where": json.dumps(where_clause_list)}
         return where_clause
 
     @staticmethod
-    def or_(where_clause1, where_clause2):
+    def or_(*where_clauses):
         where_clause_list = list()
         where_clause_list.append('or')
-        where_clause_list.append(where_clause1)
-        where_clause_list.append(where_clause2)
+        for where_clause in where_clauses:
+            where_clause_list.append(where_clause)
         where_clause = {"where": where_clause_list}
         return where_clause
 
