@@ -19,10 +19,6 @@ MSG_TYPE_SHARE = 49
 MSG_TYPE_SYS = 10000
 MSG_TYPE_ENTERCHATROOM = 570425393
 
-MSG_TYPE_DICT = {
-    1:
-
-}
 
 
 @main_api_v2.route("/group_zone_lists", methods=['POST'])
@@ -65,6 +61,7 @@ def get_group_zone_sources():
     if status != SUCCESS:
         return make_response(status)
 
+
     talker = request.json.get('talker')
     keyword = request.json.get('keyword')
     source_type = request.json.get('source_type')
@@ -72,7 +69,10 @@ def get_group_zone_sources():
     pagesize = request.json.get('pagesize')
 
 
-    messages = BaseModel.fetch_all('a_message', '*', _where, page = page, pagesize = pagesize, orderBy = order, group = group_by)
+    messages = BaseModel.fetch_all('a_message', '*',
+                                   where_clause=None,
+                                   page = page, pagesize = pagesize,
+                                   orderBy = order, group = group_by)
 
 
 
