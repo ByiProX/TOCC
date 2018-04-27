@@ -78,7 +78,6 @@ def get_group_zone_sources():
     except:
         return make_response(ERR_WRONG_ITEM)
 
-    # 群id--talker
     talker = request.json.get('chatroomname')
     keyword = request.json.get('keyword')
     source_type = request.json.get('source_type')
@@ -98,13 +97,26 @@ def get_group_zone_sources():
     #                                             )
     #
     #                         )
+    # if talker:
+    #     messages = BaseModel.fetch_all('a_message', '*',
+    #                                    where_clause=BaseModel.where_dict(
+    #                                         {"talker": talker}),
+    #                                    page=page, pagesize=pagesize,
+    #                                    order_by=BaseModel.order_by({"create_time": order_type})
+    #                                    )
+
     if talker:
         messages = BaseModel.fetch_all('a_message', '*',
-                                       where_clause=BaseModel.where_dict(
-                                            {"talker": talker}),
+                                       where_clause=BaseModel.and_(
+                                            ['=', 'talker', talker],
+                                            ['=', 'type', source_type],
+                                            ['=', 'real_content', keyword]
+                                       ),
                                        page=page, pagesize=pagesize,
                                        order_by=BaseModel.order_by({"create_time": order_type})
                                        )
+
+
 
 if __name__ == "__main__":
 
@@ -116,18 +128,21 @@ if __name__ == "__main__":
     #                                pagesize=10, page=1,
     #                                order_by=BaseModel.order_by({"create_time": "desc"})
     #                                )
-
     messages = BaseModel.fetch_all("a_message", "*",
-                                   where_clause=BaseModel.or_(
-                                       ['=', 'talker', '5663579223@chatroom'],
-                                       ['=', 'talker', '10973997003@chatroom']
-                                   ),
+                                   where_clause=
+                                       BaseModel.and_(
+                                           ['=', 'talker', '10973997003@chatroom'],
+                                           # ['like', 'real_content', ''],
+                                           # ['=', 'type', 49],
+                                       ),
+
                                    pagesize=10, page=1,
                                    order_by=BaseModel.order_by({"create_time": "desc"})
                                    )
+
     # messages = BaseModel.fetch_all("a_message", "*")
-    print [message.to_json_full() for message in messages].__len__()
-    print messages.__len__()
+    print [message.to_json_full() for message in messages]
+    # print messages[1].real_content
     #
     # # messages = BaseModel.fetch_all('a_message', '*',
     # #                                where_clause=BaseModel.where_dict({"talker": 'wxid_zy8gemkhx2r222'}),
