@@ -45,7 +45,8 @@ def member_get_in_out_member():
     in_list = list()
     out_list = list()
 
-    a_member = BaseModel.fetch_one("a_member", "*", where_clause=BaseModel.where_dict({"chatroomname": group}))
+    # a_member = BaseModel.fetch_one("a_member", "*", where_clause=BaseModel.where_dict({"chatroomname": group}))
+    a_member = BaseModel.fetch_all("a_member", "*", where_clause=BaseModel.where_dict({"chatroomname": group}))[0]
 
     if not a_member:
         pass
@@ -54,7 +55,7 @@ def member_get_in_out_member():
         members = a_member.members
         for member in members:
             member_info = BaseModel.fetch_one("a_contact", "*",
-                                              where_clause=BaseModel.where_dict({"username": member['username']}))
+                                              where_clause=BaseModel.where_dict({"username": member.get('username')}))
 
             if not member['is_deleted']:
                 try:
