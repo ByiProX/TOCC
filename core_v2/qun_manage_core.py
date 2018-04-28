@@ -161,18 +161,19 @@ def check_whether_message_is_add_qun(a_message):
         if status == SUCCESS:
             bot_username = a_message.bot_username
             logger.info(u"发现加群. user_nickname: %s. chatroomname: %s. invitor_username: %s." % (user_nickname, a_message.talker, invitor_username))
-            status, user_info = _bind_qun_success(a_message.talker, user_nickname, bot_username, invitor_username)
-            if not user_info:
+            status, user_info_list = _bind_qun_success(a_message.talker, user_nickname, bot_username, invitor_username)
+            if not user_info_list:
                 return is_add_qun
-            we_conn = wechat_conn_dict.get(user_info.app)
-            if we_conn is None:
-                logger.info(u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (user_info.app, json.dumps(wechat_conn_dict.keys())))
-            if status == SUCCESS:
-                we_conn.send_txt_to_follower("恭喜！友问币答小助手已经进入您的群了，可立即使用啦\n想再次试用？再次把我拉进群就好啦", user_info.open_id)
-            else:
-                # EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
-                #                          u"user_nickname: %s." % user_nickname)
-                pass
+            for user_info in user_info_list:
+                we_conn = wechat_conn_dict.get(user_info.app)
+                if we_conn is None:
+                    logger.info(u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (user_info.app, json.dumps(wechat_conn_dict.keys())))
+                if status == SUCCESS:
+                    we_conn.send_txt_to_follower("恭喜！小助手已经进入您的群了，可立即使用啦\n想再次试用？再次把我拉进群就好啦", user_info.open_id)
+                else:
+                    # EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
+                    #                          u"user_nickname: %s." % user_nickname)
+                    pass
     return is_add_qun
 
 
@@ -191,36 +192,42 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
     #     logger.error(u"找不到该成员. nickname: %s." % user_nickname)
     #     return ERR_WRONG_ITEM, None
 
-    user_info = BaseModel.fetch_one(UserInfo, "*", where_clause = BaseModel.where_dict({"username": member_username}))
-    if not user_info:
+    user_info_list = BaseModel.fetch_all(UserInfo, "*", where_clause = BaseModel.where_dict({"username": member_username}))
+    # user_info = BaseModel.fetch_one(UserInfo, "*", where_clause = BaseModel.where_dict({"username": member_username}))
+    if not user_info_list:
         logger.error(u"找不到该用户. username: %s." % member_username)
         return ERR_WRONG_ITEM, None
 
     # user_id = user_info.user_id
 
-    bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"username": bot_username}))
-    if not bot_info:
-        logger.error(u"bot信息出错. bot_username: %s" % bot_username)
-        return ERR_WRONG_ITEM, None
+    for user_info in user_info_list:
+        ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id, "bot_username": bot_username}))
+        if not ubr:
+            logger.info(u"非绑定当前机器人加群, client_id: %s. bot_username: %s." % (user_info.client_id, bot_username))
+            continue
+        bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"username": bot_username}))
+        if not bot_info:
+            logger.error(u"bot信息出错. bot_username: %s" % bot_username)
+            return ERR_WRONG_ITEM, None
 
-    uqr_exist = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
-                                                                                        "chatroomname": chatroomname}))
-    if not uqr_exist:
-        uqr = CM(UserQunR)
-        uqr.client_id = user_info.client_id
-        uqr.chatroomname = chatroomname
-        uqr.status = 1
-        uqr.group_id = unicode(user_info.client_id) + u"_0"
-        uqr.create_time = datetime_to_timestamp_utc_8(datetime.now())
-        uqr.save()
-        logger.info(u"user与群关系已绑定. user_id: %s. chatroomname: %s." % (user_info.client_id, chatroomname))
-    else:
-        logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. chatroomname: %s." % chatroomname)
+        uqr_exist = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+                                                                                            "chatroomname": chatroomname}))
+        if not uqr_exist:
+            uqr = CM(UserQunR)
+            uqr.client_id = user_info.client_id
+            uqr.chatroomname = chatroomname
+            uqr.status = 1
+            uqr.group_id = unicode(user_info.client_id) + u"_0"
+            uqr.create_time = datetime_to_timestamp_utc_8(datetime.now())
+            uqr.save()
+            logger.info(u"user与群关系已绑定. user_id: %s. chatroomname: %s." % (user_info.client_id, chatroomname))
+        else:
+            logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. chatroomname: %s." % chatroomname)
 
-    # 修改机器人在群里的群备注
-    modify_self_displayname(user_info.client_id, chatroomname, bot_username)
+        # 修改机器人在群里的群备注
+        modify_self_displayname(user_info.client_id, chatroomname, bot_username)
 
-    return SUCCESS, user_info
+    return SUCCESS, user_info_list
 
 
 def modify_self_displayname(client_id, chatroomname, bot_username):

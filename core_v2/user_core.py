@@ -224,7 +224,7 @@ def add_a_pre_relate_user_bot_info(user_info, chatbot_default_nickname):
 
     ubr_info.client_id = user_info.client_id
 
-    bot_info = _get_a_balanced_bot()
+    bot_info = _get_a_balanced_bot(user_info)
     if not bot_info:
         logger.error(u"未取得可用bot. user_id: %s" % user_info.client_id)
         return ERR_NO_ALIVE_BOT, None
@@ -436,7 +436,7 @@ def _get_qr_code_base64_str(username):
     return img_str
 
 
-def _get_a_balanced_bot():
+def _get_a_balanced_bot(user_info):
     """
     得到一个平衡过数量的bot
     :return:
