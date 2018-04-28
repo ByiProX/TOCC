@@ -45,7 +45,6 @@ def member_get_in_out_member():
     in_list = list()
     out_list = list()
 
-    # a_member = BaseModel.fetch_one("a_member", "*", where_clause=BaseModel.where_dict({"chatroomname": group}))
     a_member = BaseModel.fetch_all("a_member", "*", where_clause=BaseModel.where_dict({"chatroomname": group}))[0]
 
     if not a_member:
@@ -54,12 +53,11 @@ def member_get_in_out_member():
     else:
         members = a_member.members
         for member in members:
-            print "::::::::::::::::::::::::::"
-            print member.get("create_time")
+            # print "::::::::::::::::::::::::::"
+            # print member.get("create_time")
 
             member_info = BaseModel.fetch_all("a_contact",
                                               ["username", "avatar_url", "nickname", "id", "img_lastupdatetime"],
-                                              # "*",
                                               where_clause=BaseModel.where_dict({"username": member.get('username')}))[0]
 
             if not member['is_deleted']:
@@ -79,7 +77,7 @@ def member_get_in_out_member():
                     pass
 
     last_update_time = int(time.time())
-    print ":::::::::::::::::::::::::::::::::::::::::::::"
-    print in_list
+    # print ":::::::::::::::::::::::::::::::::::::::::::::"
+    # print in_list
 
     return make_response(SUCCESS, in_list=in_list, out_list=out_list, last_update_time=last_update_time)
