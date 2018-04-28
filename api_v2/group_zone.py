@@ -71,7 +71,7 @@ def get_group_zone_sources():
     source_type = request.json.get('source_type')
     page = request.json.get('page')
     pagesize = request.json.get('pagesize')
-    order_type = request.json.get('order_type', 'desc')
+    order_type = request.json.get('order_type', 'asc')
 
     try:
         client_quns = BaseModel.fetch_all("client_qun_r", "*",
