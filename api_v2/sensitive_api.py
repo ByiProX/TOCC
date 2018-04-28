@@ -19,12 +19,14 @@ def create_or_modify_sensitive_rule():
         owner = user_info.username
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
-    GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG] = True
+
     # Use regular expression check chatroom_name_list.
     _chatroom_name_list = request.json.get('chatroom_name_list')
     for i in _chatroom_name_list:
         if not re.match('[0-9]+@chatroom', i):
             return response({'err_code': -2, 'content': 'chatroomname error:%s.' % i})
+
+    GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG] = True
 
     if request.json.get('rule_id') is not None:
         # Modify rule.

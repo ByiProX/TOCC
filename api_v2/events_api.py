@@ -887,11 +887,8 @@ def events_chatroomname_check():
         for i in chatroom_list:
             if i.index not in index_list:
                 index_list.append(i.index)
-                new_thread = threading.Thread(target=rewrite_events_chatroom,
-                                              args=(i.roomowner, i.chatroom_nickname, i.event_id, True))
-                new_thread.setDaemon(True)
-                new_thread.start()
-        time.sleep(100)
+                rewrite_events_chatroom(i.roomowner, i.chatroom_nickname, i.event_id, True)
+        time.sleep(300)
 
 
-# events_chatroomname_check()
+events_chatroomname_check()
