@@ -185,7 +185,7 @@ def sensitive_message_log():
     result = {'err_code': 0}
     content = {}
     message_list = []
-    page += 1
+
     all_log_list = _all_log_list[(page - 1) * pagesize:page * pagesize]
 
     total_count = 0
