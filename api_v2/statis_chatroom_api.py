@@ -267,10 +267,6 @@ def chatroom_statistics_chatroom():
                 ctlist.update(qunInfo[ctlist['chatroomname']])
                 print '9999999999', ctlist, '00000000000'
 
-    if (len(chatroom_json_list) > 0):
-        rds.set(cache_key, json.dumps({last_update_time: chatroom_json_list}))
-        rds.expire(cache_key, 60)
-
     if not is_active:
         uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]), page = 1, pagesize = pagesize)
         chatroomname_list = [r.chatroomname for r in uqr_list]
@@ -281,6 +277,11 @@ def chatroom_statistics_chatroom():
             chatroom_json = chatroom.to_json_full()
             chatroom_json_list.append(chatroom_json)
         return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
+
+    if (len(chatroom_json_list) > 0):
+        rds.set(cache_key, json.dumps({last_update_time: chatroom_json_list}))
+        rds.expire(cache_key, 60)
+
     return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
 
 

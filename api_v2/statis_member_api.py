@@ -216,10 +216,6 @@ def statistics_member():
 
     print "\n========== member_json_list = \n", member_json_list, "============\n"
 
-    if (len(member_json_list) > 0):
-        rds.set(cache_key, json.dumps({last_update_time: member_json_list}))
-        rds.expire(cache_key, 60)
-
     a_member = BaseModel.fetch_one(Member, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
     if a_member :
         a_member_json = a_member.to_json()
@@ -243,6 +239,9 @@ def statistics_member():
             member_json = member.to_json_full()
             member_json_list.append(member_json)
 
+    if (len(member_json_list) > 0):
+        rds.set(cache_key, json.dumps({last_update_time: member_json_list}))
+        rds.expire(cache_key, 60)
     return make_response(SUCCESS, member_list = member_json_list, last_update_time = last_update_time)
 
 
