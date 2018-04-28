@@ -71,14 +71,12 @@ def get_group_zone_sources():
     source_type = request.json.get('source_type')
     page = request.json.get('page')
     pagesize = request.json.get('pagesize')
-    order_type = request.json.get('order_type', 'asc')
+    order_type = request.json.get('order_type', 'desc')
 
     try:
         client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                           where_clause=BaseModel.where_dict({"client_id": client_id}))
     except:
-        print "::::::::::::::::::::"
-        print "client_quns \n", client_quns
         return make_response(ERR_WRONG_ITEM)
 
     if not talker:
@@ -90,7 +88,8 @@ def get_group_zone_sources():
                                   where_clause=BaseModel.and_(
                                       ['in', 'talker', client_quns_name_list],
                                       # ['=', 'real_type', source_type],
-                                      ['in', 'type', [49, 3, 436207665, 1]],
+                                      # ['in', 'type', [49, 3, 436207665, 1]],
+                                      ['in', 'type', [1]],
                                       ['like', 'real_content', keyword]),
                                   page=page, pagesize=pagesize,
                                   order_by=BaseModel.order_by({"create_time": order_type})
