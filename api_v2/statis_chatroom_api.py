@@ -246,8 +246,8 @@ def chatroom_statistics_chatroom():
         return make_response(SUCCESS, chatroom_list = [chatroom_json], last_update_time = last_update_time)
 
     chatroom_json_list = []
-    if (len(chatroom_statis) < 1):
-        return make_response(SUCCESS, chatroom_list = [], last_update_time = last_update_time)
+    # if (len(chatroom_statis) < 1):
+    #     return make_response(SUCCESS, chatroom_list = [], last_update_time = last_update_time)
 
     chatroomnames = []
     for st in chatroom_statis:

@@ -182,9 +182,6 @@ def update_coin_all():
 
             new_coin_dict[symbol] = coin
 
-            if symbol and symbol == "BTC":
-                print coin.to_json_full()
-
     # 去重插新
     old_coin_list = BaseModel.fetch_all(Coin, "*")
     old_coin_dict = {coin.symbol.upper(): coin for coin in old_coin_list if coin.symbol}
