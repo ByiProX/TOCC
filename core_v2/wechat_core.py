@@ -139,19 +139,11 @@ class WechatConn:
             if self.access_token is None:
                 self.access_token = CM(AccessToken)
                 self.access_token.app = self.app
-                self.access_token.token = res_json.get("access_token")
-                self.access_token.expired_time = now + res_json.get("expires_in")
-                self.access_token.save()
-                return self.access_token.token
-            elif self.access_token.expired_time <= now:
-                # self.access_token = BaseModel.fetch_all('access_token', '*', where_clause = BaseModel.where("=", "app", self.app))[0]
-                self.access_token.token = res_json.get("access_token")
-                self.access_token.expired_time = now + res_json.get("expires_in")
-                self.access_token.update()
-                return self.access_token.token
-        else:
-            return self.access_token.token
+            self.access_token.token = res_json.get("access_token")
+            self.access_token.expired_time = now + res_json.get("expires_in")
+            self.access_token.save()
 
+        return self.access_token.token
 
     def get_jsapi_ticket(self, jsapi_ticket_url):
         now = int(time.time())
@@ -162,21 +154,11 @@ class WechatConn:
             if self.jsapi_ticket is None:
                 self.jsapi_ticket = CM(JsapiTicket)
                 self.jsapi_ticket.app = self.app
-                self.jsapi_ticket.ticket = res_json.get("ticket")
-                self.jsapi_ticket.expired_time = now + res_json.get("expires_in")
-                self.jsapi_ticket.save()
-                return self.jsapi_ticket.ticket
-            elif self.jsapi_ticket.expired_time <= now:
-                # self.jsapi_ticket = BaseModel.fetch_all('jsapi_ticket', '*', where_clause = BaseModel.where("=", "app", self.app))[0]
-                self.jsapi_ticket.ticket = res_json.get("ticket")
-                self.jsapi_ticket.expired_time = now + res_json.get("expires_in")
-                self.jsapi_ticket.update()
-                return self.jsapi_ticket.ticket
+            self.jsapi_ticket.ticket = res_json.get("ticket")
+            self.jsapi_ticket.expired_time = now + res_json.get("expires_in")
+            self.jsapi_ticket.save()
 
-        else:
-            return self.jsapi_ticket.ticket
-
-
+        return self.jsapi_ticket.ticket
 
     def get_signature_from_access_token(self, url):
         try:
