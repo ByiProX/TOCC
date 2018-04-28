@@ -97,27 +97,27 @@ def get_group_zone_sources():
                                   )
     sources = [source.to_json_full() for source in sources]
 
-    # try:
-    for source in sources:
-        chatroom_info = BaseModel.fetch_all('a_chatroom', '*',
-                                            where_clause=BaseModel.where_dict(
-                                                {"chatroomname": source.get("talker")}
-                                            ))[0]
-        source.update(chatroom_info.to_json_full())
+    try:
+        for source in sources:
+            chatroom_info = BaseModel.fetch_all('a_chatroom', '*',
+                                                where_clause=BaseModel.where_dict(
+                                                    {"chatroomname": source.get("talker")}
+                                                ))[0]
+            source.update(chatroom_info.to_json_full())
 
-        client_info = BaseModel.fetch_all('a_contact', '*',
-                                          where_clause=BaseModel.where_dict(
-                                              {"username": source.get("real_talker")}
-                                          ))[0]
+            client_info = BaseModel.fetch_all('a_contact', '*',
+                                              where_clause=BaseModel.where_dict(
+                                                  {"username": source.get("real_talker")}
+                                              ))[0]
 
-        source.update(client_info.to_json_full())
-        source.update({"1234567890":"1234567890"})
+            source.update(client_info.to_json_full())
+            source.update({"1234567890":"1234567890"})
 
-    return make_response(SUCCESS, sources=sources)
-    # except:
-    #     print "::::::::::::::::::::::"
-    #     print "sources \n", sources
-    #     return make_response(ERR_WRONG_ITEM)
+        return make_response(SUCCESS, sources=sources)
+    except:
+        print "::::::::::::::::::::::"
+        print "sources \n", sources
+        return make_response(ERR_WRONG_ITEM)
 
 
 if __name__ == "__main__":
