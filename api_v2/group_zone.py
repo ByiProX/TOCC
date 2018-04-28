@@ -77,6 +77,8 @@ def get_group_zone_sources():
         client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                           where_clause=BaseModel.where_dict({"client_id": client_id}))
     except:
+        print "::::::::::::::::::::"
+        print "client_quns", client_quns
         return make_response(ERR_WRONG_ITEM)
 
     if not talker:
@@ -112,6 +114,8 @@ def get_group_zone_sources():
 
         return make_response(SUCCESS, sources=sources)
     except:
+        print "::::::::::::::::::::::"
+        print "sources", sources
         return make_response(ERR_WRONG_ITEM)
 
 
