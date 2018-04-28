@@ -55,7 +55,7 @@ def member_get_in_out_member():
         members = a_member.members
         for member in members:
             print "::::::::::::::::::::::::::"
-            print member
+            print member.get("create_time")
 
             member_info = BaseModel.fetch_all("a_contact",
                                               ["username", "avatar_url", "nickname", "id", "img_lastupdatetime"],
