@@ -21,13 +21,11 @@ MSG_TYPE_ENTERCHATROOM = 570425393
 
 MSG_TYPE_DICK = {
     1: ['.txt', '.pdf', '.doc', '.xls'],
-    2: [],
+    2: ['http://', 'https://'],
     3: ['.mp4', 'mov'],
-    4: ['.png', '.jpg', '.jpeg']
+    4: ['.png', '.jpg', '.jpeg', '.gif']
 
 }
-
-
 
 
 @main_api_v2.route("/group_zone_lists", methods=['POST'])
@@ -42,21 +40,15 @@ def get_group_zone_list():
         client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                           where_clause=BaseModel.where_dict({"client_id": client_id}))
         client_quns = [client_qun.to_json_full() for client_qun in client_quns]
-
     except:
         return make_response(ERR_WRONG_ITEM)
 
     try:
         for client_qun in client_quns:
-            chatroom_info = BaseModel.fetch_one("a_chatroom", "*",
+            chatroom_info = BaseModel.fetch_all("a_chatroom", "*",
                                                 where_clause=BaseModel.where_dict(
-                                                    {"chatroomname": client_qun.get('chatroomname')}))
-
-            # client_qun_to_dict = client_qun.to_json_full()
+                                                    {"chatroomname": client_qun.get('chatroomname')}))[0]
             client_qun.update(chatroom_info.to_json_full())
-
-            # client_qun.nickname_real = chatroom_info.nickname_real if chatroom_info.nickname_real else None
-            # client_qun.member_count = chatroom_info.member_count
     except:
         return make_response(ERR_WRONG_ITEM)
 
@@ -71,13 +63,6 @@ def get_group_zone_sources():
         return make_response(status)
 
     client_id = user_info.client_id
-    try:
-        client_quns = BaseModel.fetch_all("client_qun_r", "*",
-                                          where_clause=BaseModel.where_dict({"client_id": client_id}))
-        client_quns = [client_qun.to_json_full() for client_qun in client_quns]
-    except:
-        return make_response(ERR_WRONG_ITEM)
-
     talker = request.json.get('chatroomname')
     keyword = request.json.get('keyword')
     source_type = request.json.get('source_type')
@@ -85,41 +70,38 @@ def get_group_zone_sources():
     pagesize = request.json.get('pagesize')
     order_type = request.json.get('order_type')
 
-    # 获取所有的群空间
-    # if not talker:
-    #     messages = []
-    #     for client_qun in client_quns:
-    #         messages.extend(BaseModel.fetch_all('a_message', '*',
-    #                                             where_clause=BaseModel.where_dict(
-    #                                                {"talker": client_qun.get('chatroomname')}),
-    #                                             page=page, pagesize=pagesize,
-    #                                             order_by=BaseModel.order_by({"create_time": order_type})
-    #                                             )
-    #
-    #                         )
-    # if talker:
-    #     messages = BaseModel.fetch_all('a_message', '*',
-    #                                    where_clause=BaseModel.where_dict(
-    #                                         {"talker": talker}),
-    #                                    page=page, pagesize=pagesize,
-    #                                    order_by=BaseModel.order_by({"create_time": order_type})
-    #                                    )
+    try:
+        client_quns = BaseModel.fetch_all("client_qun_r", "*",
+                                          where_clause=BaseModel.where_dict({"client_id": client_id}))
+    except:
+        return make_response(ERR_WRONG_ITEM)
 
-    if talker:
-        messages = BaseModel.fetch_all('a_message', '*',
-                                       where_clause=BaseModel.and_(
-                                            ['=', 'talker', talker],
-                                            ['=', 'type', source_type],
-                                            ['=', 'real_content', keyword]
-                                       ),
-                                       page=page, pagesize=pagesize,
-                                       order_by=BaseModel.order_by({"create_time": order_type})
-                                       )
+    if not talker:
+        client_quns_name_list = [client_qun.chatroomname for client_qun in client_quns]
+    else:
+        client_quns_name_list = [talker]
 
+    sources = BaseModel.fetch_all('a_message', '*',
+                                  where_clause=BaseModel.and_(
+                                      ['in', 'talker', client_quns_name_list],
+                                      ['in', 'type', [43, 1]],
+                                      ['like', 'real_content', keyword]),
+                                  page=page, pagesize=pagesize,
+                                  order_by=BaseModel.order_by({"create_time": order_type})
+                                  )
+    sources = [source.to_json_full() for source in sources]
+
+    for source in sources:
+        chatroom_info = BaseModel.fetch_all('a_chatroom', '*',
+                                            where_clause=BaseModel.where_dict(
+                                                {"chatroomname": source.talker}
+                                            ))[0]
+        source.update(chatroom_info.to_json_full())
+
+    return make_response(SUCCESS, sources=sources)
 
 
 if __name__ == "__main__":
-
     BaseModel.extract_from_json()
     # messages = BaseModel.fetch_all("a_message", "*",
     #                                where_clause=BaseModel.where_dict(
@@ -130,18 +112,23 @@ if __name__ == "__main__":
     #                                )
     messages = BaseModel.fetch_all("a_message", "*",
                                    where_clause=
-                                       BaseModel.and_(
-                                           ['=', 'talker', '10973997003@chatroom'],
-                                           # ['like', 'real_content', ''],
-                                           # ['=', 'type', 49],
-                                       ),
+                                   BaseModel.and_(
+                                       ['=', 'talker', '10973997003@chatroom'],
+                                       ['like', 'real_content', ''],
+                                       ['=', 'type', 49],
+                                   ),
 
                                    pagesize=10, page=1,
                                    order_by=BaseModel.order_by({"create_time": "desc"})
                                    )
 
     # messages = BaseModel.fetch_all("a_message", "*")
-    print [message.to_json_full() for message in messages]
+    # print [message.to_json_full() for message in messages][2]
+    print messages[0].talker
+
+    # a = BaseModel.fetch_all("a_chatroom", "*", where_clause=BaseModel.where_dict({"chatroomname": '8835992041@chatroom'}))
+    # print a[0].chatroomname
+
     # print messages[1].real_content
     #
     # # messages = BaseModel.fetch_all('a_message', '*',
@@ -157,4 +144,16 @@ if __name__ == "__main__":
     #
     #
     # print client_quns
+
+    print BaseModel.fetch_all("a_chatroom", "*",
+                              where_clause=BaseModel.where_dict(
+                                  {"chatroomname": '8835992041@chatroom'}))[0].to_json_full()
+
+    BaseModel.fetch_all('a_message', '*',
+                        where_clause=BaseModel.where_dict(
+                            {"talker": client_qun.get('chatroomname')}),
+                        page=page, pagesize=pagesize,
+                        order_by=BaseModel.order_by({"create_time": order_type})
+                        )
+
     pass
