@@ -19,13 +19,17 @@ MSG_TYPE_SHARE = 49
 MSG_TYPE_SYS = 10000
 MSG_TYPE_ENTERCHATROOM = 570425393
 
-MSG_TYPE_DICK = {
+MSG_TYPE_DICT = {
     1: ['.txt', '.pdf', '.doc', '.xls'],
     2: ['http://', 'https://'],
     3: ['.mp4', 'mov'],
     4: ['.png', '.jpg', '.jpeg', '.gif']
 
 }
+
+# def get_source_type(type, real_content):
+
+
 
 
 @main_api_v2.route("/group_zone_lists", methods=['POST'])
@@ -68,7 +72,7 @@ def get_group_zone_sources():
     source_type = request.json.get('source_type')
     page = request.json.get('page')
     pagesize = request.json.get('pagesize')
-    order_type = request.json.get('order_type')
+    order_type = request.json.get('order_type', 'desc')
 
     try:
         client_quns = BaseModel.fetch_all("client_qun_r", "*",
@@ -124,8 +128,8 @@ if __name__ == "__main__":
 
     # messages = BaseModel.fetch_all("a_message", "*")
     # print [message.to_json_full() for message in messages][2]
-    print messages[0].talker
-
+    # print messages[0].talker
+    print messages
     # a = BaseModel.fetch_all("a_chatroom", "*", where_clause=BaseModel.where_dict({"chatroomname": '8835992041@chatroom'}))
     # print a[0].chatroomname
 
@@ -145,15 +149,15 @@ if __name__ == "__main__":
     #
     # print client_quns
 
-    print BaseModel.fetch_all("a_chatroom", "*",
-                              where_clause=BaseModel.where_dict(
-                                  {"chatroomname": '8835992041@chatroom'}))[0].to_json_full()
-
-    BaseModel.fetch_all('a_message', '*',
-                        where_clause=BaseModel.where_dict(
-                            {"talker": client_qun.get('chatroomname')}),
-                        page=page, pagesize=pagesize,
-                        order_by=BaseModel.order_by({"create_time": order_type})
-                        )
+    # print BaseModel.fetch_all("a_chatroom", "*",
+    #                           where_clause=BaseModel.where_dict(
+    #                               {"chatroomname": '8835992041@chatroom'}))[0].to_json_full()
+    #
+    # BaseModel.fetch_all('a_message', '*',
+    #                     where_clause=BaseModel.where_dict(
+    #                         {"talker": client_qun.get('chatroomname')}),
+    #                     page=page, pagesize=pagesize,
+    #                     order_by=BaseModel.order_by({"create_time": order_type})
+    #                     )
 
     pass
