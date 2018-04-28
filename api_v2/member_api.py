@@ -74,5 +74,7 @@ def member_get_in_out_member():
                     pass
 
     last_update_time = int(time.time())
+    print ":::::::::::::::::::::::::::::::::::::::::::::"
+    print in_list
 
     return make_response(SUCCESS, in_list=in_list, out_list=out_list, last_update_time=last_update_time)
