@@ -90,7 +90,7 @@ def get_group_zone_sources():
                                   where_clause=BaseModel.and_(
                                       ['in', 'talker', client_quns_name_list],
                                       # ['=', 'real_type', source_type],
-                                      # ['in', 'type', [49, 3, 436207665, 1]],
+                                      ['in', 'type', [49, 3, 436207665, 1]],
                                       ['like', 'real_content', keyword]),
                                   page=page, pagesize=pagesize,
                                   order_by=BaseModel.order_by({"create_time": order_type})
@@ -111,12 +111,9 @@ def get_group_zone_sources():
                                               ))[0]
 
             source.update(client_info.to_json_full())
-            source.update({"1234567890":"1234567890"})
 
         return make_response(SUCCESS, sources=sources)
     except:
-        print "::::::::::::::::::::::"
-        print "sources \n", sources
         return make_response(ERR_WRONG_ITEM)
 
 
@@ -173,7 +170,7 @@ if __name__ == "__main__":
     print cs.__len__()
 
     for c in cs:
-        c.update({'a':11111111111111111111111111111})
+        c.update({'a': 11111111111111111111111111111})
     print cs.__len__()
     # a = BaseModel.fetch_all("a_chatroom", "*", where_clause=BaseModel.where_dict({"chatroomname": '8835992041@chatroom'}))
     # print a[0].chatroomname
