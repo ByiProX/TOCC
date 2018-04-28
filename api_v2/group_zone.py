@@ -27,9 +27,8 @@ MSG_TYPE_DICT = {
 
 }
 
+
 # def get_source_type(type, real_content):
-
-
 
 
 @main_api_v2.route("/group_zone_lists", methods=['POST'])
@@ -95,14 +94,24 @@ def get_group_zone_sources():
                                   )
     sources = [source.to_json_full() for source in sources]
 
-    for source in sources:
-        chatroom_info = BaseModel.fetch_all('a_chatroom', '*',
-                                            where_clause=BaseModel.where_dict(
-                                                {"chatroomname": source.talker}
-                                            ))[0]
-        source.update(chatroom_info.to_json_full())
+    try:
+        for source in sources:
+            chatroom_info = BaseModel.fetch_all('a_chatroom', '*',
+                                                where_clause=BaseModel.where_dict(
+                                                    {"chatroomname": source.talker}
+                                                ))[0]
+            source.update(chatroom_info.to_json_full())
 
-    return make_response(SUCCESS, sources=sources)
+            client_info = BaseModel.fetch_all('client_member', '*',
+                                              where_clause=BaseModel.where_dict(
+                                                  {"client_id": source.real_talker}
+                                              ))[0]
+
+            source.update(client_info.to_json_full())
+
+        return make_response(SUCCESS, sources=sources)
+    except:
+        return make_response(ERR_WRONG_ITEM)
 
 
 if __name__ == "__main__":
@@ -119,7 +128,7 @@ if __name__ == "__main__":
                                    BaseModel.and_(
                                        ['=', 'talker', '10973997003@chatroom'],
                                        ['like', 'real_content', ''],
-                                       ['=', 'type', 49],
+                                       ['in', 'type', [49, 3]],
                                    ),
 
                                    pagesize=10, page=1,
@@ -129,7 +138,7 @@ if __name__ == "__main__":
     # messages = BaseModel.fetch_all("a_message", "*")
     # print [message.to_json_full() for message in messages][2]
     # print messages[0].talker
-    print messages
+    print messages.__len__()
     # a = BaseModel.fetch_all("a_chatroom", "*", where_clause=BaseModel.where_dict({"chatroomname": '8835992041@chatroom'}))
     # print a[0].chatroomname
 
