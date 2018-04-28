@@ -169,7 +169,7 @@ def get_pc_login_qr():
             sign += chr(random.randint(65, 90))
 
     SIGN_DICT.setdefault(sign, None)
-    app_info = APP_INFO_DICT(app_name)
+    app_info = APP_INFO_DICT[app_name]
     url_ori = app_info.get("URL_ORI").format(sign)
     qr = qrcode.QRCode(
         version = 3,

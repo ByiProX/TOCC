@@ -13,7 +13,7 @@ from utils.u_response import make_response
 logger = logging.getLogger('main')
 
 
-@main_api_v2.route("/script", methods = ['POST'])
+@main_api_v2.route("/script", methods = ['GET', 'POST'])
 def script():
     # uqr = BaseModel.fetch_by_id("client_qun_r", "5ad46153f5d7e26589658ba7")
     # uqr.group_id = u"4_0"
