@@ -101,13 +101,13 @@ def get_group_zone_sources():
         for source in sources:
             chatroom_info = BaseModel.fetch_all('a_chatroom', '*',
                                                 where_clause=BaseModel.where_dict(
-                                                    {"chatroomname": source.talker}
+                                                    {"chatroomname": source.get("talker")}
                                                 ))[0]
             source.update(chatroom_info.to_json_full())
 
             client_info = BaseModel.fetch_all('client_member', '*',
                                               where_clause=BaseModel.where_dict(
-                                                  {"client_id": source.real_talker}
+                                                  {"client_id": source.get("real_talker")}
                                               ))[0]
 
             source.update(client_info.to_json_full())
