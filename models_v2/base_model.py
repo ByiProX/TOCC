@@ -55,11 +55,13 @@ class BaseModel(object):
     def from_json(self, data_json):
         for key in data_json.keys():
             if key == u'_id' and data_json.get(key):
-                if isinstance(data_json.get(key), unicode) or isinstance(data_json.get(key), str):
-                    _id = data_json.get(key)
-                else:
-                    _id = data_json.get(key).get(u"$oid")
+                _id = data_json.get(key)
                 setattr(self, self.__tablename + u"_id", _id)
+                # if isinstance(data_json.get(key), unicode) or isinstance(data_json.get(key), str):
+                #     _id = data_json.get(key)
+                # else:
+                #     _id = data_json.get(key).get(u"$oid")
+                # setattr(self, self.__tablename + u"_id", _id)
             if key in self.attrs:
                 value = data_json.get(key)
                 if isinstance(value, bool):
