@@ -111,6 +111,7 @@ def get_group_zone_sources():
                                               ))[0]
 
             source.update(client_info.to_json_full())
+            source.update({"1234567890":"1234567890"})
 
         return make_response(SUCCESS, sources=sources)
     except:
