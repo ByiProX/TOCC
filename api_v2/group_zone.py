@@ -5,30 +5,6 @@ from core_v2.user_core import UserLogin
 from models_v2.base_model import BaseModel
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
-import time
-
-MSG_TYPE_UNKNOWN = -1  # 未知类型
-MSG_TYPE_TXT = 1
-MSG_TYPE_PIC = 3
-MSG_TYPE_MP3 = 34
-MSG_TYPE_NAME_CARD = 42
-MSG_TYPE_MP4 = 43
-MSG_TYPE_GIF = 47
-MSG_TYPE_VIDEO = 62
-MSG_TYPE_SHARE = 49
-MSG_TYPE_SYS = 10000
-MSG_TYPE_ENTERCHATROOM = 570425393
-
-MSG_TYPE_DICT = {
-    1: ['.txt', '.pdf', '.doc', '.xls'],
-    2: ['http://', 'https://'],
-    3: ['.mp4', 'mov'],
-    4: ['.png', '.jpg', '.jpeg', '.gif']
-
-}
-
-
-# def get_source_type(type, real_content):
 
 
 @main_api_v2.route("/group_zone_lists", methods=['POST'])
