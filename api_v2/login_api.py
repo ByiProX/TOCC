@@ -8,7 +8,7 @@ import qrcode
 from flask import request
 
 from configs.config import main_api_v2, ERR_PARAM_SET, ERR_INVALID_PARAMS, SUCCESS, INFO_NO_USED_BOT, \
-    ERR_SET_LENGTH_WRONG, SIGN_DICT, ERR_ALREADY_LOGIN
+    ERR_SET_LENGTH_WRONG, SIGN_DICT, ERR_ALREADY_LOGIN, APP_INFO_DICT
 from core_v2.user_core import UserLogin, cal_user_basic_page_info, add_a_pre_relate_user_bot_info, get_bot_qr_code, \
     set_bot_name
 from core_v2.wechat_core import wechat_conn_dict
@@ -162,14 +162,15 @@ def app_binded_wechat_bot():
 
 @main_api_v2.route("/get_pc_login_qr", methods=['POST'])
 def get_pc_login_qr():
-
+    app_name = request.json.get('app_name')
     sign = ""
     while sign is "" or sign in SIGN_DICT:
         for i in range(6):
             sign += chr(random.randint(65, 90))
 
     SIGN_DICT.setdefault(sign, None)
-    url_ori = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state=" + sign + "#wechat_redirect"
+    app_info = APP_INFO_DICT(app_name)
+    url_ori = app_info.get("URL_ORI").format(sign)
     qr = qrcode.QRCode(
         version = 3,
         error_correction = qrcode.constants.ERROR_CORRECT_H,
