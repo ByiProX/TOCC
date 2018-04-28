@@ -54,8 +54,8 @@ def member_get_in_out_member():
     else:
         members = a_member.members
         for member in members:
-            member_info = BaseModel.fetch_one("a_contact", "*",
-                                              where_clause=BaseModel.where_dict({"username": member.get('username')}))
+            member_info = BaseModel.fetch_all("a_contact", "*",
+                                              where_clause=BaseModel.where_dict({"username": member.get('username')}))[0]
 
             if not member['is_deleted']:
                 try:
