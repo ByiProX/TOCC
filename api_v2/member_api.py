@@ -54,6 +54,9 @@ def member_get_in_out_member():
     else:
         members = a_member.members
         for member in members:
+            print "::::::::::::::::::::::::::"
+            print member
+
             member_info = BaseModel.fetch_all("a_contact",
                                               ["username", "avatar_url", "nickname", "id", "img_lastupdatetime"],
                                               # "*",
