@@ -188,9 +188,8 @@ def sensitive_message_log():
 
     all_log_list = _all_log_list[(page - 1) * pagesize:page * pagesize]
 
-    total_count = 0
+    total_count = len(_all_log_list)
     for log in all_log_list:
-        total_count += 1
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': log.chatroomname}))
         this_speaker = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': log.speaker_username}))
 
