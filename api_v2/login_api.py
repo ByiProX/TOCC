@@ -32,7 +32,7 @@ def login_verify_code():
     data_json = json.loads(request.data)
     code = data_json.get('code')
     app_name = data_json.get('app_name')
-    if not code:
+    if not code or not app_name:
         return make_response(ERR_INVALID_PARAMS)
 
     user_login = UserLogin(code, app_name)
@@ -162,7 +162,10 @@ def app_binded_wechat_bot():
 
 @main_api_v2.route("/get_pc_login_qr", methods=['POST'])
 def get_pc_login_qr():
+    verify_json()
     app_name = request.json.get('app_name')
+    if not app_name:
+        return make_response(ERR_INVALID_PARAMS)
     sign = ""
     while sign is "" or sign in SIGN_DICT:
         for i in range(6):
@@ -193,6 +196,8 @@ def pc_login():
     sign = request.json.get("sign")
     code = request.json.get("code")
     app_name = request.json.get('app_name')
+    if not app_name or not sign or not code:
+        return make_response(ERR_INVALID_PARAMS)
 
     if sign is None or sign not in SIGN_DICT or code is None:
         return make_response(ERR_INVALID_PARAMS)
