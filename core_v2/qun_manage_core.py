@@ -204,6 +204,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
         ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id, "bot_username": bot_username}))
         if not ubr:
             logger.info(u"非绑定当前机器人加群, client_id: %s. bot_username: %s." % (user_info.client_id, bot_username))
+            user_info_list.remove(user_info)
             continue
         bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"username": bot_username}))
         if not bot_info:
