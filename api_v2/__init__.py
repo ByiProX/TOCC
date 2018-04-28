@@ -7,7 +7,7 @@ import wallet
 import android_api
 import manage_api
 import coin_api
-# import events_api
+import events_api
 import statis_chatroom_api
 import statis_member_api
 import member_api

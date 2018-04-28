@@ -891,7 +891,7 @@ def events_chatroomname_check():
         time.sleep(300)
 
 
-new_thread_4 = threading.Thread(target=events_chatroomname_check())
-new_thread_4.setDaemon(True)
-new_thread_4.start()
+# new_thread_4 = threading.Thread(target=events_chatroomname_check())
+# new_thread_4.setDaemon(True)
+# new_thread_4.start()
 
