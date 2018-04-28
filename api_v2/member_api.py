@@ -56,11 +56,12 @@ def member_get_in_out_member():
         for member in members:
             member_info = BaseModel.fetch_all("a_contact",
                                               ["username", "avatar_url", "nickname", "id", "img_lastupdatetime"],
+                                              # "*",
                                               where_clause=BaseModel.where_dict({"username": member.get('username')}))[0]
 
             if not member['is_deleted']:
                 try:
-                    if check_time <= member.create_time:
+                    if check_time <= member.get("create_time"):
                         member.update(member_info.to_json_full())
                         in_list.append(member)
                 except AttributeError:
@@ -68,7 +69,7 @@ def member_get_in_out_member():
 
             else:
                 try:
-                    if check_time <= member.update_time:
+                    if check_time <= member.get("update_time"):
                         member.update(member_info.to_json_full())
                         out_list.append(member)
                 except AttributeError:
