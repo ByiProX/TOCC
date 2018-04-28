@@ -337,21 +337,29 @@ def test_msg(message_list):
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
-    coins = BaseModel.fetch_all("coin", "*")
-    pass
-    exit()
-    uqr = BaseModel.fetch_by_id("client_qun_r", "5ad46153f5d7e26589658ba7")
-    uqr.group_id = u"4_0"
-    uqr.update()
-    message_json = {u'status': 3, u'msg_local_id': u'116', u'is_send': 0, u'reserved': u'', u'msg_svr_id': None,
-                    u'bot_username': u'wxid_3mxn5zyskbpt22', u'is_at': None, u'is_to_friend': 0,
-                    u'content': u'wxid_u391xytt57gc21:\nbtc', u'create_time': 1523872665000,
-                    u'talker': u'4648276167@chatroom', u'real_content': u'btc',
-                    u'real_talker': u'wxid_u391xytt57gc21', u'type': 1}
-    a_message = CM("a_message").from_json(message_json)
-    gm_rule_dict = get_gm_rule_dict()
-    gm_default_rule_dict = get_gm_default_rule_dict()
-    route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
+    username_list = ["wxid_u391xytt57gc21"] * 500
+    a_contact = BaseModel.fetch_all("a_contact", "*", BaseModel.where("in", "username", username_list))
+    # update_coin_all()
+    # BaseModel.fetch_all('sensitive_message_log', '*',
+    #                     BaseModel.and_([">", "create_time", 1524733303],
+    #                                    ["<", "create_time", 1524733305]), page = 1, pagesize = 1)
+    # pass
+    # exit()
+    # coins = BaseModel.fetch_all("coin", "*")
+    # pass
+    # exit()
+    # uqr = BaseModel.fetch_by_id("client_qun_r", "5ad46153f5d7e26589658ba7")
+    # uqr.group_id = u"4_0"
+    # uqr.update()
+    # message_json = {u'status': 3, u'msg_local_id': u'116', u'is_send': 0, u'reserved': u'', u'msg_svr_id': None,
+    #                 u'bot_username': u'wxid_3mxn5zyskbpt22', u'is_at': None, u'is_to_friend': 0,
+    #                 u'content': u'wxid_u391xytt57gc21:\nbtc', u'create_time': 1523872665000,
+    #                 u'talker': u'4648276167@chatroom', u'real_content': u'btc',
+    #                 u'real_talker': u'wxid_u391xytt57gc21', u'type': 1}
+    # a_message = CM("a_message").from_json(message_json)
+    # gm_rule_dict = get_gm_rule_dict()
+    # gm_default_rule_dict = get_gm_default_rule_dict()
+    # route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
     # ubr = CM(UserBotR)
     # ubr.client_id = 1
     # ubr.bot_username = u'wxid_zy8gemkhx2r222'
