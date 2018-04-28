@@ -103,14 +103,16 @@ def get_group_zone_sources():
                                                 where_clause=BaseModel.where_dict(
                                                     {"chatroomname": source.get("talker")}
                                                 ))[0]
-            source.update(chatroom_info.to_json_full())
+            # source.update(chatroom_info.to_json_full())
+            source["chatroom_info"] = chatroom_info.to_json_full()
 
             client_info = BaseModel.fetch_all('a_contact', '*',
                                               where_clause=BaseModel.where_dict(
                                                   {"username": source.get("real_talker")}
                                               ))[0]
 
-            source.update(client_info.to_json_full())
+            # source.update(client_info.to_json_full())
+            source["client_info"] = client_info.to_json_full()
 
         return make_response(SUCCESS, sources=sources)
     except:
@@ -162,6 +164,7 @@ if __name__ == "__main__":
                              order_by=BaseModel.order_by({"create_time": "desc"})
                              )
     cs = [c.to_json_full() for c in cs]
+
     # messages = BaseModel.fetch_all("a_message", "*")
     # print [message.to_json_full() for message in messages][2]
     # print messages[0].talker
