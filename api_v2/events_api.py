@@ -1,32 +1,17 @@
 # -*- coding: utf-8 -*-
-import os
 import time
 import base64
 import threading
 
 import oss2
-from flask import request, jsonify
-from functools import wraps
+from flask import request
 
 from configs.config import main_api_v2 as app_test
 from core_v2.user_core import UserLogin
 from models_v2.base_model import *
+from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false
 
 logger = logging.getLogger('main')
-
-
-def para_check(need_list, *parameters):
-    def _wrapper(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            _para_check = parameters_check(need_list, *parameters)
-            if _para_check is not True:
-                return _para_check
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return _wrapper
 
 
 @app_test.route('/events_init', methods=['POST'])
@@ -574,31 +559,6 @@ def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
     return ' '
 
 
-def response(body_as_dict):
-    """Use make_response or not."""
-    response_body = jsonify(body_as_dict)
-    return response_body
-
-
-def parameters_check(need_list, *args):
-    """Check each parameter (For POST)
-    if could not get this parameter return 'Lack of (parameter)'
-    """
-
-    if request.json is None:
-        return response({'err_code': -1, 'content': 'Lack of json.'})
-
-    if isinstance(need_list, str):
-        need = args + (need_list,)
-    else:
-        need = need_list + args
-
-    for i in need:
-        if request.json.get(i) is None:
-            return response({'err_code': -1, 'content': 'Lack of %s.' % i})
-    return True
-
-
 def status_detect(start_time, end_time, is_work, is_finish, chatroom_enough):
     """Check event status
     0 -> not finish
@@ -644,77 +604,6 @@ def inc_info(owner):
             today_inc += 1
 
     return today_inc, all_inc
-
-
-def to_bytes(obj):
-    if isinstance(obj, bytes):
-        return obj
-    elif isinstance(obj, str):
-        return obj.encode()
-    elif isinstance(obj, unicode):
-        return obj.encode()
-    else:
-        raise TypeError('Only support (bytes, str). Type:%s' % type(obj))
-
-
-def to_str(obj):
-    if isinstance(obj, str):
-        return obj
-    elif isinstance(obj, bytes):
-        return obj.decode()
-    elif isinstance(obj, unicode):
-        return obj
-    else:
-        raise TypeError('Only support (bytes, str). Type:%s' % type(obj))
-
-
-def true_false_to_10(data_as_dict, exc_list=()):
-    for k, v in data_as_dict.items():
-        if k in exc_list:
-            continue
-        if v is True:
-            data_as_dict[k] = 1
-        elif v is False:
-            data_as_dict[k] = 0
-
-    return data_as_dict
-
-
-def _10_to_true_false(data_as_dict, exc_list=()):
-    for k, v in data_as_dict.items():
-        if k in exc_list:
-            continue
-        if v == 1:
-            data_as_dict[k] = True
-        elif v == 0:
-            data_as_dict[k] = False
-
-    return data_as_dict
-
-
-def read_poster_raw(_str):
-    if not _str:
-        return ''
-    if os.path.isfile(_str):
-        with open(_str, 'rb') as f:
-            return to_str(f.read())
-    else:
-        return to_str(_str)
-
-
-def new_file_path(path, ext='', start_index=1, end_index=10000):
-    if not os.path.isdir(path):
-        raise Exception('path must be a directory.')
-
-    if not os.path.exists(path):
-        raise Exception('path must be exist.')
-
-    for i in range(start_index, end_index):
-        result = os.path.join(path, (str(i) + ext))
-        if not os.path.exists(result):
-            return result
-
-    raise Exception('Max Length!')
 
 
 def open_chatroom_name_protect():
@@ -873,15 +762,6 @@ def put_img_to_oss(file_name, data_as_string):
     return 'http://ywbdposter.oss-cn-beijing.aliyuncs.com/' + img_name
 
 
-new_thread_2 = threading.Thread(target=event_chatroom_send_word)
-new_thread_2.setDaemon(True)
-new_thread_2.start()
-
-new_thread_3 = threading.Thread(target=open_chatroom_name_protect)
-new_thread_3.setDaemon(True)
-new_thread_3.start()
-
-
 def events_chatroomname_check():
     index_list = []
     while True:
@@ -892,6 +772,14 @@ def events_chatroomname_check():
                 rewrite_events_chatroom(i.roomowner, i.chatroom_nickname, i.event_id, True, False)
         time.sleep(300)
 
+
+new_thread_2 = threading.Thread(target=event_chatroom_send_word)
+new_thread_2.setDaemon(True)
+new_thread_2.start()
+
+new_thread_3 = threading.Thread(target=open_chatroom_name_protect)
+new_thread_3.setDaemon(True)
+new_thread_3.start()
 
 new_thread_4 = threading.Thread(target=events_chatroomname_check)
 new_thread_4.setDaemon(True)
