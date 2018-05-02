@@ -105,6 +105,9 @@ def get_rt_quotes_preview(coin_id):
 
 def match_message_by_coin_keyword(gm_default_rule_dict, a_message):
     is_match_coin_keyword = False
+    if a_message.is_to_friend:
+        return is_match_coin_keyword
+
     message_chatroomname = a_message.talker
     message_text = str_to_unicode(a_message.real_content)
     message_text = message_text.upper()
