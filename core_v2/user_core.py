@@ -59,12 +59,12 @@ class UserLogin:
                 else:
                     logger.error(
                         ERR_USER_TOKEN_EXPIRED +
-                        u"code微信不认可，库中有code，但token已经过期. code: %s" % self.code)
+                        u"code微信不认可，库中有code，但token已经过期. code: %s. app: %s." % (self.code, self.app))
                     return ERR_USER_TOKEN_EXPIRED, None
             # 如果这个code在库中查不到
             else:
                 logger.error(ERR_USER_LOGIN_FAILED +
-                             u"code微信不认可，库中无该code. code: %s" % self.code)
+                             u"code微信不认可，库中无该code. code: %s. app: %s." % (self.code, self.app))
                 return ERR_USER_LOGIN_FAILED, None
         else:
             self._get_user_info_from_wechat()
@@ -137,7 +137,7 @@ class UserLogin:
                         logger.warning(u"老用户登录，token过期. user_id: %s" % self.now_user_info.client_id)
                         return ERR_USER_TOKEN_EXPIRED, None
                 else:
-                    logger.error(u"微信不认可open_id，未知用户. code: %s" % self.code)
+                    logger.error(u"微信不认可open_id，未知用户. code: %s. app: %s." % (self.code, self.app))
                     return ERR_USER_LOGIN_FAILED, None
 
     @staticmethod

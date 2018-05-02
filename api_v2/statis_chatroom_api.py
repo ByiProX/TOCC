@@ -148,7 +148,7 @@ def chatroom_statistics_chatroom():
     #   cache key=  dateType_clientId, cache value= {time():data}
     date_type = request.json.get('date_type', 1)
     run_hour = ''
-    table = 'statistics_chatroom_hour'
+    table = 'statistics_chatroom_daily'
     _timestamp = int(time.time())
     _where = []
     #if (date_type == 1):
@@ -158,7 +158,11 @@ def chatroom_statistics_chatroom():
     #        return make_response(SUCCESS, chatroom_list = [], last_update_time = last_update_time)
     #    _where = ["and", ["<=", "run_hour", run_hour], ["=", "client_id", user_info.client_id],
     #              ["in", "chatroomname", chatroomname_list]]
-    group_by = None
+    group_by = json.dumps({"_id": "$chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
+                           "in_count": {"$avg": "in_count"},
+                           "out_count": {"$avg": "out_count"},
+                           "memberchange_count": {"$sum": {"$multiply": ["$memberchange_count"]}},
+                           "active_count": {"$avg": "$active_count"}, "invo_count": {"$avg": "$invo_count"}})
     last_update_time = int(time.time()) - 600
     if (date_type == 1):
         timestamp_diff = getTimeStamp(0)
@@ -166,42 +170,29 @@ def chatroom_statistics_chatroom():
         _where = ["and", ["=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
                   ["in", "chatroomname", chatroomname_list]]
         table = 'statistics_chatroom_daily'
+        group_by = None
     elif (date_type == 2):
         timestamp_diff = getTimeStamp(1)
         # _where ={"date":timestamp_diff,"client_id":user_info.client_id}
         _where = ["and", ["=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
                   ["in", "chatroomname", chatroomname_list]]
         table = 'statistics_chatroom_daily'
+        group_by = None
     elif (date_type == 3):
         timestamp_diff = getTimeStamp(7)
         table = 'statistics_chatroom_daily'
         _where = ["and", [">=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
                   ["in", "chatroomname", chatroomname_list]]
-        group_by = json.dumps({"_id": "$chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
-                    "in_count": {"$sum": {"$multiply": ["$in_count"]}},
-                    "out_count": {"$sum": {"$multiply": ["$out_count"]}},
-                    "memberchange_count": {"$sum": {"$multiply": ["$memberchange_count"]}},
-                    "active_count": {"$avg": "$active_count"}, "invo_count": {"$avg": "$invo_count"}})
     elif (date_type == 4):
         timestamp_diff = getTimeStamp(30)
         table = 'statistics_chatroom_daily'
         _where = ["and", [">=", "date", timestamp_diff], ["=", "client_id", user_info.client_id],
                   ["in", "chatroomname", chatroomname_list]]
-        group_by = json.dumps({"_id": "$chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
-                    "in_count": {"$sum": {"$multiply": ["$in_count"]}},
-                    "out_count": {"$sum": {"$multiply": ["$out_count"]}},
-                    "memberchange_count": {"$sum": {"$multiply": ["$memberchange_count"]}},
-                    "active_count": {"$avg": "$active_count"}, "invo_count": {"$avg": "$invo_count"}})
     elif (date_type == 5):
         last_update_time = getTimeStamp(1) + 1200
-        table = 'statistics_chatroom_total'
+        table = 'statistics_chatroom_daily'
         # _where ={"client_id":user_info.client_id}
         _where = ["and", ["=", "client_id", user_info.client_id], ["in", "chatroomname", chatroomname_list]]
-        group_by = json.dumps({"_id": "$chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
-                    "in_count": {"$sum": {"$multiply": ["$in_count"]}},
-                    "out_count": {"$sum": {"$multiply": ["$out_count"]}},
-                    "memberchange_count": {"$sum": {"$multiply": ["$memberchange_count"]}},
-                    "active_count": {"$avg": "$active_count"}, "invo_count": {"$avg": "$invo_count"}})
 
     cache_key += '_st' + str(date_type) + '_' + str(user_info.client_id)
 
@@ -320,7 +311,7 @@ def get_non_active_chatroom_list():
     #   cache key=  dateType_clientId, cache value= {time():data}
     date_type = request.json.get('date_type', 1)
     run_hour = ''
-    table = 'statistics_chatroom_hour'
+    table = 'statistics_chatroom_daily'
     _timestamp = int(time.time())
     _where = []
     # if (date_type == 1):
@@ -358,7 +349,7 @@ def get_non_active_chatroom_list():
                   ["in", "chatroomname", chatroomname_list]]
     elif (date_type == 5):
         last_update_time = getTimeStamp(1) + 1200
-        table = 'statistics_chatroom_total'
+        table = 'statistics_chatroom_daily'
         # _where ={"client_id":user_info.client_id}
         _where = ["and", ["=", "client_id", user_info.client_id], ["in", "chatroomname", chatroomname_list]]
 
@@ -410,7 +401,7 @@ def get_active_chatroom_count():
     # date_type=5 全部，从total表取，cache10分钟
     #   cache key=  dateType_clientId, cache value= {time():data}
     date_type = request.json.get('date_type', 1)
-    table = 'statistics_chatroom_hour'
+    table = 'statistics_chatroom_daily'
     # if (date_type == 1):
     #    run_hour = int(time.strftime('%H', time.localtime(time.time())))
     #    last_update_time = _timestamp - 600
@@ -446,7 +437,7 @@ def get_active_chatroom_count():
                   ["in", "chatroomname", chatroomname_list]]
     elif (date_type == 5):
         last_update_time = getTimeStamp(1) + 1200
-        table = 'statistics_chatroom_total'
+        table = 'statistics_chatroom_daily'
         # _where ={"client_id":user_info.client_id}
         _where = ["and", ["=", "client_id", user_info.client_id], ["in", "chatroomname", chatroomname_list]]
 
