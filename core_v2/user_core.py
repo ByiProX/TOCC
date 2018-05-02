@@ -50,8 +50,8 @@ class UserLogin:
         """
         # 如果没有读取到open_id
         if self.open_id is None:
-            self.now_user_info = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where_dict({"code", self.code,
-                                                                                                         "app", self.app}))
+            self.now_user_info = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where_dict({"code": self.code,
+                                                                                                         "app": self.app}))
             # 如果这个code和上次code一样
             if self.now_user_info:
                 if datetime_to_timestamp_utc_8(datetime.now()) < self.now_user_info.token_expired_time:
@@ -70,8 +70,8 @@ class UserLogin:
             self._get_user_info_from_wechat()
             # 抓到了信息，那么所有信息都更新
             if self.user_info_up_to_date:
-                self.now_user_info = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where_dict({"open_id", self.open_id,
-                                                                                                             "app", self.app}))
+                self.now_user_info = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where_dict({"open_id": self.open_id,
+                                                                                                             "app": self.app}))
                 # 意味着之前有，现在也有
                 if self.now_user_info:
                     self.now_user_info.code = self.code
