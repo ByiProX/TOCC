@@ -479,7 +479,7 @@ def events_list():
     return response(result)
 
 
-def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False):
+def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False, auto_retry=True):
     print('Rewrite running')
     try:
         flag = True
@@ -515,6 +515,8 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False
             else:
                 logger.warning('Rewrite running failed because a_chatroom have not field!')
                 return 0
+            if not auto_retry:
+                flag = False
     except Exception as e:
         if not silent:
             raise e
@@ -887,11 +889,10 @@ def events_chatroomname_check():
         for i in chatroom_list:
             if i.index not in index_list:
                 index_list.append(i.index)
-                rewrite_events_chatroom(i.roomowner, i.chatroom_nickname, i.event_id, True)
+                rewrite_events_chatroom(i.roomowner, i.chatroom_nickname, i.event_id, True, False)
         time.sleep(300)
 
 
-# new_thread_4 = threading.Thread(target=events_chatroomname_check())
-# new_thread_4.setDaemon(True)
-# new_thread_4.start()
-
+new_thread_4 = threading.Thread(target=events_chatroomname_check)
+new_thread_4.setDaemon(True)
+new_thread_4.start()
