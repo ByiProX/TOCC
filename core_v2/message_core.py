@@ -519,5 +519,6 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
                           unicode(datetime.datetime.now())[:-7], str_to_unicode(speaker_nickname),
                           str_to_unicode(chatroom_nickname), str_to_unicode(sensitive_word),
                           str_to_unicode(new_a_message.real_content))
-    username = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'client_id': owner}))
+    username = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'client_id': owner})).username
+
     send_message(owner_bot_username, username, 1, message_content)
