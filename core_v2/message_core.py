@@ -434,6 +434,8 @@ def update_sensitive_word_list():
     {
         "chatroomname":[[sensitive_word_list,owner_list,rule_id],[sensitive_word_list,owner_list,rule_id],]
     }
+    More:
+    owner -> client_id
     """
     rule_list = BaseModel.fetch_all('sensitive_message_rule', '*', BaseModel.where_dict({'is_work': 1}))
     global SENSITIVE_WORD_RULE_DICT
@@ -457,6 +459,14 @@ def update_sensitive_word_list():
 
 
 def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_id):
+    """
+    Pass
+    :param sensitive_word:
+    :param new_a_message:
+    :param owner: client_id
+    :param rule_id:
+    :return:
+    """
     print("---add_and_send_sensitive_word_log---")
 
     def send_message(_bot_username, to, _type, content):
@@ -469,12 +479,11 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
                   }}
         resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
         if dict(resp.json())['err_code'] == -1:
-            logger.warning('event_chatroom_send_word ERROR,because bot dead!')
+            logger.warning('add_and_send_sensitive_word_log ERROR,because bot dead!')
 
     def get_owner_bot_username(_owner):
         # Get owner's bot_username
-        client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': _owner}))
-        _client_id = client_member.client_id
+        _client_id = _owner
         client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': _client_id}))
         __bot_username = client_bot_r.bot_username
         return __bot_username
@@ -510,5 +519,6 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
                           unicode(datetime.datetime.now())[:-7], str_to_unicode(speaker_nickname),
                           str_to_unicode(chatroom_nickname), str_to_unicode(sensitive_word),
                           str_to_unicode(new_a_message.real_content))
+    username = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'client_id': owner})).username
 
-    send_message(owner_bot_username, owner, 1, message_content)
+    send_message(owner_bot_username, username, 1, message_content)

@@ -16,7 +16,7 @@ def create_or_modify_sensitive_rule():
     # Check owner or return.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.username
+        owner = user_info.client_id
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
 
@@ -96,7 +96,7 @@ def sensitive_rule_list():
     # Check owner or return.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.username
+        owner = user_info.client_id
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
 
@@ -133,7 +133,7 @@ def sensitive_message_log():
     # Check owner or return.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.username
+        owner = user_info.client_id
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
 
