@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+__author__ = "Quentin"
+
 from flask import request
 from configs.config import main_api_v2, SUCCESS, ERR_WRONG_ITEM
 from core_v2.user_core import UserLogin
