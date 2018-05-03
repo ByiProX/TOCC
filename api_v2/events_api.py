@@ -474,12 +474,11 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False
     try:
         flag = True
         events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
-            {'roomowner': roomowner, 'chatroom_nickname': chatroom_nickname}))
+            {'roomowner': roomowner, 'chatroom_nickname': chatroom_nickname, 'chatroomname': 'default'}))
         if events_chatroom is None:
             print('Rewrite error, because events_chatroom does not exist.')
             return 0
-        if events_chatroom.chatroomname != 'default':
-            return 0
+
         # Get roomowner's bot_username
         client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': roomowner}))
         this_bot_username = client_bot_r.bot_username
@@ -493,7 +492,7 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False
                 events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
                     {'roomowner': roomowner, 'chatroom_nickname': chatroom_nickname}))
                 if events_chatroom is None:
-                    logger.warning('Rewrite running failed because events_chatroom have not field!')
+                    print('Rewrite running failed because events_chatroom have not field!')
                     return 0
                 events_chatroom.chatroomname = chatroomname
                 events_chatroom.save()
@@ -503,7 +502,7 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False
                 event.save()
                 flag = False
             else:
-                logger.warning('Rewrite running failed because a_chatroom have not field!')
+                print('Rewrite running failed because a_chatroom have not field!')
                 return 0
             if not auto_retry:
                 flag = False
