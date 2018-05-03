@@ -475,6 +475,9 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False
         flag = True
         events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
             {'roomowner': roomowner, 'chatroom_nickname': chatroom_nickname}))
+        if events_chatroom is None:
+            print('Rewrite error, because events_chatroom does not exist.')
+            return 0
         if events_chatroom.chatroomname != 'default':
             return 0
         # Get roomowner's bot_username
@@ -482,7 +485,6 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False
         this_bot_username = client_bot_r.bot_username
 
         while flag:
-            time.sleep(2)
             chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                            BaseModel.where_dict(
                                                {'roomowner': this_bot_username, 'nickname_real': chatroom_nickname}))
@@ -505,6 +507,7 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False
                 return 0
             if not auto_retry:
                 flag = False
+            time.sleep(2)
     except Exception as e:
         if not silent:
             raise e
