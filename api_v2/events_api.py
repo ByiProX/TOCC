@@ -21,7 +21,7 @@ def create_event_init():
     # Check owner or return.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.username
+        owner = user_info.client_id
     except AttributeError:
         return response({'err_code': -2, 'content': 'Wrong user.'})
     # Check if previous event is not finished.
@@ -73,8 +73,7 @@ def create_event():
     # Check owner or return.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.username
-        client_id = user_info.client_id
+        owner = user_info.client_id
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
 
@@ -138,11 +137,14 @@ def create_event():
         _bot_username = check_bot_username.bot_username
     else:
         return response({'err_code': -3, 'err_info': 'This client does not have bot.'})
+    # Get username for create chatroom.
+    _username = BaseModel.fetch_one('client_member', 'username',
+                                    BaseModel.where_dict({'client_id': event.owner})).username
     create_chatroom_dict = {
         'bot_username': _bot_username,
         'data': {
             'task': 'create_chatroom',
-            "owner": event.owner,
+            "owner": _username,
             "chatroom_nickname": chatroom_nickname
         }
     }
@@ -185,7 +187,7 @@ def have_same_start_name():
     # Check owner or return.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.username
+        owner = user_info.client_id
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
     start_name = request.json.get('start_name')
@@ -203,10 +205,9 @@ def have_same_start_name():
 def disable_events():
     # Check token and event_id.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
-    owner = user_info.username
+    owner = user_info.client_id
     event_id = request.json.get('event_id')
     # Search event.
-    # temp_check = db.session.query(Event).filter(Event.owner == owner, Event.id == event_id).first()
     temp_check = BaseModel.fetch_by_id('events', event_id)
     if temp_check is None:
         return response({'err_code': -2, 'content': 'Logical error.'})
@@ -282,13 +283,14 @@ def get_events_qrcode():
                 return response(result)
     """Do not have a chatroom < 100, create one."""
     event.enough_chatroom = 0
-    owner = event.owner
-    this_client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': owner}))
-    _client_id = this_client_member.client_id
+    _client_id = event.owner
+    this_username = BaseModel.fetch_one('client_member', 'username',
+                                        BaseModel.where_dict({'client_id': _client_id})).username
 
     event.save()
     start_name = event.start_name
-    new_thread = threading.Thread(target=create_chatroom_for_scan, args=(event_id, _client_id, owner, start_name))
+    new_thread = threading.Thread(target=create_chatroom_for_scan,
+                                  args=(event_id, _client_id, this_username, start_name))
     new_thread.setDaemon(True)
     new_thread.start()
 
@@ -303,7 +305,7 @@ def modify_event_word():
     # Check owner or return.
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.username
+        owner = user_info.client_id
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
 
@@ -420,7 +422,7 @@ def events_detail():
 def events_list():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
-        owner = user_info.username
+        owner = user_info.client_id
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
     events = BaseModel.fetch_all('events', '*', BaseModel.where_dict({"owner": owner}))
@@ -466,6 +468,9 @@ def events_list():
 
 def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False, auto_retry=True):
     print('Rewrite running')
+    """
+    roomowner -> client_id
+    """
     try:
         flag = True
         events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
@@ -473,16 +478,14 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False
         if events_chatroom.chatroomname != 'default':
             return 0
         # Get roomowner's bot_username
-        client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': roomowner}))
-        client_id = client_member.client_id
-        client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': client_id}))
-        bot_username = client_bot_r.bot_username
+        client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': roomowner}))
+        this_bot_username = client_bot_r.bot_username
 
         while flag:
             time.sleep(2)
             chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                            BaseModel.where_dict(
-                                               {'roomowner': bot_username, 'nickname_real': chatroom_nickname}))
+                                               {'roomowner': this_bot_username, 'nickname_real': chatroom_nickname}))
             if chatroom is not None:
                 chatroomname = chatroom.chatroomname
                 events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
@@ -509,7 +512,7 @@ def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False
     return ' '
 
 
-def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
+def create_chatroom_for_scan(event_id, __client_id, username, start_name):
     """create_chatroom_for_scan"""
     print("Running create_chatroom_for_scan")
     """Get previous index"""
@@ -536,7 +539,7 @@ def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
         'bot_username': __bot_username,
         'data': {
             'task': 'create_chatroom',
-            "owner": owner,
+            "owner": username,
             "chatroom_nickname": chatroom_nickname
         }
     }
@@ -552,10 +555,10 @@ def create_chatroom_for_scan(event_id, __client_id, owner, start_name):
     events_chatroom.chatroomname = 'default'
     events_chatroom.event_id = event_id
     events_chatroom.chatroom_nickname = chatroom_nickname
-    events_chatroom.roomowner = owner
+    events_chatroom.roomowner = __client_id
     events_chatroom.save()
     # Update chatroomname.
-    rewrite_events_chatroom(owner, chatroom_nickname, event_id)
+    rewrite_events_chatroom(username, chatroom_nickname, event_id)
     return ' '
 
 
@@ -619,8 +622,7 @@ def open_chatroom_name_protect():
                         now_chatroom_info = BaseModel.fetch_one('a_chatroom', '*',
                                                                 BaseModel.where_dict({'chatroomname': j.chatroomname}))
                         if now_chatroom_info.nickname_real != j.chatroom_nickname:
-                            this_client_id = BaseModel.fetch_one('client_member', '*',
-                                                                 BaseModel.where_dict({'username': j.roomowner}))
+                            this_client_id = j.roomowner
                             _bot_username = BaseModel.fetch_one('client_bot_r', '*',
                                                                 BaseModel.where_dict(
                                                                     {'client_id': this_client_id})).bot_username
@@ -679,8 +681,7 @@ def event_chatroom_send_word():
 
     def get_owner_bot_username(roomowner):
         # Get roomowner's bot_username
-        client_member = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': roomowner}))
-        _client_id = client_member.client_id
+        _client_id = roomowner
         client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': _client_id}))
         __bot_username = client_bot_r.bot_username
 
