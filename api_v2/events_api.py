@@ -468,7 +468,7 @@ def events_list():
 
 def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False, auto_retry=True):
     print('Rewrite running')
-    print(roomowner,chatroomname,event_id)
+    print(roomowner,chatroom_nickname,event_id)
     """
     roomowner -> client_id
     """
