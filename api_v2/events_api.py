@@ -467,11 +467,10 @@ def events_list():
 
 
 def rewrite_events_chatroom(roomowner, chatroom_nickname, event_id, silent=False, auto_retry=True):
-    print('Rewrite running')
-    print(roomowner,chatroom_nickname,event_id)
     """
     roomowner -> client_id
     """
+    print('Rewrite running')
     try:
         flag = True
         events_chatroom = BaseModel.fetch_one('events_chatroom', '*', BaseModel.where_dict(
