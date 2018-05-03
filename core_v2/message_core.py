@@ -354,6 +354,8 @@ def fetch_member_by_nickname(chatroomname, nickname, update_flag=True):
     if nickname:
         # 匹配 AMember
         a_member = BaseModel.fetch_one(Member, "*", where_clause=BaseModel.where_dict({"chatroomname": chatroomname}))
+        if not a_member:
+            return member
         members = a_member.members
         for member in members:
             # Mark 不处理匹配到多个的情况
