@@ -132,7 +132,7 @@ def create_event():
     # Create a chatroom for this event. index = start_index.
     chatroom_nickname = event.start_name + str(event.start_index) + u'群'
     check_bot_username = BaseModel.fetch_one('client_bot_r', '*',
-                                             BaseModel.where_dict({'client_id': client_id}))
+                                             BaseModel.where_dict({'client_id': owner}))
     if check_bot_username:
         _bot_username = check_bot_username.bot_username
     else:
