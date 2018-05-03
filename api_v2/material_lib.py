@@ -7,6 +7,9 @@ from core_v2.user_core import UserLogin
 from models_v2.base_model import BaseModel
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
+import logging
+
+logger = logging.getLogger('main')
 
 
 @main_api_v2.route("/get_material_lib_list", methods=['POST'])
@@ -45,3 +48,22 @@ def get_material_lib_list():
 
     except:
         return make_response(ERR_WRONG_ITEM)
+
+
+@main_api_v2.route("/delete_material_lib_list", methods=['POST'])
+def delete_material_lib_list():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    msg_id = request.json.get('msg_id')
+    if not msg_id:
+        logger.error(u"无法找到该message id: %s." % msg_id)
+        return make_response(ERR_WRONG_ITEM)
+
+    material = BaseModel.fetch_all('material_lib', '*',
+                                   where_clause=BaseModel.where_dict(
+                                       {"msg_id": msg_id}))[0]
+    material.is_deleted = 1
+    material.update()
