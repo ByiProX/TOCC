@@ -9,8 +9,8 @@ from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 
 
-@main_api_v2.route("/material_lib_list", methods=['POST'])
-def read_material_lib_list():
+@main_api_v2.route("/get_material_lib_list", methods=['POST'])
+def get_material_lib_list():
     verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
@@ -23,8 +23,10 @@ def read_material_lib_list():
 
     try:
         materials = BaseModel.fetch_all("material_lib", "*",
-                                        where_clause=BaseModel.where_dict(
-                                            {"client_id": client_id}),
+                                        where_clause=BaseModel.and_(
+                                            ["=", "client_id", client_id],
+                                            ["=", "is_deleted", 0],
+                                        ),
                                         page=page, pagesize=pagesize,
                                         order_by=BaseModel.order_by({"create_time": order_type}
                                                                     ))
