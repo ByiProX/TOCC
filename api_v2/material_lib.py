@@ -61,9 +61,11 @@ def delete_material_lib_list():
     if not msg_id:
         logger.error(u"无法找到该message id: %s." % msg_id)
         return make_response(ERR_WRONG_ITEM)
-
-    material = BaseModel.fetch_all('material_lib', '*',
-                                   where_clause=BaseModel.where_dict(
-                                       {"msg_id": msg_id}))[0]
-    material.is_deleted = 1
-    material.update()
+    try:
+        material = BaseModel.fetch_all('material_lib', '*',
+                                       where_clause=BaseModel.where_dict(
+                                           {"msg_id": msg_id}))[0]
+        material.is_deleted = 1
+        material.update()
+    except:
+        return make_response(ERR_WRONG_ITEM)
