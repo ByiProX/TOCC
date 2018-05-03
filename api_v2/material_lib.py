@@ -26,5 +26,18 @@ def read_material_lib_list():
                                         page=page, pagesize=pagesize,
                                         order_by=BaseModel.order_by({"create_time": order_type}
                                                                     ))
+        materials = [material.to_json_full() for material in materials]
+    except:
+        return make_response(ERR_WRONG_ITEM)
+
+    try:
+        for material in materials:
+            message_info = BaseModel.fetch_all('a_message', '*',
+                                               where_clause=BaseModel.where_dict(
+                                                   {"msg_local_id": material.get("msg_id")}
+                                               ))[0]
+            material["messages_info"] = message_info.to_json_full()
+            return make_response(SUCCESS, materials=materials)
+
     except:
         return make_response(ERR_WRONG_ITEM)
