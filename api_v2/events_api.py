@@ -767,13 +767,10 @@ def put_img_to_oss(file_name, data_as_string):
 
 
 def events_chatroomname_check():
-    index_list = []
     while True:
         chatroom_list = BaseModel.fetch_all('events_chatroom', '*', BaseModel.where_dict({'chatroomname': 'default'}))
         for i in chatroom_list:
-            if i.index not in index_list:
-                index_list.append(i.index)
-                rewrite_events_chatroom(i.roomowner, i.chatroom_nickname, i.event_id, True, False)
+            rewrite_events_chatroom(i.roomowner, i.chatroom_nickname, i.event_id, True, False)
         time.sleep(300)
 
 
