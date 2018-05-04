@@ -61,7 +61,7 @@ def get_group_zone_sources():
         client_quns_name_list = [talker]
 
     sources = BaseModel.fetch_all('a_message', ['bot_username', 'create_time',
-                                                'msg_local_id', 'real_type',
+                                                'msg_local_id', 'real_type', 'type',
                                                 'thumb_url', 'source_url',
                                                 'title', 'desc',
                                                 'size', 'duration',
