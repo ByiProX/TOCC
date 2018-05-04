@@ -67,8 +67,8 @@ def get_group_zone_sources():
                                                 'size', 'duration'],
                                   where_clause=BaseModel.and_(
                                       ['in', 'talker', client_quns_name_list],
-                                      ['=', 'real_type', source_type],
-                                      # ['in', 'type', [49, 3, 436207665, 1]],
+                                      # ['=', 'real_type', source_type],
+                                      ['in', 'type', [49, 3, 436207665, 1]],
                                       # ['in', 'type', [1]],
                                       ['like', 'real_content', keyword]),
                                   page=page, pagesize=pagesize,
