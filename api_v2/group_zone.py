@@ -93,7 +93,7 @@ def get_group_zone_sources():
 
             source["client_info"] = client_info.to_json()
 
-        print '::::::::::::::::::::::::::::aa'
+        print '::::::::::::::::::::::::::::bb'
         print sources
         return make_response(SUCCESS, sources=sources)
     except:
