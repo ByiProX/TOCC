@@ -74,7 +74,7 @@ def get_group_zone_sources():
                                   page=page, pagesize=pagesize,
                                   order_by=BaseModel.order_by({"create_time": order_type})
                                   )
-    sources = [source.to_json_full() for source in sources]
+    sources = [source.to_json() for source in sources]
 
     try:
         for source in sources:
@@ -84,7 +84,7 @@ def get_group_zone_sources():
                                                     {"chatroomname": source.get("talker")}
                                                 ))[0]
             # source.update(chatroom_info.to_json_full())
-            source["chatroom_info"] = chatroom_info.to_json_full()
+            source["chatroom_info"] = chatroom_info.to_json()
 
             client_info = BaseModel.fetch_all('a_contact', ['avatar_url', 'nickname', 'username'],
                                               where_clause=BaseModel.where_dict(
@@ -92,7 +92,7 @@ def get_group_zone_sources():
                                               ))[0]
 
             # source.update(client_info.to_json_full())
-            source["client_info"] = client_info.to_json_full()
+            source["client_info"] = client_info.to_json()
 
         return make_response(SUCCESS, sources=sources)
     except:
@@ -104,8 +104,8 @@ if __name__ == "__main__":
 
     messages = BaseModel.fetch_all("a_message", ['bot_username', 'create_time',
                                                  'msg_local_id', 'real_type',
-                                                 'thumb_url', 'source_url',
-                                                 'title', 'desc',
+                                                 # 'thumb_url', 'source_url',
+                                                 # 'title', 'desc',
                                                  'size', 'duration'],
                                    where_clause=
                                    BaseModel.and_(
@@ -118,7 +118,7 @@ if __name__ == "__main__":
                                    order_by=BaseModel.order_by({"create_time": "desc"})
                                    )
 
-    print messages[0].to_json_full()
+    print messages[0].to_json()
     # ms = BaseModel.fetch_all("a_message", "*",
     #                          # where_clause=
     #                          # BaseModel.and_(
@@ -178,11 +178,6 @@ if __name__ == "__main__":
     #                           where_clause=BaseModel.where_dict(
     #                               {"chatroomname": '8835992041@chatroom'}))[0].to_json_full()
     #
-    # BaseModel.fetch_all('a_message', '*',
-    #                     where_clause=BaseModel.where_dict(
-    #                         {"talker": client_qun.get('chatroomname')}),
-    #                     page=page, pagesize=pagesize,
-    #                     order_by=BaseModel.order_by({"create_time": order_type})
-    #                     )
+
 
     pass
