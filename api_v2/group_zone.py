@@ -64,7 +64,8 @@ def get_group_zone_sources():
                                                 'msg_local_id', 'real_type',
                                                 'thumb_url', 'source_url',
                                                 'title', 'desc',
-                                                'size', 'duration', 'talker'],
+                                                'size', 'duration',
+                                                'talker', 'real_talker'],
                                   where_clause=BaseModel.and_(
                                       ['in', 'talker', client_quns_name_list],
                                       # ['=', 'real_type', source_type],
