@@ -14,5 +14,6 @@ import member_api
 import script
 import sensitive_api
 import group_zone
+import material_lib
 
 api_str = ""

@@ -60,35 +60,44 @@ def get_group_zone_sources():
     else:
         client_quns_name_list = [talker]
 
-    sources = BaseModel.fetch_all('a_message', '*',
+    sources = BaseModel.fetch_all('a_message', ['bot_username', 'create_time',
+                                                'msg_local_id', 'real_type',
+                                                'thumb_url', 'source_url',
+                                                'title', 'desc',
+                                                'size', 'duration',
+                                                'talker', 'real_talker'],
                                   where_clause=BaseModel.and_(
                                       ['in', 'talker', client_quns_name_list],
                                       ['=', 'real_type', source_type],
+                                      # ['=', 'type', source_type],
                                       # ['in', 'type', [49, 3, 436207665, 1]],
-                                      # ['in', 'type', [1]],
                                       ['like', 'real_content', keyword]),
                                   page=page, pagesize=pagesize,
                                   order_by=BaseModel.order_by({"create_time": order_type})
                                   )
-    sources = [source.to_json_full() for source in sources]
+    sources = [source.to_json() for source in sources]
+    # print '::::::::::::::::::::::::::::aa', sources.__len__()
+    # print sources
 
     try:
         for source in sources:
-            chatroom_info = BaseModel.fetch_all('a_chatroom', '*',
+            chatroom_info = BaseModel.fetch_all('a_chatroom', ['avatar_url', 'chatroomname',
+                                                               'nickname', 'nickname_real',
+                                                               'real_talker', 'member_count'],
                                                 where_clause=BaseModel.where_dict(
                                                     {"chatroomname": source.get("talker")}
                                                 ))[0]
-            # source.update(chatroom_info.to_json_full())
-            source["chatroom_info"] = chatroom_info.to_json_full()
+            source["chatroom_info"] = chatroom_info.to_json()
 
-            client_info = BaseModel.fetch_all('a_contact', '*',
+            client_info = BaseModel.fetch_all('a_contact', ['avatar_url', 'nickname', 'username'],
                                               where_clause=BaseModel.where_dict(
                                                   {"username": source.get("real_talker")}
                                               ))[0]
 
-            # source.update(client_info.to_json_full())
-            source["client_info"] = client_info.to_json_full()
+            source["client_info"] = client_info.to_json()
 
+        # print '::::::::::::::::::::::::::::bb'
+        # print sources
         return make_response(SUCCESS, sources=sources)
     except:
         return make_response(ERR_WRONG_ITEM)
@@ -96,14 +105,12 @@ def get_group_zone_sources():
 
 if __name__ == "__main__":
     BaseModel.extract_from_json()
-    # messages = BaseModel.fetch_all("a_message", "*",
-    #                                where_clause=BaseModel.where_dict(
-    #                                    {"talker": '10973997003@chatroom',
-    #                                     'create_time': 1524804656000}),
-    #                                pagesize=10, page=1,
-    #                                order_by=BaseModel.order_by({"create_time": "desc"})
-    #                                )
-    messages = BaseModel.fetch_all("a_message", "*",
+
+    messages = BaseModel.fetch_all("a_message", ['bot_username', 'create_time',
+                                                 'msg_local_id', 'real_type',
+                                                 # 'thumb_url', 'source_url',
+                                                 # 'title', 'desc',
+                                                 'size', 'duration'],
                                    where_clause=
                                    BaseModel.and_(
                                        ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
@@ -114,42 +121,44 @@ if __name__ == "__main__":
                                    pagesize=10, page=1,
                                    order_by=BaseModel.order_by({"create_time": "desc"})
                                    )
-    ms = BaseModel.fetch_all("a_message", "*",
-                             # where_clause=
-                             # BaseModel.and_(
-                             #     ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
-                             #     ['like', 'real_content', ''],
-                             #     ['in', 'type', [49, 3]],
-                             # ),
 
-                             pagesize=10, page=1,
-                             order_by=BaseModel.order_by({"create_time": "desc"})
-                             )
-    ms = [m.to_json_full() for m in ms]
-
-    cs = BaseModel.fetch_all("client_member", "*",
-                             # where_clause=
-                             # BaseModel.and_(
-                             #     ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
-                             #     ['like', 'real_content', ''],
-                             #     ['in', 'type', [49, 3]],
-                             # ),
-
-                             pagesize=10, page=1,
-                             order_by=BaseModel.order_by({"create_time": "desc"})
-                             )
-    cs = [c.to_json_full() for c in cs]
+    print messages[0].to_json()
+    # ms = BaseModel.fetch_all("a_message", "*",
+    #                          # where_clause=
+    #                          # BaseModel.and_(
+    #                          #     ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
+    #                          #     ['like', 'real_content', ''],
+    #                          #     ['in', 'type', [49, 3]],
+    #                          # ),
+    #
+    #                          pagesize=10, page=1,
+    #                          order_by=BaseModel.order_by({"create_time": "desc"})
+    #                          )
+    # ms = [m.to_json_full() for m in ms]
+    #
+    # cs = BaseModel.fetch_all("client_member", "*",
+    #                          # where_clause=
+    #                          # BaseModel.and_(
+    #                          #     ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
+    #                          #     ['like', 'real_content', ''],
+    #                          #     ['in', 'type', [49, 3]],
+    #                          # ),
+    #
+    #                          pagesize=10, page=1,
+    #                          order_by=BaseModel.order_by({"create_time": "desc"})
+    #                          )
+    # cs = [c.to_json_full() for c in cs]
 
     # messages = BaseModel.fetch_all("a_message", "*")
     # print [message.to_json_full() for message in messages][2]
     # print messages[0].talker
     # print messages.__len__()
-    print [m['type'] for m in ms]
-    print cs.__len__()
-
-    for c in cs:
-        c.update({'a': 11111111111111111111111111111})
-    print cs.__len__()
+    # print [m['type'] for m in ms]
+    # print cs.__len__()
+    #
+    # for c in cs:
+    #     c.update({'a': 11111111111111111111111111111})
+    # print cs.__len__()
     # a = BaseModel.fetch_all("a_chatroom", "*", where_clause=BaseModel.where_dict({"chatroomname": '8835992041@chatroom'}))
     # print a[0].chatroomname
 
@@ -173,11 +182,6 @@ if __name__ == "__main__":
     #                           where_clause=BaseModel.where_dict(
     #                               {"chatroomname": '8835992041@chatroom'}))[0].to_json_full()
     #
-    # BaseModel.fetch_all('a_message', '*',
-    #                     where_clause=BaseModel.where_dict(
-    #                         {"talker": client_qun.get('chatroomname')}),
-    #                     page=page, pagesize=pagesize,
-    #                     order_by=BaseModel.order_by({"create_time": order_type})
-    #                     )
+
 
     pass
