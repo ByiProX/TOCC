@@ -69,3 +69,12 @@ def delete_material_lib_list():
         material.update()
     except:
         return make_response(ERR_WRONG_ITEM)
+
+
+if __name__ == "__main__":
+    BaseModel.extract_from_json()
+    s = BaseModel.fetch_one("a_contact", '*', where_clause=BaseModel.where_dict({'username': 'elfzsn0513'}))
+
+    s.province = "beijingbeijingbeijing"
+    s.update()
+    print s.nickname

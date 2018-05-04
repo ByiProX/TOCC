@@ -103,53 +103,53 @@ if __name__ == "__main__":
     #                                pagesize=10, page=1,
     #                                order_by=BaseModel.order_by({"create_time": "desc"})
     #                                )
-    messages = BaseModel.fetch_all("a_message", "*",
-                                   where_clause=
-                                   BaseModel.and_(
-                                       ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
-                                       ['like', 'real_content', ''],
-                                       ['in', 'type', [49, 3, 436207665, 1]],
-                                   ),
-
-                                   pagesize=10, page=1,
-                                   order_by=BaseModel.order_by({"create_time": "desc"})
-                                   )
-    ms = BaseModel.fetch_all("a_message", "*",
-                             # where_clause=
-                             # BaseModel.and_(
-                             #     ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
-                             #     ['like', 'real_content', ''],
-                             #     ['in', 'type', [49, 3]],
-                             # ),
-
-                             pagesize=10, page=1,
-                             order_by=BaseModel.order_by({"create_time": "desc"})
-                             )
-    ms = [m.to_json_full() for m in ms]
-
-    cs = BaseModel.fetch_all("client_member", "*",
-                             # where_clause=
-                             # BaseModel.and_(
-                             #     ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
-                             #     ['like', 'real_content', ''],
-                             #     ['in', 'type', [49, 3]],
-                             # ),
-
-                             pagesize=10, page=1,
-                             order_by=BaseModel.order_by({"create_time": "desc"})
-                             )
-    cs = [c.to_json_full() for c in cs]
+    # messages = BaseModel.fetch_all("a_message", "*",
+    #                                where_clause=
+    #                                BaseModel.and_(
+    #                                    ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
+    #                                    ['like', 'real_content', ''],
+    #                                    ['in', 'type', [49, 3, 436207665, 1]],
+    #                                ),
+    #
+    #                                pagesize=10, page=1,
+    #                                order_by=BaseModel.order_by({"create_time": "desc"})
+    #                                )
+    # ms = BaseModel.fetch_all("a_message", "*",
+    #                          # where_clause=
+    #                          # BaseModel.and_(
+    #                          #     ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
+    #                          #     ['like', 'real_content', ''],
+    #                          #     ['in', 'type', [49, 3]],
+    #                          # ),
+    #
+    #                          pagesize=10, page=1,
+    #                          order_by=BaseModel.order_by({"create_time": "desc"})
+    #                          )
+    # ms = [m.to_json_full() for m in ms]
+    #
+    # cs = BaseModel.fetch_all("client_member", "*",
+    #                          # where_clause=
+    #                          # BaseModel.and_(
+    #                          #     ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
+    #                          #     ['like', 'real_content', ''],
+    #                          #     ['in', 'type', [49, 3]],
+    #                          # ),
+    #
+    #                          pagesize=10, page=1,
+    #                          order_by=BaseModel.order_by({"create_time": "desc"})
+    #                          )
+    # cs = [c.to_json_full() for c in cs]
 
     # messages = BaseModel.fetch_all("a_message", "*")
     # print [message.to_json_full() for message in messages][2]
     # print messages[0].talker
     # print messages.__len__()
-    print [m['type'] for m in ms]
-    print cs.__len__()
-
-    for c in cs:
-        c.update({'a': 11111111111111111111111111111})
-    print cs.__len__()
+    # print [m['type'] for m in ms]
+    # print cs.__len__()
+    #
+    # for c in cs:
+    #     c.update({'a': 11111111111111111111111111111})
+    # print cs.__len__()
     # a = BaseModel.fetch_all("a_chatroom", "*", where_clause=BaseModel.where_dict({"chatroomname": '8835992041@chatroom'}))
     # print a[0].chatroomname
 
