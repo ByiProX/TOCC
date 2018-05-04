@@ -122,6 +122,13 @@ def get_task_detail(batch_send_task_id):
         message_json["task_send_type"] = content.get("type")
         message_json["text"] = content.get("content")
         message_json["seq"] = content.get("seq")
+        message_json["source_url"] = content.get("source_url")
+        message_json["thumb_url"] = content.get("thumb_url")
+        message_json["title"] = content.get("title")
+        message_json["desc"] = content.get("desc")
+        message_json["size"] = content.get("size")
+        message_json["duration"] = content.get("duration")
+        message_json["msg_id"] = content.get("msg_id")
         message_list.append(message_json)
 
     res["message_list"] = message_list
@@ -186,6 +193,13 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
         message_dict = dict()
         message_dict["type"] = message.get("send_type")
         message_dict["content"] = message.get("text")
+        message_dict["source_url"] = message.get("source_url")
+        message_dict["thumb_url"] = message.get("thumb_url")
+        message_dict["title"] = message.get("title")
+        message_dict["desc"] = message.get("desc")
+        message_dict["size"] = message.get("size")
+        message_dict["duration"] = message.get("duration")
+        message_dict["msg_id"] = message.get("msg_id")
         message_dict["seq"] = i
         content_list.append(message_dict)
     

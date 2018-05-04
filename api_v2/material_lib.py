@@ -47,7 +47,7 @@ def get_material_lib_list():
         for material in materials:
             message_info = BaseModel.fetch_all('a_message', '*',
                                                where_clause=BaseModel.where_dict(
-                                                   {"msg_local_id": material.get("msg_id")}
+                                                   {"msg_id": material.get("msg_id")}
                                                ))[0]
             material["messages_info"] = message_info.to_json_full()
             return make_response(SUCCESS, materials=materials)
