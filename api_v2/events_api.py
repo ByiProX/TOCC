@@ -4,6 +4,7 @@ import base64
 import threading
 
 import oss2
+import qrcode
 from flask import request
 
 from configs.config import main_api_v2 as app_test
@@ -22,6 +23,7 @@ def create_event_init():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
         owner = user_info.client_id
+        app_id = user_info.app
     except AttributeError:
         return response({'err_code': -2, 'content': 'Wrong user.'})
     # Check if previous event is not finished.
@@ -31,17 +33,16 @@ def create_event_init():
             if i.is_finish == 0:
                 previous_event = BaseModel.fetch_one('events', '*',
                                                      BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-                alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect'.format(
-                    previous_event.events_id)
+                # previous_event.events_id
+                _alive_qrcode_url = previous_event.alive_qrcode_url
                 event_id = previous_event.events_id
-                return response({'err_code': 0, 'content': {'alive_qrcode_url': alive_qrcode_url,
+                return response({'err_code': 0, 'content': {'alive_qrcode_url': _alive_qrcode_url,
                                                             'fission_word_1': '嗨！恭喜您即将获取「3点钟无眠区块链」听课资格！ 1.转发以上图片+文字到朋友圈或者100以上群聊中 2.不要屏蔽好友，转发后截图发至本群 3.转发后在本群等待听课即可 分享图片及内容如下 ↓↓↓↓↓ ',
                                                             'fission_word_2': '区块链行业大咖邀请您在4月28日收听课程【3点钟无眠区块链】 名额有限 快扫码入群吧！ ',
                                                             'condition_word': '3点种无眠区块链共同学习赚钱群，现在限时免费获取听课资格，满员开课哦！ ',
                                                             'pull_people_word': '3点种无眠区块链共同学习赚钱群，现在限时免费获取听课资格，满员开课哦！ ',
                                                             'event_id': event_id}})
     # Create base event.
-
     new_event = CM('events')
     new_event.owner = owner
     new_event.is_finish = 0
@@ -49,8 +50,7 @@ def create_event_init():
     # Add QRcode URL.
     previous_event = BaseModel.fetch_one('events', '*',
                                          BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-    alive_qrcode_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fchatroom.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect'.format(
-        previous_event.events_id)
+    alive_qrcode_url = put_qrcode_img_to_oss(previous_event.events_id, app_id)
     previous_event.alive_qrcode_url = alive_qrcode_url
     previous_event.save()
     # Static word.
@@ -771,6 +771,46 @@ def events_chatroomname_check():
         for i in chatroom_list:
             rewrite_events_chatroom(i.roomowner, i.chatroom_nickname, i.event_id, True, False)
         time.sleep(300)
+
+
+def put_qrcode_img_to_oss(event_id, app_id):
+    """py3_bytes == py2_str"""
+
+    def app_header_placeholder(_app_id):
+        app_config = {
+            'yaca': 'test2',
+            'zidou': 'zidouwx',
+        }
+        if _app_id in app_config:
+            return app_config[_app_id]
+        else:
+            raise Exception('app_header_placeholder Error!')
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    alive_qrcode_url = 'http://{}.xuanren360.com/chatroom.html?event_id={}'.format(app_header_placeholder(app_id),
+                                                                                   event_id)
+    qr.add_data(alive_qrcode_url)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    img.save('temp.png')
+
+    with open('temp.png', 'rb') as f:
+        _data_as_bytes = f.read()
+
+    img_name = str(event_id) + '_' + str(app_id) + '.png'
+
+    endpoint = 'oss-cn-beijing.aliyuncs.com'
+    auth = oss2.Auth('LTAIfwRTXLl6vMbX', 'kvSS9E4Ty7nvHHlGukaknJUtfICuen')
+    bucket = oss2.Bucket(auth, endpoint, 'ywbdqrcode')
+    bucket.put_object(img_name, _data_as_bytes)
+
+    return 'http://ywbdqrcode.oss-cn-beijing.aliyuncs.com/' + img_name
 
 
 new_thread_2 = threading.Thread(target=event_chatroom_send_word)
