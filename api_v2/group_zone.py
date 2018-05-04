@@ -83,7 +83,6 @@ def get_group_zone_sources():
                                                 where_clause=BaseModel.where_dict(
                                                     {"chatroomname": source.get("talker")}
                                                 ))[0]
-            # source.update(chatroom_info.to_json_full())
             source["chatroom_info"] = chatroom_info.to_json()
 
             client_info = BaseModel.fetch_all('a_contact', ['avatar_url', 'nickname', 'username'],
@@ -91,7 +90,6 @@ def get_group_zone_sources():
                                                   {"username": source.get("real_talker")}
                                               ))[0]
 
-            # source.update(client_info.to_json_full())
             source["client_info"] = client_info.to_json()
 
         return make_response(SUCCESS, sources=sources)
