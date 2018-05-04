@@ -75,6 +75,14 @@ class BaseModel(object):
         #     return None
         return self
 
+    def generate_create_time(self):
+        self.create_time = datetime.now()
+        return self
+
+    def generate_update_time(self):
+        self.update_time = datetime.now()
+        return self
+
     def to_json(self):
         # res_json = {__attr: __value for __attr, __value in self.attrs.iteritems()}
         # res_json = {attr: getattr(self, attr) for attr in self.attrs if getattr(self, attr) is not None}

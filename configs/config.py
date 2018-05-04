@@ -9,6 +9,9 @@ from decimal import Decimal
 from flask import Flask, Blueprint, Response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.datastructures import Headers
+from Crypto import Random
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_v1_5
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'ohayo'
@@ -169,9 +172,11 @@ APP_ZIDOU = "zidou"
 APP_INFO_DICT = dict()
 # APP_DICT = dict()
 APP_INFO_DICT[APP_YACA] = {"APP_ID": "wxc3bc48b4c40651fd", "APP_SECRET": "959f45dbf812a5685f85ff572e76a671", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
-APP_INFO_DICT[APP_ZIDOU] = {"APP_ID": "wxc8b40fcec9626528", "APP_SECRET": "6e63c26d856f7ecb1779f24ab2fc08f4", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc8b40fcec9626528&redirect_uri=http%3a%2f%2fzidouwx.xuanren360.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
+APP_INFO_DICT[APP_ZIDOU] = {"APP_ID": "wxbe0f84cc2b873c72", "APP_SECRET": "d6063862625c0a79719bc6167503f35e", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc8b40fcec9626528&redirect_uri=http%3a%2f%2fzidouwx.xuanren360.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
+# APP_INFO_DICT[APP_ZIDOUBOT] = {"APP_ID": "wxc8b40fcec9626528", "APP_SECRET": "6e63c26d856f7ecb1779f24ab2fc08f4", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc8b40fcec9626528&redirect_uri=http%3a%2f%2fzidouwx.xuanren360.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
 # APP_DICT['http://test2.xuanren360.com'] = APP_YACA
 # APP_DICT['http://www.xuanren360.com'] = APP_YACA
+
 
 # TODO 此处应换为新公众号的数值
 APP_ID = 'wxc3bc48b4c40651fd'
@@ -184,6 +189,11 @@ main_api_v2 = Blueprint('api_v2', __name__)
 PRODUCTION_CIRCLE_INTERVAL = 1
 CONSUMPTION_CIRCLE_INTERVAL = 1
 CRAWLER_CIRCLE_INTERVAL = 300
+
+with open('public.pem', "r") as f:
+    public_pem = f.read()
+with open('private.pem') as f:
+    private_pem = f.read()
 
 # 错误代码
 ERROR_CODE = dict()
