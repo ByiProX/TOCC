@@ -75,8 +75,8 @@ def get_group_zone_sources():
                                   order_by=BaseModel.order_by({"create_time": order_type})
                                   )
     sources = [source.to_json() for source in sources]
-    print '::::::::::::::::::::::::::::aa', sources.__len__()
-    print sources
+    # print '::::::::::::::::::::::::::::aa', sources.__len__()
+    # print sources
 
     try:
         for source in sources:
@@ -95,8 +95,8 @@ def get_group_zone_sources():
 
             source["client_info"] = client_info.to_json()
 
-        print '::::::::::::::::::::::::::::bb'
-        print sources
+        # print '::::::::::::::::::::::::::::bb'
+        # print sources
         return make_response(SUCCESS, sources=sources)
     except:
         return make_response(ERR_WRONG_ITEM)
