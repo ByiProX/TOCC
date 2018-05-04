@@ -69,12 +69,13 @@ def get_group_zone_sources():
                                       ['in', 'talker', client_quns_name_list],
                                       # ['=', 'real_type', source_type],
                                       ['in', 'type', [49, 3, 436207665, 1]],
-                                      # ['in', 'type', [1]],
                                       ['like', 'real_content', keyword]),
                                   page=page, pagesize=pagesize,
                                   order_by=BaseModel.order_by({"create_time": order_type})
                                   )
     sources = [source.to_json() for source in sources]
+    print '::::::::::::::::::::::::::::aa'
+    print sources
 
     try:
         for source in sources:
@@ -92,6 +93,8 @@ def get_group_zone_sources():
 
             source["client_info"] = client_info.to_json()
 
+        print '::::::::::::::::::::::::::::aa'
+        print sources
         return make_response(SUCCESS, sources=sources)
     except:
         return make_response(ERR_WRONG_ITEM)
