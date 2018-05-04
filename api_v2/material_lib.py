@@ -20,6 +20,8 @@ def get_material_lib_list():
         return make_response(status)
 
     client_id = user_info.client_id
+    # client_id = request.json.get('client_id')
+
     page = request.json.get('page')
     pagesize = request.json.get('pagesize')
     order_type = request.json.get('order_type', 'desc')
@@ -31,9 +33,13 @@ def get_material_lib_list():
                                             ["=", "is_deleted", 0],
                                         ),
                                         page=page, pagesize=pagesize,
-                                        order_by=BaseModel.order_by({"create_time": order_type}
-                                                                    ))
+                                        order_by=BaseModel.order_by({"create_time": order_type})
+                                        )
         materials = [material.to_json_full() for material in materials]
+
+        # print materials
+        # #
+        # return make_response(SUCCESS, materials=materials)
     except:
         return make_response(ERR_WRONG_ITEM)
 
@@ -73,8 +79,19 @@ def delete_material_lib_list():
 
 if __name__ == "__main__":
     BaseModel.extract_from_json()
-    s = BaseModel.fetch_one("a_contact", '*', where_clause=BaseModel.where_dict({'username': 'elfzsn0513'}))
+    s = BaseModel.fetch_one("a_contact", '*', where_clause=BaseModel.where_dict({'username': 'wxid_wn6vt38xa97c22'}))
 
     s.province = "beijingbeijingbeijing"
-    s.update()
-    print s.nickname
+    s.delete()
+
+    print s.to_json_full().__len__()
+    print s.to_json().__len__()
+
+    ms = BaseModel.fetch_all("material_lib", "*",
+                             where_clause=BaseModel.and_(
+                                 # ["=", "client_id", 5],
+                                 ["=", "is_deleted", 0],
+                             ),
+                             page=1, pagesize=2)
+
+    print ms.__len__()
