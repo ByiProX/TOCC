@@ -795,9 +795,9 @@ def put_qrcode_img_to_oss(event_id, app_id):
     alive_qrcode_url = 'http://{}.xuanren360.com/chatroom.html?event_id={}'.format(app_header_placeholder(app_id),
                                                                                    event_id)
     qr.add_data(alive_qrcode_url)
-    qr.make(fit=True)
+    qr.make()
 
-    img = qr.make_image(fill_color="black", back_color="white")
+    img = qr.make_image()
     img.save('temp.png')
 
     with open('temp.png', 'rb') as f:
