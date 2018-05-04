@@ -64,7 +64,7 @@ def get_group_zone_sources():
                                                 'msg_local_id', 'real_type',
                                                 'thumb_url', 'source_url',
                                                 'title', 'desc',
-                                                'size', 'duration'],
+                                                'size', 'duration', 'talker'],
                                   where_clause=BaseModel.and_(
                                       ['in', 'talker', client_quns_name_list],
                                       # ['=', 'real_type', source_type],
@@ -74,13 +74,14 @@ def get_group_zone_sources():
                                   order_by=BaseModel.order_by({"create_time": order_type})
                                   )
     sources = [source.to_json() for source in sources]
-    print '::::::::::::::::::::::::::::aa'
+    print '::::::::::::::::::::::::::::aa', sources.__len__()
     print sources
 
     try:
         for source in sources:
             chatroom_info = BaseModel.fetch_all('a_chatroom', ['avatar_url', 'chatroomname',
-                                                               'member_count', 'nickname'],
+                                                               'member_count', 'nickname_real',
+                                                               'real_talker'],
                                                 where_clause=BaseModel.where_dict(
                                                     {"chatroomname": source.get("talker")}
                                                 ))[0]
