@@ -444,14 +444,14 @@ def _get_a_balanced_bot(user_info):
     :return:
     """
 
-    old_bot_username = None
-    old_user_info = BaseModel.fetch_one(UserInfo, "*", where_clause = BaseModel.where_dict({"nick_name": user_info.nick_name}))
-    if old_user_info:
+    old_bot_username_list = list()
+    old_user_info_list = BaseModel.fetch_all(UserInfo, "*", where_clause = BaseModel.where_dict({"nick_name": user_info.nick_name}))
+    for old_user_info in old_user_info_list:
         logger.info(u"该用户之前可能有注册信息, nick_name: %s." % user_info.nick_name)
         ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": old_user_info.client_id}))
         if ubr:
-            logger.info(u"该用户之前绑定过机器人.")
-            old_bot_username = ubr.bot_username
+            logger.info(u"该用户之前绑定过机器人. bot_username: %s." % ubr.bot_username)
+            old_bot_username_list.append(ubr.bot_username)
 
     response = requests.get(ANDROID_SERVER_URL_BOT_STATUS)
     bot_status = json.loads(response.content)
@@ -459,9 +459,7 @@ def _get_a_balanced_bot(user_info):
         logger.error(u"没有 alive 的机器人.")
         return None
 
-    alive_bot_username_list = [key for key, value in bot_status.iteritems() if value is True]
-    if old_bot_username:
-        alive_bot_username_list.remove(old_bot_username)
+    alive_bot_username_list = [key for key, value in bot_status.iteritems() if value is True and key not in old_bot_username_list]
     bot_info = None
     times = 10
     while bot_info is None and times and alive_bot_username_list:

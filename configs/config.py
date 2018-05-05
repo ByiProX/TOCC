@@ -191,11 +191,6 @@ PRODUCTION_CIRCLE_INTERVAL = 1
 CONSUMPTION_CIRCLE_INTERVAL = 1
 CRAWLER_CIRCLE_INTERVAL = 300
 
-with open('public.pem', "r") as f:
-    public_pem = f.read()
-with open('private.pem') as f:
-    private_pem = f.read()
-
 # 错误代码
 ERROR_CODE = dict()
 # 正常

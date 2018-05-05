@@ -5,12 +5,15 @@ import logging
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 
-from configs.config import public_pem, private_pem
 from utils.u_model_json_str import unicode_to_str
 from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
 
+with open('public.pem', "r") as f:
+    public_pem = f.read()
+with open('private.pem') as f:
+    private_pem = f.read()
 
 def rsa_encrypt(text):
     rsakey = RSA.importKey(public_pem)  # 导入读取到的公钥
