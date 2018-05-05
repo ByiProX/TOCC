@@ -47,7 +47,7 @@ def android_add_friend():
 
 
 @main_api_v2.route('/android/add_material', methods=['POST'])
-def android_add_friend():
+def android_add_material():
     verify_json()
     # user_nickname = request.json.get('user_nickname')
     # user_username = request.json.get('user_username')
