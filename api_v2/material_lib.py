@@ -54,7 +54,7 @@ def get_material_lib_list():
                                                where_clause=BaseModel.where_dict(
                                                    {"msg_id": material.get("msg_id")}
                                                ))[0]
-            material["messages_info"] = message_info.to_json_full()
+            material.update(message_info.to_json_full())
             return make_response(SUCCESS, materials=materials)
 
     except:
