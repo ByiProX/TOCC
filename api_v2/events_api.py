@@ -798,7 +798,7 @@ def put_qrcode_img_to_oss(event_id, app_id):
         box_size=10,
         border=4,
     )
-    alive_qrcode_url = 'http://{}/chatroom.html?event_id={}'.format(app_header_placeholder(app_id),event_id)
+    alive_qrcode_url = 'http://{}/chatroom.html?event_id={}'.format(app_header_placeholder(app_id), event_id)
     qr.add_data(alive_qrcode_url)
     qr.make()
 
@@ -817,10 +817,13 @@ def put_qrcode_img_to_oss(event_id, app_id):
 
     return 'http://ywbdqrcode.oss-cn-beijing.aliyuncs.com/' + img_name
 
+
 def read_qrcode_img(qrcode_img_url):
     """Lilei require base64-encoding."""
     img_real = requests.get(qrcode_img_url).content
-    return base64.b64encode(img_real)
+    result = 'data:image/png;base64,' + img_real
+    return base64.b64encode(result)
+
 
 new_thread_2 = threading.Thread(target=event_chatroom_send_word)
 new_thread_2.setDaemon(True)
