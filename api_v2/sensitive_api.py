@@ -118,8 +118,10 @@ def sensitive_rule_list():
                 return response({'err_code': -3, 'err_info': 'Invalid chatroomname:%s' % chatroomname})
             avatar_url = this_chatroom.avatar_url
             nickname = this_chatroom.nickname_real
+            nickname_default = this_chatroom.nickname_default
             chatroom_list.append(
-                {'avatar_url': avatar_url, 'chatroomname': chatroomname, 'chatroom_nickname': nickname})
+                {'avatar_url': avatar_url, 'chatroomname': chatroomname, 'chatroom_nickname': nickname,
+                 'chatroom_nickname_default': nickname_default})
 
         sensitive_word_list = rule.sensitive_word_list
         content.append({'rule_id': rule_id, 'chatroom_list': chatroom_list, 'sensitive_word_list': sensitive_word_list})
@@ -195,6 +197,7 @@ def sensitive_message_log():
 
         chatroom_nickname = this_chatroom.nickname_real if this_chatroom else 'None'
         chatroom_avatar_url = this_chatroom.avatar_url if this_chatroom else 'None'
+        chatroom_nickname_default = this_chatroom.nickname_default if this_chatroom else ''
         _chatroom_memberlist = this_chatroom.memberlist if this_chatroom else None
         if _chatroom_memberlist:
             chatroom_membercount = len(_chatroom_memberlist.split(';'))
@@ -210,6 +213,7 @@ def sensitive_message_log():
                 'content': log.content,
                 'chatroom': {
                     'chatroom_nickname': chatroom_nickname,
+                    'chatroom_nickname_default': chatroom_nickname_default,
                     'avatar_url': chatroom_avatar_url,
                     'chatroomname': log.chatroomname,
                     'member_count': chatroom_membercount,
