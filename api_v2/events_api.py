@@ -254,8 +254,11 @@ def get_events_qrcode():
     for i in chatroom_list:
         chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
         if chatroom_info:
+            nickname = chatroom_info.nickname_real
+            if nickname == '':
+                nickname = chatroom_info.nickname_default
             chatroom_dict[i.chatroomname] = (
-                len(chatroom_info.memberlist.split(';')), chatroom_info.qrcode, chatroom_info.nickname_real,
+                len(chatroom_info.memberlist.split(';')), chatroom_info.qrcode, nickname,
                 chatroom_info.avatar_url,
                 chatroom_info.update_time)
             chatroomname_list.append(i.chatroomname)
@@ -394,7 +397,10 @@ def events_detail():
         if i.chatroomname != 'default':
             this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                                 BaseModel.where_dict({'chatroomname': i.chatroomname}))
-            _result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': i.chatroom_nickname,
+            real_nickname = this_chatroom.nickname
+            if real_nickname == '':
+                real_nickname = this_chatroom.nickname_default
+            _result = {'chatroom_avatar': this_chatroom.avatar_url, 'chatroom_name': real_nickname,
                        'chatroom_status': 1,
                        'chatroom_member_num': len(this_chatroom.memberlist.split(';'))}
             content_chatrooms.append(_result)
