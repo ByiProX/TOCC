@@ -76,14 +76,14 @@ def get_group_zone_sources():
                                   order_by=BaseModel.order_by({"create_time": order_type})
                                   )
     sources = [source.to_json() for source in sources]
-    # print '::::::::::::::::::::::::::::aa', sources.__len__()
-    # print sources
+    print '::::::::::::::::::::::::::::aa', sources.__len__()
+    print sources
 
     try:
         for source in sources:
             chatroom_info = BaseModel.fetch_all('a_chatroom', ['avatar_url', 'chatroomname',
                                                                'nickname', 'nickname_real',
-                                                               'real_talker', 'member_count'],
+                                                               'member_count'],
                                                 where_clause=BaseModel.where_dict(
                                                     {"chatroomname": source.get("talker")}
                                                 ))[0]
@@ -108,14 +108,14 @@ if __name__ == "__main__":
 
     messages = BaseModel.fetch_all("a_message", ['bot_username', 'create_time',
                                                  'msg_local_id', 'real_type',
-                                                 # 'thumb_url', 'source_url',
-                                                 # 'title', 'desc',
+                                                 'thumb_url', 'source_url',
+                                                 'title', 'desc',
                                                  'size', 'duration'],
                                    where_clause=
                                    BaseModel.and_(
                                        ['in', 'talker', ['10973997003@chatroom', '5663579223@chatroom']],
                                        ['like', 'real_content', ''],
-                                       ['in', 'type', [49, 3, 436207665, 1]],
+                                       ['=', 'real_type', 1],
                                    ),
 
                                    pagesize=10, page=1,

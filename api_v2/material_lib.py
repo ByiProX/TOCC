@@ -20,17 +20,22 @@ def get_material_lib_list():
         return make_response(status)
 
     client_id = user_info.client_id
-    # client_id = request.json.get('client_id')
-
+    real_type = request.json.get('real_type', 0)
     page = request.json.get('page')
     pagesize = request.json.get('pagesize')
     order_type = request.json.get('order_type', 'desc')
+
+    if not real_type:
+        real_type_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    else:
+        real_type_list = [real_type]
 
     try:
         materials = BaseModel.fetch_all("material_lib", "*",
                                         where_clause=BaseModel.and_(
                                             ["=", "client_id", client_id],
                                             ["=", "is_deleted", 0],
+                                            ["in", "real_type", real_type_list]
                                         ),
                                         page=page, pagesize=pagesize,
                                         order_by=BaseModel.order_by({"create_time": order_type})
@@ -45,11 +50,15 @@ def get_material_lib_list():
 
     try:
         for material in materials:
-            message_info = BaseModel.fetch_all('a_message', '*',
+            message_info = BaseModel.fetch_all('a_message',
+                                               ["source_url", "img_path",
+                                                "thumb_url", "title",
+                                                "desc", "size",
+                                                "duration", "real_content"],
                                                where_clause=BaseModel.where_dict(
                                                    {"msg_id": material.get("msg_id")}
                                                ))[0]
-            material["messages_info"] = message_info.to_json_full()
+            material.update(message_info.to_json())
             return make_response(SUCCESS, materials=materials)
 
     except:
