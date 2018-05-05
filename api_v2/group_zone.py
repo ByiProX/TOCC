@@ -42,6 +42,7 @@ def get_group_zone_sources():
         return make_response(status)
 
     client_id = user_info.client_id
+    print client_id
     talker = request.json.get('chatroomname')
     keyword = request.json.get('keyword', '')
     source_type = request.json.get('source_type')
@@ -60,6 +61,13 @@ def get_group_zone_sources():
     else:
         client_quns_name_list = [talker]
 
+    if not source_type:
+        source_type_list = [i for i in range(1, 7)]
+    else:
+        source_type_list = [source_type]
+
+
+    print ":::::", client_quns_name_list
     sources = BaseModel.fetch_all('a_message', ['bot_username', 'create_time',
                                                 'msg_local_id', 'real_type',
                                                 'thumb_url', 'source_url',
@@ -68,7 +76,7 @@ def get_group_zone_sources():
                                                 'talker', 'real_talker'],
                                   where_clause=BaseModel.and_(
                                       ['in', 'talker', client_quns_name_list],
-                                      ['=', 'real_type', source_type],
+                                      ['in', 'real_type', source_type_list],
                                       # ['=', 'type', source_type],
                                       # ['in', 'type', [49, 3, 436207665, 1]],
                                       ['like', 'real_content', keyword]),
@@ -76,8 +84,8 @@ def get_group_zone_sources():
                                   order_by=BaseModel.order_by({"create_time": order_type})
                                   )
     sources = [source.to_json() for source in sources]
-    print '::::::::::::::::::::::::::::aa', sources.__len__()
-    print sources
+    # print '::::::::::::::::::::::::::::aa', sources.__len__()
+    # print sources
 
     try:
         for source in sources:
@@ -123,6 +131,7 @@ if __name__ == "__main__":
                                    )
 
     print messages[0].to_json()
+
     # ms = BaseModel.fetch_all("a_message", "*",
     #                          # where_clause=
     #                          # BaseModel.and_(
@@ -169,8 +178,9 @@ if __name__ == "__main__":
     # #                                pagesize=1, page=1)
     #
     # print hasattr(messages[0], 'update')
-    # client_quns = BaseModel.fetch_all("client_qun_r", "*",
-    #                                   where_clause=BaseModel.where_dict({"client_id": 2}))
+    client_quns = BaseModel.fetch_all("client_qun_r", "*",
+                                      where_clause=BaseModel.where_dict({"client_id": 2}))
+
     #
     # chatroom_info = BaseModel.fetch_one("a_chatroom", "*",
     #                                     where_clause=BaseModel.where_dict({"chatroomname": "8835992041@chatroom"}))
