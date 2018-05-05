@@ -36,7 +36,7 @@ def create_event_init():
                 # previous_event.events_id
                 _alive_qrcode_url = previous_event.alive_qrcode_url
                 event_id = previous_event.events_id
-                return response({'err_code': 0, 'content': {'alive_qrcode_url': _alive_qrcode_url,
+                return response({'err_code': 0, 'content': {'alive_qrcode_url': read_qrcode_img(_alive_qrcode_url),
                                                             'fission_word_1': '嗨！恭喜您即将获取「3点钟无眠区块链」听课资格！ 1.转发以上图片+文字到朋友圈或者100以上群聊中 2.不要屏蔽好友，转发后截图发至本群 3.转发后在本群等待听课即可 分享图片及内容如下 ↓↓↓↓↓ ',
                                                             'fission_word_2': '区块链行业大咖邀请您在4月28日收听课程【3点钟无眠区块链】 名额有限 快扫码入群吧！ ',
                                                             'condition_word': '3点种无眠区块链共同学习赚钱群，现在限时免费获取听课资格，满员开课哦！ ',
@@ -60,7 +60,7 @@ def create_event_init():
         'condition_word': '3点种无眠区块链共同学习赚钱群，现在限时免费获取听课资格，满员开课哦！ ',
         'pull_people_word': '3点种无眠区块链共同学习赚钱群，现在限时免费获取听课资格，满员开课哦！ ',
         'event_id': previous_event.events_id,
-        'alive_qrcode_url': alive_qrcode_url,
+        'alive_qrcode_url': read_qrcode_img(alive_qrcode_url),
     }
 
     return response({'err_code': 0, 'content': result})
@@ -97,7 +97,7 @@ def create_event():
     # Fix time is float.
     full_event_paras_as_dict['start_time'] = int(full_event_paras_as_dict['start_time'])
     full_event_paras_as_dict['end_time'] = int(full_event_paras_as_dict['end_time'])
-    # Check if same start_name already exist.        
+    # Check if same start_name already exist.
     check_events_start_name = BaseModel.fetch_all('events', '*', BaseModel.where_dict({'owner': owner}))
     for i in check_events_start_name:
         if i.start_name == full_event_paras_as_dict['start_name']:
@@ -373,7 +373,7 @@ def events_detail():
     content = {}
     content.update({'poster_raw': event.poster_raw,
                     'event_title': event.event_title,
-                    'alive_qrcode_url': event.alive_qrcode_url,
+                    'alive_qrcode_url': read_qrcode_img(event.alive_qrcode_url),
                     'need_fission': event.need_fission,
                     'need_condition_word': event.need_condition_word,
                     'need_pull_people': event.need_pull_people,
@@ -784,8 +784,8 @@ def put_qrcode_img_to_oss(event_id, app_id):
 
     def app_header_placeholder(_app_id):
         app_config = {
-            'yaca': 'test2',
-            'zidou': 'zidouwx',
+            'yaca': 'test2.xuanren360.com',
+            'zidou': 'wx.zidouchat.com',
         }
         if _app_id in app_config:
             return app_config[_app_id]
@@ -798,8 +798,7 @@ def put_qrcode_img_to_oss(event_id, app_id):
         box_size=10,
         border=4,
     )
-    alive_qrcode_url = 'http://{}.xuanren360.com/chatroom.html?event_id={}'.format(app_header_placeholder(app_id),
-                                                                                   event_id)
+    alive_qrcode_url = 'http://{}/chatroom.html?event_id={}'.format(app_header_placeholder(app_id), event_id)
     qr.add_data(alive_qrcode_url)
     qr.make()
 
@@ -817,6 +816,12 @@ def put_qrcode_img_to_oss(event_id, app_id):
     bucket.put_object(img_name, _data_as_bytes)
 
     return 'http://ywbdqrcode.oss-cn-beijing.aliyuncs.com/' + img_name
+
+
+def read_qrcode_img(qrcode_img_url):
+    """Lilei require base64-encoding."""
+    img_real = requests.get(qrcode_img_url).content
+    return 'data:image/png;base64,' + base64.b64encode(img_real)
 
 
 new_thread_2 = threading.Thread(target=event_chatroom_send_word)
