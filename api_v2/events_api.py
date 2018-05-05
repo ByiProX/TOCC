@@ -821,8 +821,7 @@ def put_qrcode_img_to_oss(event_id, app_id):
 def read_qrcode_img(qrcode_img_url):
     """Lilei require base64-encoding."""
     img_real = requests.get(qrcode_img_url).content
-    result = 'data:image/png;base64,' + img_real
-    return base64.b64encode(result)
+    return 'data:image/png;base64,' + base64.b64encode(img_real)
 
 
 new_thread_2 = threading.Thread(target=event_chatroom_send_word)
