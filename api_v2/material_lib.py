@@ -50,11 +50,15 @@ def get_material_lib_list():
 
     try:
         for material in materials:
-            message_info = BaseModel.fetch_all('a_message', '*',
+            message_info = BaseModel.fetch_all('a_message',
+                                               ["source_url", "img_path",
+                                                "thumb_url", "title",
+                                                "desc", "size",
+                                                "duration", "real_content"],
                                                where_clause=BaseModel.where_dict(
                                                    {"msg_id": material.get("msg_id")}
                                                ))[0]
-            material.update(message_info.to_json_full())
+            material.update(message_info.to_json())
             return make_response(SUCCESS, materials=materials)
 
     except:
