@@ -68,8 +68,8 @@ def get_group_zone_sources():
                                                 'talker', 'real_talker'],
                                   where_clause=BaseModel.and_(
                                       ['in', 'talker', client_quns_name_list],
-                                      ['=', 'real_type', source_type],
-                                      # ['=', 'type', source_type],
+                                      # ['=', 'real_type', source_type],
+                                      ['=', 'type', source_type],
                                       # ['in', 'type', [49, 3, 436207665, 1]],
                                       ['like', 'real_content', keyword]),
                                   page=page, pagesize=pagesize,
@@ -83,7 +83,7 @@ def get_group_zone_sources():
         for source in sources:
             chatroom_info = BaseModel.fetch_all('a_chatroom', ['avatar_url', 'chatroomname',
                                                                'nickname', 'nickname_real',
-                                                               'real_talker', 'member_count'],
+                                                               'member_count'],
                                                 where_clause=BaseModel.where_dict(
                                                     {"chatroomname": source.get("talker")}
                                                 ))[0]
