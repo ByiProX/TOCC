@@ -119,9 +119,10 @@ def sensitive_rule_list():
             avatar_url = this_chatroom.avatar_url
             nickname = this_chatroom.nickname_real
             nickname_default = this_chatroom.nickname_default
+            if nickname == '':
+                nickname = nickname_default
             chatroom_list.append(
-                {'avatar_url': avatar_url, 'chatroomname': chatroomname, 'chatroom_nickname': nickname,
-                 'chatroom_nickname_default': nickname_default})
+                {'avatar_url': avatar_url, 'chatroomname': chatroomname, 'chatroom_nickname': nickname})
 
         sensitive_word_list = rule.sensitive_word_list
         content.append({'rule_id': rule_id, 'chatroom_list': chatroom_list, 'sensitive_word_list': sensitive_word_list})
@@ -203,6 +204,8 @@ def sensitive_message_log():
             chatroom_membercount = len(_chatroom_memberlist.split(';'))
         else:
             chatroom_membercount = 0
+        if chatroom_nickname == '':
+            chatroom_nickname = chatroom_nickname_default
 
         speaker_nickname = this_speaker.nickname if this_speaker else 'None'
         speaker_avatar_url = this_speaker.avatar_url if this_speaker else 'None'
@@ -213,7 +216,6 @@ def sensitive_message_log():
                 'content': log.content,
                 'chatroom': {
                     'chatroom_nickname': chatroom_nickname,
-                    'chatroom_nickname_default': chatroom_nickname_default,
                     'avatar_url': chatroom_avatar_url,
                     'chatroomname': log.chatroomname,
                     'member_count': chatroom_membercount,
