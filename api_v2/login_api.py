@@ -300,7 +300,6 @@ def app_set_robot_nickname():
             print resp
             if dict(resp.json())['err_code'] == -1:
                 logger.warning('add_and_send_sensitive_word_log ERROR,because bot dead!')
-                continue
     except:
         logger.warning('rename bot_nickname error!')
 
