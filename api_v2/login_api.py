@@ -282,7 +282,7 @@ def app_set_robot_nickname():
     status = set_bot_name(bot_id, bot_nickname, user_info)
 
     ## Add by Quentin below
-    bot_username = BaseModel.fetch_by_id("bot_info", bot_id)
+    bot_username = BaseModel.fetch_by_id("bot_info", bot_id).username
     client_id = user_info.client_id
     client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                       where_clause=BaseModel.and_(
@@ -339,3 +339,4 @@ if __name__ == "__main__":
     #
     # print [client_qun.chatroomname for client_qun in client_quns]
     # print client_quns[0].chatroomname
+
