@@ -26,7 +26,7 @@ def get_material_lib_list():
     order_type = request.json.get('order_type', 'desc')
 
     if not real_type:
-        real_type_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        real_type_list = [i for i in range(1, 7)]
     else:
         real_type_list = [real_type]
 
@@ -82,6 +82,7 @@ def delete_material_lib_list():
                                            {"msg_id": msg_id}))[0]
         material.is_deleted = 1
         material.update()
+        return make_response(SUCCESS)
     except:
         return make_response(ERR_WRONG_ITEM)
 

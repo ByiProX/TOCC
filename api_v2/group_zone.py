@@ -79,7 +79,7 @@ def get_group_zone_sources():
                                       ['in', 'real_type', source_type_list],
                                       # ['=', 'type', source_type],
                                       # ['in', 'type', [49, 3, 436207665, 1]],
-                                      ['like', 'real_content', keyword]),
+                                      ['like', 'title', keyword]),
                                   page=page, pagesize=pagesize,
                                   order_by=BaseModel.order_by({"create_time": order_type})
                                   )
