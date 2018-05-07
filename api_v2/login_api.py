@@ -296,7 +296,7 @@ def app_set_robot_nickname():
                 logger.warning('add_and_send_sensitive_word_log ERROR,because bot dead!')
                 continue
     except:
-        return make_response(ERR_WRONG_ITEM)
+        logger.warning('rename bot_nickname error!')
 
     return make_response(status)
 
