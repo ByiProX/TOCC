@@ -289,8 +289,8 @@ def app_set_robot_nickname():
 
     try:
         for client_qun in client_quns:
-            data = {'bot_username': bot_id,
-                    'data': {
+            data = {"bot_username": bot_id,
+                    "data": {
                         "task": "update_self_displayname",
                         "chatroomname": client_qun.chatroomname,
                         "selfdisplayname": bot_nickname
@@ -323,10 +323,10 @@ if __name__ == "__main__":
                             ))
     print s.__len__()
 
-    client_quns = BaseModel.fetch_all("client_qun_r", "*",
-                                      where_clause=BaseModel.and_(
-                                          ["=", "client_id", 11],
-                                      ))
-
-    print [client_qun.chatroomname for client_qun in client_quns]
-    print client_quns[0].chatroomname
+    # client_quns = BaseModel.fetch_all("client_qun_r", "*",
+    #                                   where_clause=BaseModel.and_(
+    #                                       ["=", "client_id", 11],
+    #                                   ))
+    #
+    # print [client_qun.chatroomname for client_qun in client_quns]
+    # print client_quns[0].chatroomname
