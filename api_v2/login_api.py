@@ -282,7 +282,7 @@ def app_set_robot_nickname():
     status = set_bot_name(bot_id, bot_nickname, user_info)
 
     ## Add by Quentin below
-    bot_username = BaseModel.fetch_by_id("bot_info", bot_id).username
+    bot_username = BaseModel.fetch_by_id("bot_info", bot_id)
     client_id = user_info.client_id
     client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                       where_clause=BaseModel.and_(
@@ -296,7 +296,7 @@ def app_set_robot_nickname():
                 "chatroomname": client_qun.chatroomname,
                 "selfdisplayname": bot_nickname
             }
-            send_ws_to_android(bot_username, data)
+            send_ws_to_android(bot_username.username, data)
             # data = {"bot_username": bot_id,
             #         "data": {
             #             "task": "update_self_displayname",
@@ -340,3 +340,5 @@ if __name__ == "__main__":
     # print [client_qun.chatroomname for client_qun in client_quns]
     # print client_quns[0].chatroomname
 
+    a = BaseModel.fetch_by_id("bot_info", "5adaacc6f5d7e26589658e0a")
+    print a.username
