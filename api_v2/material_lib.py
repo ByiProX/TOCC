@@ -82,6 +82,7 @@ def delete_material_lib_list():
                                            {"msg_id": msg_id}))[0]
         material.is_deleted = 1
         material.update()
+        return make_response(SUCCESS)
     except:
         return make_response(ERR_WRONG_ITEM)
 
