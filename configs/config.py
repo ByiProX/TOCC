@@ -396,6 +396,7 @@ Coin = "coin"
 Wallet = "wallet"
 BatchSendTask = "batch_send_task"
 Client = "client"
+MaterialLib = "material_lib"
 
 SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
 
