@@ -6,6 +6,7 @@ import random
 import cStringIO
 import qrcode
 import requests
+from send_msg import send_ws_to_android
 from models_v2.base_model import BaseModel
 
 from flask import request
@@ -260,7 +261,6 @@ def app_set_robot_nickname():
     """
     用于设置rebot名字
     """
-    print "::::::::::::::set robot nickname"
     verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
@@ -284,22 +284,29 @@ def app_set_robot_nickname():
                                       where_clause=BaseModel.and_(
                                           ["=", "client_id", client_id],
                                       ))
-    print "::::::::::::::::"
-    print client_quns.__len__()
 
     try:
         for client_qun in client_quns:
-            data = {"bot_username": bot_id,
-                    "data": {
-                        "task": "update_self_displayname",
-                        "chatroomname": client_qun.chatroomname,
-                        "selfdisplayname": bot_nickname
-                    }}
-            resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=data)
-            print "::::::::::::::"
-            print resp
-            if dict(resp.json())['err_code'] == -1:
-                logger.warning('add_and_send_sensitive_word_log ERROR,because bot dead!')
+            data = {
+                "task": "update_self_displayname",
+                "chatroomname": client_qun.chatroomname,
+                "selfdisplayname": bot_nickname
+            }
+            send_ws_to_android(bot_id, data)
+            # data = {"bot_username": bot_id,
+            #         "data": {
+            #             "task": "update_self_displayname",
+            #             "chatroomname": client_qun.chatroomname,
+            #             "selfdisplayname": bot_nickname
+            #         }}
+
+
+
+            # resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=data)
+            # print "::::::::::::::"
+            # print resp
+            # if dict(resp.json())['err_code'] == -1:
+            #     logger.warning('add_and_send_sensitive_word_log ERROR,because bot dead!')
     except:
         logger.warning('rename bot_nickname error!')
 
