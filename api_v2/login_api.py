@@ -260,6 +260,7 @@ def app_set_robot_nickname():
     """
     用于设置rebot名字
     """
+    print "::::::::::::::set robot nickname"
     verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
