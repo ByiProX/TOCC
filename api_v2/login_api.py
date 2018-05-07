@@ -6,8 +6,8 @@ import random
 import cStringIO
 import qrcode
 import requests
-from send_msg import send_ws_to_android
 from models_v2.base_model import BaseModel
+from core_v2.send_msg import send_ws_to_android
 
 from flask import request
 
@@ -299,8 +299,6 @@ def app_set_robot_nickname():
             #             "chatroomname": client_qun.chatroomname,
             #             "selfdisplayname": bot_nickname
             #         }}
-
-
 
             # resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=data)
             # print "::::::::::::::"
