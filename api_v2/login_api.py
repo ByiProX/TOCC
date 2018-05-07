@@ -291,7 +291,7 @@ def app_set_robot_nickname():
                         "chatroomname": client_qun.chatroomname,
                         "selfdisplayname": bot_nickname,
                     }}
-            resp = requests.post('http://ardsvr.xuanren360.com/android/update_self_displayname', json=data)
+            resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=data)
             if dict(resp.json())['err_code'] == -1:
                 logger.warning('add_and_send_sensitive_word_log ERROR,because bot dead!')
                 continue
