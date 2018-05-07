@@ -267,6 +267,9 @@ def app_set_robot_nickname():
         return make_response(status)
 
     bot_id = request.json.get('bot_id')
+    print ":::::::::"
+    print bot_id
+
     if not bot_id:
         return make_response(ERR_INVALID_PARAMS)
 
@@ -279,6 +282,7 @@ def app_set_robot_nickname():
     status = set_bot_name(bot_id, bot_nickname, user_info)
 
     ## Add by Quentin below
+    bot_username = BaseModel.fetch_by_id("bot_info", bot_id)
     client_id = user_info.client_id
     client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                       where_clause=BaseModel.and_(
@@ -292,7 +296,7 @@ def app_set_robot_nickname():
                 "chatroomname": client_qun.chatroomname,
                 "selfdisplayname": bot_nickname
             }
-            send_ws_to_android(bot_id, data)
+            send_ws_to_android(bot_username, data)
             # data = {"bot_username": bot_id,
             #         "data": {
             #             "task": "update_self_displayname",
