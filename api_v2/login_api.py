@@ -284,6 +284,9 @@ def app_set_robot_nickname():
                                       where_clause=BaseModel.and_(
                                           ["=", "client_id", client_id],
                                       ))
+    print "::::::::::::::::"
+    print client_quns.__len__()
+
     try:
         for client_qun in client_quns:
             data = {'bot_username': bot_id,
@@ -293,6 +296,8 @@ def app_set_robot_nickname():
                         "selfdisplayname": bot_nickname,
                     }}
             resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=data)
+            print "::::::::::::::"
+            print resp
             if dict(resp.json())['err_code'] == -1:
                 logger.warning('add_and_send_sensitive_word_log ERROR,because bot dead!')
                 continue
