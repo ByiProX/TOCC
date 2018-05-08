@@ -838,13 +838,15 @@ new_thread_4.start()
 
 
 @app_test.route('/_events_client', methods=['POST'])
+@para_check('psw', 'username', 'app', 'available_chatroom')
 def create_events_client():
     """Create a new client account, or add a previous client's available_chatroom and modify its remarks.
     app : yaca, zidou
 
     Return current client info.
+
+    NOT USED NOW.
     """
-    print(request.json)
     if request.json.get('psw') != '2beMeZyoWHLT6m':
         return ''
     username = request.json.get('username')
@@ -868,8 +870,7 @@ def create_events_client():
         new_client.remark = request.json.get('remark') if request.json.get('remark') else ''
         new_client.is_work = 1
         success = new_client.save()
-        print('111111111')
-        return response({'data': 1, 'success': success})
+        return response({'data': new_client.to_json(), 'success': success})
     else:
         # Modify.
         previous_client.available_chatroom = int(request.json.get('available_chatroom'))
@@ -877,7 +878,62 @@ def create_events_client():
         if request.json.get('remark') is not None:
             previous_client.remark = request.json.get('remark')
         success = previous_client.save()
-        print('111111111')
-        return response({'1': previous_client.to_json(), '2': previous_client.to_json_full(), 'success': success})
+        return response({'data': previous_client.to_json(), 'success': success})
 
 
+@app_test.route('/_events_create', methods=['POST'])
+@para_check('username', 'app', 'start_name', 'check')
+def create_events():
+    """Create events use my hand.
+    app : yaca, zidou
+    """
+    event_paras_required = ('client_id', 'start_name', 'event_title', 'create_time', 'poster_url', 'alive_qrcode_url')
+    event_paras_int = (
+        'chatroom_name_protect', 'chatroom_repeat_protect', 'need_fission', 'need_condition_word', 'is_work')
+    event_paras_string = ('need_pull_people', 'fission_word_1', 'fission_word_2', 'condition_word', 'pull_people_word')
+    extra_paras = ('username', 'app', 'check')
+
+    all_event_paras = dict()
+
+    # Check paras.
+    if request.json.get('psw') != '2beMeZyoWHLT6m':
+        return ''
+    for i in request.json:
+        if i not in event_paras_required and i not in event_paras_int and i not in event_paras_string and i not in extra_paras:
+            return response({'err_para': i})
+        elif i in extra_paras:
+            pass
+        else:
+            all_event_paras[i] = request.json.get(i)
+
+    # Get client_id.
+    username = request.json.get('username')
+    app = request.json.get('app')
+    client = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': username, 'app': app}))
+    if client is None:
+        return 'Can not find this client'
+    client_id = client.client_id
+
+    # Set values.
+    all_event_paras['client_id'] = client_id
+    all_event_paras['start_name'] = request.json.get('start_name')
+    all_event_paras['event_title'] = all_event_paras['start_name']
+    all_event_paras['create_time'] = int(time.time())
+    all_event_paras['poster_url'] = ''
+    all_event_paras['alive_qrcode_url'] = ''
+
+    for i in event_paras_int:
+        all_event_paras.setdefault(i, 1)
+    for i in event_paras_string:
+        all_event_paras.setdefault(i, '')
+
+    new_event = CM('events_')
+    new_event.from_json(all_event_paras)
+
+    if request.json.get('check'):
+        return response(new_event.to_json())
+
+    # Check chatroom enough or return.
+    pass
+
+    return ''
