@@ -862,14 +862,14 @@ def create_events_client():
         new_client = CM('events_client')
         new_client.create_time = int(time.time())
         new_client.update_time = int(time.time())
-        new_client.available_chatroom = request.json.get('available_chatroom')
+        new_client.available_chatroom = int(request.json.get('available_chatroom'))
         new_client.remark = request.json.get('remark') if request.json.get('remark') else ''
         new_client.is_work = 1
         new_client.save()
         return response(new_client.to_json())
     else:
         # Modify.
-        previous_client.available_chatroom = request.json.get('available_chatroom')
+        previous_client.available_chatroom = int(request.json.get('available_chatroom'))
         previous_client.update_time = int(time.time())
         if request.json.get('remark') is not None:
             previous_client.remark = request.json.get('remark')
