@@ -860,6 +860,7 @@ def create_events_client():
     if previous_client is None:
         # Create.
         new_client = CM('events_client')
+        new_client.client_id = client_id
         new_client.create_time = int(time.time())
         new_client.update_time = int(time.time())
         new_client.available_chatroom = int(request.json.get('available_chatroom'))
