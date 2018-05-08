@@ -26,7 +26,7 @@ def get_material_lib_list():
     order_type = request.json.get('order_type', 'desc')
 
     if not real_type:
-        real_type_list = [i for i in range(1, 7)]
+        real_type_list = [i for i in range(1, 8)]
     else:
         real_type_list = [real_type]
 

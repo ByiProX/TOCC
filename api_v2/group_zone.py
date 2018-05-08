@@ -19,7 +19,7 @@ def get_group_zone_list():
         client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                           where_clause=BaseModel.where_dict({"client_id": client_id}))
         client_quns = [client_qun.to_json_full() for client_qun in client_quns]
-    except:
+    except Exception:
         return make_response(ERR_WRONG_ITEM)
 
     try:
@@ -28,10 +28,37 @@ def get_group_zone_list():
                                                 where_clause=BaseModel.where_dict(
                                                     {"chatroomname": client_qun.get('chatroomname')}))[0]
             client_qun.update(chatroom_info.to_json_full())
-    except:
+    except Exception:
         return make_response(ERR_WRONG_ITEM)
 
     return make_response(SUCCESS, client_quns_list=client_quns)
+
+
+@main_api_v2.route("/count_sources", methods=['POST'])
+def get_count_sources():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    client_id = user_info.client_id
+    try:
+        client_quns = BaseModel.fetch_all("client_qun_r", "*",
+                                          where_clause=BaseModel.where_dict({"client_id": client_id}))
+    except Exception:
+        return make_response(ERR_WRONG_ITEM)
+
+    client_quns_name_list = [client_qun.chatroomname for client_qun in client_quns]
+
+    count_dict = dict()
+    for i in range(2, 8):
+        num = BaseModel.count("a_message",
+                              where_clause=BaseModel.and_(
+                                  ["in", "talker", client_quns_name_list],
+                                  ["=", "real_type", i]))
+        count_dict[i] = num
+
+    return make_response(SUCCESS, count=count_dict)
 
 
 @main_api_v2.route("/group_zone_sources", methods=['POST'])
@@ -53,7 +80,7 @@ def get_group_zone_sources():
     try:
         client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                           where_clause=BaseModel.where_dict({"client_id": client_id}))
-    except:
+    except Exception:
         return make_response(ERR_WRONG_ITEM)
 
     if not talker:
@@ -62,10 +89,9 @@ def get_group_zone_sources():
         client_quns_name_list = [talker]
 
     if not source_type:
-        source_type_list = [i for i in range(1, 7)]
+        source_type_list = [i for i in range(2, 8)]
     else:
         source_type_list = [source_type]
-
 
     print ":::::", client_quns_name_list
     sources = BaseModel.fetch_all('a_message', ['bot_username', 'create_time',
@@ -107,12 +133,19 @@ def get_group_zone_sources():
         # print '::::::::::::::::::::::::::::bb'
         # print sources
         return make_response(SUCCESS, sources=sources)
-    except:
+    except Exception:
         return make_response(ERR_WRONG_ITEM)
 
 
 if __name__ == "__main__":
     BaseModel.extract_from_json()
+
+    c = BaseModel.count("a_message",
+                        where_clause=BaseModel.and_(
+                            ["in", "talker", ['10973997003@chatroom', '5663579223@chatroom']],
+                            ["=", "real_type", 5]))
+
+    print c
 
     messages = BaseModel.fetch_all("a_message", ['bot_username', 'create_time',
                                                  'msg_local_id', 'real_type',
@@ -130,7 +163,7 @@ if __name__ == "__main__":
                                    order_by=BaseModel.order_by({"create_time": "desc"})
                                    )
 
-    print messages[0].to_json()
+    # print messages[0].to_json()
 
     # ms = BaseModel.fetch_all("a_message", "*",
     #                          # where_clause=
@@ -178,8 +211,8 @@ if __name__ == "__main__":
     # #                                pagesize=1, page=1)
     #
     # print hasattr(messages[0], 'update')
-    client_quns = BaseModel.fetch_all("client_qun_r", "*",
-                                      where_clause=BaseModel.where_dict({"client_id": 2}))
+    # client_quns = BaseModel.fetch_all("client_qun_r", "*",
+    #                                   where_clause=BaseModel.where_dict({"client_id": 2}))
 
     #
     # chatroom_info = BaseModel.fetch_one("a_chatroom", "*",
@@ -192,6 +225,5 @@ if __name__ == "__main__":
     #                           where_clause=BaseModel.where_dict(
     #                               {"chatroomname": '8835992041@chatroom'}))[0].to_json_full()
     #
-
 
     pass
