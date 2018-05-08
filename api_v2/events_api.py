@@ -837,7 +837,7 @@ new_thread_4.setDaemon(True)
 new_thread_4.start()
 
 
-@app_test.route('/_events_client')
+@app_test.route('/_events_client', methods=['POST'])
 @para_check('psw', 'username', 'app', 'available_chatroom')
 def create_events_client():
     """Create a new client account, or add a previous client's available_chatroom and modify its remarks.
