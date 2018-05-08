@@ -937,4 +937,8 @@ def create_events():
     # Check chatroom enough or return.
     pass
 
-    return ''
+    # Save its alive_qrcode_url.
+    success_1 = new_event.save()
+    new_event.alive_qrcode_url = put_qrcode_img_to_oss(new_event.events__id, request.json.get('app'))
+    success_2 = new_event.save()
+    return response({'success_1': success_1, 'success_2': success_2}.update(new_event.from_json()))
