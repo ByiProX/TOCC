@@ -874,4 +874,4 @@ def create_events_client():
         if request.json.get('remark') is not None:
             previous_client.remark = request.json.get('remark')
         previous_client.save()
-        return response(previous_client.to_json())
+        return response({'1': previous_client.to_json(), '2': previous_client.to_json_full()})
