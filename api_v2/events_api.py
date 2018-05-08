@@ -838,7 +838,6 @@ new_thread_4.start()
 
 
 @app_test.route('/_events_client', methods=['POST'])
-@para_check('psw', 'username', 'app', 'available_chatroom')
 def create_events_client():
     """Create a new client account, or add a previous client's available_chatroom and modify its remarks.
     app : yaca, zidou
@@ -879,3 +878,5 @@ def create_events_client():
         success = previous_client.save()
         print('111111111')
         return response({'1': previous_client.to_json(), '2': previous_client.to_json_full(), 'success': success})
+
+
