@@ -915,6 +915,12 @@ def create_events():
         return 'Can not find this client'
     client_id = client.client_id
 
+    # Check same event.
+    previous_event = BaseModel.fetch_one('events_', '*', BaseModel.where_dict(
+        {'client_id': client_id, 'start_name': request.json.get('start_name')}))
+    if previous_event is not None:
+        return response({'err_info': 'same_event', 'event': previous_event.to_json()})
+
     # Set values.
     all_event_paras['client_id'] = client_id
     all_event_paras['start_name'] = request.json.get('start_name')
