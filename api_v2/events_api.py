@@ -941,4 +941,4 @@ def create_events():
     success_1 = new_event.save()
     new_event.alive_qrcode_url = put_qrcode_img_to_oss(new_event.events__id, request.json.get('app'))
     success_2 = new_event.save()
-    return response({'success_1': success_1, 'success_2': success_2}.update(new_event.from_json()))
+    return response({'success_1': success_1, 'success_2': success_2, 'event': new_event.to_json()})
