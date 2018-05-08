@@ -109,6 +109,7 @@ def get_group_zone_sources():
                                   page=page, pagesize=pagesize,
                                   order_by=BaseModel.order_by({"create_time": order_type})
                                   )
+    total_count = len(sources)
     sources = [source.to_json() for source in sources]
     # print '::::::::::::::::::::::::::::aa', sources.__len__()
     # print sources
@@ -132,7 +133,7 @@ def get_group_zone_sources():
 
         # print '::::::::::::::::::::::::::::bb'
         # print sources
-        return make_response(SUCCESS, sources=sources)
+        return make_response(SUCCESS, sources=sources, total_count=total_count)
     except Exception:
         return make_response(ERR_WRONG_ITEM)
 
