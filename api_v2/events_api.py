@@ -844,6 +844,7 @@ def create_events_client():
 
     Return current client info.
     """
+    print(request.json)
     if request.json.get('psw') != '2beMeZyoWHLT6m':
         return ''
     username = request.json.get('username')
