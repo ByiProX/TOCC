@@ -889,8 +889,10 @@ def create_events():
     """
     event_paras_required = ('client_id', 'start_name', 'event_title', 'create_time', 'poster_url', 'alive_qrcode_url')
     event_paras_int = (
-        'chatroom_name_protect', 'chatroom_repeat_protect', 'need_fission', 'need_condition_word', 'is_work')
-    event_paras_string = ('need_pull_people', 'fission_word_1', 'fission_word_2', 'condition_word', 'pull_people_word')
+        'chatroom_name_protect', 'chatroom_repeat_protect', 'need_fission', 'is_work',
+        'need_pull_people')
+    event_paras_string = (
+        'need_condition_word', 'fission_word_1', 'fission_word_2', 'condition_word', 'pull_people_word')
     extra_paras = ('username', 'app', 'check', 'psw')
 
     all_event_paras = dict()
