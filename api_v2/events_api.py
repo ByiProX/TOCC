@@ -855,7 +855,8 @@ def create_events_client():
         return 'Can not find this client'
     client_id = client.client_id
 
-    previous_client = BaseModel.fetch_one('events_client', '*', BaseModel.where_dict({'client_id': client_id}))
+    previous_client = BaseModel.fetch_one('events_client', '*',
+                                          BaseModel.where_dict({'client_id': client_id, 'is_work': 1}))
 
     if previous_client is None:
         # Create.
@@ -867,7 +868,7 @@ def create_events_client():
         new_client.remark = request.json.get('remark') if request.json.get('remark') else ''
         new_client.is_work = 1
         success = new_client.save()
-        return response({'data': new_client.to_json(), 'success': success})
+        return response({'data': 1, 'success': success})
     else:
         # Modify.
         previous_client.available_chatroom = int(request.json.get('available_chatroom'))
