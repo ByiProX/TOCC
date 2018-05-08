@@ -835,3 +835,43 @@ new_thread_3.start()
 new_thread_4 = threading.Thread(target=events_chatroomname_check)
 new_thread_4.setDaemon(True)
 new_thread_4.start()
+
+
+@app_test.route('/_events_client')
+@para_check('psw', 'username', 'app', 'available_chatroom')
+def create_events_client():
+    """Create a new client account, or add a previous client's available_chatroom and modify its remarks.
+    app : yaca, zidou
+
+    Return current client info.
+    """
+    if request.json.get('psw') != '2beMeZyoWHLT6m':
+        return ''
+    username = request.json.get('username')
+    app = request.json.get('app')
+
+    client = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'username': username, 'app': app}))
+    if client is None:
+        return 'Can not find this client'
+    client_id = client.client_id
+
+    previous_client = BaseModel.fetch_one('events_client', '*', BaseModel.where_dict({'client_id': client_id}))
+
+    if previous_client is None:
+        # Create.
+        new_client = CM('events_client')
+        new_client.create_time = int(time.time())
+        new_client.update_time = int(time.time())
+        new_client.available_chatroom = request.json.get('available_chatroom')
+        new_client.remark = request.json.get('remark') if request.json.get('remark') else ''
+        new_client.is_work = 1
+        new_client.save()
+        return response(new_client.to_json())
+    else:
+        # Modify.
+        previous_client.available_chatroom = request.json.get('available_chatroom')
+        previous_client.update_time = int(time.time())
+        if request.json.get('remark') is not None:
+            previous_client.remark = request.json.get('remark')
+        previous_client.save()
+        return response(previous_client.to_json())
