@@ -267,6 +267,9 @@ def app_set_robot_nickname():
         return make_response(status)
 
     bot_id = request.json.get('bot_id')
+    print ":::::::::"
+    print bot_id
+
     if not bot_id:
         return make_response(ERR_INVALID_PARAMS)
 
@@ -279,6 +282,7 @@ def app_set_robot_nickname():
     status = set_bot_name(bot_id, bot_nickname, user_info)
 
     ## Add by Quentin below
+    bot_username = BaseModel.fetch_by_id("bot_info", bot_id)
     client_id = user_info.client_id
     client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                       where_clause=BaseModel.and_(
@@ -292,19 +296,7 @@ def app_set_robot_nickname():
                 "chatroomname": client_qun.chatroomname,
                 "selfdisplayname": bot_nickname
             }
-            send_ws_to_android(bot_id, data)
-            # data = {"bot_username": bot_id,
-            #         "data": {
-            #             "task": "update_self_displayname",
-            #             "chatroomname": client_qun.chatroomname,
-            #             "selfdisplayname": bot_nickname
-            #         }}
-
-            # resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=data)
-            # print "::::::::::::::"
-            # print resp
-            # if dict(resp.json())['err_code'] == -1:
-            #     logger.warning('add_and_send_sensitive_word_log ERROR,because bot dead!')
+            send_ws_to_android(bot_username.username, data)
     except:
         logger.warning('rename bot_nickname error!')
 
@@ -335,3 +327,6 @@ if __name__ == "__main__":
     #
     # print [client_qun.chatroomname for client_qun in client_quns]
     # print client_quns[0].chatroomname
+
+    a = BaseModel.fetch_by_id("bot_info", "5adaacc6f5d7e26589658e0a")
+    print a.username
