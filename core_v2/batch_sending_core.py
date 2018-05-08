@@ -165,7 +165,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     for chatroomname in chatroom_list:
         chatroom = BaseModel.fetch_one(Chatroom, "member_count",
                                        where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
-        if not chatroom:
+        if not chatroom or chatroom.member_count is None:
             logger.error(u"未获取到 chatroom, chatroomname: %s." % chatroomname)
             continue
         member_count += chatroom.member_count
