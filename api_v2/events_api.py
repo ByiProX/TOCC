@@ -868,6 +868,7 @@ def create_events_client():
         new_client.remark = request.json.get('remark') if request.json.get('remark') else ''
         new_client.is_work = 1
         success = new_client.save()
+        print('111111111')
         return response({'data': 1, 'success': success})
     else:
         # Modify.
@@ -876,4 +877,5 @@ def create_events_client():
         if request.json.get('remark') is not None:
             previous_client.remark = request.json.get('remark')
         success = previous_client.save()
+        print('111111111')
         return response({'1': previous_client.to_json(), '2': previous_client.to_json_full(), 'success': success})
