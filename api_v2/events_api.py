@@ -995,7 +995,7 @@ def _events_list():
         today_inc, all_inc = new_inc_info(event.get_id())
         # Get chatroom info.
         event_chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
-                                                  BaseModel.where_dict({"event_id": event.events_id}))
+                                                  BaseModel.where_dict({"event_id": event.get_id()}))
         total_inc = 0
         chatroom_total = len(event_chatroom_list)
 
