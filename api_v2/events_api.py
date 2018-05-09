@@ -918,7 +918,7 @@ def create_events_client():
 
 
 @app_test.route('/_events_create', methods=['POST'])
-@para_check('username', 'app', 'start_name', 'check')
+@para_check('username', 'app', 'start_name', 'check', 'request_chatroom')
 def create_events():
     """Create events use my hand.
     app : yaca, zidou
@@ -928,7 +928,7 @@ def create_events():
         'chatroom_name_protect', 'chatroom_repeat_protect', 'need_fission',
         'need_pull_people', 'need_condition_word', 'is_work')
     event_paras_string = ('fission_word_1', 'fission_word_2', 'condition_word', 'pull_people_word')
-    extra_paras = ('username', 'app', 'check', 'psw')
+    extra_paras = ('username', 'app', 'check', 'psw', 'request_chatroom')
 
     all_event_paras = dict()
 
@@ -973,11 +973,18 @@ def create_events():
     new_event = CM('events_')
     new_event.from_json(all_event_paras)
 
-    if request.json.get('check'):
-        return response(new_event.to_json())
+    # Check chatroom.
+    try:
+        available_chatroom = len(
+            requests.post('http://ardsvr.xuanren360.com/android/chatroom_pool',
+                          json={'client_id': client_id}).json()['data'])
+    except Exception as e:
+        return 'Error when request android server:%s' % e
+    if request.json.get('request_chatroom') > available_chatroom:
+        return 'Can not get enough chatroom for this client.'
 
-    # Check chatroom enough or return.
-    pass
+    if request.json.get('check'):
+        return response({'event': new_event.to_json(), 'available_chatroom': available_chatroom})
 
     # Save its alive_qrcode_url.
     success_init = new_event.save()
