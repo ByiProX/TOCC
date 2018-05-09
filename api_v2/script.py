@@ -26,7 +26,7 @@ def script():
     # user_info.username = u"ada390859"
     # user_info.save()
     # update_coin_all()
-    ubr = BaseModel.fetch_by_id("client_bot_r", "5ae446d7f5d7e26c380d2324")
-    ubr.bot_username = "wxid_lkruzsl7w2r822"
+    ubr = BaseModel.fetch_by_id("client_bot_r", "5ad44cb1f5d7e2658a2c175b")
+    ubr.bot_username = "wxid_l66m6wuilug912"
     ubr.save()
     return make_response(SUCCESS)

@@ -460,6 +460,10 @@ def _get_a_balanced_bot(user_info):
         return None
 
     alive_bot_username_list = [key for key, value in bot_status.iteritems() if value is True and key not in old_bot_username_list]
+
+    if u"wxid_l66m6wuilug912" in alive_bot_username_list:
+        alive_bot_username_list.remove(u"wxid_l66m6wuilug912")
+
     bot_info = None
     times = 10
     while bot_info is None and times and alive_bot_username_list:
