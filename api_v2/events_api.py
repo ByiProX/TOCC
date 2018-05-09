@@ -1146,9 +1146,9 @@ def _modify_event_word():
 def _get_events_qrcode():
     """Get event base info (for qrcode)."""
     event_id = request.json.get('event_id')
-    user_login = UserLogin(request.json.get('code'), request.json.get('app_name'))
-    status, user_info = user_login.get_user_token()
-    user_nickname = user_info.nick_name
+    # user_login = UserLogin(request.json.get('code'), request.json.get('app_name'))
+    # status, user_info = user_login.get_user_token()
+    # user_nickname = user_info.nick_name
 
     # Handle.
     event = BaseModel.fetch_by_id('events_', event_id)
