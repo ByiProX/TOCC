@@ -72,7 +72,7 @@ def get_group_zone_sources():
     print client_id
     talker = request.json.get('chatroomname')
     keyword = request.json.get('keyword', '')
-    source_type = request.json.get('source_type')
+    real_type = request.json.get('real_type')
     page = request.json.get('page')
     pagesize = request.json.get('pagesize')
     order_type = request.json.get('order_type', 'desc')
@@ -88,10 +88,10 @@ def get_group_zone_sources():
     else:
         client_quns_name_list = [talker]
 
-    if not source_type:
-        source_type_list = [i for i in range(2, 8)]
+    if not real_type:
+        real_type_list = [i for i in range(2, 8)]
     else:
-        source_type_list = [source_type]
+        real_type_list = [real_type]
 
     print ":::::", client_quns_name_list
     sources = BaseModel.fetch_all('a_message', ['bot_username', 'create_time',
@@ -102,7 +102,7 @@ def get_group_zone_sources():
                                                 'talker', 'real_talker'],
                                   where_clause=BaseModel.and_(
                                       ['in', 'talker', client_quns_name_list],
-                                      ['in', 'real_type', source_type_list],
+                                      ['in', 'real_type', real_type_list],
                                       # ['=', 'type', source_type],
                                       # ['in', 'type', [49, 3, 436207665, 1]],
                                       ['like', 'title', keyword]),
