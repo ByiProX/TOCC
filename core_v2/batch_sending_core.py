@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from copy import deepcopy
+import time
 from datetime import datetime
 import json
 
@@ -151,7 +152,54 @@ def get_task_fail_detail(sending_task_id):
 
 
 def create_a_timed_sending_task(user_info, chatroom_list, message_list, send_time):
-    pass
+    ubr = BaseModel.fetch_one(UserBotR, '*', where_clause=BaseModel.where_dict({"client_id": user_info.client_id}))
+    if not ubr:
+        logger.error(u"该用户没有绑定机器人")
+        return ERR_WRONG_ITEM
+
+    if not chatroom_list:
+        logger.error(u"没有发送对象, 批量发送任务创建失败")
+        return ERR_WRONG_ITEM
+
+    member_count = 0
+    for chatroomname in chatroom_list:
+        chatroom = BaseModel.fetch_one(Chatroom, "member_count",
+                                       where_clause=BaseModel.where_dict({"chatroomname": chatroomname}))
+        if not chatroom or chatroom.member_count is None:
+            logger.error(u"未获取到 chatroom, chatroomname: %s." % chatroomname)
+            continue
+        member_count += chatroom.member_count
+
+    batch_send_task = CM(BatchSendTask)
+    batch_send_task.client_id = user_info.client_id
+    batch_send_task.chatroom_list = chatroom_list
+    batch_send_task.chatroom_count = len(chatroom_list)
+    batch_send_task.people_count = member_count
+    batch_send_task.is_deleted = 0
+    batch_send_task.create_time = int(time.time())
+    batch_send_task.send_time = send_time
+    batch_send_task.status = BATCH_SEND_TASK_STATUS_1
+    batch_send_task.status_content = ""
+
+    content_list = list()
+    for i, message in enumerate(message_list):
+        message_dict = dict()
+        message_dict["type"] = message.get("send_type")
+        message_dict["content"] = message.get("text")
+        message_dict["source_url"] = message.get("source_url")
+        message_dict["thumb_url"] = message.get("thumb_url")
+        message_dict["title"] = message.get("title")
+        message_dict["desc"] = message.get("desc")
+        message_dict["size"] = message.get("size")
+        message_dict["duration"] = message.get("duration")
+        message_dict["msg_id"] = message.get("msg_id")
+        message_dict["seq"] = i
+        content_list.append(message_dict)
+
+        batch_send_task.content_list = content_list
+    batch_send_task.save()
+
+    return SUCCESS
 
 
 def create_a_sending_task(user_info, chatroom_list, message_list):
@@ -221,6 +269,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     if status == SUCCESS:
         logger.info(u"任务发送成功, client_id: %s." % user_info.client_id)
         batch_send_task.status = BATCH_SEND_TASK_STATUS_3
+
         return SUCCESS
     else:
         logger.info(u"任务发送失败, client_id: %s." % user_info.client_id)
