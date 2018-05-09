@@ -5,7 +5,7 @@ import logging
 import time
 from flask import request
 
-from configs.config import main_api_v2, SUCCESS, UserInfo
+from configs.config import main_api_v2, SUCCESS, UserInfo, MaterialLib, Message
 from crawler.coin_all_crawler_v2 import update_coin_all
 from models_v2.base_model import BaseModel
 from utils.u_response import make_response
@@ -26,7 +26,16 @@ def script():
     # user_info.username = u"ada390859"
     # user_info.save()
     # update_coin_all()
-    ubr = BaseModel.fetch_by_id("client_bot_r", "5ad44cb1f5d7e2658a2c175b")
-    ubr.bot_username = "wxid_l66m6wuilug912"
-    ubr.save()
+    # ubr = BaseModel.fetch_by_id("client_bot_r", "5ad44cb1f5d7e2658a2c175b")
+    # ubr.bot_username = "wxid_l66m6wuilug912"
+    # ubr.save()
+
+    material_list = BaseModel.fetch_all(MaterialLib, "*")
+    for material in material_list:
+        msg_id = material.msg_id
+        msg = BaseModel.fetch_one(Message, "*", where_clause = BaseModel.where_dict({"msg_id": msg_id}))
+        if msg:
+            material.real_type = msg.real_type
+        material.save()
+
     return make_response(SUCCESS)
