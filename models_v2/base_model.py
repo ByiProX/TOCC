@@ -349,8 +349,7 @@ class BaseModel(object):
                 eof = True
                 return item_list
             response = requests.get(url = url, params = query_clause)
-            if where_clause:
-                print response.request.url
+            # print response.request.url
             page += 1
             query_clause["page"] = page
             # if group:
