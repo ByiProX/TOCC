@@ -981,7 +981,7 @@ def create_events():
     except Exception as e:
         return 'Error when request android server:%s' % e
     if request.json.get('request_chatroom') > available_chatroom:
-        return 'Can not get enough chatroom for this client.'
+        return 'Can not get enough chatroom for this client.Available:%s' % available_chatroom
 
     if request.json.get('check'):
         return response({'event': new_event.to_json(), 'available_chatroom': available_chatroom})
