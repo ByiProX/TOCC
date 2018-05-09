@@ -227,4 +227,8 @@ if __name__ == "__main__":
     #                               {"chatroomname": '8835992041@chatroom'}))[0].to_json_full()
     #
 
+    tasks = BaseModel.fetch_all("batch_send_task", "*")
+    print tasks[0].client_id
+
+
     pass
