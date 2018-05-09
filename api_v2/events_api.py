@@ -979,7 +979,8 @@ def create_events():
             requests.post('http://ardsvr.xuanren360.com/android/chatroom_pool',
                           json={'client_id': client_id}).json()['data'])
     except Exception as e:
-        return 'Error when request android server:%s' % e
+        return 'Error when request android server for check pool:%s' % e
+
     if request.json.get('request_chatroom') > available_chatroom:
         return 'Can not get enough chatroom for this client.Available:%s' % available_chatroom
 
@@ -987,11 +988,36 @@ def create_events():
         return response({'event': new_event.to_json(), 'available_chatroom': available_chatroom})
 
     # Save its alive_qrcode_url.
-    success_init = new_event.save()
+    success_status = dict()
+    success_status['success_init'] = new_event.save()
     new_event.alive_qrcode_url = put_qrcode_img_to_oss(new_event.events__id, request.json.get('app'))
-    success_qrcode_rewrite = new_event.save()
+    success_status['success_qrcode_rewrite'] = new_event.save()
+
+    if not success_status['success_init'] or not success_status['success_qrcode_rewrite']:
+        return response({'success_status': success_status})
+
+    """Allot chatroom"""
+    try:
+        allot_chatroom_list = requests.post('http://ardsvr.xuanren360.com/android/chatroom_allot',
+                                            json={'client_id': client_id,
+                                                  'num': int(request.json.get('request_chatroom'))}).json()['data']
+    except Exception as e:
+        return 'Error when request android server for allot:%s' % e
+    index = 1
+    for chatroomname in allot_chatroom_list:
+        new_event_chatroom = CM('events_chatroom_')
+        new_event_chatroom.index = index
+        new_event_chatroom.client_id = client_id
+        new_event_chatroom.chatroomname = chatroomname
+        new_event_chatroom.event_id = new_event.get_id()
+        new_event_chatroom.start_name = new_event.start_name + str(index) + u'群'
+        new_event_chatroom.update_time = int(time.time())
+        new_event_chatroom.is_activated = 0
+        success_status[chatroomname] = new_event_chatroom.save()
+        index += 1
+
     return response(
-        {'success_init': success_init, 'success_qrcode_rewrite': success_qrcode_rewrite, 'event': new_event.to_json()})
+        {'success_status': success_status, 'event': new_event.to_json()})
 
 
 @app_test.route('/_events_list', methods=['POST'])
