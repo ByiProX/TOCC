@@ -1058,7 +1058,7 @@ def _events_detail():
     # Add chatroom info.
     content_chatrooms = []
     event_chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
-                                              BaseModel.where_dict({'event_id': event.events_id}))
+                                              BaseModel.where_dict({'event_id': event.get_id()}))
     for event_chatroom in event_chatroom_list:
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                             BaseModel.where_dict({'chatroomname': event_chatroom.chatroomname}))
