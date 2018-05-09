@@ -34,8 +34,6 @@ def script():
     for material in material_list:
         msg_id = material.msg_id
         msg = BaseModel.fetch_one(Message, "*", where_clause = BaseModel.where_dict({"msg_id": msg_id}))
-        if msg:
-            material.real_type = msg.real_type
-        material.save()
+        print msg.to_json_full()
 
     return make_response(SUCCESS)
