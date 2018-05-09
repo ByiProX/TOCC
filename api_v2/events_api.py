@@ -1013,6 +1013,8 @@ def create_events():
         new_event_chatroom.start_name = new_event.start_name + str(index) + u'群'
         new_event_chatroom.update_time = int(time.time())
         new_event_chatroom.is_activated = 0
+        if index == 1:
+            new_event_chatroom.is_activated = 1
         success_status[chatroomname] = new_event_chatroom.save()
         index += 1
 
@@ -1192,12 +1194,8 @@ def _get_events_qrcode():
     # Add a scan qrcode log.
     add_qrcode_log(event_id)
     # Check which chatroom is available.
-    chatroom_list = BaseModel.fetch_all('events_chatroom_', '*', BaseModel.where_dict({'event_id': event_id}))
-    # Not a available chatroom, so it is in base create status.
-    if chatroom_list is None:
-        return response({'err_code': 0,
-                         'content': {'event_status': 5, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
-                                     'qr_end_date': ''}})
+    chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
+                                        BaseModel.where_dict({'event_id': event_id, 'is_activated': 1}))
 
     chatroom_dict = {}
     chatroomname_list = []
@@ -1210,7 +1208,7 @@ def _get_events_qrcode():
             chatroom_dict[i.chatroomname] = (
                 len(chatroom_info.memberlist.split(';')), chatroom_info.qrcode, nickname,
                 chatroom_info.avatar_url,
-                chatroom_info.update_time)
+                chatroom_info.update_time, i.is_activated)
             chatroomname_list.append(i.chatroomname)
 
     if chatroom_dict:
@@ -1226,7 +1224,7 @@ def _get_events_qrcode():
                                 }
                 }
                 return response(result)
-    """Do not have a chatroom < 100, create one."""
+    """Do not have a chatroom < 100, activate one."""
 
     return response({'err_code': 0,
                      'content': {'event_status': 5, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
