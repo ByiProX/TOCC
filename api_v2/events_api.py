@@ -603,6 +603,14 @@ def add_qrcode_log(owner):
     new_log.save()
 
 
+def new_add_qrcode_log(event_id):
+    """Add a log."""
+    new_log = CM('events_scan_qrcode')
+    new_log.event_id = event_id
+    new_log.scan_time = int(time.time())
+    new_log.save()
+
+
 def inc_info(owner):
     """(today_inc,total_inc)"""
     logs = BaseModel.fetch_all('events_scan_qrcode_info', '*', BaseModel.where_dict({"owner": owner}))
@@ -1073,11 +1081,120 @@ def _events_detail():
         content_chatrooms.append(_result)
 
     content['chatrooms'] = content_chatrooms
-
-    content = _10_to_true_false(content, exc_list=['start_index'])
-
     content['event_status'] = 1
+
+    content = _10_to_true_false(content, exc_list=['start_index', 'event_status'])
 
     result['content'] = content
 
     return response(result)
+
+
+@app_test.route('/_events_modify', methods=['POST'])
+@para_check('token', 'event_id', )
+def _modify_event_word():
+    # Check owner or return.
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    try:
+        client_id = user_info.client_id
+    except AttributeError:
+        return response({'err_code': -2, 'content': 'User token error.'})
+    # Check and get event.
+    event_id = request.json.get('event_id')
+    event = BaseModel.fetch_by_id('events_', event_id)
+    if event is None:
+        return response({'err_code': -3, 'err_info': 'Wrong event_id.'})
+
+    if event.client_id != client_id:
+        return response({'err_code': -3, 'err_info': 'Not same client.'})
+
+    _paras_could_modified = (
+        'need_fission', 'need_condition_word', 'need_pull_people', 'fission_word_1', 'fission_word_2',
+        'condition_word', 'pull_people_word', 'chatroom_name_protect', 'poster_raw')
+
+    para_as_dict = {}
+    values_as_dict = dict(request.json)
+
+    for k, v in values_as_dict.items():
+        if k in _paras_could_modified:
+            para_as_dict[k] = v
+
+    para_as_dict = true_false_to_10(para_as_dict)
+
+    # Save poster_raw
+    poster_raw = para_as_dict.get('poster_raw')
+    if poster_raw is not None:
+        if 'http://ywbdposter.oss-cn-beijing.aliyuncs.com' not in poster_raw:
+            try:
+                poster_raw = poster_raw.replace('data:image/png;base64,', '')
+                img_url = put_img_to_oss(event_id, poster_raw)
+            except Exception as e:
+                return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
+            para_as_dict['poster_raw'] = img_url
+    else:
+        # poster_raw is None.
+        pass
+
+    event.from_json(para_as_dict)
+    event.update()
+
+    return response({'err_code': 0, 'content': 'SUCCESS', 'event': event.to_json()})
+
+
+@app_test.route('/_events_qrcode', methods=['POST'])
+@para_check('event_id', 'code', 'app_name')
+def _get_events_qrcode():
+    """Get event base info (for qrcode)."""
+    event_id = request.json.get('event_id')
+    user_login = UserLogin(request.json.get('code'), request.json.get('app_name'))
+    status, user_info = user_login.get_user_token()
+    user_nickname = user_info.nick_name
+
+    # Handle.
+    event = BaseModel.fetch_by_id('events_', event_id)
+    if event is None:
+        return response({'err_code': -3, 'err_info': 'Fake event_id'})
+    # Use event_id search chatroom list, then get a prepared chatroom
+    # and return its chatroomname.
+    # Add a scan qrcode log.
+    add_qrcode_log(event_id)
+    # Check which chatroom is available.
+    chatroom_list = BaseModel.fetch_all('events_chatroom_', '*', BaseModel.where_dict({'event_id': event_id}))
+    # Not a available chatroom, so it is in base create status.
+    if chatroom_list is None:
+        return response({'err_code': 0,
+                         'content': {'event_status': 5, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
+                                     'qr_end_date': ''}})
+
+    chatroom_dict = {}
+    chatroomname_list = []
+    for i in chatroom_list:
+        chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': i.chatroomname}))
+        if chatroom_info:
+            nickname = chatroom_info.nickname_real
+            if nickname == '':
+                nickname = chatroom_info.nickname_default
+            chatroom_dict[i.chatroomname] = (
+                len(chatroom_info.memberlist.split(';')), chatroom_info.qrcode, nickname,
+                chatroom_info.avatar_url,
+                chatroom_info.update_time)
+            chatroomname_list.append(i.chatroomname)
+
+    if chatroom_dict:
+        for k, v in chatroom_dict.items():
+            if v[0] < 100:
+                result = {
+                    'err_code': 0,
+                    'content': {'event_status': 1,
+                                'chatroom_qr': v[1],
+                                'chatroom_name': v[2],
+                                'chatroom_avatar': v[3],
+                                'qr_end_date': v[4],
+                                }
+                }
+                return response(result)
+    """Do not have a chatroom < 100, create one."""
+
+    return response({'err_code': 0,
+                     'content': {'event_status': 5, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
+                                 'qr_end_date': ''}})
