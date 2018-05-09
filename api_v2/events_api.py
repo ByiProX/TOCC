@@ -979,7 +979,8 @@ def create_events():
             requests.post('http://ardsvr.xuanren360.com/android/chatroom_pool',
                           json={'client_id': client_id}).json()['data'])
     except Exception as e:
-        return 'Error when request android server:%s' % e
+        return 'Error when request android server for check pool:%s' % e
+
     if request.json.get('request_chatroom') > available_chatroom:
         return 'Can not get enough chatroom for this client.Available:%s' % available_chatroom
 
@@ -987,11 +988,38 @@ def create_events():
         return response({'event': new_event.to_json(), 'available_chatroom': available_chatroom})
 
     # Save its alive_qrcode_url.
-    success_init = new_event.save()
+    success_status = dict()
+    success_status['success_init'] = new_event.save()
     new_event.alive_qrcode_url = put_qrcode_img_to_oss(new_event.events__id, request.json.get('app'))
-    success_qrcode_rewrite = new_event.save()
+    success_status['success_qrcode_rewrite'] = new_event.save()
+
+    if not success_status['success_init'] or not success_status['success_qrcode_rewrite']:
+        return response({'success_status': success_status})
+
+    """Allot chatroom"""
+    try:
+        allot_chatroom_list = requests.post('http://ardsvr.xuanren360.com/android/chatroom_allot',
+                                            json={'client_id': client_id,
+                                                  'num': int(request.json.get('request_chatroom'))}).json()['data']
+    except Exception as e:
+        return 'Error when request android server for allot:%s' % e
+    index = 1
+    for chatroomname in allot_chatroom_list:
+        new_event_chatroom = CM('events_chatroom_')
+        new_event_chatroom.index = index
+        new_event_chatroom.client_id = client_id
+        new_event_chatroom.chatroomname = chatroomname
+        new_event_chatroom.event_id = new_event.get_id()
+        new_event_chatroom.start_name = new_event.start_name + str(index) + u'群'
+        new_event_chatroom.update_time = int(time.time())
+        new_event_chatroom.is_activated = 0
+        if index == 1:
+            new_event_chatroom.is_activated = 1
+        success_status[chatroomname] = new_event_chatroom.save()
+        index += 1
+
     return response(
-        {'success_init': success_init, 'success_qrcode_rewrite': success_qrcode_rewrite, 'event': new_event.to_json()})
+        {'success_status': success_status, 'event': new_event.to_json()})
 
 
 @app_test.route('/_events_list', methods=['POST'])
@@ -1166,12 +1194,8 @@ def _get_events_qrcode():
     # Add a scan qrcode log.
     add_qrcode_log(event_id)
     # Check which chatroom is available.
-    chatroom_list = BaseModel.fetch_all('events_chatroom_', '*', BaseModel.where_dict({'event_id': event_id}))
-    # Not a available chatroom, so it is in base create status.
-    if chatroom_list is None:
-        return response({'err_code': 0,
-                         'content': {'event_status': 5, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
-                                     'qr_end_date': ''}})
+    chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
+                                        BaseModel.where_dict({'event_id': event_id, 'is_activated': 1}))
 
     chatroom_dict = {}
     chatroomname_list = []
@@ -1200,8 +1224,33 @@ def _get_events_qrcode():
                                 }
                 }
                 return response(result)
-    """Do not have a chatroom < 100, create one."""
+    """Do not have a chatroom < 100, activate one."""
+    chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
+                                        BaseModel.where_dict({'event_id': event_id, 'is_activated': 0}))
+    if len(chatroom_list) == 0:
+        # Do not have chatroom.
+        return response({'err_code': 0,
+                         'content': {'event_status': 5, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
+                                     'qr_end_date': ''}})
+    else:
+        index_list = []
+        for i in chatroom_list:
+            index_list.append(i.index)
+        index_list.sort()
+        now_index = index_list[0]
 
-    return response({'err_code': 0,
-                     'content': {'event_status': 5, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
-                                 'qr_end_date': ''}})
+        # Activate this chatroom.
+        for i in chatroom_list:
+            if i.index == now_index:
+                i.is_activated = 1
+                i.save()
+                this_chatroom_info = BaseModel.fetch_one('a_chatroom', '*',
+                                                         BaseModel.where_dict({'chatroomname': i.chatroomname}))
+                return response({'err_code': 0,
+                                 'content': {'event_status': 1,
+                                             'chatroom_qr': this_chatroom_info.qrcode,
+                                             'chatroom_name': this_chatroom_info.nickname_real,
+                                             'chatroom_avatar': this_chatroom_info.avatar_url,
+                                             'qr_end_date': this_chatroom_info.update_time}})
+
+        return '!!!!!!!!!!!'

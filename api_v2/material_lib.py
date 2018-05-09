@@ -26,7 +26,7 @@ def get_material_lib_list():
     order_type = request.json.get('order_type', 'desc')
 
     if not real_type:
-        real_type_list = [i for i in range(1, 8)]
+        real_type_list = [i for i in range(2, 8)]
     else:
         real_type_list = [real_type]
 
@@ -42,7 +42,8 @@ def get_material_lib_list():
                                         )
         materials = [material.to_json_full() for material in materials]
 
-        # print materials
+        print ":::::::::::::::::::::::11111"
+        print materials
         # #
         # return make_response(SUCCESS, materials=materials)
     except:
@@ -59,7 +60,11 @@ def get_material_lib_list():
                                                    {"msg_id": material.get("msg_id")}
                                                ))[0]
             material.update(message_info.to_json())
-            return make_response(SUCCESS, materials=materials)
+
+
+        print "::::::::::::2222222"
+        print materials
+        return make_response(SUCCESS, materials=materials)
 
     except:
         return make_response(ERR_WRONG_ITEM)
@@ -94,14 +99,21 @@ if __name__ == "__main__":
     s.province = "beijingbeijingbeijing"
     s.delete()
 
-    print s.to_json_full().__len__()
-    print s.to_json().__len__()
+    # print s.to_json_full().__len__()
+    # print s.to_json().__len__()
 
     ms = BaseModel.fetch_all("material_lib", "*",
                              where_clause=BaseModel.and_(
-                                 # ["=", "client_id", 5],
+                                 ["=", "client_id", 1],
                                  ["=", "is_deleted", 0],
                              ),
-                             page=1, pagesize=2)
+                             page=1, pagesize=20)
 
     print ms.__len__()
+    # UserLogin.verify_token(request.json.get('token'))
+    # print status
+    # material = BaseModel.fetch_all('a_message', '*',
+    #                                where_clause=BaseModel.where_dict(
+    #                                    {"msg_id": "d3hpZF9sNjZtNnd1aWx1ZzkxMl8xODlfMTUyNTg2ODUyNw=="}))
+
+    # print material
