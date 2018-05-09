@@ -1032,7 +1032,7 @@ def _events_list():
 @para_check('token', 'event_id')
 def _events_detail():
     event_id = request.json.get('event_id')
-    event = BaseModel.fetch_by_id('events', event_id)
+    event = BaseModel.fetch_by_id('events_', event_id)
     if event is None:
         return response({'err_code': -2, 'content': 'No this event.'})
     result = {'err_code': 0}
