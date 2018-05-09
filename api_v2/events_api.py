@@ -1208,7 +1208,7 @@ def _get_events_qrcode():
             chatroom_dict[i.chatroomname] = (
                 len(chatroom_info.memberlist.split(';')), chatroom_info.qrcode, nickname,
                 chatroom_info.avatar_url,
-                chatroom_info.update_time, i.is_activated)
+                chatroom_info.update_time)
             chatroomname_list.append(i.chatroomname)
 
     if chatroom_dict:
@@ -1225,7 +1225,32 @@ def _get_events_qrcode():
                 }
                 return response(result)
     """Do not have a chatroom < 100, activate one."""
+    chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
+                                        BaseModel.where_dict({'event_id': event_id, 'is_activated': 0}))
+    if len(chatroom_list) == 0:
+        # Do not have chatroom.
+        return response({'err_code': 0,
+                         'content': {'event_status': 5, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
+                                     'qr_end_date': ''}})
+    else:
+        index_list = []
+        for i in chatroom_list:
+            index_list.append(i.index)
+        index_list.sort()
+        now_index = index_list[0]
 
-    return response({'err_code': 0,
-                     'content': {'event_status': 5, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
-                                 'qr_end_date': ''}})
+        # Activate this chatroom.
+        for i in chatroom_list:
+            if i.index == now_index:
+                i.is_activated = 1
+                i.save()
+                this_chatroom_info = BaseModel.fetch_one('a_chatroom', '*',
+                                                         BaseModel.where_dict({'chatroomname': i.chatroomname}))
+                return response({'err_code': 0,
+                                 'content': {'event_status': 1,
+                                             'chatroom_qr': this_chatroom_info.qrcode,
+                                             'chatroom_name': this_chatroom_info.nickname_real,
+                                             'chatroom_avatar': this_chatroom_info.avatar_url,
+                                             'qr_end_date': this_chatroom_info.update_time}})
+
+        return '!!!!!!!!!!!'
