@@ -595,6 +595,7 @@ def status_detect(start_time, end_time, is_work, is_finish, chatroom_enough):
     return 1
 
 
+
 def add_qrcode_log(owner):
     """Add a log."""
     new_log = CM('events_scan_qrcode_info')
@@ -606,6 +607,19 @@ def add_qrcode_log(owner):
 def inc_info(owner):
     """(today_inc,total_inc)"""
     logs = BaseModel.fetch_all('events_scan_qrcode_info', '*', BaseModel.where_dict({"owner": owner}))
+    flag = int(time.time()) - 86400
+    today_inc = 0
+    all_inc = 0
+    for i in logs:
+        all_inc += 1
+        if i.scan_time > flag:
+            today_inc += 1
+
+    return today_inc, all_inc
+
+
+def new_inc_info(event_id):
+    logs = BaseModel.fetch_all('events_scan_qrcode', '*', BaseModel.where_dict({"event_id": event_id}))
     flag = int(time.time()) - 86400
     today_inc = 0
     all_inc = 0
@@ -947,4 +961,51 @@ def create_events():
     success_1 = new_event.save()
     new_event.alive_qrcode_url = put_qrcode_img_to_oss(new_event.events__id, request.json.get('app'))
     success_2 = new_event.save()
-    return response({'success_1': success_1, 'success_2': success_2, 'event': new_event.to_json()})
+    return response({'success_init': success_1, 'success_qrcode_rewrite': success_2, 'event': new_event.to_json()})
+
+
+@app_test.route('/_events_list', methods=['POST'])
+@para_check('token', )
+def list_events():
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    try:
+        client_id = user_info.client_id
+    except AttributeError:
+        return response({'err_code': -2, 'content': 'User token error.'})
+    events = BaseModel.fetch_all('events_', '*', BaseModel.where_dict({"client_id": client_id}))
+
+    result = {'err_code': 0, 'content': []}
+    for event in events:
+        temp = {}
+        today_inc, all_inc = inc_info(event.get_id())
+        # Get chatroom info.
+        event_chatroom_list = BaseModel.fetch_all('events_chatroom', '*',
+                                                  BaseModel.where_dict({"event_id": event.events_id}))
+        total_inc = 0
+        chatroom_total = len(event_chatroom_list)
+        for event_chatroom in event_chatroom_list:
+            this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
+                                                BaseModel.where_dict({'chatroomname': event_chatroom.chatroomname}))
+
+            if this_chatroom:
+                if this_chatroom.memberlist:
+                    total_inc += len(this_chatroom.memberlist.split(';'))
+            else:
+                logger.warning('Can not find this chatroom:{}'.format(event_chatroom.chatroomname))
+
+        temp.update({
+            'event_id': event.get_id(),
+            'poster_raw': event.poster_url,
+            'event_title': event.event_title,
+            'event_status': 1,
+            'start_time': event.start_time,
+            'end_time': None,
+            # Need another table to search.
+            'chatroom_total': chatroom_total,
+            'today_inc': today_inc,
+            'total_inc': total_inc,  # the people of all chatroom.
+        })
+        result['content'].append(temp)
+    result['content'].reverse()
+
+    return response(result)
