@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import json
 import logging
 
 import time
@@ -34,6 +34,6 @@ def script():
     for material in material_list:
         msg_id = material.msg_id
         msg = BaseModel.fetch_one(Message, "*", where_clause = BaseModel.where_dict({"msg_id": msg_id}))
-        print msg.to_json_full()
+        print json.dumps(msg.to_json_full())
 
     return make_response(SUCCESS)
