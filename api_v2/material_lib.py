@@ -59,7 +59,7 @@ def get_material_lib_list():
                                                    {"msg_id": material.get("msg_id")}
                                                ))[0]
             material.update(message_info.to_json())
-            return make_response(SUCCESS, materials=materials)
+        return make_response(SUCCESS, materials=materials)
 
     except:
         return make_response(ERR_WRONG_ITEM)
