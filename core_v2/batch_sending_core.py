@@ -150,6 +150,10 @@ def get_task_fail_detail(sending_task_id):
     """
 
 
+def create_a_timed_sending_task(user_info, chatroom_list, message_list, send_time):
+    pass
+
+
 def create_a_sending_task(user_info, chatroom_list, message_list):
     """
     将前端发送过来的任务放入task表，并将任务放入consumption_task
