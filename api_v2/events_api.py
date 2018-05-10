@@ -1259,7 +1259,6 @@ def _get_events_qrcode():
 
 def new_open_chatroom_name_protect():
     while True:
-        time.sleep(100)
         event_list = BaseModel.fetch_all('events_', '*')
         for i in event_list:
             if i.chatroom_name_protect:
@@ -1281,6 +1280,7 @@ def new_open_chatroom_name_protect():
                                       "chatroomnick": real_name,
                                   }}
                         requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+        time.sleep(100)
 
 
 def new_event_chatroom_send_word():
