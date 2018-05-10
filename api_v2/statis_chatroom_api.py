@@ -220,7 +220,9 @@ def chatroom_statistics_chatroom():
         logger.info("cache hit")
         cacheData = json.loads(cacheData)
         for cd in cacheData:
-            return make_response(SUCCESS, chatroom_list = cacheData[cd], last_update_time = cd)
+            if isinstance(cd, str) or isinstance(cd, unicode):
+                last_update_time = int(cd)
+            return make_response(SUCCESS, chatroom_list = cacheData[cd], last_update_time = last_update_time)
 
     _where = BaseModel.where_dict(_where)
 
