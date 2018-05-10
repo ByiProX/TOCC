@@ -463,6 +463,8 @@ def _get_a_balanced_bot(user_info):
 
     if u"wxid_l66m6wuilug912" in alive_bot_username_list:
         alive_bot_username_list.remove(u"wxid_l66m6wuilug912")
+    if u"wxid_6mf4yqgs528e22" in alive_bot_username_list:
+        alive_bot_username_list.remove(u"wxid_6mf4yqgs528e22")
 
     bot_info = None
     times = 10
