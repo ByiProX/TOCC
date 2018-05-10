@@ -26,9 +26,9 @@ def script():
     # user_info.username = u"ada390859"
     # user_info.save()
     # update_coin_all()
-    # ubr = BaseModel.fetch_by_id("client_bot_r", "5ad44cb1f5d7e2658a2c175b")
-    # ubr.bot_username = "wxid_l66m6wuilug912"
-    # ubr.save()
+    ubr = BaseModel.fetch_by_id("client_bot_r", "5ad499d5f5d7e265e244b838")
+    ubr.bot_username = "wxid_6mf4yqgs528e22"
+    ubr.save()
 
     material_list = BaseModel.fetch_all(MaterialLib, "*")
     for material in material_list:
