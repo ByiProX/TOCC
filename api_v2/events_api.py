@@ -1192,7 +1192,7 @@ def _get_events_qrcode():
     # Use event_id search chatroom list, then get a prepared chatroom
     # and return its chatroomname.
     # Add a scan qrcode log.
-    add_qrcode_log(event_id)
+    new_add_qrcode_log(event_id)
     # Check which chatroom is available.
     chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
                                         BaseModel.where_dict({'event_id': event_id, 'is_activated': 1}))
