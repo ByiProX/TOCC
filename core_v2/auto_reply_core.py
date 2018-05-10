@@ -116,6 +116,9 @@ def get_auto_reply_setting(user_info):
             message_json["size"] = reply_content.get("size")
             message_json["duration"] = reply_content.get("duration")
             message_json["msg_id"] = reply_content.get("msg_id")
+            message_json["msg_local_id"] = reply_content.get("msg_local_id")
+            message_json["msg_svr_id"] = reply_content.get("msg_svr_id")
+            message_json["talker"] = reply_content.get("talker")
             message_list.append(message_json)
 
         chatroom_count = len(chatroom_list)
@@ -206,6 +209,9 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
         reply_content["size"] = message_info.get("size")
         reply_content["duration"] = message_info.get("duration")
         reply_content["msg_id"] = message_info.get("msg_id")
+        reply_content["msg_local_id"] = message_info.get("msg_local_id")
+        reply_content["msg_svr_id"] = message_info.get("msg_svr_id")
+        reply_content["talker"] = message_info.get("talker")
         reply_content_list.append(reply_content)
 
     keyword_dict = dict()

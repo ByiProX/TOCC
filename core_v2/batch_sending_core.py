@@ -68,6 +68,9 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
             message_json["size"] = content.get("size")
             message_json["duration"] = content.get("duration")
             message_json["msg_id"] = content.get("msg_id")
+            message_json["msg_local_id"] = content.get("msg_local_id")
+            message_json["msg_svr_id"] = content.get("msg_svr_id")
+            message_json["talker"] = content.get("talker")
             message_list.append(message_json)
 
         res["batch_send_task_id"] = batch_send_task.get_id()
@@ -137,6 +140,9 @@ def get_task_detail(batch_send_task_id):
         message_json["size"] = content.get("size")
         message_json["duration"] = content.get("duration")
         message_json["msg_id"] = content.get("msg_id")
+        message_json["msg_local_id"] = content.get("msg_local_id")
+        message_json["msg_svr_id"] = content.get("msg_svr_id")
+        message_json["talker"] = content.get("talker")
         message_list.append(message_json)
 
     res["message_list"] = message_list
@@ -200,6 +206,9 @@ def create_a_timed_sending_task(user_info, chatroom_list, message_list, send_tim
         message_dict["size"] = message.get("size")
         message_dict["duration"] = message.get("duration")
         message_dict["msg_id"] = message.get("msg_id")
+        message_dict["msg_local_id"] = message.get("msg_local_id")
+        message_dict["msg_svr_id"] = message.get("msg_svr_id")
+        message_dict["talker"] = message.get("talker")
         message_dict["seq"] = i
         content_list.append(message_dict)
 
@@ -255,6 +264,9 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
         message_dict["size"] = message.get("size")
         message_dict["duration"] = message.get("duration")
         message_dict["msg_id"] = message.get("msg_id")
+        message_dict["msg_local_id"] = message.get("msg_local_id")
+        message_dict["msg_svr_id"] = message.get("msg_svr_id")
+        message_dict["talker"] = message.get("talker")
         message_dict["seq"] = i
         content_list.append(message_dict)
 
