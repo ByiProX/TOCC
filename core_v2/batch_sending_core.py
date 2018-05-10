@@ -232,10 +232,6 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     if chatroom_count == 0:
         logger.error(u"没有发送对象, 批量发送任务创建失败")
         return ERR_WRONG_ITEM
-    
-    
-    print 'message_list::::',message_list
-
 
     now_time = datetime_to_timestamp_utc_8(datetime.now())
     batch_send_task = CM(BatchSendTask)
@@ -261,10 +257,6 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
         message_dict["msg_id"] = message.get("msg_id")
         message_dict["seq"] = i
         content_list.append(message_dict)
-    
-    
-    print 'content_list::::',content_list
-
 
     batch_send_task.content_list = content_list
 

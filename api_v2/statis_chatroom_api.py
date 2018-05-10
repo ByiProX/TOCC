@@ -36,7 +36,7 @@ def getGrouplist(client_id):
     ret = []
     if client_id:
         dataList = BaseModel.fetch_all('client_group_r', ['group_name', 'group_id', 'status'],
-                                        BaseModel.where("=", "client_id", client_id))
+                                       BaseModel.where("=", "client_id", client_id))
         return modelList2Arr(dataList)
 
 
@@ -44,12 +44,13 @@ def getGrouplist(client_id):
 def getQunInfo(chatroomnames):
     ret = {}
     if chatroomnames:
-        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname','member_count', 'avatar_url', "create_time", "update_time"],
+        qunInfo = BaseModel.fetch_all('a_chatroom',
+                                      ['chatroomname', 'nickname', 'member_count', 'avatar_url', "create_time",
+                                       "update_time"],
                                       BaseModel.where("in", "chatroomname", chatroomnames))
         if (qunInfo):
             for qf in qunInfo:
                 _qfjson = qf.to_json()
-                print '6666666666', _qfjson
                 ret[_qfjson["chatroomname"]] = _qfjson
     return ret
 
@@ -138,7 +139,6 @@ def chatroom_statistics_chatroom():
         qunList = getClientQunWithGroup(user_info.client_id, group_id, page = page, pagesize = pagesize, order = order)
         for qli in qunList:
             chatroomname_list.append(qli['chatroomname'])
-        print chatroomname_list
 
     # date_type=1 今日实时，每10分钟计算一次，cache 10分钟
     # date_type=2 昨日，从daily取，cache10分钟
@@ -151,7 +151,7 @@ def chatroom_statistics_chatroom():
     table = 'statistics_chatroom_daily'
     _timestamp = int(time.time())
     _where = []
-    #if (date_type == 1):
+    # if (date_type == 1):
     #    run_hour = int(time.strftime('%H', time.localtime(time.time())))
     #    last_update_time = _timestamp - 600
     #    if (run_hour == 0):
@@ -214,20 +214,18 @@ def chatroom_statistics_chatroom():
     md5_2.update(json.dumps(request.json))
     print md5_2.hexdigest()
     cache_key = md5_2.hexdigest()
-    print "cache_key::::::::::::", cache_key
     cacheData = rds.get(cache_key)
     # cacheData = 0
     if cacheData:
-        print "cache hit"
+        logger.info("cache hit")
         cacheData = json.loads(cacheData)
         for cd in cacheData:
             return make_response(SUCCESS, chatroom_list = cacheData[cd], last_update_time = cd)
 
     _where = BaseModel.where_dict(_where)
 
-    print "------_where:::-----------\n", _where, order, "-----------------\n"
-
-    chatroom_statis = BaseModel.fetch_all(table, '*', _where, page = page, pagesize = pagesize, orderBy = order, group = group_by)
+    chatroom_statis = BaseModel.fetch_all(table, '*', _where, page = page, pagesize = pagesize, orderBy = order,
+                                          group = group_by)
 
     if chatroomname and not chatroom_statis:
         chatroom_info = BaseModel.fetch_one(Chatroom, "*", BaseModel.where_dict({"chatroomname": chatroomname}))
@@ -237,31 +235,28 @@ def chatroom_statistics_chatroom():
         return make_response(SUCCESS, chatroom_list = [chatroom_json], last_update_time = last_update_time)
 
     chatroom_json_list = []
-    # if (len(chatroom_statis) < 1):
-    #     return make_response(SUCCESS, chatroom_list = [], last_update_time = last_update_time)
 
     chatroomnames = []
     for st in chatroom_statis:
         if group_by:
             st.chatroomname = st.get_id()
         _stjson = st.to_json_full()
-        print _stjson
         chatroomnames.append(_stjson['chatroomname'])
         chatroom_json_list.append(_stjson)
 
     qunInfo = getQunInfo(chatroomnames)
-    print "==========\n", qunInfo, "============\n"
 
-    if (len(qunInfo) > 0):
+    if len(qunInfo) > 0:
         for ctlist in chatroom_json_list:
-            if qunInfo.has_key(ctlist['chatroomname']):
+            if ctlist['chatroomname'] in qunInfo:
                 ctlist.update(qunInfo[ctlist['chatroomname']])
-                print '9999999999', ctlist, '00000000000'
 
     if not is_active:
-        uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]), page = 1, pagesize = pagesize)
+        uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(
+            ["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]), page = 1,
+                                       pagesize = pagesize)
         chatroomname_list = [r.chatroomname for r in uqr_list]
-        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname','member_count', 'avatar_url'],
+        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname', 'member_count', 'avatar_url'],
                                       BaseModel.where("in", "chatroomname", chatroomname_list))
         chatroom_json_list = []
         for chatroom in qunInfo:
@@ -269,7 +264,7 @@ def chatroom_statistics_chatroom():
             chatroom_json_list.append(chatroom_json)
         return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
 
-    if (len(chatroom_json_list) > 0):
+    if len(chatroom_json_list) > 0:
         rds.set(cache_key, json.dumps({last_update_time: chatroom_json_list}))
         rds.expire(cache_key, 60)
 
@@ -297,11 +292,11 @@ def get_non_active_chatroom_list():
         # 这里需要根据groupId 取 qunID list，或者前端post过来 qunID list
         _where = ["and", ["=", "client_id", user_info.client_id], ["=", "group_id", group_id]]
         _where = BaseModel.where_dict(_where)
-        qunList = modelList2Arr(BaseModel.fetch_all('client_qun_r', ['chatroomname', 'group_id', 'group_info', 'status'], _where))
+        qunList = modelList2Arr(
+            BaseModel.fetch_all('client_qun_r', ['chatroomname', 'group_id', 'group_info', 'status'], _where))
         # qunList = getClientQunWithGroup(user_info.client_id, group_id)
         for qli in qunList:
             chatroomname_list.append(qli['chatroomname'])
-        print chatroomname_list
 
     # date_type=1 今日实时，每10分钟计算一次，cache 10分钟
     # date_type=2 昨日，从daily取，cache10分钟
@@ -361,7 +356,8 @@ def get_non_active_chatroom_list():
     _where = ["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]
     if group_id:
         _where.append(["=", "group_id", group_id])
-    uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(_where), page = page, pagesize = pagesize)
+    uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(_where), page = page,
+                                   pagesize = pagesize)
     chatroomname_list = [r.chatroomname for r in uqr_list]
     qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname', 'member_count', 'avatar_url'],
                                   BaseModel.where("in", "chatroomname", chatroomname_list))
@@ -389,7 +385,8 @@ def get_active_chatroom_count():
         # 这里需要根据groupId 取 qunID list，或者前端post过来 qunID list
         _where = ["and", ["=", "client_id", user_info.client_id], ["=", "group_id", group_id]]
         _where = BaseModel.where_dict(_where)
-        qunList = modelList2Arr(BaseModel.fetch_all('client_qun_r', ['chatroomname', 'group_id', 'group_info', 'status'], _where))
+        qunList = modelList2Arr(
+            BaseModel.fetch_all('client_qun_r', ['chatroomname', 'group_id', 'group_info', 'status'], _where))
         # qunList = getClientQunWithGroup(user_info.client_id, group_id)
         for qli in qunList:
             chatroomname_list.append(qli['chatroomname'])
@@ -443,7 +440,6 @@ def get_active_chatroom_count():
 
     chatroom_statis = BaseModel.fetch_all(table, '*', where_clause = BaseModel.where_dict(_where))
     chatroomnames = [r.chatroomname for r in chatroom_statis]
-    print "chatroomnames", chatroomnames
     active_chatroom_count = len(chatroom_statis)
     _where = ["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]
     if group_id:
@@ -452,4 +448,5 @@ def get_active_chatroom_count():
     # total_count = BaseModel.count(UserQunR, where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
     # non_active_chatroom_count = total_count - active_chatroom_count
 
-    return make_response(SUCCESS, active_chatroom_count = active_chatroom_count, non_active_chatroom_count = non_active_chatroom_count)
+    return make_response(SUCCESS, active_chatroom_count = active_chatroom_count,
+                         non_active_chatroom_count = non_active_chatroom_count)

@@ -41,12 +41,8 @@ def get_material_lib_list():
                                         order_by=BaseModel.order_by({"create_time": order_type})
                                         )
         materials = [material.to_json_full() for material in materials]
-
-        print ":::::::::::::::::::::::11111"
-        print materials
-        # #
-        # return make_response(SUCCESS, materials=materials)
-    except:
+    except Exception as e:
+        # logger.error(e.message)
         return make_response(ERR_WRONG_ITEM)
 
     try:
@@ -55,18 +51,14 @@ def get_material_lib_list():
                                                ["source_url", "img_path",
                                                 "thumb_url", "title",
                                                 "desc", "size",
-                                                "duration", "real_content"],
+                                                "duration", "real_content", "msg_local_id", "msg_svr_id", "talker"],
                                                where_clause=BaseModel.where_dict(
                                                    {"msg_id": material.get("msg_id")}
                                                ))[0]
             material.update(message_info.to_json())
 
-
-        print "::::::::::::2222222"
-        print materials
         return make_response(SUCCESS, materials=materials)
-
-    except:
+    except Exception as e:
         return make_response(ERR_WRONG_ITEM)
 
 
@@ -88,7 +80,7 @@ def delete_material_lib_list():
         material.is_deleted = 1
         material.update()
         return make_response(SUCCESS)
-    except:
+    except Exception as e:
         return make_response(ERR_WRONG_ITEM)
 
 
