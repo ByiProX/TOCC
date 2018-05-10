@@ -61,6 +61,13 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
             message_json["real_type"] = content.get("type")
             message_json["text"] = content.get("content")
             message_json["seq"] = content.get("seq")
+            message_json["source_url"] = content.get("source_url")
+            message_json["thumb_url"] = content.get("thumb_url")
+            message_json["title"] = content.get("title")
+            message_json["desc"] = content.get("desc")
+            message_json["size"] = content.get("size")
+            message_json["duration"] = content.get("duration")
+            message_json["msg_id"] = content.get("msg_id")
             message_list.append(message_json)
 
         res["batch_send_task_id"] = batch_send_task.get_id()
