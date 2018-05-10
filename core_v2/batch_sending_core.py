@@ -274,7 +274,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
         logger.info(u"任务发送失败, client_id: %s." % user_info.client_id)
         batch_send_task.status = BATCH_SEND_TASK_STATUS_4
         batch_send_task.save()
-        return ERR_UNKNOWN_ERROR
+        return SUCCESS
 
 
 def _add_task_to_consumption_task(uqr_info, um_lib, bs_task_info):
