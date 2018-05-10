@@ -106,7 +106,7 @@ def get_auto_reply_setting(user_info):
         message_list = list()
         for reply_content in reply_content_list:
             message_json = dict()
-            message_json["task_send_type"] = reply_content.get("type")
+            message_json["real_type"] = reply_content.get("type")
             message_json["text"] = reply_content.get("content")
             message_json["seq"] = reply_content.get("seq")
             message_list.append(message_json)
@@ -187,9 +187,9 @@ def create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_
     reply_content_list = list()
     for i, message_info in enumerate(message_list):
         reply_content = dict()
-        send_type = message_info.get("send_type")
+        real_type = message_info.get("real_type")
         text = message_info.get("text")
-        reply_content['type'] = send_type
+        reply_content['type'] = real_type
         reply_content['content'] = text
         reply_content['seq'] = i
         reply_content_list.append(reply_content)

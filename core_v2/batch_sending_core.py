@@ -9,7 +9,7 @@ import requests
 from sqlalchemy import func, desc
 
 from configs.config import db, ERR_WRONG_ITEM, SUCCESS, ERR_WRONG_USER_ITEM, CONSUMPTION_TASK_TYPE, BatchSendTask, \
-    Chatroom, BATCH_SEND_TASK_STATUS_1, BATCH_SEND_TASK_STATUS_3, BATCH_SEND_TASK_STATUS_4, UserBotR
+    Chatroom, BATCH_SEND_TASK_STATUS_1, BATCH_SEND_TASK_STATUS_3, BATCH_SEND_TASK_STATUS_4, UserBotR, ERR_UNKNOWN_ERROR
 from core.consumption_core import add_task_to_consumption_task
 from core_v2.send_msg import send_msg_to_android
 from models_v2.base_model import BaseModel, CM
@@ -58,7 +58,7 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
         content_list = batch_send_task.content_list
         for content in content_list:
             message_json = dict()
-            message_json["task_send_type"] = content.get("type")
+            message_json["real_type"] = content.get("type")
             message_json["text"] = content.get("content")
             message_json["seq"] = content.get("seq")
             message_list.append(message_json)
@@ -120,7 +120,7 @@ def get_task_detail(batch_send_task_id):
     content_list = batch_send_task.content_list
     for content in content_list:
         message_json = dict()
-        message_json["task_send_type"] = content.get("type")
+        message_json["real_type"] = content.get("type")
         message_json["text"] = content.get("content")
         message_json["seq"] = content.get("seq")
         message_json["source_url"] = content.get("source_url")
@@ -184,7 +184,7 @@ def create_a_timed_sending_task(user_info, chatroom_list, message_list, send_tim
     content_list = list()
     for i, message in enumerate(message_list):
         message_dict = dict()
-        message_dict["type"] = message.get("send_type")
+        message_dict["type"] = message.get("real_type")
         message_dict["content"] = message.get("text")
         message_dict["source_url"] = message.get("source_url")
         message_dict["thumb_url"] = message.get("thumb_url")
@@ -243,7 +243,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     content_list = list()
     for i, message in enumerate(message_list):
         message_dict = dict()
-        message_dict["type"] = message.get("send_type")
+        message_dict["type"] = message.get("real_type")
         message_dict["content"] = message.get("text")
         message_dict["source_url"] = message.get("source_url")
         message_dict["thumb_url"] = message.get("thumb_url")
@@ -274,7 +274,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     else:
         logger.info(u"任务发送失败, client_id: %s." % user_info.client_id)
         batch_send_task.status = BATCH_SEND_TASK_STATUS_4
-        return SUCCESS
+        return ERR_UNKNOWN_ERROR
 
 
 def _add_task_to_consumption_task(uqr_info, um_lib, bs_task_info):
