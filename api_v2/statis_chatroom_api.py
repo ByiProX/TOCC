@@ -45,8 +45,8 @@ def getQunInfo(chatroomnames):
     ret = {}
     if chatroomnames:
         qunInfo = BaseModel.fetch_all('a_chatroom',
-                                      ['chatroomname', 'nickname', 'member_count', 'avatar_url', "create_time",
-                                       "update_time"],
+                                      ['chatroomname', 'nickname', 'member_count', 'avatar_url', 'create_time','qrcode','member_count','chatroomnotice',
+                                       'update_time','nickname_default'],
                                       BaseModel.where("in", "chatroomname", chatroomnames))
         if (qunInfo):
             for qf in qunInfo:
@@ -256,7 +256,8 @@ def chatroom_statistics_chatroom():
             ["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]), page = 1,
                                        pagesize = pagesize)
         chatroomname_list = [r.chatroomname for r in uqr_list]
-        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname', 'member_count', 'avatar_url'],
+        qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname', 'member_count', 'avatar_url', 'create_time','qrcode','member_count','chatroomnotice',
+                                       'update_time','nickname_default'],
                                       BaseModel.where("in", "chatroomname", chatroomname_list))
         chatroom_json_list = []
         for chatroom in qunInfo:
@@ -359,7 +360,8 @@ def get_non_active_chatroom_list():
     uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(_where), page = page,
                                    pagesize = pagesize)
     chatroomname_list = [r.chatroomname for r in uqr_list]
-    qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname', 'member_count', 'avatar_url'],
+    qunInfo = BaseModel.fetch_all('a_chatroom', ['chatroomname', 'nickname', 'member_count', 'avatar_url', 'create_time','qrcode','member_count','chatroomnotice',
+                                       'update_time','nickname_default'],
                                   BaseModel.where("in", "chatroomname", chatroomname_list))
     for chatroom in qunInfo:
         chatroom_json = chatroom.to_json_full()
