@@ -1346,7 +1346,7 @@ def new_event_chatroom_send_word():
         time.sleep(30)
         # Get all event.
         event_list = BaseModel.fetch_all('events_', '*',
-                                         BaseModel.where_dict({'is_finish': 1, 'is_work': 1, 'enough_chatroom': 1}))
+                                         BaseModel.where_dict({'is_work': 1}))
         previous_chatroom_status_dict = chatroom_status_dict.copy()
         for event in event_list:
             event_id = event.get_id()
