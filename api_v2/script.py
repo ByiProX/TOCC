@@ -6,6 +6,7 @@ import time
 from flask import request
 
 from configs.config import main_api_v2, SUCCESS, UserInfo, MaterialLib, Message
+from core_v2.send_msg import send_ws_to_android
 from crawler.coin_all_crawler_v2 import update_coin_all
 from models_v2.base_model import BaseModel
 from utils.u_response import make_response
@@ -26,14 +27,18 @@ def script():
     # user_info.username = u"ada390859"
     # user_info.save()
     # update_coin_all()
-    ubr = BaseModel.fetch_by_id("client_bot_r", "5ad499d5f5d7e265e244b838")
-    ubr.bot_username = "wxid_6mf4yqgs528e22"
-    ubr.save()
-
-    material_list = BaseModel.fetch_all(MaterialLib, "*")
-    for material in material_list:
-        msg_id = material.msg_id
-        msg = BaseModel.fetch_one(Message, "*", where_clause = BaseModel.where_dict({"msg_id": msg_id}))
-        print json.dumps(msg.to_json_full())
+    # ubr = BaseModel.fetch_by_id("client_bot_r", "5ad499d5f5d7e265e244b838")
+    # ubr.bot_username = "wxid_6mf4yqgs528e22"
+    # ubr.save()
+    #
+    # material_list = BaseModel.fetch_all(MaterialLib, "*")
+    # for material in material_list:
+    #     msg_id = material.msg_id
+    #     msg = BaseModel.fetch_one(Message, "*", where_clause = BaseModel.where_dict({"msg_id": msg_id}))
+    #     print json.dumps(msg.to_json_full())
+    bot_username = "wxid_l66m6wuilug912"
+    data = {"chatroomname": "4893318868@chatroom",
+            "task": "update_chatroom"}
+    send_ws_to_android(bot_username, data)
 
     return make_response(SUCCESS)

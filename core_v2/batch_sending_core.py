@@ -269,11 +269,12 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     if status == SUCCESS:
         logger.info(u"任务发送成功, client_id: %s." % user_info.client_id)
         batch_send_task.status = BATCH_SEND_TASK_STATUS_3
-
+        batch_send_task.save()
         return SUCCESS
     else:
         logger.info(u"任务发送失败, client_id: %s." % user_info.client_id)
         batch_send_task.status = BATCH_SEND_TASK_STATUS_4
+        batch_send_task.save()
         return ERR_UNKNOWN_ERROR
 
 
