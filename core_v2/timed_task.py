@@ -24,7 +24,7 @@ class TimedTaskThread(threading.Thread):
                                         where_clause=BaseModel.and_(
                                             ["<", "send_time",
                                              int(time.time()) + TIMED_BATCH_SENDING_INTERVAL]),
-                                        order_by=BaseModel.order_by({"send_time": "DESC"}))
+                                        order_by=BaseModel.order_by({"send_time": "ASC"}))
 
             while True:
                 try:
