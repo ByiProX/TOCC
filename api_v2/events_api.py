@@ -1024,7 +1024,7 @@ def create_events():
         {'success_status': success_status, 'event': new_event.to_json()})
 
 
-@app_test.route('/_events_list', methods=['POST'])
+@app_test.route('/events_list_v2', methods=['POST'])
 @para_check('token', )
 def _events_list():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
@@ -1074,7 +1074,7 @@ def _events_list():
     return response(result)
 
 
-@app_test.route('/_events_detail', methods=['POST'])
+@app_test.route('/events_detail_v2', methods=['POST'])
 @para_check('token', 'event_id')
 def _events_detail():
     event_id = request.json.get('event_id')
@@ -1128,7 +1128,7 @@ def _events_detail():
     return response(result)
 
 
-@app_test.route('/_events_modify', methods=['POST'])
+@app_test.route('/events_modify_v2', methods=['POST'])
 @para_check('token', 'event_id', )
 def _modify_event_word():
     # Check owner or return.
@@ -1179,7 +1179,7 @@ def _modify_event_word():
     return response({'err_code': 0, 'content': 'SUCCESS', 'event': event.to_json()})
 
 
-@app_test.route('/_events_qrcode', methods=['POST'])
+@app_test.route('/events_qrcode_v2', methods=['POST'])
 @para_check('event_id', 'code', 'app_name')
 def _get_events_qrcode():
     """Get event base info (for qrcode)."""
