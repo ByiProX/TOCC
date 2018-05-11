@@ -1281,7 +1281,7 @@ def new_open_chatroom_name_protect():
                                       "chatroomnick": real_name,
                                   }}
                         requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
-        time.sleep(100)
+        time.sleep(30)
 
 
 def new_event_chatroom_send_word():
@@ -1344,7 +1344,6 @@ def new_event_chatroom_send_word():
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
     while True:
-        time.sleep(30)
         # Get all event.
         event_list = BaseModel.fetch_all('events_', '*',
                                          BaseModel.where_dict({'is_work': 1}))
@@ -1393,8 +1392,13 @@ def new_event_chatroom_send_word():
                             # Do
                             this_bot_username = get_owner_bot_username(event.client_id)
                             send_message(this_bot_username, chatroom.chatroomname, 1, event.condition_word)
+        time.sleep(30)
 
 
 new_thread_2 = threading.Thread(target=new_event_chatroom_send_word)
 new_thread_2.setDaemon(True)
 new_thread_2.start()
+
+new_thread_3 = threading.Thread(target=new_open_chatroom_name_protect)
+new_thread_3.setDaemon(True)
+new_thread_3.start()
