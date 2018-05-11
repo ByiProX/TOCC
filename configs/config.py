@@ -424,8 +424,6 @@ NEW_MSG_Q = Queue()
 SIGN_DICT = dict()
 SENSITIVE_WORD_RULE_DICT = dict()
 
-ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.xuanren360.com/android/bot_status"
-ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_mass_message"
-ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_message"
-
-
+ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.walibee.com/android/bot_status"
+ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.walibee.com/android/send_mass_message"
+ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.walibee.com/android/send_message"
