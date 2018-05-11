@@ -20,10 +20,11 @@ class TimedTaskThread(threading.Thread):
         logger.info(u"Start thread id: %s." % str(self.thread_id))
         while self.go_work:
             start_time = int(time.time())
-            tasks = BaseModel.fetch_all("batch_sending_task",
+            tasks = BaseModel.fetch_all("batch_send_task",
                                         where_clause=BaseModel.and_(
                                             ["<", "send_time", int(time.time()) + TIMED_BATCH_SENDING_INTERVAL]),
-                                        order_by=BaseModel.order_by({"send_time": "ASC"}))
+                                        order_by=BaseModel.order_by({"send_time": "ASC"})
+                                        )
 
             while True:
                 try:
