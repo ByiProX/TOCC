@@ -805,7 +805,7 @@ def put_qrcode_img_to_oss(event_id, app_id):
 
     def app_header_placeholder(_app_id):
         app_config = {
-            'yaca': 'test2.xuanren360.com',
+            'yaca': 'wx.walibee.com',
             'zidou': 'wx.zidouchat.com',
         }
         if _app_id in app_config:
