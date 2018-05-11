@@ -1349,6 +1349,7 @@ def new_event_chatroom_send_word():
 
     while True:
         try:
+            print('-----running')
             # Get all event.
             event_list = BaseModel.fetch_all('events_', '*',
                                              BaseModel.where_dict({'is_work': 1}))
@@ -1372,6 +1373,7 @@ def new_event_chatroom_send_word():
                     chatroom_status_dict[chatroom.chatroomname] = member_count
                     need_fission, need_condition_word, need_pull_people = event.need_fission, event.need_condition_word, event.need_pull_people
                     # If previous chatroom list also have same chatroomname.
+                    print('-----',chatroom_status_dict)
                     if previous_chatroom_status_dict.get(chatroom.chatroomname):
                         previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
                         now_chatroom_member_count = chatroom_status_dict[chatroom.chatroomname]
@@ -1401,7 +1403,7 @@ def new_event_chatroom_send_word():
                                 send_message(this_bot_username, chatroom.chatroomname, 1, event.condition_word)
         except Exception as e:
             print('new_event_chatroom_send_word', e)
-        time.sleep(30)
+        time.sleep(15)
 
 
 new_thread_2 = threading.Thread(target=new_event_chatroom_send_word)
