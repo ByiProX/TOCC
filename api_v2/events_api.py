@@ -1284,7 +1284,7 @@ def new_open_chatroom_name_protect():
                                       }}
                             requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
         except Exception as e:
-            print(e)
+            print('new_open_chatroom_name_protect', e)
         time.sleep(30)
 
 
@@ -1348,54 +1348,59 @@ def new_event_chatroom_send_word():
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
     while True:
-        # Get all event.
-        event_list = BaseModel.fetch_all('events_', '*',
-                                         BaseModel.where_dict({'is_work': 1}))
-        previous_chatroom_status_dict = chatroom_status_dict.copy()
-        for event in event_list:
-            event_id = event.get_id()
-            # Get all chatroom in this event.
-            chatroom_list = BaseModel.fetch_all('events_chatroom_', '*', BaseModel.where_dict({'event_id': event_id}))
-            for chatroom in chatroom_list:
-                # Update status
-                this_chatroom = BaseModel.fetch_one('a_chatroom', 'memberlist',
-                                                    BaseModel.where_dict({'chatroomname': chatroom.chatroomname}))
+        try:
+            # Get all event.
+            event_list = BaseModel.fetch_all('events_', '*',
+                                             BaseModel.where_dict({'is_work': 1}))
+            previous_chatroom_status_dict = chatroom_status_dict.copy()
+            for event in event_list:
+                event_id = event.get_id()
+                # Get all chatroom in this event.
+                chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
+                                                    BaseModel.where_dict({'event_id': event_id}))
+                for chatroom in chatroom_list:
+                    # Update status
+                    this_chatroom = BaseModel.fetch_one('a_chatroom', 'memberlist',
+                                                        BaseModel.where_dict({'chatroomname': chatroom.chatroomname}))
 
-                if not this_chatroom:
-                    logger.warning('member_count ERROR!!! Can not find this_chatroom:%s' % chatroom.chatroomname)
-                    member_count = 0
-                else:
-                    member_count = len(this_chatroom.memberlist.split(';'))
+                    if not this_chatroom:
+                        logger.warning('member_count ERROR!!! Can not find this_chatroom:%s' % chatroom.chatroomname)
+                        member_count = 0
+                    else:
+                        member_count = len(this_chatroom.memberlist.split(';'))
 
-                chatroom_status_dict[chatroom.chatroomname] = member_count
-                need_fission, need_condition_word, need_pull_people = event.need_fission, event.need_condition_word, event.need_pull_people
-                # If previous chatroom list also have same chatroomname.
-                if previous_chatroom_status_dict.get(chatroom.chatroomname):
-                    previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
-                    now_chatroom_member_count = chatroom_status_dict[chatroom.chatroomname]
-                    # print(previous_chatroom_member_count, now_chatroom_member_count)
-                    if now_chatroom_member_count > previous_chatroom_member_count and need_fission:
-                        # Send welcome message.
-                        this_bot_username = get_owner_bot_username(event.client_id)
-                        send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_1)
-                        send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_2)
-                    if now_chatroom_member_count in (30, 50, 80) and need_pull_people:
-                        # Change chatroomnotice.
-                        for index, value in enumerate([30, 50, 80]):
-                            if now_chatroom_member_count == value and not \
-                                    chatroom_task_status_dict[chatroom.chatroomname][index]:
-                                chatroom_task_status_dict[chatroom.chatroomname][index] = 1
+                    chatroom_status_dict[chatroom.chatroomname] = member_count
+                    need_fission, need_condition_word, need_pull_people = event.need_fission, event.need_condition_word, event.need_pull_people
+                    # If previous chatroom list also have same chatroomname.
+                    if previous_chatroom_status_dict.get(chatroom.chatroomname):
+                        previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
+                        now_chatroom_member_count = chatroom_status_dict[chatroom.chatroomname]
+                        # print(previous_chatroom_member_count, now_chatroom_member_count)
+                        if now_chatroom_member_count > previous_chatroom_member_count and need_fission:
+                            # Send welcome message.
+                            this_bot_username = get_owner_bot_username(event.client_id)
+                            send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_1)
+                            send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_2)
+                        if now_chatroom_member_count in (30, 50, 80) and need_pull_people:
+                            # Change chatroomnotice.
+                            for index, value in enumerate([30, 50, 80]):
+                                if now_chatroom_member_count == value and not \
+                                        chatroom_task_status_dict[chatroom.chatroomname][index]:
+                                    chatroom_task_status_dict[chatroom.chatroomname][index] = 1
+                                    # Do
+                                    this_bot_username = get_owner_bot_username(event.client_id)
+                                    change_chatroom_notice(this_bot_username, chatroom.chatroomname,
+                                                           event.pull_people_word)
+
+                        if now_chatroom_member_count == 100 and need_condition_word:
+                            # Full people notice.
+                            if not chatroom_task_status_dict[chatroom.chatroomname][3]:
+                                chatroom_task_status_dict[chatroom.chatroomname][3] = 1
                                 # Do
                                 this_bot_username = get_owner_bot_username(event.client_id)
-                                change_chatroom_notice(this_bot_username, chatroom.chatroomname, event.pull_people_word)
-
-                    if now_chatroom_member_count == 100 and need_condition_word:
-                        # Full people notice.
-                        if not chatroom_task_status_dict[chatroom.chatroomname][3]:
-                            chatroom_task_status_dict[chatroom.chatroomname][3] = 1
-                            # Do
-                            this_bot_username = get_owner_bot_username(event.client_id)
-                            send_message(this_bot_username, chatroom.chatroomname, 1, event.condition_word)
+                                send_message(this_bot_username, chatroom.chatroomname, 1, event.condition_word)
+        except Exception as e:
+            print('new_event_chatroom_send_word', e)
         time.sleep(30)
 
 
