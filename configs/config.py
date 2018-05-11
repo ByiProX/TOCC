@@ -176,7 +176,7 @@ APP_ZIDOU = "zidou"
 
 APP_INFO_DICT = dict()
 # APP_DICT = dict()
-APP_INFO_DICT[APP_YACA] = {"APP_ID": "wxc3bc48b4c40651fd", "APP_SECRET": "959f45dbf812a5685f85ff572e76a671", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2ftest2.xuanren360.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
+APP_INFO_DICT[APP_YACA] = {"APP_ID": "wxc3bc48b4c40651fd", "APP_SECRET": "959f45dbf812a5685f85ff572e76a671", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2fwx.walibee.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
 # APP_INFO_DICT[APP_ZIDOU] = {"APP_ID": "wxc8b40fcec9626528", "APP_SECRET": "6e63c26d856f7ecb1779f24ab2fc08f4", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc8b40fcec9626528&redirect_uri=http%3a%2f%2fzidouwx.xuanren360.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
 APP_INFO_DICT[APP_ZIDOU] = {"APP_ID": "wxbe0f84cc2b873c72", "APP_SECRET": "d6063862625c0a79719bc6167503f35e", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxbe0f84cc2b873c72&redirect_uri=http%3a%2f%2fwx.zidouchat.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
 # APP_INFO_DICT[APP_ZIDOUBOT] = {"APP_ID": "wxc8b40fcec9626528", "APP_SECRET": "6e63c26d856f7ecb1779f24ab2fc08f4", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc8b40fcec9626528&redirect_uri=http%3a%2f%2fzidouwx.xuanren360.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
