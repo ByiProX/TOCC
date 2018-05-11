@@ -11,6 +11,7 @@ from configs.config import DB_RULE, db, DB_SERVER_URL, SUCCESS, ERROR_CODE, User
 from models.user_bot_models import UserInfo
 from utils.u_model_json_str import model_to_dict
 from utils.u_time import datetime_to_timestamp_utc_8
+from utils.u_transformat import str_to_unicode
 
 logger = logging.getLogger('main')
 
@@ -371,10 +372,10 @@ class BaseModel(object):
                         eof = True
                 else:
                     errTry += 1
-                    logger.error(u"query failed, content: " + unicode(response.content))
+                    logger.error(u"query failed, content: " + unicode(response.content) + u" " + str_to_unicode(response.request.url))
             else:
                 errTry += 1
-                logger.error(u"query failed, content: " + unicode(response.content))
+                logger.error(u"query failed, content: " + unicode(response.content) + u" " + str_to_unicode(response.request.url))
 
             if not total_flag:
                 break
@@ -411,9 +412,9 @@ class BaseModel(object):
                 if data:
                     item = CM(tablename).from_json(data[0])
             else:
-                logger.error(u"query failed, content: " + unicode(response.content))
+                logger.error(u"query failed, content: " + unicode(response.content) + u" " + str_to_unicode(response.request.url))
         else:
-            logger.error(u"query failed, content: " + unicode(response.content))
+            logger.error(u"query failed, content: " + unicode(response.content) + u" " + str_to_unicode(response.request.url))
         return item
 
     @staticmethod
