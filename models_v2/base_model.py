@@ -94,10 +94,14 @@ class BaseModel(object):
                 if isinstance(value, list) or isinstance(value, dict):
                     value = json.dumps(value)
                 res_json[attr] = value
+        if self.__tablename == "a_chatroom" and res_json.get('nickname') == "":
+            res_json['nickname'] = res_json.get('nickname_default')
         return res_json
 
     def to_json_full(self):
         res_json = {attr: getattr(self, attr) for attr in self.attrs}
+        if self.__tablename == "a_chatroom" and res_json.get('nickname') == "":
+            res_json['nickname'] = res_json.get('nickname_default')
         return res_json
 
     def _validate_attr(self, __attr):
