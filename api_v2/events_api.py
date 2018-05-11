@@ -1264,7 +1264,7 @@ def new_open_chatroom_name_protect():
         for i in event_list:
             if i.chatroom_name_protect:
                 event_chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
-                                                          BaseModel.where_dict({'event_id': i.events_id}))
+                                                          BaseModel.where_dict({'event_id': i.get_id()}))
                 for j in event_chatroom_list:
                     now_chatroom_info = BaseModel.fetch_one('a_chatroom', '*',
                                                             BaseModel.where_dict({'chatroomname': j.chatroomname}))
