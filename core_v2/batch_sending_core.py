@@ -48,6 +48,8 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
             chatroom_dict = dict()
             chatroom_dict['chatroom_id'] = chatroom.get_id()
             chatroom_dict['chatroom_nickname'] = chatroom.nickname
+            if chatroom.nickname == "":
+                chatroom_dict['chatroom_nickname'] = chatroom.nickname_default
             chatroom_dict['chatroomname'] = chatroomname
             chatroom_dict['chatroom_member_count'] = chatroom.member_count
             chatroom_dict['avatar_url'] = chatroom.avatar_url
@@ -93,6 +95,8 @@ def get_chatroom_dict(chatroomname):
     chatroom_dict = dict()
     chatroom_dict['chatroom_id'] = chatroom.get_id()
     chatroom_dict['chatroom_nickname'] = chatroom.nickname
+    if chatroom.nickname == "":
+        chatroom_dict['chatroom_nickname'] = chatroom.nickname_default
     chatroom_dict['chatroomname'] = chatroomname
     chatroom_dict['chatroom_member_count'] = chatroom.member_count
     chatroom_dict['avatar_url'] = chatroom.avatar_url
@@ -120,6 +124,8 @@ def get_task_detail(batch_send_task_id):
         chatroom_dict = dict()
         chatroom_dict['chatroom_id'] = chatroom.get_id()
         chatroom_dict['chatroom_nickname'] = chatroom.nickname
+        if chatroom.nickname == "":
+            chatroom_dict['chatroom_nickname'] = chatroom.nickname_default
         chatroom_dict['chatroomname'] = chatroomname
         chatroom_dict['chatroom_member_count'] = chatroom.member_count
         chatroom_dict['avatar_url'] = chatroom.avatar_url

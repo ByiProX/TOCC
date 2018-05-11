@@ -133,6 +133,8 @@ def get_auto_reply_setting(user_info):
             chatroom_dict = dict()
             chatroom_dict['chatroom_id'] = chatroom.get_id()
             chatroom_dict['chatroom_nickname'] = chatroom.nickname
+            if chatroom.nickname == "":
+                chatroom_dict['chatroom_nickname'] = chatroom.nickname_default
             chatroom_dict['chatroomname'] = chatroomname
             chatroom_dict['chatroom_member_count'] = chatroom.member_count
             chatroom_dict['avatar_url'] = chatroom.avatar_url
