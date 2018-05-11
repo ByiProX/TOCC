@@ -54,7 +54,9 @@ def initial_all():
 logger = logging.getLogger('main')
 # production_thread.start()
 crawler_thread.start()
-# timed_batch_sending_task_thread.start()
+timed_batch_sending_task_thread.start()
+
+
 # start_listen_new_msg()
 BaseModel.extract_from_json()
 
