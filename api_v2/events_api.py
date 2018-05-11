@@ -1271,7 +1271,7 @@ def new_open_chatroom_name_protect():
                     real_name = j.start_name + str(j.index) + u'群'
                     if now_chatroom_info.nickname_real != real_name:
                         # Get this chatroom bot_username.
-                        this_chatroom_info = BaseModel.fetch_all('chatroom_pool', '*',
+                        this_chatroom_info = BaseModel.fetch_one('chatroom_pool', '*',
                                                                  BaseModel.where_dict({'chatroomname': j.chatroomname}))
                         _bot_username = this_chatroom_info.bot_username
                         result = {'bot_username': _bot_username,
