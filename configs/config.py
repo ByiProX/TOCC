@@ -161,8 +161,8 @@ app.response_class = MyResponse
 config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
-# DB_SERVER_URL = u'http://dal.com/'
-DB_SERVER_URL = u'http://dal.com:8090/'
+DB_SERVER_URL = u'http://dal.com/'
+# DB_SERVER_URL = u'http://dal.com:8090/'
 
 rds = redis.StrictRedis(host = '127.0.0.1', port = 6379, db = 1, password = "redisRedis_789")
 
@@ -190,6 +190,7 @@ main_api_v2 = Blueprint('api_v2', __name__)
 PRODUCTION_CIRCLE_INTERVAL = 1
 CONSUMPTION_CIRCLE_INTERVAL = 1
 CRAWLER_CIRCLE_INTERVAL = 300
+TIMED_BATCH_SENDING_INTERVAL = 300
 
 # 错误代码
 ERROR_CODE = dict()

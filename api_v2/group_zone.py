@@ -93,22 +93,35 @@ def get_group_zone_sources():
     else:
         real_type_list = [real_type]
 
-    print ":::::", client_quns_name_list
-    sources = BaseModel.fetch_all('a_message', ['bot_username', 'create_time',
-                                                'msg_local_id', 'real_type',
-                                                'thumb_url', 'source_url',
-                                                'title', 'desc',
-                                                'size', 'duration',
-                                                'talker', 'real_talker'],
-                                  where_clause=BaseModel.and_(
-                                      ['in', 'talker', client_quns_name_list],
-                                      ['in', 'real_type', real_type_list],
-                                      # ['=', 'type', source_type],
-                                      # ['in', 'type', [49, 3, 436207665, 1]],
-                                      ['like', 'title', keyword]),
-                                  page=page, pagesize=pagesize,
-                                  order_by=BaseModel.order_by({"create_time": order_type})
-                                  )
+    # print ":::::", client_quns_name_list
+    if keyword:
+        sources = BaseModel.fetch_all('a_message', ['bot_username', 'create_time',
+                                                    'msg_local_id', 'real_type',
+                                                    'thumb_url', 'source_url',
+                                                    'title', 'desc',
+                                                    'size', 'duration',
+                                                    'talker', 'real_talker'],
+                                      where_clause=BaseModel.and_(
+                                          ['in', 'talker', client_quns_name_list],
+                                          ['in', 'real_type', [5, 6, 7]],
+                                          ['like', 'title', keyword]),
+                                      page=page, pagesize=pagesize,
+                                      order_by=BaseModel.order_by({"create_time": order_type})
+                                      )
+    else:
+        sources = BaseModel.fetch_all('a_message', ['bot_username', 'create_time',
+                                                    'msg_local_id', 'real_type',
+                                                    'thumb_url', 'source_url',
+                                                    'title', 'desc',
+                                                    'size', 'duration',
+                                                    'talker', 'real_talker'],
+                                      where_clause=BaseModel.and_(
+                                          ['in', 'talker', client_quns_name_list],
+                                          ['in', 'real_type', real_type_list],
+                                          ['like', 'title', keyword]),
+                                      page=page, pagesize=pagesize,
+                                      order_by=BaseModel.order_by({"create_time": order_type})
+                                      )
 
     total_count = BaseModel.fetch_all('a_message', ['bot_username', 'create_time',
                                                     'msg_local_id', 'real_type',
@@ -118,10 +131,7 @@ def get_group_zone_sources():
                                                     'talker', 'real_talker'],
                                       where_clause=BaseModel.and_(
                                           ['in', 'talker', client_quns_name_list],
-                                          ['in', 'real_type', real_type_list],
-                                          # ['=', 'type', source_type],
-                                          # ['in', 'type', [49, 3, 436207665, 1]],
-                                          ['like', 'title', keyword]),
+                                          ['in', 'real_type', real_type_list]),
                                       order_by=BaseModel.order_by({"create_time": order_type})
                                       ).__len__()
 
