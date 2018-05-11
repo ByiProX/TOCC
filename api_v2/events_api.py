@@ -1046,14 +1046,15 @@ def _events_list():
 
         # Get all chatroom member_count.
         for event_chatroom in event_chatroom_list:
-            this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
-                                                BaseModel.where_dict({'chatroomname': event_chatroom.chatroomname}))
+            if event_chatroom.is_activated:
+                this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
+                                                    BaseModel.where_dict({'chatroomname': event_chatroom.chatroomname}))
 
-            if this_chatroom:
-                if this_chatroom.memberlist:
-                    total_inc += len(this_chatroom.memberlist.split(';'))
-            else:
-                logger.warning('Can not find this chatroom:{}'.format(event_chatroom.chatroomname))
+                if this_chatroom:
+                    if this_chatroom.memberlist:
+                        total_inc += len(this_chatroom.memberlist.split(';'))
+                else:
+                    logger.warning('Can not find this chatroom:{}'.format(event_chatroom.chatroomname))
 
         temp.update({
             'event_id': event.get_id(),
