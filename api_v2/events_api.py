@@ -1329,10 +1329,10 @@ def new_event_chatroom_send_word():
         if dict(resp.json())['err_code'] == -1:
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
-    def get_owner_bot_username(client_id):
+    def get_owner_bot_username(__chatroomname):
         # Get roomowner's bot_username
-        client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': client_id}))
-        __bot_username = client_bot_r.bot_username
+        this_chatroom_bot = BaseModel.fetch_one('chatroom_pool', '*', BaseModel.where_dict({'chatroomname': __chatroomname}))
+        __bot_username = this_chatroom_bot.bot_username
 
         return __bot_username
 
@@ -1373,14 +1373,13 @@ def new_event_chatroom_send_word():
                     chatroom_status_dict[chatroom.chatroomname] = member_count
                     need_fission, need_condition_word, need_pull_people = event.need_fission, event.need_condition_word, event.need_pull_people
                     # If previous chatroom list also have same chatroomname.
-                    print('-----',chatroom_status_dict)
                     if previous_chatroom_status_dict.get(chatroom.chatroomname):
                         previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
                         now_chatroom_member_count = chatroom_status_dict[chatroom.chatroomname]
                         # print(previous_chatroom_member_count, now_chatroom_member_count)
                         if now_chatroom_member_count > previous_chatroom_member_count and need_fission:
                             # Send welcome message.
-                            this_bot_username = get_owner_bot_username(event.client_id)
+                            this_bot_username = get_owner_bot_username(chatroom.chatroomname)
                             send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_1)
                             send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_2)
                         if now_chatroom_member_count in (30, 50, 80) and need_pull_people:
