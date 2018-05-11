@@ -1260,27 +1260,31 @@ def _get_events_qrcode():
 
 def new_open_chatroom_name_protect():
     while True:
-        event_list = BaseModel.fetch_all('events_', '*')
-        for i in event_list:
-            if i.chatroom_name_protect:
-                event_chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
-                                                          BaseModel.where_dict({'event_id': i.get_id()}))
-                for j in event_chatroom_list:
-                    now_chatroom_info = BaseModel.fetch_one('a_chatroom', '*',
-                                                            BaseModel.where_dict({'chatroomname': j.chatroomname}))
-                    real_name = j.start_name + str(j.index) + u'群'
-                    if now_chatroom_info.nickname_real != real_name:
-                        # Get this chatroom bot_username.
-                        this_chatroom_info = BaseModel.fetch_one('chatroom_pool', '*',
-                                                                 BaseModel.where_dict({'chatroomname': j.chatroomname}))
-                        _bot_username = this_chatroom_info.bot_username
-                        result = {'bot_username': _bot_username,
-                                  'data': {
-                                      "task": "update_chatroom_nick",
-                                      "chatroomname": j.chatroomname,
-                                      "chatroomnick": real_name,
-                                  }}
-                        requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+        try:
+            event_list = BaseModel.fetch_all('events_', '*')
+            for i in event_list:
+                if i.chatroom_name_protect:
+                    event_chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
+                                                              BaseModel.where_dict({'event_id': i.get_id()}))
+                    for j in event_chatroom_list:
+                        now_chatroom_info = BaseModel.fetch_one('a_chatroom', '*',
+                                                                BaseModel.where_dict({'chatroomname': j.chatroomname}))
+                        real_name = j.start_name + str(j.index) + u'群'
+                        if now_chatroom_info.nickname_real != real_name:
+                            # Get this chatroom bot_username.
+                            this_chatroom_info = BaseModel.fetch_one('chatroom_pool', '*',
+                                                                     BaseModel.where_dict(
+                                                                         {'chatroomname': j.chatroomname}))
+                            _bot_username = this_chatroom_info.bot_username
+                            result = {'bot_username': _bot_username,
+                                      'data': {
+                                          "task": "update_chatroom_nick",
+                                          "chatroomname": j.chatroomname,
+                                          "chatroomnick": real_name,
+                                      }}
+                            requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+        except Exception as e:
+            print(e)
         time.sleep(30)
 
 
