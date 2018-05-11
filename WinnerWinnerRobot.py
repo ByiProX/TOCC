@@ -11,6 +11,7 @@ import logging
 from configs.config import app, main_api, main_api_v2
 from core.production_core import production_thread
 from models_v2.base_model import BaseModel
+from core_v2.timed_task import timed_batch_sending_task_thread
 
 from utils import u_log
 import models
@@ -53,6 +54,7 @@ def initial_all():
 logger = logging.getLogger('main')
 # production_thread.start()
 crawler_thread.start()
+# timed_batch_sending_task_thread.start()
 # start_listen_new_msg()
 BaseModel.extract_from_json()
 

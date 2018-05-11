@@ -19,7 +19,7 @@ class TimedTaskThread(threading.Thread):
     def run(self):
         logger.info(u"Start thread id: %s." % str(self.thread_id))
         while self.go_work:
-            run_start_time = int(time.time())
+            start_time = int(time.time())
             tasks = BaseModel.fetch_all("batch_sending_task",
                                         where_clause=BaseModel.and_(
                                             ["<", "send_time",
@@ -49,8 +49,8 @@ class TimedTaskThread(threading.Thread):
                         batch_send_task.save()
                 except IndexError:
                     break
-
-            time.sleep(TIMED_BATCH_SENDING_INTERVAL)
+            end_time = int(time.time())
+            time.sleep(TIMED_BATCH_SENDING_INTERVAL - (end_time - start_time))
 
     def stop(self):
         logger.info(u"停止进程")
