@@ -50,7 +50,7 @@ def create_event_init():
     # Add QRcode URL.
     previous_event = BaseModel.fetch_one('events', '*',
                                          BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-    alive_qrcode_url = put_qrcode_img_to_oss(previous_event.events_id, app_id)
+    alive_qrcode_url = put_qrcode_img_to_oss(previous_event.get_id(), app_id)
     previous_event.alive_qrcode_url = alive_qrcode_url
     previous_event.save()
     # Static word.
@@ -817,7 +817,7 @@ def put_qrcode_img_to_oss(event_id, app_id):
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=10,
-        border=4,
+        border=1,
     )
     alive_qrcode_url = 'http://{}/chatroom.html?event_id={}'.format(app_header_placeholder(app_id), event_id)
     qr.add_data(alive_qrcode_url)
