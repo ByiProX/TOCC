@@ -9,7 +9,6 @@ from flask import request
 
 from configs.config import main_api_v2 as app_test
 from core_v2.user_core import UserLogin
-from core_v2.threading_pool import pipeline
 from models_v2.base_model import *
 from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false
 
