@@ -72,20 +72,20 @@ def app_get_user_basic_info():
 
     status, res = cal_user_basic_page_info(user_info)
 
-    client_info = BaseModel.fetch_one("a_contact", "*",
-                                      where_clause=BaseModel.where_dict(
-                                          {"username": user_info.username}
-                                      ))
-    client_info = client_info.to_json_full()
-    client_info["app"] = user_info.app
+    # client_info = BaseModel.fetch_one("a_contact", "*",
+    #                                   where_clause=BaseModel.where_dict(
+    #                                       {"username": user_info.username}
+    #                                   ))
+    # client_info = client_info.to_json_full()
+    # client_info["app"] = user_info.app
 
     if status == SUCCESS:
         return make_response(status, bot_info=res['bot_info'], user_func=res['user_func'],
-                             total_info=res['total_info'], client_info=client_info)
+                             total_info=res['total_info'], client_info="client_info")
     # 目前INFO均返回为SUCCESS
     elif status == INFO_NO_USED_BOT:
         return make_response(SUCCESS, bot_info=res['bot_info'], user_func=res['user_func'],
-                             total_info=res['total_info'], client_info=client_info)
+                             total_info=res['total_info'], client_info="client_info")
     else:
         return make_response(status)
 
@@ -311,19 +311,22 @@ def app_set_robot_nickname():
     return make_response(status)
 
 
-@main_api_v2.route("/who_not_create_chatroom", methods=['GET'])
-def who_not_create_chatroom():
-    clients = BaseModel.fetch_all("client_member", "*")
-    results = []
-    for client in clients:
-        quns = BaseModel.fetch_all("client_qun_r", "*",
-                                   where_clause=BaseModel.where_dict(
-                                       {"chatroomname": client.chatroomname})
-                                   )
-        if not len(quns):
-            results.append(client.code)
-
-    return make_response(SUCCESS, results=results)
+# @main_api_v2.route("/who_not_create_chatroom", methods=['POST'])
+# def who_not_create_chatroom():
+#     verify_json()
+#     status, user_info = UserLogin.verify_token(request.json.get('token'))
+#
+#     clients = BaseModel.fetch_all("client_member", "*")
+#     results = []
+#     for client in clients:
+#         quns = BaseModel.fetch_all("client_qun_r", "*",
+#                                    where_clause=BaseModel.where_dict(
+#                                        {"chatroomname": client.chatroomname})
+#                                    )
+#         if not len(quns):
+#             results.append(client.code)
+#
+#     return make_response(SUCCESS, results=results)
 
 
 if __name__ == "__main__":
