@@ -1259,7 +1259,7 @@ def _get_events_qrcode():
         return '!!!!!!!!!!!'
 
 
-@app_test.route('/ztest',methods=['POST'])
+@app_test.route('/ztest', methods=['POST'])
 def test():
     class Task:
         def __init__(self, data):
@@ -1421,9 +1421,35 @@ def new_event_chatroom_send_word():
         time.sleep(15)
 
 
-new_thread_2 = threading.Thread(target=new_event_chatroom_send_word)
-new_thread_2.setDaemon(True)
-new_thread_2.start()
+def new_event_init(chatroomname, start_name, owner_username):
+    """
+    1.Modify its chatroomname.
+    2.pull owner to this chatroom.
+    3.Update chatroom qrcode.
+    """
+    now_chatroom_info = BaseModel.fetch_one('a_chatroom', '*',
+                                            BaseModel.where_dict({'chatroomname': chatroomname}))
+
+    if now_chatroom_info.nickname_real != start_name:
+        # Get this chatroom bot_username.
+        this_chatroom_info = BaseModel.fetch_one('chatroom_pool', '*',
+                                                 BaseModel.where_dict(
+                                                     {'chatroomname': chatroomname}))
+        _bot_username = this_chatroom_info.bot_username
+        result = {'bot_username': _bot_username,
+                  'data': {
+                      "task": "update_chatroom_nick",
+                      "chatroomname": chatroomname,
+                      "chatroomnick": start_name,
+                  }}
+        requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
+    member_list = now_chatroom_info.member_list.split(';')
+    if owner_username not in member_list:
+        pass
+
+# new_thread_2 = threading.Thread(target=new_event_chatroom_send_word)
+# new_thread_2.setDaemon(True)
+# new_thread_2.start()
 
 # new_thread_3 = threading.Thread(target=new_open_chatroom_name_protect)
 # new_thread_3.setDaemon(True)
