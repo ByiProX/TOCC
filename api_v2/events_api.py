@@ -1380,6 +1380,7 @@ def new_event_chatroom_send_word():
                         if now_chatroom_member_count > previous_chatroom_member_count and need_fission:
                             # Send welcome message.
                             this_bot_username = get_owner_bot_username(chatroom.chatroomname)
+                            print('----send:', this_bot_username, chatroom.chatroomname, 1, event.fission_word_1)
                             send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_1)
                             send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_2)
                         if now_chatroom_member_count in (30, 50, 80) and need_pull_people:
