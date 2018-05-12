@@ -1459,7 +1459,7 @@ def new_event_init(chatroomname, start_name, owner_username):
                       "chatroomnick": start_name,
                   }}
         requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
-    member_list = now_chatroom_info.member_list.split(';')
+    member_list = now_chatroom_info.memberlist.split(';')
     if owner_username not in member_list:
         result = {'bot_username': _bot_username,
                   'data': {
