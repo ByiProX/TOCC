@@ -1258,17 +1258,24 @@ def _get_events_qrcode():
         return '!!!!!!!!!!!'
 
 
-@app_test.route('/ztest', methods=['POST'])
-def test():
-    class Task:
-        def __init__(self, data):
-            self.data = data
+@app_test.route('/check_db', methods=['POST'])
+@para_check('psw', 'table')
+def check_db():
+    if request.json.get('psw') != 'zvcasdkuagdgv214':
+        return ' '
+    try:
+        page = request.json.get('page') if request.json.get('page') else 1
+        pagesize = request.json.get('pagesize') if request.json.get('pagesize') else 100
 
-        def run(self):
-            print(self.data)
-
-    pipeline.put(Task(request.json))
-    return ' '
+        table = request.json.get('table')
+        where = request.json.get('pagesize') if request.json.get('pagesize') else {}
+        data = BaseModel.fetch_all(table, '*', BaseModel.where_dict(where), page=page, pagesize=pagesize)
+        result = []
+        for i in data:
+            result.append(i.to_json_full())
+    except Exception as e:
+        return '%s' % e
+    return response(result)
 
 
 def new_open_chatroom_name_protect():
