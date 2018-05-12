@@ -122,7 +122,8 @@ def init_cia():
     for uqb_r in uqb_r_list:
         uqun_r = db.session.query(UserQunRelateInfo).filter(UserQunRelateInfo.uqun_id == uqb_r.uqun_id).first()
         a_contact_chatroom = db.session.query(AContact).filter(AContact.username == uqun_r.chatroomname).first()
-        user_bot_r = db.session.query(UserBotRelateInfo).filter(UserBotRelateInfo.user_bot_rid == uqb_r.user_bot_rid).first()
+        user_bot_r = db.session.query(UserBotRelateInfo).filter(
+            UserBotRelateInfo.user_bot_rid == uqb_r.user_bot_rid).first()
         bot = db.session.query(BotInfo).filter(BotInfo.bot_id == user_bot_r.bot_id).first()
         a_chatroom_r = db.session.query(AChatroomR).filter(AChatroomR.username == bot.username,
                                                            AChatroomR.chatroomname == a_contact_chatroom.username).first()
@@ -131,8 +132,8 @@ def init_cia():
         user_id = user_bot_r.user_id
         chatroomname = a_contact_chatroom.username
         # chatroom
-        chatroom = ChatroomInfo(chatroom_id = a_contact_chatroom.id, chatroomname = chatroomname,
-                                member_count = a_contact_chatroom.member_count).generate_create_time(now)
+        chatroom = ChatroomInfo(chatroom_id=a_contact_chatroom.id, chatroomname=chatroomname,
+                                member_count=a_contact_chatroom.member_count).generate_create_time(now)
         db.session.merge(chatroom)
 
         # user_chatroom_r
@@ -141,8 +142,8 @@ def init_cia():
         if user_chatroom_r:
             user_chatroom_r.permission = USER_CHATROOM_R_PERMISSION_1
         else:
-            user_chatroom_r = UserChatroomR(user_id = user_id, chatroom_id = a_contact_chatroom.id,
-                                            permission = USER_CHATROOM_R_PERMISSION_1) \
+            user_chatroom_r = UserChatroomR(user_id=user_id, chatroom_id=a_contact_chatroom.id,
+                                            permission=USER_CHATROOM_R_PERMISSION_1) \
                 .generate_create_time(now)
             db.session.add(user_chatroom_r)
 
@@ -153,23 +154,23 @@ def init_cia():
                                                                      BotChatroomR.is_on == 1).first()
         if bot_chatroom_r_is_on:
             is_on = False
-        bot_chatroom_r = BotChatroomR(a_chatroom_r_id = a_chatroom_r.id, chatroomname = a_chatroom_r.chatroomname,
-                                      username = a_chatroom_r.username, is_on = is_on).generate_create_time(now)
+        bot_chatroom_r = BotChatroomR(a_chatroom_r_id=a_chatroom_r.id, chatroomname=a_chatroom_r.chatroomname,
+                                      username=a_chatroom_r.username, is_on=is_on).generate_create_time(now)
         db.session.merge(bot_chatroom_r)
 
         # 初始化 MemberInfo 和 MemberOverview
-        update_members(chatroomname, create_time = now)
+        update_members(chatroomname, create_time=now)
 
         # 初始化 ChatroomOverview
-        ChatroomOverview.init_all_scope(chatroom_id = a_contact_chatroom.id,
-                                        chatroomname = a_contact_chatroom.username)
+        ChatroomOverview.init_all_scope(chatroom_id=a_contact_chatroom.id,
+                                        chatroomname=a_contact_chatroom.username)
 
         db.session.commit()
 
 
 def init_count_msg():
-    start_time = datetime(year = 2017, month = 3, day = 24, hour = 14, minute = 19, second = 1)
-    end_time = datetime(year = 2018, month = 3, day = 24, hour = 14, minute = 19, second = 1)
+    start_time = datetime(year=2017, month=3, day=24, hour=14, minute=19, second=1)
+    end_time = datetime(year=2018, month=3, day=24, hour=14, minute=19, second=1)
     count_msg_by_create_time(start_time, end_time)
 
 
@@ -190,13 +191,15 @@ def clear_all_user_data():
 
         # user_qun_bot_relate_info
         uqbr_list = db.session.query(UserQunBotRelateInfo).filter(or_(UserQunBotRelateInfo.uqun_id.in_(uqun_ids),
-                                                                      UserQunBotRelateInfo.user_bot_rid.in_(user_bot_rids)))
+                                                                      UserQunBotRelateInfo.user_bot_rid.in_(
+                                                                          user_bot_rids)))
 
         # user_chatroom_r
         ucr_list = db.session.query(UserChatroomR).filter(UserChatroomR.user_id == user_id).all()
 
         # synchronous_announcement_ds_user_relate
-        sadsur_list = db.session.query(SynchronousAnnouncementDSUserRelate).filter(SynchronousAnnouncementDSUserRelate.user_id == user_id).all()
+        sadsur_list = db.session.query(SynchronousAnnouncementDSUserRelate).filter(
+            SynchronousAnnouncementDSUserRelate.user_id == user_id).all()
 
         # material_library_user
         mlu_list = db.session.query(MaterialLibraryUser).filter(MaterialLibraryUser.user_id == user_id).all()
@@ -208,34 +211,41 @@ def clear_all_user_data():
         gmr_list = db.session.query(GlobalMatchingRule).filter(GlobalMatchingRule.user_id == user_id).all()
 
         # coin_wallet_qun_member_relate
-        cwqmr_list = db.session.query(CoinWalletQunMemberRelate).filter(CoinWalletQunMemberRelate.user_id == user_id).all()
+        cwqmr_list = db.session.query(CoinWalletQunMemberRelate).filter(
+            CoinWalletQunMemberRelate.user_id == user_id).all()
         uqun_member_ids = [r.uqun_member_id for r in cwqmr_list]
 
         # coin_wallet_member_address_relate
-        cwmar_list = db.session.query(CoinWalletMemberAddressRelate).filter(CoinWalletMemberAddressRelate.uqun_member_id.in_(uqun_member_ids)).all()
+        cwmar_list = db.session.query(CoinWalletMemberAddressRelate).filter(
+            CoinWalletMemberAddressRelate.uqun_member_id.in_(uqun_member_ids)).all()
 
         # batch_sending_task_info
         bsti_list = db.session.query(BatchSendingTaskInfo).filter(BatchSendingTaskInfo.user_id == user_id).all()
         sending_task_ids = [r.sending_task_id for r in bsti_list]
 
         # batch_sending_task_material_relate
-        bstmr_list = db.session.query(BatchSendingTaskMaterialRelate).filter(BatchSendingTaskMaterialRelate.sending_task_id.in_(sending_task_ids)).all()
+        bstmr_list = db.session.query(BatchSendingTaskMaterialRelate).filter(
+            BatchSendingTaskMaterialRelate.sending_task_id.in_(sending_task_ids)).all()
 
         # batch_sending_task_target_relate
-        bsttr_list = db.session.query(BatchSendingTaskTargetRelate).filter(BatchSendingTaskTargetRelate.sending_task_id.in_(sending_task_ids)).all()
+        bsttr_list = db.session.query(BatchSendingTaskTargetRelate).filter(
+            BatchSendingTaskTargetRelate.sending_task_id.in_(sending_task_ids)).all()
 
         # auto_reply_setting_info
         arsi_list = db.session.query(AutoReplySettingInfo).filter(AutoReplySettingInfo.user_id == user_id).all()
         setting_ids = [r.setting_id for r in arsi_list]
 
         # auto_reply_keyword_relate_Info
-        arkri_list = db.session.query(AutoReplyKeywordRelateInfo).filter(AutoReplyKeywordRelateInfo.setting_id.in_(setting_ids)).all()
+        arkri_list = db.session.query(AutoReplyKeywordRelateInfo).filter(
+            AutoReplyKeywordRelateInfo.setting_id.in_(setting_ids)).all()
 
         # auto_reply_material_relate
-        armr_list = db.session.query(AutoReplyMaterialRelate).filter(AutoReplyMaterialRelate.setting_id.in_(setting_ids)).all()
+        armr_list = db.session.query(AutoReplyMaterialRelate).filter(
+            AutoReplyMaterialRelate.setting_id.in_(setting_ids)).all()
 
         # auto_reply_target_relate
-        artr_list = db.session.query(AutoReplyTargetRelate).filter(AutoReplyTargetRelate.setting_id.in_(setting_ids)).all()
+        artr_list = db.session.query(AutoReplyTargetRelate).filter(
+            AutoReplyTargetRelate.setting_id.in_(setting_ids)).all()
 
         session_delete(user_info_list)
         session_delete(uqr_list)
@@ -329,10 +339,10 @@ def test_msg(message_list):
 
 
 # if __name__ == '__main__':
-    # update_member_overview()
-    # init_cia()
-    # init_count_msg()
-    # clear_all_user_data()
+# update_member_overview()
+# init_cia()
+# init_count_msg()
+# clear_all_user_data()
 
 
 if __name__ == '__main__':
@@ -516,5 +526,14 @@ if __name__ == '__main__':
     # #     msg_json["bot_username"] = msg_json["username"]
     # #     response = requests.post("http://127.0.0.1:5505/yaca_api_v2/android/new_message", json = msg_json)
     pass
+    client_id = 11
+    send_time = 10
+
+    a = BaseModel.fetch_all("batch_sending_task",
+                            where_clause=BaseModel.and_(
+                                ["=", "client_id", client_id],
+                                ["<", "send_time", int(time.time())+5*60]),
+                            order_by=BaseModel.order_by({"send_time": "DESC"}))
+
 
 pass
