@@ -1260,7 +1260,14 @@ def _get_events_qrcode():
 
 @app_test.route('/events_test', methods=['POST'])
 def test_api():
-    pass
+    try:
+        chatroomname = request.json.get('chatroomname')
+        start_name = request.json.get('start_name')
+        owner_username = request.json.get('owner_username')
+        new_event_init(chatroomname, start_name, owner_username)
+    except Exception as e:
+        return '%s' % e
+    return ' '
 
 
 @app_test.route('/check_db', methods=['POST'])
@@ -1440,13 +1447,11 @@ def new_event_init(chatroomname, start_name, owner_username):
     """
     now_chatroom_info = BaseModel.fetch_one('a_chatroom', '*',
                                             BaseModel.where_dict({'chatroomname': chatroomname}))
-
+    this_chatroom_info = BaseModel.fetch_one('chatroom_pool', '*',
+                                             BaseModel.where_dict(
+                                                 {'chatroomname': chatroomname}))
+    _bot_username = this_chatroom_info.bot_username
     if now_chatroom_info.nickname_real != start_name:
-        # Get this chatroom bot_username.
-        this_chatroom_info = BaseModel.fetch_one('chatroom_pool', '*',
-                                                 BaseModel.where_dict(
-                                                     {'chatroomname': chatroomname}))
-        _bot_username = this_chatroom_info.bot_username
         result = {'bot_username': _bot_username,
                   'data': {
                       "task": "update_chatroom_nick",
@@ -1456,11 +1461,6 @@ def new_event_init(chatroomname, start_name, owner_username):
         requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
     member_list = now_chatroom_info.member_list.split(';')
     if owner_username not in member_list:
-        # Get this chatroom bot_username.
-        this_chatroom_info = BaseModel.fetch_one('chatroom_pool', '*',
-                                                 BaseModel.where_dict(
-                                                     {'chatroomname': chatroomname}))
-        _bot_username = this_chatroom_info.bot_username
         result = {'bot_username': _bot_username,
                   'data': {
                       "task": "add_contact_to_chatroom",
