@@ -46,4 +46,4 @@ def script():
     a_contact = BaseModel.fetch_one(Contact, "*", where_clause = BaseModel.where_dict({"username": username}))
     print json.dumps(a_contact.to_json_full())
 
-    return make_response(SUCCESS)
+    return make_response(SUCCESS, a_contact = a_contact.to_json_full())
