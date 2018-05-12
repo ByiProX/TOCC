@@ -12,7 +12,8 @@ How to use:
 import Queue
 import threading
 
-__ThreadingCount__ = 10
+
+__ThreadingCount__ = 3
 
 pipeline = Queue.Queue(maxsize=0)
 
@@ -37,4 +38,3 @@ class ThreadingPool(threading.Thread):
 """Open __ThreadingCount__ thread to handle task."""
 while threading.active_count() < __ThreadingCount__ + 1:
     ThreadingPool().start()
-    print('Open ------')
