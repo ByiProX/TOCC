@@ -76,6 +76,8 @@ def app_get_user_basic_info():
                                       where_clause=BaseModel.where_dict(
                                           {"username": user_info.username}
                                       ))
+    if client_info is None:
+        return make_response(ERR_INVALID_PARAMS)
     client_info = client_info.to_json_full()
     client_info["app"] = user_info.app
 
