@@ -8,6 +8,7 @@ from flask import request
 from configs.config import main_api_v2, SUCCESS, UserInfo, MaterialLib, Message
 from core_v2.send_msg import send_ws_to_android
 from crawler.coin_all_crawler_v2 import update_coin_all
+from models.android_db_models import AContact
 from models_v2.base_model import BaseModel
 from utils.u_response import make_response
 
@@ -27,9 +28,9 @@ def script():
     # user_info.username = u"ada390859"
     # user_info.save()
     # update_coin_all()
-    ubr = BaseModel.fetch_by_id("client_bot_r", "5ad44cb1f5d7e2658a2c175b")
-    ubr.bot_username = "wxid_l66m6wuilug912"
-    ubr.save()
+    # ubr = BaseModel.fetch_by_id("client_bot_r", "5ad44cb1f5d7e2658a2c175b")
+    # ubr.bot_username = "wxid_l66m6wuilug912"
+    # ubr.save()
     #
     # material_list = BaseModel.fetch_all(MaterialLib, "*")
     # for material in material_list:
@@ -41,5 +42,9 @@ def script():
     # data = {"chatroomname": "4893318868@chatroom",
     #         "task": "update_chatroom"}
     # send_ws_to_android(bot_username, data)
+
+    username = request.json.get("username")
+    a_contact = BaseModel.fetch_one(AContact, "*", where_clause = BaseModel.where_dict({"username": username}))
+    print json.dumps(a_contact.to_json_full())
 
     return make_response(SUCCESS)
