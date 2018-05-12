@@ -323,7 +323,7 @@ def who_not_create_chatroom():
         if not len(quns):
             results.append(client.code)
 
-    make_response(SUCCESS, results=results)
+    return make_response(SUCCESS, results=results)
 
 
 if __name__ == "__main__":
