@@ -5,10 +5,9 @@ import logging
 import time
 from flask import request
 
-from configs.config import main_api_v2, SUCCESS, UserInfo, MaterialLib, Message
+from configs.config import main_api_v2, SUCCESS, UserInfo, MaterialLib, Message, Contact
 from core_v2.send_msg import send_ws_to_android
 from crawler.coin_all_crawler_v2 import update_coin_all
-from models.android_db_models import AContact
 from models_v2.base_model import BaseModel
 from utils.u_response import make_response
 
@@ -44,7 +43,7 @@ def script():
     # send_ws_to_android(bot_username, data)
 
     username = request.json.get("username")
-    a_contact = BaseModel.fetch_one(AContact, "*", where_clause = BaseModel.where_dict({"username": username}))
+    a_contact = BaseModel.fetch_one(Contact, "*", where_clause = BaseModel.where_dict({"username": username}))
     print json.dumps(a_contact.to_json_full())
 
     return make_response(SUCCESS)
