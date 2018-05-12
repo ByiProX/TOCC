@@ -1411,4 +1411,4 @@ new_thread_2.start()
 
 new_thread_3 = threading.Thread(target=new_open_chatroom_name_protect)
 new_thread_3.setDaemon(True)
-new_thread_3.start()
+# new_thread_3.start()
