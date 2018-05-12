@@ -71,13 +71,15 @@ def app_get_user_basic_info():
         return make_response(status)
 
     status, res = cal_user_basic_page_info(user_info)
+    client_info = user_info.to_json_full()
 
     if status == SUCCESS:
-        return make_response(status, bot_info=res['bot_info'], user_func=res['user_func'], total_info=res['total_info'])
+        return make_response(status, bot_info=res['bot_info'], user_func=res['user_func'],
+                             total_info=res['total_info'], client_info=client_info)
     # 目前INFO均返回为SUCCESS
     elif status == INFO_NO_USED_BOT:
         return make_response(SUCCESS, bot_info=res['bot_info'], user_func=res['user_func'],
-                             total_info=res['total_info'])
+                             total_info=res['total_info'], client_info=client_info)
     else:
         return make_response(status)
 
