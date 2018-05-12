@@ -1259,7 +1259,7 @@ def _get_events_qrcode():
         return '!!!!!!!!!!!'
 
 
-@app_test.route('/test', methods=['POST'])
+@app_test.route('/ztest',methods=['POST'])
 def test():
     class Task:
         def __init__(self, data):
@@ -1269,7 +1269,7 @@ def test():
             print(self.data)
 
     pipeline.put(Task(request.json))
-    return ''
+    return ' '
 
 
 def new_open_chatroom_name_protect():
