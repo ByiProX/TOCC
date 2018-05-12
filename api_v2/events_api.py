@@ -1257,6 +1257,9 @@ def _get_events_qrcode():
                                              'qr_end_date': this_chatroom_info.update_time}})
         return '!!!!!!!!!!!'
 
+@app_test.route('/events_test', methods=['POST'])
+def test_api():
+    pass
 
 @app_test.route('/check_db', methods=['POST'])
 @para_check('psw', 'table')
@@ -1268,7 +1271,7 @@ def check_db():
         pagesize = request.json.get('pagesize') if request.json.get('pagesize') else 100
 
         table = request.json.get('table')
-        where = request.json.get('pagesize') if request.json.get('pagesize') else {}
+        where = request.json.get('where') if request.json.get('where') else {}
         data = BaseModel.fetch_all(table, '*', BaseModel.where_dict(where), page=page, pagesize=pagesize)
         result = []
         for i in data:
