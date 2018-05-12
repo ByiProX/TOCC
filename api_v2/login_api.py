@@ -311,6 +311,21 @@ def app_set_robot_nickname():
     return make_response(status)
 
 
+@main_api_v2.route("/who_not_create_chatroom", methods=['GET'])
+def who_not_create_chatroom():
+    clients = BaseModel.fetch_all("client_member", "*")
+    results = []
+    for client in clients:
+        quns = BaseModel.fetch_all("client_qun_r", "*",
+                                   where_clause=BaseModel.where_dict(
+                                       {"chatroomname": client.chatroomname})
+                                   )
+        if not len(quns):
+            results.append(client.code)
+
+    make_response(SUCCESS, results=results)
+
+
 if __name__ == "__main__":
     BaseModel.extract_from_json()
 
