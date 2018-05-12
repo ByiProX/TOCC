@@ -22,7 +22,8 @@ class TimedTaskThread(threading.Thread):
             start_time = int(time.time())
             tasks = BaseModel.fetch_all("batch_send_task", "*",
                                         where_clause=BaseModel.and_(
-                                            ["<", "send_time", int(time.time()) + TIMED_BATCH_SENDING_INTERVAL]),
+                                            ["<", "send_time", int(time.time()) + TIMED_BATCH_SENDING_INTERVAL],
+                                            [">", "send_time", int(time.time())]),
                                         order_by=BaseModel.order_by({"send_time": "ASC"})
                                         )
 
@@ -31,7 +32,7 @@ class TimedTaskThread(threading.Thread):
                     task = tasks.pop(0)
                     cur_time = int(time.time())
                     send_time = task.send_time
-                    time.sleep(send_time-cur_time)
+                    time.sleep(send_time - cur_time)
 
                     # 传给安卓发送
                     batch_send_task = CM(BatchSendTask)
@@ -58,4 +59,3 @@ class TimedTaskThread(threading.Thread):
 
 
 timed_batch_sending_task_thread = TimedTaskThread(thread_id='timed_batch_sending_task')
-
