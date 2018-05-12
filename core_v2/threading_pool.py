@@ -9,9 +9,9 @@ How to use:
 
     WARNING: Do not use 'while True' in run method.
 """
+import time
 import Queue
 import threading
-
 
 __ThreadingCount__ = 3
 
@@ -20,6 +20,9 @@ pipeline = Queue.Queue(maxsize=0)
 
 class ThreadingPool(threading.Thread):
     """Threading pool."""
+
+    def __init__(self):
+        super(ThreadingPool, self).__init__()
 
     @staticmethod
     def threading_run(task):
@@ -33,6 +36,8 @@ class ThreadingPool(threading.Thread):
                 self.threading_run(pipeline.get())
             except Exception as e:
                 print(e)
+            print('done')
+            time.sleep(3)
 
 
 """Open __ThreadingCount__ thread to handle task."""
