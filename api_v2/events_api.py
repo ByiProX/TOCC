@@ -1476,9 +1476,11 @@ def new_event_init(chatroomname, start_name, owner_username):
                   "contacts": owner_username
               }}
     requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
-# new_thread_2 = threading.Thread(target=new_event_chatroom_send_word)
-# new_thread_2.setDaemon(True)
-# new_thread_2.start()
+
+
+new_thread_2 = threading.Thread(target=new_event_chatroom_send_word)
+new_thread_2.setDaemon(True)
+new_thread_2.start()
 
 # new_thread_3 = threading.Thread(target=new_open_chatroom_name_protect)
 # new_thread_3.setDaemon(True)
