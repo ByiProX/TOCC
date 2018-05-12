@@ -479,7 +479,7 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
                       "type": _type,
                       "content": content,
                   }}
-        resp = requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
+        resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
         if dict(resp.json())['err_code'] == -1:
             logger.warning('add_and_send_sensitive_word_log ERROR,because bot dead!')
 
