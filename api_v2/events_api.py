@@ -9,6 +9,7 @@ from flask import request
 
 from configs.config import main_api_v2 as app_test
 from core_v2.user_core import UserLogin
+from core_v2.threading_pool import pipeline
 from models_v2.base_model import *
 from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false
 
@@ -1258,6 +1259,19 @@ def _get_events_qrcode():
         return '!!!!!!!!!!!'
 
 
+@app_test.route('/test', methods=['POST'])
+def test():
+    class Task:
+        def __init__(self, data):
+            self.data = data
+
+        def run(self):
+            print(self.data)
+
+    pipeline.put(Task(request.json))
+    return ''
+
+
 def new_open_chatroom_name_protect():
     while True:
         try:
@@ -1331,7 +1345,8 @@ def new_event_chatroom_send_word():
 
     def get_owner_bot_username(__chatroomname):
         # Get roomowner's bot_username
-        this_chatroom_bot = BaseModel.fetch_one('chatroom_pool', '*', BaseModel.where_dict({'chatroomname': __chatroomname}))
+        this_chatroom_bot = BaseModel.fetch_one('chatroom_pool', '*',
+                                                BaseModel.where_dict({'chatroomname': __chatroomname}))
         __bot_username = this_chatroom_bot.bot_username
 
         return __bot_username
