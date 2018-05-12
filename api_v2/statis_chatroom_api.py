@@ -158,9 +158,7 @@ def chatroom_statistics_chatroom():
     #        return make_response(SUCCESS, chatroom_list = [], last_update_time = last_update_time)
     #    _where = ["and", ["<=", "run_hour", run_hour], ["=", "client_id", user_info.client_id],
     #              ["in", "chatroomname", chatroomname_list]]
-    group_by = json.dumps({"_id": "$chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
-                           "in_count": {"$avg": "in_count"},
-                           "out_count": {"$avg": "out_count"},
+    group_by = json.dumps({"_id": "$chatroomname", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},"in_count": {"$sum": {"$multiply": ["$in_count"]}},"out_count": {"$sum": {"$multiply": ["$out_count"]}},
                            "memberchange_count": {"$sum": {"$multiply": ["$memberchange_count"]}},
                            "active_count": {"$avg": "$active_count"}, "invo_count": {"$avg": "$invo_count"}})
     last_update_time = int(time.time()) - 600

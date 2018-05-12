@@ -106,7 +106,8 @@ def statistics_member():
     #    if(run_hour==0):
     #        return make_response(SUCCESS,member_list = [], last_update_time = last_update_time) 
     #    _where = ["and",["<=","run_hour",run_hour],["=","chatroomname",chatroomname],["in","username",useranems]]
-    group_by = None
+    
+    group_by = json.dumps({"_id": "$username", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},"be_at_count": {"$sum": {"$multiply": ["$be_at_count"]}},"invitation_count": {"$sum": {"$multiply": ["$invitation_count"]}}})
     last_update_time = int(time.time()) - 600
     if (date_type == 1):
         timestamp_diff = getTimeStamp(0)
@@ -114,6 +115,7 @@ def statistics_member():
                   ["in", "username", useranems]]
         # where = BaseModel.where_dict({"date":timestamp_diff,"chatroomname":chatroomname})
         table = 'statistics_member_daily'
+        group_by = None
     elif (date_type == 2):
         timestamp_diff = getTimeStamp(1)
         _where = ["and", ["=", "date", timestamp_diff], ["=", "chatroomname", chatroomname],
@@ -121,31 +123,23 @@ def statistics_member():
         print 'date_type == 2:::: where::',_where
         # where = BaseModel.where_dict({"date":timestamp_diff,"chatroomname":chatroomname})
         table = 'statistics_member_daily'
+        group_by = None
     elif (date_type == 3):
         timestamp_diff = getTimeStamp(7)
         table = 'statistics_member_daily'
         _where = ["and", [">=", "date", timestamp_diff], ["=", "chatroomname", chatroomname],
                   ["in", "username", useranems]]
-        group_by = json.dumps({"_id": "$username", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
-                               "be_at_count": {"$sum": {"$multiply": ["$be_at_count"]}},
-                               "invitation_count": {"$sum": {"$multiply": ["$invitation_count"]}}})
+        
     elif (date_type == 4):
         timestamp_diff = getTimeStamp(30)
         table = 'statistics_member_daily'
         _where = ["and", [">=", "date", timestamp_diff], ["=", "chatroomname", chatroomname],
-                  ["in", "username", useranems]]
-        group_by = json.dumps({"_id": "$username", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
-                               "be_at_count": {"$sum": {"$multiply": ["$be_at_count"]}},
-                               "invitation_count": {"$sum": {"$multiply": ["$invitation_count"]}}})
+                  ["in", "username", useranems]] 
     elif (date_type == 5):
-        table = 'statistics_member_total'
-        last_update_time = getTimeStamp(1) + 1200
+        table = 'statistics_member_daily' 
         # where = BaseModel.where("=", "chatroomname", chatroomname)
         # _where ={"chatroomname":chatroomname}
         _where = ["and", ["=", "chatroomname", chatroomname], ["in", "username", useranems]]
-        group_by = json.dumps({"_id": "$username", "speak_count": {"$sum": {"$multiply": ["$speak_count"]}},
-                               "be_at_count": {"$sum": {"$multiply": ["$be_at_count"]}},
-                               "invitation_count": {"$sum": {"$multiply": ["$invitation_count"]}}})
 
     cache_key = cache_key + '_' + str(date_type)
 
