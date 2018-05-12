@@ -1019,6 +1019,9 @@ def create_events():
             new_event_chatroom.is_activated = 1
         success_status[chatroomname] = new_event_chatroom.save()
         index += 1
+        new_thread_ = threading.Thread(target=new_event_init(chatroomname, new_event_chatroom.start_name, username))
+        new_thread_.setDaemon(True)
+        new_thread_.start()
 
     return response(
         {'success_status': success_status, 'event': new_event.to_json()})
