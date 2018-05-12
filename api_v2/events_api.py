@@ -50,7 +50,7 @@ def create_event_init():
     # Add QRcode URL.
     previous_event = BaseModel.fetch_one('events', '*',
                                          BaseModel.where_dict({"owner": owner, "is_finish": 0}))
-    alive_qrcode_url = put_qrcode_img_to_oss(previous_event.events_id, app_id)
+    alive_qrcode_url = put_qrcode_img_to_oss(previous_event.get_id(), app_id)
     previous_event.alive_qrcode_url = alive_qrcode_url
     previous_event.save()
     # Static word.
@@ -150,7 +150,7 @@ def create_event():
     }
     # Try create chatroom.
     try:
-        create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
+        create_chatroom_resp = requests.post('http://ardsvr.walibee.com/android/send_message',
                                              json=create_chatroom_dict)
         if dict(create_chatroom_resp.json())['err_code'] == -1:
             return response({'err_code': -3, 'err_info': 'Bot dead.'})
@@ -552,7 +552,7 @@ def create_chatroom_for_scan(event_id, __client_id, username, start_name):
         }
     }
     try:
-        create_chatroom_resp = requests.post('http://ardsvr.xuanren360.com/android/send_message',
+        create_chatroom_resp = requests.post('http://ardsvr.walibee.com/android/send_message',
                                              json=create_chatroom_dict)
         logger.info('create_chatroom_resp(for scan):', create_chatroom_resp)
     except Exception as e:
@@ -661,7 +661,7 @@ def open_chatroom_name_protect():
                                           "chatroomname": j.chatroomname,
                                           "chatroomnick": j.chatroom_nickname,
                                       }}
-                            requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+                            requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
 
 
 def event_chatroom_send_word():
@@ -704,7 +704,7 @@ def event_chatroom_send_word():
                       "type": _type,
                       "content": content,
                   }}
-        resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+        resp = requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
         if dict(resp.json())['err_code'] == -1:
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
@@ -723,7 +723,7 @@ def event_chatroom_send_word():
                       "chatroomname": chatroomname,
                       "chatroomnotice": chatroomnotice,
                   }}
-        resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+        resp = requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
         if dict(resp.json())['err_code'] == -1:
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
@@ -817,7 +817,7 @@ def put_qrcode_img_to_oss(event_id, app_id):
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=10,
-        border=4,
+        border=1,
     )
     alive_qrcode_url = 'http://{}/chatroom.html?event_id={}'.format(app_header_placeholder(app_id), event_id)
     qr.add_data(alive_qrcode_url)
@@ -977,7 +977,7 @@ def create_events():
     # Check chatroom.
     try:
         available_chatroom = len(
-            requests.post('http://ardsvr.xuanren360.com/android/chatroom_pool',
+            requests.post('http://ardsvr.walibee.com/android/chatroom_pool',
                           json={'client_id': client_id}).json()['data'])
     except Exception as e:
         return 'Error when request android server for check pool:%s' % e
@@ -999,7 +999,7 @@ def create_events():
 
     """Allot chatroom"""
     try:
-        allot_chatroom_list = requests.post('http://ardsvr.xuanren360.com/android/chatroom_allot',
+        allot_chatroom_list = requests.post('http://ardsvr.walibee.com/android/chatroom_allot',
                                             json={'client_id': client_id,
                                                   'num': int(request.json.get('request_chatroom'))}).json()['data']
     except Exception as e:
@@ -1282,7 +1282,7 @@ def new_open_chatroom_name_protect():
                                           "chatroomname": j.chatroomname,
                                           "chatroomnick": real_name,
                                       }}
-                            requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+                            requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
         except Exception as e:
             print('new_open_chatroom_name_protect', e)
         time.sleep(30)
@@ -1325,14 +1325,14 @@ def new_event_chatroom_send_word():
                       "type": _type,
                       "content": content,
                   }}
-        resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+        resp = requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
         if dict(resp.json())['err_code'] == -1:
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
-    def get_owner_bot_username(client_id):
+    def get_owner_bot_username(__chatroomname):
         # Get roomowner's bot_username
-        client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': client_id}))
-        __bot_username = client_bot_r.bot_username
+        this_chatroom_bot = BaseModel.fetch_one('chatroom_pool', '*', BaseModel.where_dict({'chatroomname': __chatroomname}))
+        __bot_username = this_chatroom_bot.bot_username
 
         return __bot_username
 
@@ -1343,7 +1343,7 @@ def new_event_chatroom_send_word():
                       "chatroomname": chatroomname,
                       "chatroomnotice": chatroomnotice,
                   }}
-        resp = requests.post('http://ardsvr.xuanren360.com/android/send_message', json=result)
+        resp = requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
         if dict(resp.json())['err_code'] == -1:
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
@@ -1373,14 +1373,13 @@ def new_event_chatroom_send_word():
                     chatroom_status_dict[chatroom.chatroomname] = member_count
                     need_fission, need_condition_word, need_pull_people = event.need_fission, event.need_condition_word, event.need_pull_people
                     # If previous chatroom list also have same chatroomname.
-                    print('-----',chatroom_status_dict)
                     if previous_chatroom_status_dict.get(chatroom.chatroomname):
                         previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
                         now_chatroom_member_count = chatroom_status_dict[chatroom.chatroomname]
                         # print(previous_chatroom_member_count, now_chatroom_member_count)
                         if now_chatroom_member_count > previous_chatroom_member_count and need_fission:
                             # Send welcome message.
-                            this_bot_username = get_owner_bot_username(event.client_id)
+                            this_bot_username = get_owner_bot_username(chatroom.chatroomname)
                             send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_1)
                             send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_2)
                         if now_chatroom_member_count in (30, 50, 80) and need_pull_people:
@@ -1410,6 +1409,6 @@ new_thread_2 = threading.Thread(target=new_event_chatroom_send_word)
 new_thread_2.setDaemon(True)
 new_thread_2.start()
 
-# new_thread_3 = threading.Thread(target=new_open_chatroom_name_protect)
-# new_thread_3.setDaemon(True)
-# new_thread_3.start()
+new_thread_3 = threading.Thread(target=new_open_chatroom_name_protect)
+new_thread_3.setDaemon(True)
+new_thread_3.start()
