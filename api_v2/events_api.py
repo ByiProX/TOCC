@@ -1474,9 +1474,8 @@ def new_event_init(chatroomname, start_name, owner_username):
 
     result = {'bot_username': _bot_username,
               'data': {
-                  "task": "add_contact_to_chatroom",
+                  "task": "update_chatroom_qrcode",
                   "chatroomname": chatroomname,
-                  "contacts": owner_username
               }}
     requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
 
