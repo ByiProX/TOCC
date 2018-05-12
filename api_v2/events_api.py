@@ -1168,7 +1168,7 @@ def _modify_event_word():
                 img_url = put_img_to_oss(event_id, poster_raw)
             except Exception as e:
                 return response({'err_code': -2, 'content': 'Give me base64 poster_raw %s' % e})
-            para_as_dict['poster_raw'] = img_url
+            para_as_dict['poster_url'] = img_url
     else:
         # poster_raw is None.
         pass
@@ -1257,9 +1257,11 @@ def _get_events_qrcode():
                                              'qr_end_date': this_chatroom_info.update_time}})
         return '!!!!!!!!!!!'
 
+
 @app_test.route('/events_test', methods=['POST'])
 def test_api():
     pass
+
 
 @app_test.route('/check_db', methods=['POST'])
 @para_check('psw', 'table')
@@ -1454,8 +1456,26 @@ def new_event_init(chatroomname, start_name, owner_username):
         requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
     member_list = now_chatroom_info.member_list.split(';')
     if owner_username not in member_list:
-        pass
+        # Get this chatroom bot_username.
+        this_chatroom_info = BaseModel.fetch_one('chatroom_pool', '*',
+                                                 BaseModel.where_dict(
+                                                     {'chatroomname': chatroomname}))
+        _bot_username = this_chatroom_info.bot_username
+        result = {'bot_username': _bot_username,
+                  'data': {
+                      "task": "add_contact_to_chatroom",
+                      "chatroomname": chatroomname,
+                      "contacts": owner_username
+                  }}
+        requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
 
+    result = {'bot_username': _bot_username,
+              'data': {
+                  "task": "add_contact_to_chatroom",
+                  "chatroomname": chatroomname,
+                  "contacts": owner_username
+              }}
+    requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
 # new_thread_2 = threading.Thread(target=new_event_chatroom_send_word)
 # new_thread_2.setDaemon(True)
 # new_thread_2.start()
