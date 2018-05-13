@@ -1,0 +1,15 @@
+.idea/
+*.pyc
+venv/
+*.rdb
+start_app.sh
+.logs/
+logs/
+sandbox/
+test.py
+.DS_Store
+conf.json
+api_v2/temp.png
+api_v2/temp.jpg
+temp.png
+config_online
