@@ -63,7 +63,7 @@ def get_wallets_excel():
                 worksheet.write(i, 3, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(wallet.create_time)))
                 i += 1
 
-    file_name = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + ' wallets.xls'
+    file_name = "client" + str(client_id+999) + '_wallets.xls'
     file_path = os.path.join(os.getcwd(), "static", file_name)
     workbook.save(file_path)
 
@@ -120,7 +120,7 @@ def get_sensitive_excel():
         worksheet.write(i, 4, time.strftime('%Y-%m-%d %H:%M:%S',
                                             time.localtime(monitor_feedback.create_time)))
 
-    file_name = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + ' sensitive.xls'
+    file_name = "client" + str(owner+999) + '_sensitive.xls'
     file_path = os.path.join(os.getcwd(), "static", file_name)
     workbook.save(file_path)
 

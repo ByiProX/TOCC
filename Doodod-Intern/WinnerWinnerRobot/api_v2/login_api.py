@@ -81,13 +81,18 @@ def app_get_user_basic_info():
     client_info = client_info.to_json_full()
     client_info["app"] = user_info.app
 
+    # Add hidden func info for test by ZYunH 2018-5-18(trade off).
+    hidden_func = []
+    if BaseModel.fetch_one('employee_client', '*', BaseModel.where_dict({'username': user_info.username})) is not None:
+        hidden_func.append('employee')
+
     if status == SUCCESS:
         return make_response(status, bot_info=res['bot_info'], user_func=res['user_func'],
-                             total_info=res['total_info'], client_info=client_info)
+                             total_info=res['total_info'], client_info=client_info, hidden_func=hidden_func)
     # 目前INFO均返回为SUCCESS
     elif status == INFO_NO_USED_BOT:
         return make_response(SUCCESS, bot_info=res['bot_info'], user_func=res['user_func'],
-                             total_info=res['total_info'], client_info=client_info)
+                             total_info=res['total_info'], client_info=client_info, hidden_func=hidden_func)
     else:
         return make_response(status)
 

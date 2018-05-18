@@ -14,7 +14,7 @@ from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT
     CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, Member, Contact, CHAT_LOGS_ERR_TYPE_0, GLOBAL_RULES_UPDATE_FLAG, \
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, NEW_MSG_Q, \
     MSG_TYPE_ENTERCHATROOM, SUCCESS, ERR_UNKNOWN_ERROR, CONTENT_TYPE_ENTERCHATROOM, \
-    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, GLOBAL_EMPLOYEE_PEOPLE_FLAG
 from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core_v2.matching_rule_core import get_gm_default_rule_dict, match_message_by_rule, get_gm_rule_dict
 from core_v2.real_time_quotes_core import match_message_by_coin_keyword
@@ -27,6 +27,7 @@ import logging
 
 logger = logging.getLogger('main')
 SENSITIVE_WORD_RULE_DICT = {}
+EMPLOYEE_PEOPLE_RULE_DICT = {}
 
 
 def start_listen_new_msg():
@@ -54,6 +55,9 @@ def route_and_count_msg():
             if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG]:
                 update_sensitive_word_list()
                 GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG] = False
+            if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_EMPLOYEE_PEOPLE_FLAG]:
+                update_employee_people_list()
+                GLOBAL_RULES_UPDATE_FLAG[GLOBAL_EMPLOYEE_PEOPLE_FLAG] = False
 
             print 222
             route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
@@ -80,6 +84,9 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
     # Check if contain sensitive word.
     if not a_message.is_to_friend and a_message.type == MSG_TYPE_TXT:
         check_and_add_sensitive_word_log(a_message)
+        # Check if @ someone in rule list.
+        if a_message.real_content.find('@') > -1:
+            check_or_add_at_log(a_message)
 
     # is_add_friend
     # is_add_friend = check_whether_message_is_add_friend(message_analysis)
@@ -404,7 +411,6 @@ def update_members(chatroomname, create_time=None, save_flag=False):
 
 
 def check_and_add_sensitive_word_log(a_message):
-    print('------check_and_add_sensitive_word_log-----')
     # Check if in this chatroom.
     monitor_chatroom_list = SENSITIVE_WORD_RULE_DICT.keys()
     talk_chatroom = a_message.talker
@@ -419,7 +425,6 @@ def check_and_add_sensitive_word_log(a_message):
         for sensitive_word in sensitive_word_list:
             if sensitive_word in a_message_content:
                 # Catch a sensitive word.
-                print('Catch OK!!!')
                 for owner in owner_list:
                     new_thread = threading.Thread(target=add_and_send_sensitive_word_log,
                                                   args=(
@@ -458,6 +463,24 @@ def update_sensitive_word_list():
                 if new_rule:
                     SENSITIVE_WORD_RULE_DICT[chatroomname].append(
                         [rule.sensitive_word_list, rule.owner_list, rule.sensitive_message_rule_id])
+
+
+def update_employee_people_list():
+    """Be at func rule."""
+    print('update_employee_people_list running')
+    people_list = BaseModel.fetch_all('employee_people', '*')
+    global EMPLOYEE_PEOPLE_RULE_DICT
+    EMPLOYEE_PEOPLE_RULE_DICT = {}
+    for man in people_list:
+        man_username = man.username
+        man_info = BaseModel.fetch_one('a_contact', '*', BaseModel.or_(['=', 'alias', man_username],
+                                                                       ['=', 'username', man_username], ))
+        if man_info is None:
+            print('-----update_employee_people_list ERROR:', man_username)
+            continue
+        man_nickname = man_info.nickname
+        EMPLOYEE_PEOPLE_RULE_DICT[u'@' + man_nickname] = man_username
+    print('-----------', EMPLOYEE_PEOPLE_RULE_DICT)
 
 
 def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_id):
@@ -524,3 +547,32 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
     username = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'client_id': owner})).username
 
     send_message(owner_bot_username, username, 1, message_content)
+
+
+def check_or_add_at_log(a_message):
+    real_content = a_message.real_content
+    at_rule_list = EMPLOYEE_PEOPLE_RULE_DICT.keys()
+    for i in at_rule_list:
+        if i in real_content:
+            print('At log:', EMPLOYEE_PEOPLE_RULE_DICT[i], real_content)
+            new_thread = threading.Thread(target=add_employee_at_log,
+                                          args=(
+                                              EMPLOYEE_PEOPLE_RULE_DICT[i], real_content,
+                                              a_message.a_message_id, a_message.talker))
+            new_thread.setDaemon(True)
+            new_thread.start()
+            break
+    return 0
+
+
+def add_employee_at_log(username, content, a_message_id, chatroomname):
+    print('add_employee_at_log running')
+    new_log = CM('employee_be_at_log')
+    new_log.username = username
+    new_log.create_time = int(time.time())
+    new_log.content = content
+    new_log.a_message_id = a_message_id
+    new_log.chatroomname = chatroomname
+    new_log.is_reply = 0
+    new_log.reply_time = 0
+    new_log.save()

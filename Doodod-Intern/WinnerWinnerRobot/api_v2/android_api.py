@@ -7,9 +7,9 @@ from flask import request
 
 from configs.config import SUCCESS, main_api_v2, BotInfo, Message, NEW_MSG_Q, Contact, GLOBAL_RULES_UPDATE_FLAG, \
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, \
-    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, MaterialLib, UserInfo, UserBotR
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, MaterialLib, UserInfo, UserBotR, GLOBAL_EMPLOYEE_PEOPLE_FLAG
 from core_v2.matching_rule_core import gm_rule_dict, gm_default_rule_dict, get_gm_rule_dict, get_gm_default_rule_dict
-from core_v2.message_core import route_msg, count_msg, update_sensitive_word_list
+from core_v2.message_core import route_msg, count_msg, update_sensitive_word_list, update_employee_people_list
 from core_v2.user_core import _bind_bot_success, UserLogin
 from core_v2.wechat_core import WechatConn, wechat_conn_dict
 from models_v2.base_model import BaseModel, CM
@@ -25,7 +25,7 @@ def android_add_friend():
     user_nickname = request.json.get('user_nickname')
     user_username = request.json.get('user_username')
     bot_username = request.json.get('bot_username')
-    bot = BaseModel.fetch_one(BotInfo, '*', where_clause = BaseModel.where_dict({"username": bot_username}))
+    bot = BaseModel.fetch_one(BotInfo, '*', where_clause=BaseModel.where_dict({"username": bot_username}))
 
     logger.info(u"发现加bot好友用户. username: %s." % user_username)
     status, user_info = _bind_bot_success(user_nickname, user_username, bot)
@@ -34,7 +34,8 @@ def android_add_friend():
             we_conn = wechat_conn_dict.get(user_info.app)
             if we_conn is None:
                 logger.info(
-                    u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (user_info.app, json.dumps(wechat_conn_dict.keys())))
+                    u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (
+                    user_info.app, json.dumps(wechat_conn_dict.keys())))
             we_conn.send_txt_to_follower(
                 "您好，欢迎使用数字货币友问币答！请将我拉入您要管理的区块链社群，拉入成功后即可为您的群提供实时查询币价，涨幅榜，币种成交榜，交易所榜，最新动态，行业百科等服务。步骤如下：\n拉我入群➡确认拉群成功➡ "
                 "机器人在群发自我介绍帮助群友了解规则➡群友按照命令发关键字➡机器人回复➡完毕",
@@ -51,10 +52,10 @@ def android_add_material():
     verify_json()
     username = request.json.get('username')
     bot_username = request.json.get('bot_username')
-    user_info_list = BaseModel.fetch_all(UserInfo, "*", where_clause = BaseModel.where_dict({"username": username}))
+    user_info_list = BaseModel.fetch_all(UserInfo, "*", where_clause=BaseModel.where_dict({"username": username}))
     for user_info in user_info_list:
-        ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"bot_username": bot_username,
-                                                                                      "client_id": user_info.client_id}))
+        ubr = BaseModel.fetch_one(UserBotR, "*", where_clause=BaseModel.where_dict({"bot_username": bot_username,
+                                                                                    "client_id": user_info.client_id}))
         if ubr:
             material_lib = CM(MaterialLib).from_json(request.json)
             material_lib.client_id = user_info.client_id
@@ -81,6 +82,9 @@ def android_new_message():
     if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG]:
         update_sensitive_word_list()
         GLOBAL_RULES_UPDATE_FLAG[GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG] = False
+    if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_EMPLOYEE_PEOPLE_FLAG]:
+        update_employee_people_list()
+        GLOBAL_RULES_UPDATE_FLAG[GLOBAL_EMPLOYEE_PEOPLE_FLAG] = False
     route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
     count_msg(a_message)
     # NEW_MSG_Q.put(a_message)
@@ -103,7 +107,7 @@ def init_bot_info():
     bot_info.is_alive = 1
     bot_info.save()
 
-    return make_response(SUCCESS, bot_info = bot_info.to_json_full())
+    return make_response(SUCCESS, bot_info=bot_info.to_json_full())
 
 
 @main_api_v2.route("/android/get_bot_list", methods=['POST'])
@@ -117,8 +121,9 @@ def android_get_bot_list():
 
     ubr_list = BaseModel.fetch_all("client_bot_r", "*")
     for ubr in ubr_list:
-        bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause = BaseModel.where_dict({"username": ubr.bot_username}))
-        a_contact_bot = BaseModel.fetch_one(Contact, "*", where_clause = BaseModel.where_dict({"username": ubr.bot_username}))
+        bot_info = BaseModel.fetch_one(BotInfo, "*", where_clause=BaseModel.where_dict({"username": ubr.bot_username}))
+        a_contact_bot = BaseModel.fetch_one(Contact, "*",
+                                            where_clause=BaseModel.where_dict({"username": ubr.bot_username}))
         if not bot_info:
             continue
         bot_info_json = bot_info.to_json_full()
@@ -127,4 +132,4 @@ def android_get_bot_list():
         bot_info_json.update(a_contact_bot.to_json_full())
         bot_list.append(bot_info_json)
 
-    return make_response(SUCCESS, bot_info_list = bot_list)
+    return make_response(SUCCESS, bot_info_list=bot_list)

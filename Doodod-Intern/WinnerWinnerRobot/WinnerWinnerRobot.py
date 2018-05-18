@@ -12,7 +12,7 @@ from configs.config import app, main_api, main_api_v2
 from core.production_core import production_thread
 from models_v2.base_model import BaseModel
 from core_v2.timed_task import timed_batch_sending_task_thread
-from core_v2.vip_check import vip_check_task_thread
+# from core_v2.vip_check_core import vip_check_task_thread
 from api_v2.events_api import new_event_chatroom_send_word_thread,new_open_chatroom_status_protect_thread
 
 from utils import u_log

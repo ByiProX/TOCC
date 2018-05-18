@@ -1299,7 +1299,9 @@ def check_db():
         data = BaseModel.fetch_all(table, '*', BaseModel.where_dict(where), page=page, pagesize=pagesize)
         result = []
         for i in data:
-            result.append(i.to_json_full())
+            _temp = i.to_json_full()
+            _temp.update({'_id': i.get_id()})
+            result.append(_temp)
     except Exception as e:
         return '%s' % e
     return response(result)
