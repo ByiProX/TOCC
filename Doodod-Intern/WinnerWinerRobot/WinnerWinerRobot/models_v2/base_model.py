@@ -329,7 +329,7 @@ class BaseModel(object):
         if page:
             query_clause.update({"page": page})
             total_flag = False
-        if page:
+        if pagesize:
             query_clause.update({"pageSize": pagesize})
             total_flag = False
         if group:

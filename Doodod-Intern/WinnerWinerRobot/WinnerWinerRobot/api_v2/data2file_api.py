@@ -40,8 +40,10 @@ def get_wallets_excel():
         chatroom_info = BaseModel.fetch_one("a_chatroom", "*",
                                             where_clause=BaseModel.where_dict(
                                                 {"chatroomname": chatroomname}))
-
-        worksheet = workbook.add_sheet(chatroom_info.nickname_real)
+        try:
+            worksheet = workbook.add_sheet(chatroom_info.nickname_real)
+        except AttributeError:
+            worksheet = workbook.add_sheet(chatroom_info.nickname_default)
 
         worksheet.write(0, 0, label="用户名")
         worksheet.write(0, 1, label="来自群")
@@ -56,7 +58,7 @@ def get_wallets_excel():
                                                {"username": wallet.username}
                                            ))
                 worksheet.write(i, 0, user.nickname)
-                worksheet.write(i, 1, chatroom_info.nickname_real)
+                worksheet.write(i, 1, chatroom_info.nickname_real if chatroom_info.nickname_real else chatroom_info.nickname_default)
                 worksheet.write(i, 2, wallet.address)
                 worksheet.write(i, 3, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(wallet.create_time)))
                 i += 1
@@ -107,7 +109,7 @@ def get_sensitive_excel():
         chatroom_info = BaseModel.fetch_one("a_chatroom", "*",
                                             where_clause=BaseModel.where_dict(
                                                 {"chatroomname": monitor_feedback.chatroomname}))
-        worksheet.write(i, 2, chatroom_info.nickname_real)
+        worksheet.write(i, 2, chatroom_info.nickname_real if chatroom_info.nickname_real else chatroom_info.nickname_default)
 
         user_info = BaseModel.fetch_one("a_contact", "*",
                                         where_clause=BaseModel.where_dict(

@@ -214,7 +214,7 @@ def chatroom_statistics_chatroom():
 
     if not is_active:
         uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict(
-            ["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]), page = 1,
+            ["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]), page = page,
                                        pagesize = pagesize)
         chatroomname_list = [r.chatroomname for r in uqr_list]
         qunInfo = BaseModel.fetch_all('a_chatroom',
@@ -235,7 +235,7 @@ def chatroom_statistics_chatroom():
     return make_response(SUCCESS, chatroom_list = chatroom_json_list, last_update_time = last_update_time)
 
 
-@main_api_v2.route("/get_non_active_chatroom_list", methods = ['POSt'])
+@main_api_v2.route("/get_non_active_chatroom_list", methods = ['POST'])
 def get_non_active_chatroom_list():
     verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
@@ -277,14 +277,32 @@ def get_non_active_chatroom_list():
         _where.append(["=", "group_id", group_id])
         _where = BaseModel.where_dict(_where)
 
-    uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = _where, page = page,
-                                   pagesize = pagesize)
+    # uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = _where, page = page,
+    #                                pagesize = pagesize)
+    # chatroomname_list = [r.chatroomname for r in uqr_list]
+    # qunInfo = BaseModel.fetch_all('a_chatroom',
+    #                               ['chatroomname', 'nickname', 'member_count', 'avatar_url', 'create_time', 'qrcode',
+    #                                'member_count', 'chatroomnotice',
+    #                                'update_time', 'nickname_default'],
+    #                               BaseModel.where("in", "chatroomname", chatroomname_list))
+
+    # rewrite by quentin
+    uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = _where)
     chatroomname_list = [r.chatroomname for r in uqr_list]
     qunInfo = BaseModel.fetch_all('a_chatroom',
                                   ['chatroomname', 'nickname', 'member_count', 'avatar_url', 'create_time', 'qrcode',
                                    'member_count', 'chatroomnotice',
                                    'update_time', 'nickname_default'],
-                                  BaseModel.where("in", "chatroomname", chatroomname_list))
+                                  BaseModel.where("in", "chatroomname", chatroomname_list),
+                                  page=page, pagesize=pagesize
+                                  )
+
+    print "::::::::::::::::::::"
+    print qunInfo
+    print qunInfo.__len__()
+    print "::::::::::::::::::::"
+
+
     for chatroom in qunInfo:
         chatroom_json = chatroom.to_json_full()
         chatroom_json_list.append(chatroom_json)
@@ -319,6 +337,7 @@ def get_active_chatroom_count():
     _where, group_by = statis_chatroom_where(date_type, user_info.client_id, chatroomname_list)
 
     chatroom_statis = BaseModel.fetch_all(table, '*', where_clause = _where)
+    # chatroom_statis = BaseModel.fetch_all(table, '*', where_clause = BaseModel.where_dict(_where))
     chatroomnames = [r.chatroomname for r in chatroom_statis]
 
     active_chatroom_count = len(chatroom_statis)

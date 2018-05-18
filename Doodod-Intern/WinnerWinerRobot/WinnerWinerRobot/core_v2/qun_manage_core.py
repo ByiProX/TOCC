@@ -90,8 +90,8 @@ def get_chatroom_dict(chatroomname):
                                    where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
     chatroom_dict = dict()
     chatroom_dict['chatroom_id'] = chatroom.get_id()
-    chatroom_dict['chatroom_nickname'] = chatroom.nickname
-    if chatroom.nickname == "":
+    chatroom_dict['chatroom_nickname'] = chatroom.nickname_real
+    if chatroom.nickname_real == "":
         chatroom_dict['chatroom_nickname'] = chatroom.nickname_default
     chatroom_dict['chatroomname'] = chatroomname
     chatroom_dict['chatroom_member_count'] = chatroom.member_count

@@ -173,12 +173,14 @@ rds = redis.StrictRedis(host = '127.0.0.1', port = 6379, db = 1, password = "red
 
 APP_YACA = "yaca"
 APP_ZIDOU = "zidou"
+APP_TEST = "test"
 
 APP_INFO_DICT = dict()
 # APP_DICT = dict()
 APP_INFO_DICT[APP_YACA] = {"APP_ID": "wxc3bc48b4c40651fd", "APP_SECRET": "959f45dbf812a5685f85ff572e76a671", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc3bc48b4c40651fd&redirect_uri=http%3a%2f%2fwx.walibee.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
 # APP_INFO_DICT[APP_ZIDOU] = {"APP_ID": "wxc8b40fcec9626528", "APP_SECRET": "6e63c26d856f7ecb1779f24ab2fc08f4", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc8b40fcec9626528&redirect_uri=http%3a%2f%2fzidouwx.xuanren360.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
 APP_INFO_DICT[APP_ZIDOU] = {"APP_ID": "wxbe0f84cc2b873c72", "APP_SECRET": "d6063862625c0a79719bc6167503f35e", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxbe0f84cc2b873c72&redirect_uri=http%3a%2f%2fwx.zidouchat.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
+APP_INFO_DICT[APP_TEST] = {"APP_ID": "wxc8b40fcec9626528", "APP_SECRET": "6e63c26d856f7ecb1779f24ab2fc08f4", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc8b40fcec9626528&redirect_uri=http%3a%2f%2fwx.ixuanren.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
 # APP_INFO_DICT[APP_ZIDOUBOT] = {"APP_ID": "wxc8b40fcec9626528", "APP_SECRET": "6e63c26d856f7ecb1779f24ab2fc08f4", "URL_ORI": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc8b40fcec9626528&redirect_uri=http%3a%2f%2fzidouwx.xuanren360.com%2fauth.html&response_type=code&scope=snsapi_userinfo&state={}#wechat_redirect"}
 # APP_DICT['http://test2.xuanren360.com'] = APP_YACA
 # APP_DICT['http://www.xuanren360.com'] = APP_YACA
@@ -195,7 +197,8 @@ main_api_v2 = Blueprint('api_v2', __name__)
 PRODUCTION_CIRCLE_INTERVAL = 1
 CONSUMPTION_CIRCLE_INTERVAL = 1
 CRAWLER_CIRCLE_INTERVAL = 300
-TIMED_BATCH_SENDING_INTERVAL = 60
+TIMED_BATCH_SENDING_INTERVAL = 3 * 60
+VIP_CHECK_INTERVAL = 30 * 60
 
 # 错误代码
 ERROR_CODE = dict()

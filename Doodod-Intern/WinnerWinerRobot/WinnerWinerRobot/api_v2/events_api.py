@@ -11,6 +11,7 @@ from configs.config import main_api_v2 as app_test
 from core_v2.user_core import UserLogin
 from models_v2.base_model import *
 from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false
+from configs.config import ENV
 
 logger = logging.getLogger('main')
 
@@ -808,6 +809,8 @@ def put_qrcode_img_to_oss(event_id, app_id):
             'yaca': 'wx.walibee.com',
             'zidou': 'wx.zidouchat.com',
         }
+        if ENV == 'DEV':
+            return 'wx.ixuanren.com'
         if _app_id in app_config:
             return app_config[_app_id]
         else:
@@ -1374,6 +1377,8 @@ def new_open_chatroom_status_protect():
                     member_list = now_chatroom_info.memberlist.split(';')
                     if owner_username not in member_list:
                         print('----- pull owner')
+                        if owner_username == 'wxid_v8f5swjgksqf21':
+                            continue
                         flag = True
                         result = {'bot_username': _bot_username,
                                   'data': {

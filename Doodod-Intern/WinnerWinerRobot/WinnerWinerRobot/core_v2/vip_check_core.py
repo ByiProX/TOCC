@@ -2,15 +2,15 @@
 import threading
 import logging
 import time
-from models_v2.base_model import BaseModel, CM
+from models_v2.base_model import BaseModel
 from configs.config import TIMED_BATCH_SENDING_INTERVAL, BATCH_SEND_TASK_STATUS_3, BATCH_SEND_TASK_STATUS_4
 from core_v2.send_msg import send_msg_to_android
-from configs.config import SUCCESS, UserBotR, BatchSendTask
+from configs.config import SUCCESS, UserBotR
 
 logger = logging.getLogger('main')
 
 
-class TimedTaskThread(threading.Thread):
+class VipCheckThread(threading.Thread):
     def __init__(self, thread_id):
         threading.Thread.__init__(self)
         self.thread_id = thread_id
@@ -19,18 +19,20 @@ class TimedTaskThread(threading.Thread):
     def run(self):
         logger.info(u"Start thread id: %s." % str(self.thread_id))
         while self.go_work:
-            # start_time = int(time.time())
-            tasks = BaseModel.fetch_all("batch_send_task", "*",
-                                        where_clause=BaseModel.and_(
-                                            ["<", "send_time", int(time.time()) + TIMED_BATCH_SENDING_INTERVAL],
-                                            [">", "send_time", int(time.time())],
-                                            ["=", "is_deleted", 0]),
-                                        order_by=BaseModel.order_by({"send_time": "ASC"})
-                                        )
+            not_vip_list = BaseModel.fetch_all("client_qun_r", "*",
+                                               where_clause=BaseModel.and_(
+                                                   ["=", "is_vip", 0],
+                                                   # [">", "create_time", cur_time - 30 * 60],
+                                                   [">", "qun_used_count", 1]),
+                                               order_by=BaseModel.order_by({"create_time": "ASC"})
+                                               )
 
-            if len(tasks) == 0:
-                time.sleep(60)
-                continue
+            for not_vip in not_vip_list:
+                sleep_time = 30 * 60 - (not_vip.create_time - int(time.time())) \
+                    if 30 * 60 - (not_vip.create_time - int(time.time())) > 0 else 0
+                time.sleep(sleep_time)
+                
+
             # print tasks
             while True:
                 try:
@@ -65,4 +67,4 @@ class TimedTaskThread(threading.Thread):
         self.go_work = False
 
 
-timed_batch_sending_task_thread = TimedTaskThread(thread_id='timed_batch_sending_task')
+vip_check_task_thread = VipCheckThread(thread_id='vip checkout task')
