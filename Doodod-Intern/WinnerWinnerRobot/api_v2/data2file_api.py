@@ -58,12 +58,13 @@ def get_wallets_excel():
                                                {"username": wallet.username}
                                            ))
                 worksheet.write(i, 0, user.nickname)
-                worksheet.write(i, 1, chatroom_info.nickname_real if chatroom_info.nickname_real else chatroom_info.nickname_default)
+                worksheet.write(i, 1,
+                                chatroom_info.nickname_real if chatroom_info.nickname_real else chatroom_info.nickname_default)
                 worksheet.write(i, 2, wallet.address)
                 worksheet.write(i, 3, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(wallet.create_time)))
                 i += 1
 
-    file_name = "client" + str(client_id+999) + '_wallets.xls'
+    file_name = "client" + str(client_id + 999) + '_wallets.xls'
     file_path = os.path.join(os.getcwd(), "static", file_name)
     workbook.save(file_path)
 
@@ -75,15 +76,32 @@ def get_wallets_excel():
 @main_api_v2.route('/get_sensitive_excel', methods=['GET'])
 def get_sensitive_excel():
     status, user_info = UserLogin.verify_token(request.args.get('token'))
+    date_type = request.args.get('date_type', 1)
+
     if status != SUCCESS:
         return make_response(status)
 
     owner = user_info.client_id
+    cur_time = time.time()
+    today_start = int(cur_time - cur_time % 86400)
+    yesterday_start = int(cur_time - cur_time % 86400 - 86400)
+    seven_before = int(cur_time - cur_time % 86400 - 86400 * 6)
+    thirty_before = int(cur_time - cur_time % 86400 - 86400 * 29)
+
+    time_dict = {
+        1: today_start,
+        2: yesterday_start,
+        3: seven_before,
+        4: thirty_before,
+        5: 0
+    }
+
     workbook = xlwt.Workbook(encoding="utf-8")
 
     monitor_feedbacks = BaseModel.fetch_all("sensitive_message_log", "*",
-                                            where_clause=BaseModel.where_dict(
-                                                {"owner": owner}),
+                                            where_clause=BaseModel.and_(
+                                                ["=", "owner", owner],
+                                                [">", "create_time", time_dict[int(date_type)]]),
                                             order_by=BaseModel.order_by({"create_time": "desc"})
                                             )
 
@@ -109,7 +127,8 @@ def get_sensitive_excel():
         chatroom_info = BaseModel.fetch_one("a_chatroom", "*",
                                             where_clause=BaseModel.where_dict(
                                                 {"chatroomname": monitor_feedback.chatroomname}))
-        worksheet.write(i, 2, chatroom_info.nickname_real if chatroom_info.nickname_real else chatroom_info.nickname_default)
+        worksheet.write(i, 2,
+                        chatroom_info.nickname_real if chatroom_info.nickname_real else chatroom_info.nickname_default)
 
         user_info = BaseModel.fetch_one("a_contact", "*",
                                         where_clause=BaseModel.where_dict(
@@ -120,7 +139,7 @@ def get_sensitive_excel():
         worksheet.write(i, 4, time.strftime('%Y-%m-%d %H:%M:%S',
                                             time.localtime(monitor_feedback.create_time)))
 
-    file_name = "client" + str(owner+999) + '_sensitive.xls'
+    file_name = "client" + str(owner + 999) + '_sensitive.xls'
     file_path = os.path.join(os.getcwd(), "static", file_name)
     workbook.save(file_path)
 

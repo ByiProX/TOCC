@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+__author__ = "Quentin"
+
 import threading
 import logging
 import time
@@ -10,7 +12,7 @@ from configs.config import SUCCESS, UserBotR
 logger = logging.getLogger('main')
 
 
-class VipCheckThread(threading.Thread):
+class FreeQunCheckThread(threading.Thread):
     def __init__(self, thread_id):
         threading.Thread.__init__(self)
         self.thread_id = thread_id
@@ -27,80 +29,86 @@ class VipCheckThread(threading.Thread):
             free_clients_id = [free_client.client_id for free_client in free_clients]
 
             cur_time = int(time.time())
-            quns = BaseModel.fetch_all("client_qun_r", "*",
-                                       where_clause=BaseModel.and_(
-                                           ["in", "client_id", free_clients_id],
-                                           [">", "create_time", cur_time - 28 * 60],
-                                           ["<", "create_time", cur_time - 25 * 60]),
-                                       order_by=BaseModel.order_by({"create_time": "ASC"})
-                                       )
-            if not quns:
+            # 查找免费用户的多余群(未付费群)，--- 半小时内
+            not_paid_quns = self.check_not_paid_quns(free_clients_id, cur_time)
+
+            if not not_paid_quns:
                 time.sleep(60)
                 continue
-            for qun in quns:
-                if not qun.is_paid:
-                    ubr = BaseModel.fetch_one(UserBotR, '*',
-                                              where_clause=BaseModel.where_dict({"client_id": qun.client_id}))
 
-                    data = {
-                        "task": "send_message",
-                        "to": "%s" % qun.client_id,
-                        "type": 1,
-                        "content": "%s 尚未缴费, 请及时付款，否则2分钟后该群服务消失" % qun.chatroomname
-                    }
-                    try:
-                        status = send_ws_to_android(ubr.bot_username, data)
-                    except Exception:
-                        continue
-                    if status == SUCCESS:
-                        logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
-                    else:
-                        logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
+            # 通知付款
+            self.inform_to_pay(not_paid_quns)
 
-            # time.sleep(120)
-            # 重新查表，检查是否缴费
-            quns = BaseModel.fetch_all("client_qun_r", "*",
-                                       where_clause=BaseModel.and_(
-                                           ["in", "client_id", free_clients_id],
-                                           [">", "create_time", cur_time - 28 * 60],
-                                           ["<", "create_time", cur_time - 25 * 60]),
-                                       order_by=BaseModel.order_by({"create_time": "ASC"})
-                                       )
-            for qun in quns:
-                if not qun.is_paid:
-                    ubr = BaseModel.fetch_one(UserBotR, '*',
-                                              where_clause=BaseModel.where_dict({"client_id": qun.client_id}))
+            # 等待
+            time.sleep(120)
+            # 重新查表，查找未缴费群
+            not_paid_quns_again = self.check_not_paid_quns(free_clients_id, cur_time)
 
-                    data = {
-                        "task": "退群",
-                        "to": "%s" % qun.client_id,
-                        "type": 1,
-                        "content": "%s 尚未缴费, 请及时付款，否则2分钟后该群服务消失" % qun.chatroomname
-                    }
-                    sleep_time = 30 * 60 - (int(time.time()) - qun.create_time) \
-                        if 30 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
-                    time.sleep(sleep_time)
-                    try:
-                        status = send_ws_to_android(ubr.bot_username, data)
-                    except Exception:
-                        continue
-                    if status == SUCCESS:
-                        logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
-                    else:
-                        logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
+            self.kick_out(not_paid_quns_again)
 
     @staticmethod
-    def check_whether_paid_now(qun):
-        not_paid_qun_list = BaseModel.fetch_all("client_qun_r", "*",
-                                                where_clause=BaseModel.and_(
-                                                    ["=", "is_vip", 1],
-                                                    [">", "qun_used_count", 1]),
-                                                order_by=BaseModel.order_by({"create_time": "ASC"})
-                                                )
+    def check_not_paid_quns(free_clients_id, cur_time):
+        not_paid_quns = BaseModel.fetch_all("client_qun_r", "*",
+                                            where_clause=BaseModel.and_(
+                                                ["in", "client_id", free_clients_id],
+                                                ["=", "is_paid", 0],
+                                                [">", "create_time", cur_time - 28 * 60],
+                                                ["<", "create_time", cur_time - 25 * 60]),
+                                            order_by=BaseModel.order_by({"create_time": "ASC"})
+                                            )
+
+        return not_paid_quns
+
+    @staticmethod
+    def inform_to_pay(quns):
+        for qun in quns:
+            ubr = BaseModel.fetch_one(UserBotR, '*',
+                                      where_clause=BaseModel.where_dict({"client_id": qun.client_id}))
+
+            data = {
+                "task": "send_message",
+                "to": "%s" % qun.client_id,
+                "type": 1,
+                "content": "%s 尚未缴费, 请及时付款，否则2分钟后该群服务消失" % qun.chatroomname
+            }
+            try:
+                status = send_ws_to_android(ubr.bot_username, data)
+            except Exception:
+                continue
+            if status == SUCCESS:
+                logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
+            else:
+                logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
+        return int(time.time())
+
+    @staticmethod
+    def kick_out(quns):
+        for qun in quns:
+            ubr = BaseModel.fetch_one(UserBotR, '*',
+                                      where_clause=BaseModel.where_dict({"client_id": qun.client_id}))
+
+            data = {
+                "task": "退群",
+                "to": "%s" % qun.client_id,
+                "type": 1,
+                "content": "%s 已退群" % qun.chatroomname
+            }
+            sleep_time = 30 * 60 - (int(time.time()) - qun.create_time) \
+                if 30 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
+            time.sleep(sleep_time)
+            try:
+                status = send_ws_to_android(ubr.bot_username, data)
+            except Exception:
+                continue
+            if status == SUCCESS:
+                logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
+            else:
+                logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
+
 
     def stop(self):
         logger.info(u"停止进程")
         self.go_work = False
 
 
-vip_check_task_thread = VipCheckThread(thread_id='vip checkout task')
+free_qun_check_task_thread = FreeQunCheckThread(thread_id='vip checkout task')

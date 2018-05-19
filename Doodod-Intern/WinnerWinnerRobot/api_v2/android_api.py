@@ -9,7 +9,8 @@ from configs.config import SUCCESS, main_api_v2, BotInfo, Message, NEW_MSG_Q, Co
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, \
     GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, MaterialLib, UserInfo, UserBotR, GLOBAL_EMPLOYEE_PEOPLE_FLAG
 from core_v2.matching_rule_core import gm_rule_dict, gm_default_rule_dict, get_gm_rule_dict, get_gm_default_rule_dict
-from core_v2.message_core import route_msg, count_msg, update_sensitive_word_list, update_employee_people_list
+from core_v2.message_core import route_msg, count_msg, update_sensitive_word_list, update_employee_people_list, \
+    NEED_UPDATE_REPLY_RULE, update_employee_people_reply_rule
 from core_v2.user_core import _bind_bot_success, UserLogin
 from core_v2.wechat_core import WechatConn, wechat_conn_dict
 from models_v2.base_model import BaseModel, CM
@@ -35,7 +36,7 @@ def android_add_friend():
             if we_conn is None:
                 logger.info(
                     u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (
-                    user_info.app, json.dumps(wechat_conn_dict.keys())))
+                        user_info.app, json.dumps(wechat_conn_dict.keys())))
             we_conn.send_txt_to_follower(
                 "您好，欢迎使用数字货币友问币答！请将我拉入您要管理的区块链社群，拉入成功后即可为您的群提供实时查询币价，涨幅榜，币种成交榜，交易所榜，最新动态，行业百科等服务。步骤如下：\n拉我入群➡确认拉群成功➡ "
                 "机器人在群发自我介绍帮助群友了解规则➡群友按照命令发关键字➡机器人回复➡完毕",
@@ -72,6 +73,7 @@ def android_new_message():
 
     global gm_rule_dict
     global gm_default_rule_dict
+    global NEED_UPDATE_REPLY_RULE
 
     if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG]:
         gm_rule_dict = get_gm_rule_dict()
@@ -85,6 +87,9 @@ def android_new_message():
     if GLOBAL_RULES_UPDATE_FLAG[GLOBAL_EMPLOYEE_PEOPLE_FLAG]:
         update_employee_people_list()
         GLOBAL_RULES_UPDATE_FLAG[GLOBAL_EMPLOYEE_PEOPLE_FLAG] = False
+    if NEED_UPDATE_REPLY_RULE:
+        update_employee_people_reply_rule()
+        NEED_UPDATE_REPLY_RULE = False
     route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
     count_msg(a_message)
     # NEW_MSG_Q.put(a_message)

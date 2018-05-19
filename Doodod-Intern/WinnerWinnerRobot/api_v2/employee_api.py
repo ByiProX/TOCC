@@ -185,7 +185,8 @@ def employee_record():
 
         all_log_list = log_list[(page - 1) * pagesize:page * pagesize]
 
-        res = {"err_code": 0, 'content': []}
+        res = {"err_code": 0, 'content': {'total_count': len(log_list), 'log_list': []}}
+
         for log in all_log_list:
             chatroomname = log.chatroomname
             this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': chatroomname}))
@@ -200,7 +201,7 @@ def employee_record():
                 'reply_duration': (log.reply_time - log.create_time) if log.is_reply and (
                         log.reply_time - log.create_time) < 86400 else -1
             }
-            res['content'].append(_temp)
+            res['content']['log_list'].append(_temp)
     except Exception as e:
         return '%s' % e
     return response(res)

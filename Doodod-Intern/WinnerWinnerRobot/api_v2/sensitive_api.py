@@ -181,7 +181,10 @@ def sensitive_message_log():
             owner_all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
                                                      BaseModel.and_([">", "create_time", time_limit[0]],
                                                                     ["<", "create_time", time_limit[1]]),
-                                                     order_by=BaseModel.order_by({"create_time": "desc"}))
+                                                     order_by=BaseModel.order_by({"create_time": "desc"}),
+                                                     page=page,
+                                                     pagesize=pagesize)
+            print(len(owner_all_log_list))
             for log in owner_all_log_list:
                 if rule.sensitive_message_rule_id == log.rule_id and log.sensitive_word in rule.sensitive_word_list:
                     _all_log_list.append(log)
@@ -190,8 +193,7 @@ def sensitive_message_log():
     content = {}
     message_list = []
 
-    all_log_list = _all_log_list[(page - 1) * pagesize:page * pagesize]
-
+    all_log_list = _all_log_list
     total_count = len(_all_log_list)
     for log in all_log_list:
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': log.chatroomname}))

@@ -26,8 +26,10 @@ from utils.u_transformat import str_to_unicode, unicode_to_str
 import logging
 
 logger = logging.getLogger('main')
+NEED_UPDATE_REPLY_RULE = True
 SENSITIVE_WORD_RULE_DICT = {}
 EMPLOYEE_PEOPLE_RULE_DICT = {}
+REPLY_RULE_DICT = {}
 
 
 def start_listen_new_msg():
@@ -84,6 +86,7 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
     # Check if contain sensitive word.
     if not a_message.is_to_friend and a_message.type == MSG_TYPE_TXT:
         check_and_add_sensitive_word_log(a_message)
+        check_if_is_reply(a_message)
         # Check if @ someone in rule list.
         if a_message.real_content.find('@') > -1:
             check_or_add_at_log(a_message)
@@ -483,6 +486,23 @@ def update_employee_people_list():
     print('-----------', EMPLOYEE_PEOPLE_RULE_DICT)
 
 
+def update_employee_people_reply_rule():
+    print('----- update_employee_people_reply_rule running')
+    global REPLY_RULE_DICT
+    REPLY_RULE_DICT = {}
+    time_limit = int(time.time()) - 86400
+    all_need_to_reply = BaseModel.fetch_all('employee_be_at_log', '*', BaseModel.and_(["=", "is_reply", 0],
+                                                                                      [">", "create_time",
+                                                                                       time_limit]), )
+    for i in all_need_to_reply:
+        username = i.username
+        chatroomname = i.chatroomname
+        create_time = i.create_time
+        its_id = i.get_id()
+        REPLY_RULE_DICT[chatroomname] = (username, create_time, its_id)
+    print(REPLY_RULE_DICT)
+
+
 def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_id):
     """
     Pass
@@ -565,8 +585,43 @@ def check_or_add_at_log(a_message):
     return 0
 
 
+def check_if_is_reply(a_message):
+    print('------check_if_is_reply')
+    chatroomname = a_message.talker
+    username = a_message.real_talker
+    if chatroomname in REPLY_RULE_DICT and username == REPLY_RULE_DICT[chatroomname][0] \
+            and int(time.time()) < REPLY_RULE_DICT[chatroomname][1] + 86400:
+        new_thread = threading.Thread(target=add_reply_employee_at_log, args=(username, chatroomname,))
+        new_thread.setDaemon(True)
+        new_thread.start()
+
+
+def add_reply_employee_at_log(username, chatroomname):
+    print('------ add_reply_employee_at_log running ')
+    all_log_in_thisroom = BaseModel.fetch_all('employee_be_at_log', '*', BaseModel.and_(["=", "is_reply", 0],
+                                                                                        [">", "create_time",
+                                                                                         int(time.time()) - 86400],
+                                                                                        ["=", "username", username],
+                                                                                        ["=", "chatroomname",
+                                                                                         chatroomname], ), )
+    for i in all_log_in_thisroom:
+        i.is_reply = 1
+        i.reply_time = int(time.time())
+        i.save()
+    return 0
+
+
 def add_employee_at_log(username, content, a_message_id, chatroomname):
     print('add_employee_at_log running')
+    # Check if this employee not in this chatroom.
+    try:
+        this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': chatroomname}))
+        member_list = this_chatroom.member_list.split(';')
+        if username not in member_list:
+            return 0
+    except Exception as e:
+        print(e)
+
     new_log = CM('employee_be_at_log')
     new_log.username = username
     new_log.create_time = int(time.time())
@@ -576,3 +631,4 @@ def add_employee_at_log(username, content, a_message_id, chatroomname):
     new_log.is_reply = 0
     new_log.reply_time = 0
     new_log.save()
+    update_employee_people_reply_rule()
