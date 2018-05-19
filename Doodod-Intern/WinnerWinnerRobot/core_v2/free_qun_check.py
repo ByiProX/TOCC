@@ -79,16 +79,16 @@ class FreeQunCheckThread(threading.Thread):
                 logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
             else:
                 logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
-        return int(time.time())
+        # return int(time.time())
 
     @staticmethod
     def kick_out(quns):
         for qun in quns:
             ubr = BaseModel.fetch_one(UserBotR, '*',
                                       where_clause=BaseModel.where_dict({"client_id": qun.client_id}))
-
+            # TODO 退群接口添加
             data = {
-                "task": "退群",
+                "task": "退群接口",
                 "to": "%s" % qun.client_id,
                 "type": 1,
                 "content": "%s 已退群" % qun.chatroomname
@@ -104,7 +104,6 @@ class FreeQunCheckThread(threading.Thread):
                 logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
             else:
                 logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
-
 
     def stop(self):
         logger.info(u"停止进程")

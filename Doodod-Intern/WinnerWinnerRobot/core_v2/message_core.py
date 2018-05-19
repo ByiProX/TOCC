@@ -616,7 +616,10 @@ def add_employee_at_log(username, content, a_message_id, chatroomname):
     # Check if this employee not in this chatroom.
     try:
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': chatroomname}))
-        member_list = this_chatroom.member_list.split(';')
+        member_list = this_chatroom.memberlist.split(';')
+        print('---username', username)
+        print('---content', content)
+        print('---member_list', member_list)
         if username not in member_list:
             return 0
     except Exception as e:

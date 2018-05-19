@@ -102,6 +102,7 @@ def employee_tag_edit():
     username = request.json.get('username')
     tag_list = request.json.get('tag_list')
 
+    # Do not use <> in this line.
     this_user = BaseModel.fetch_one('employee_people', '*', BaseModel.where_dict({'username': username}))
 
     if this_user is None:
@@ -112,8 +113,16 @@ def employee_tag_edit():
         new_user.remark = 'sc'
         flag = new_user.save()
     else:
-        this_user.tag_list = tag_list
-        this_user.by_client_id = client_id
+        print('---tag_list', tag_list)
+        if tag_list == []:
+            # delete this field.
+            this_user.tag_list = [0, ]
+            this_user.by_client_id = client_id
+        else:
+            # Modify field.
+            this_user.tag_list = tag_list
+            this_user.by_client_id = client_id
+
         flag = this_user.save()
     # Update rule.
     GLOBAL_RULES_UPDATE_FLAG[GLOBAL_EMPLOYEE_PEOPLE_FLAG] = True
@@ -210,7 +219,7 @@ def employee_record():
 @main_api_v2.route('/employee_ranking', methods=['POST'])
 def employee_ranking():
     try:
-        people = BaseModel.fetch_all('employee_people', '*')
+        people = BaseModel.fetch_all('employee_people', '*', BaseModel.and_(["<>", "tag_list", [0, ]]))
         res = {'err_code': 0, 'content': {'total_count': 0, 'user_info_list': []}}
         for this_user in people:
             username = this_user.username

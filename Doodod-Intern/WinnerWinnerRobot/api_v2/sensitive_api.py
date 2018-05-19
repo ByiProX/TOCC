@@ -130,6 +130,117 @@ def sensitive_rule_list():
     return response({'err_code': 0, 'content': content})
 
 
+@main_api_v2.route('/_sensitive_message_log', methods=['POST'])
+@para_check("token", "date_type", "page", "pagesize")
+def _sensitive_message_log():
+    # Check owner or return.
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    try:
+        owner = user_info.client_id
+    except AttributeError:
+        return response({'err_code': -2, 'content': 'User token error.'})
+
+    now = int(time.time())
+    date_type = int(request.json.get('date_type'))
+    page = int(request.json.get('page'))
+    pagesize = int(request.json.get('pagesize'))
+
+    """
+    date_type
+    -> 1 今天
+    -> 2 昨天
+    -> 3 近7天
+    -> 4 近30天
+    -> 5 全部
+    """
+    cur_time = time.time()
+    today_start = int(cur_time - cur_time % 86400)
+    yesterday_start = int(cur_time - cur_time % 86400 - 86400)
+    seven_before = int(cur_time - cur_time % 86400 - 86400 * 6)
+    thirty_before = int(cur_time - cur_time % 86400 - 86400 * 29)
+
+    time_dict = {
+        1: (today_start, now),
+        2: (yesterday_start, today_start),
+        3: (seven_before, now),
+        4: (thirty_before, now),
+        5: (0, now)
+    }
+
+    time_limit = time_dict[date_type]
+
+    _all_log_list = []
+
+    all_rule = BaseModel.fetch_all('sensitive_message_rule', '*', BaseModel.where_dict({'is_work': 1}))
+
+    for rule in all_rule:
+        owner_list = rule.owner_list
+        this_owner = owner_list[0]
+        if this_owner == owner:
+            owner_all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
+                                                     BaseModel.and_([">", "create_time", time_limit[0]],
+                                                                    ["<", "create_time", time_limit[1]],
+                                                                    ["=", "owner", owner], ),
+                                                     order_by=BaseModel.order_by({"create_time": "desc"}),
+                                                     page=page,
+                                                     pagesize=pagesize)
+
+            for log in owner_all_log_list:
+                if rule.sensitive_message_rule_id == log.rule_id and log.sensitive_word in rule.sensitive_word_list:
+                    _all_log_list.append(log)
+
+    result = {'err_code': 0}
+    content = {}
+    message_list = []
+
+    all_log_list = _all_log_list
+    total_count = len(_all_log_list)
+    for log in all_log_list:
+        this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': log.chatroomname}))
+        this_speaker = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': log.speaker_username}))
+
+        chatroom_nickname = this_chatroom.nickname_real if this_chatroom else 'None'
+        chatroom_avatar_url = this_chatroom.avatar_url if this_chatroom else 'None'
+        chatroom_nickname_default = this_chatroom.nickname_default if this_chatroom else ''
+        _chatroom_memberlist = this_chatroom.memberlist if this_chatroom else None
+        if _chatroom_memberlist:
+            chatroom_membercount = len(_chatroom_memberlist.split(';'))
+        else:
+            chatroom_membercount = 0
+        if chatroom_nickname == '':
+            chatroom_nickname = chatroom_nickname_default
+
+        speaker_nickname = this_speaker.nickname if this_speaker else 'None'
+        speaker_avatar_url = this_speaker.avatar_url if this_speaker else 'None'
+
+        temp = {
+            'sensitive_word': log.sensitive_word,
+            'message': {
+                'content': log.content,
+                'chatroom': {
+                    'chatroom_nickname': chatroom_nickname,
+                    'avatar_url': chatroom_avatar_url,
+                    'chatroomname': log.chatroomname,
+                    'member_count': chatroom_membercount,
+                },
+                'speaker': {
+                    'speaker_nickname': speaker_nickname,
+                    'avatar_url': speaker_avatar_url,
+                    'speaker_id': log.speaker_username,
+                },
+                'date': int(log.create_time),
+            },
+        }
+        message_list.append(temp)
+    content['last_update_time'] = int(time.time())
+    content['total_count'] = total_count
+    content['message_list'] = message_list
+
+    result['content'] = content
+
+    return response(result)
+
+
 @main_api_v2.route('/sensitive_message_log', methods=['POST'])
 @para_check("token", "date_type", "page", "pagesize")
 def sensitive_message_log():
@@ -169,32 +280,39 @@ def sensitive_message_log():
 
     time_limit = time_dict[date_type]
 
-    print('---time_limit', time_limit)
-    _all_log_list = []
-
     all_rule = BaseModel.fetch_all('sensitive_message_rule', '*', BaseModel.where_dict({'is_work': 1}))
 
+    owner_all_rule_id_list = []
     for rule in all_rule:
-        owner_list = rule.owner_list
-        this_owner = owner_list[0]
+        this_owner = rule.owner_list[0]
         if this_owner == owner:
-            owner_all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
-                                                     BaseModel.and_([">", "create_time", time_limit[0]],
-                                                                    ["<", "create_time", time_limit[1]]),
-                                                     order_by=BaseModel.order_by({"create_time": "desc"}),
-                                                     page=page,
-                                                     pagesize=pagesize)
-            print(len(owner_all_log_list))
-            for log in owner_all_log_list:
-                if rule.sensitive_message_rule_id == log.rule_id and log.sensitive_word in rule.sensitive_word_list:
-                    _all_log_list.append(log)
+            owner_all_rule_id_list.append(rule.get_id())
+
+    _all_log_list = BaseModel.fetch_all('sensitive_message_log', '*',
+                                        BaseModel.and_([">", "create_time", time_limit[0]],
+                                                       ["<", "create_time", time_limit[1]],
+                                                       ["=", "owner", owner],
+                                                       ["in", "rule_id", owner_all_rule_id_list]),
+                                        order_by=BaseModel.order_by({"create_time": "desc"}),
+                                        page=page,
+                                        pagesize=pagesize)
 
     result = {'err_code': 0}
     content = {}
     message_list = []
 
     all_log_list = _all_log_list
-    total_count = len(_all_log_list)
+    # Get total count.
+    _total_count = BaseModel.fetch_all('sensitive_message_log', '*',
+                                       BaseModel.and_([">", "create_time", time_limit[0]],
+                                                      ["<", "create_time", time_limit[1]],
+                                                      ["=", "owner", owner],
+                                                      ["in", "rule_id", owner_all_rule_id_list]),
+                                       order_by=BaseModel.order_by({"create_time": "desc"}),
+                                       page=1,
+                                       pagesize=100
+                                       )
+    total_count = len(_total_count)
     for log in all_log_list:
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': log.chatroomname}))
         this_speaker = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': log.speaker_username}))
