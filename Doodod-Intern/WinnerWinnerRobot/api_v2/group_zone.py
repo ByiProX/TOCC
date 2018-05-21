@@ -102,6 +102,7 @@ def get_group_zone_sources():
                                                     'size', 'duration',
                                                     'talker', 'real_talker'],
                                       where_clause=BaseModel.and_(
+                                          ["=", "is_send", 0],
                                           ['in', 'talker', client_quns_name_list],
                                           ['in', 'real_type', [5, 6, 7]],
                                           ['like', 'title', keyword]),
@@ -116,6 +117,7 @@ def get_group_zone_sources():
                                                     'size', 'duration',
                                                     'talker', 'real_talker'],
                                       where_clause=BaseModel.and_(
+                                          ["=", "is_send", 0],
                                           ['in', 'talker', client_quns_name_list],
                                           ['in', 'real_type', real_type_list],
                                           ['like', 'title', keyword]),
@@ -130,6 +132,7 @@ def get_group_zone_sources():
                                                     'size', 'duration',
                                                     'talker', 'real_talker'],
                                       where_clause=BaseModel.and_(
+                                          ["=", "is_send", 0],
                                           ['in', 'talker', client_quns_name_list],
                                           ['in', 'real_type', real_type_list]),
                                       order_by=BaseModel.order_by({"create_time": order_type})
