@@ -16,7 +16,7 @@ logger = logging.getLogger('main')
 @main_api_v2.route('/get_wallets_excel', methods=['GET'])
 def get_wallets_excel():
     status, user_info = UserLogin.verify_token(request.args.get('token'))
-    chatroom = request.args.get('chatroomname', 0)
+    chatroom = int(request.args.get('chatroomname', 0))
     if status != SUCCESS:
         return make_response(status)
 
@@ -76,7 +76,7 @@ def get_wallets_excel():
 @main_api_v2.route('/get_sensitive_excel', methods=['GET'])
 def get_sensitive_excel():
     status, user_info = UserLogin.verify_token(request.args.get('token'))
-    date_type = request.args.get('date_type', 1)
+    date_type = int(request.args.get('date_type', 1))
 
     if status != SUCCESS:
         return make_response(status)

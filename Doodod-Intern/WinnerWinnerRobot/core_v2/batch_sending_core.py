@@ -87,6 +87,8 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
         res["task_sended_failed_count"] = 0
 
         res["send_time"] = batch_send_task.send_time
+        # res["send_time"] = batch_send_task.send_time if batch_send_task.send_time else batch_send_task.create_time
+        # res["send_time"] = batch_send_task.create_time
         res["send_time_real"] = batch_send_task.send_time_real
         result.append(res)
 
@@ -319,6 +321,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     batch_send_task.people_count = member_count
     batch_send_task.is_deleted = 0
     batch_send_task.create_time = now_time
+    batch_send_task.send_time = 0
     batch_send_task.status = BATCH_SEND_TASK_STATUS_1
     batch_send_task.status_content = ""
     content_list = list()

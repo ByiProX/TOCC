@@ -139,7 +139,8 @@ def employee_detail():
 
     this_user = BaseModel.fetch_one('employee_people', '*', BaseModel.where_dict({'username': username}))
 
-    if this_user is None:
+    # FIX.
+    if this_user is None or this_user.tag_list == [0, ]:
         return response({'err_code': -1, 'err_info': 'Fake user.'})
 
     _tag_list = this_user.tag_list
@@ -189,12 +190,14 @@ def employee_record():
         page = int(request.json.get('page'))
         pagesize = int(request.json.get('pagesize'))
 
-        log_list = BaseModel.fetch_all('employee_be_at_log', '*', BaseModel.where_dict({'username': username}),
-                                       order_by=BaseModel.order_by({"create_time": "desc"}))
+        all_log_list = BaseModel.fetch_all('employee_be_at_log', '*', BaseModel.where_dict({'username': username}),
+                                           order_by=BaseModel.order_by({"create_time": "desc"}), page=page,
+                                           pagesize=pagesize)
 
-        all_log_list = log_list[(page - 1) * pagesize:page * pagesize]
+        _all_log_list = BaseModel.fetch_all('employee_be_at_log', '*', BaseModel.where_dict({'username': username}),
+                                            order_by=BaseModel.order_by({"create_time": "desc"}), page=1, pagesize=100)
 
-        res = {"err_code": 0, 'content': {'total_count': len(log_list), 'log_list': []}}
+        res = {"err_code": 0, 'content': {'total_count': len(_all_log_list), 'log_list': []}}
 
         for log in all_log_list:
             chatroomname = log.chatroomname
@@ -219,9 +222,20 @@ def employee_record():
 @main_api_v2.route('/employee_ranking', methods=['POST'])
 def employee_ranking():
     try:
-        people = BaseModel.fetch_all('employee_people', '*', BaseModel.and_(["<>", "tag_list", [0, ]]))
+        client_id = 0
+        status, user_info = UserLogin.verify_token(request.json.get('token'))
+        try:
+            client_id = user_info.client_id
+            client_username = user_info.username
+        except AttributeError:
+            return response({'err_code': -2, 'content': 'User token error.'})
+
+        people = BaseModel.fetch_all('employee_people', '*', BaseModel.where_dict({'by_client_id': client_id}))
         res = {'err_code': 0, 'content': {'total_count': 0, 'user_info_list': []}}
         for this_user in people:
+            # FIX.
+            if this_user.tag_list == [0, ]:
+                continue
             username = this_user.username
             _tag_list = this_user.tag_list
             tag_list = []

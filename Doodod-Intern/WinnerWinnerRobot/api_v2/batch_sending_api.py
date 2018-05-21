@@ -141,9 +141,11 @@ def app_create_a_sending_task():
 
     if send_time and send_time - int(time.time()) < 600:
         return make_response(SHORT_DURATION_TIME_ERROR)
+    # 如果send_time=0，为及时发送
     if not send_time:
         status = create_a_sending_task(user_info, chatroom_list, message_list)
     else:
+        # 如果batch_send_task_id=0，为新建定时任务
         if not batch_send_task_id:
             status = create_a_timed_sending_task(user_info, chatroom_list, message_list, send_time)
         else:
