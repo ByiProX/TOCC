@@ -622,7 +622,13 @@ def check_if_is_re(a_message):
         for i in range(len(re_text_list)):
             if real_content.find(re_text_list[i][0]) == 0:
                 print('----- Catch', real_content)
-                break
+                real_content_seq = real_content.split(u'\n')
+                for index, value in enumerate(re_text_list[i]):
+                    try:
+                        if value not in real_content_seq[index]:
+                            print('----- Not right', value)
+                    except Exception as e:
+                        print('----- Not right', e, value)
 
 
 def make_re_text(tag_list):

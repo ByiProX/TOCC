@@ -40,3 +40,14 @@ def app_get_paid_quns():
         return make_response(ERR_WRONG_ITEM)
 
     return make_response(SUCCESS, client_qun_statis=client_qun_statistic, quns_paid=quns_paid)
+
+
+@main_api_v2.route('/add_paid_quns', methods=['POST'])
+def app_add_paid_quns():
+    """
+    获取当前的可用的群
+    """
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)

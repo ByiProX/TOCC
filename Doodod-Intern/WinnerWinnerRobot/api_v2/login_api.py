@@ -412,7 +412,7 @@ def api_send_sms():
     print code
 
     sms_code = code
-    params = "{\"code\":\"" + str(sms_code) + "\",\"product\":\"紫豆助手\"}"
+    params = "{\"code\":\"" + str(sms_code) + "\"}"
     print 'params', params
     sign_name = '紫豆助手'
     template_code = 'SMS_135044557'
