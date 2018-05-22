@@ -275,3 +275,46 @@ def employee_ranking():
     except Exception as e:
         return '%s' % e
     return response(res)
+
+
+@main_api_v2.route('/employee_wrong_log', methods=['POST'])
+@para_check('username', 'page', 'pagesize')
+def employee_wrong_log():
+    try:
+        username = request.json.get('username')
+        page = int(request.json.get('page'))
+        pagesize = int(request.json.get('pagesize'))
+
+        all_log_list = BaseModel.fetch_all('employee_re_log', '*', BaseModel.where_dict({'username': username}),
+                                           order_by=BaseModel.order_by({"create_time": "desc"}), page=page,
+                                           pagesize=pagesize)
+
+        _all_log_list = BaseModel.fetch_all('employee_re_log', '*', BaseModel.where_dict({'username': username}),
+                                            order_by=BaseModel.order_by({"create_time": "desc"}), page=1, pagesize=100)
+
+        res = {"err_code": 0, 'content': {'total_count': len(_all_log_list), 'log_list': []}}
+
+        for log in all_log_list:
+            chatroomname = log.chatroomname
+            this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': chatroomname}))
+            this_person = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': log.username}))
+            avatar_url = this_person.avatar_url if this_person is not None else ''
+            nickname = this_person.nickname if this_person is not None else ''
+            _temp = {
+                'user_info': {
+                    'username': log.username,
+                    'avatar_url': avatar_url,
+                    'nickname': nickname
+                },
+                'chatroom_info': {
+                    'chatroomname': chatroomname,
+                    'nickname': this_chatroom.nickname if this_chatroom.nickname != '' else this_chatroom.nickname_default,
+                    'avatar_url': this_chatroom.avatar_url,
+                },
+                'msg_content': log.content,
+                'create_time': log.create_time,
+            }
+            res['content']['log_list'].append(_temp)
+    except Exception as e:
+        return '%s' % e
+    return response(res)

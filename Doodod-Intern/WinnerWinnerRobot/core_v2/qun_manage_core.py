@@ -216,6 +216,12 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
 
         uqr_exist = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
                                                                                             "chatroomname": chatroomname}))
+        # add by quentin
+        uqr_count = BaseModel.count(UserQunR,
+                                    where_clause=BaseModel.where_dict(
+                                        {"client_id": user_info.client_id}
+                                    ))
+
         if not uqr_exist:
             uqr = CM(UserQunR)
             uqr.client_id = user_info.client_id
@@ -223,6 +229,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
             uqr.status = 1
             uqr.group_id = unicode(user_info.client_id) + u"_0"
             uqr.create_time = datetime_to_timestamp_utc_8(datetime.now())
+            uqr.is_paid = 0 if uqr_count > 0 else 1
             uqr.save()
             logger.info(u"user与群关系已绑定. user_id: %s. chatroomname: %s." % (user_info.client_id, chatroomname))
         else:

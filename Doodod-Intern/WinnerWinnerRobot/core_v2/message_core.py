@@ -702,6 +702,7 @@ def add_employee_at_log(username, content, a_message_id, chatroomname):
 def add_wrong_re_log(username, content, a_message_id, chatroomname):
     _new_log = CM('employee_re_log')
     _new_log.username = username
+    _new_log.create_time = int(time.time())
     _new_log.content = content
     _new_log.a_message_id = a_message_id
     _new_log.chatroomname = chatroomname

@@ -49,5 +49,22 @@ def app_add_paid_quns():
     """
     verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
+
     if status != SUCCESS:
         return make_response(status)
+
+    add_qun_num = request.json.get("add_qun_num", 0)
+
+    try:
+        client = BaseModel.fetch_one("client", "*",
+                                     where_clause=BaseModel.and_(
+                                         ["=", "client_id", user_info.client_id],
+                                     ))
+
+        client.qun_count += add_qun_num
+        client.save()
+    except Exception:
+        return make_response(ERR_WRONG_ITEM)
+
+    return make_response(SUCCESS)
+
