@@ -40,7 +40,7 @@ class FreeQunCheckThread(threading.Thread):
                 self.inform_to_pay(not_paid_quns)
 
             # 等待
-            time.sleep(120)
+            # time.sleep(180)
             # 重新查表，查找未缴费群
             not_paid_quns_again = self.check_not_paid_quns(free_clients_id, cur_time)
             if not_paid_quns_again:
@@ -55,8 +55,8 @@ class FreeQunCheckThread(threading.Thread):
                                             where_clause=BaseModel.and_(
                                                 ["in", "client_id", free_clients_id],
                                                 ["=", "is_paid", 0],
-                                                [">", "create_time", cur_time - 25 * 60],
-                                                ["<", "create_time", cur_time - 20 * 60]),
+                                                [">", "create_time", cur_time - 30 * 60],
+                                                ["<", "create_time", cur_time - 15 * 60]),
                                             order_by=BaseModel.order_by({"create_time": "ASC"})
                                             )
 
@@ -72,8 +72,13 @@ class FreeQunCheckThread(threading.Thread):
                 "task": "send_message",
                 "to": "%s" % qun.client_id,
                 "type": 1,
-                "content": "%s 尚未缴费, 请及时付款，否则2分钟后该群服务消失" % qun.chatroomname
+                "content": "%s 尚未缴费, 请及时付款，否则稍后该群服务消失" % qun.chatroomname
             }
+
+            sleep_time = 20 * 60 - (int(time.time()) - qun.create_time) \
+                if 20 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
+            time.sleep(sleep_time)
+
             try:
                 status = send_ws_to_android(ubr.bot_username, data)
             except Exception:
@@ -83,7 +88,7 @@ class FreeQunCheckThread(threading.Thread):
             else:
                 logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
             # 减小安卓服务器压力
-            time.sleep(0.5)
+            time.sleep(0.1)
 
     @staticmethod
     def kick_out(quns):
@@ -92,13 +97,13 @@ class FreeQunCheckThread(threading.Thread):
                                       where_clause=BaseModel.where_dict({"client_id": qun.client_id}))
             # TODO 退群接口添加
             data = {
-                "task": "退群接口",
+                "task": "send_message",
                 "to": "%s" % qun.client_id,
                 "type": 1,
                 "content": "%s 已退群" % qun.chatroomname
             }
-            sleep_time = 30 * 60 - (int(time.time()) - qun.create_time) \
-                if 30 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
+            sleep_time = 29 * 60 - (int(time.time()) - qun.create_time) \
+                if 29 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
             time.sleep(sleep_time)
             try:
                 status = send_ws_to_android(ubr.bot_username, data)

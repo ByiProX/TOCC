@@ -1246,11 +1246,13 @@ def _get_events_qrcode():
     chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
                                         BaseModel.where_dict({'event_id': event_id, 'is_activated': 0}))
     if len(chatroom_list) == 0:
-        # Do not have chatroom.
+        # Do not have chatroom, return the bot info to add chatroom.
+
         return response({'err_code': 0,
                          'content': {'event_status': 5, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
-                                     'qr_end_date': ''}})
+                                     'qr_end_date': '', 'event_pull_word': '', 'bot_qrcode': '', 'bot_nickname': ''}})
     else:
+        # Activate one.
         index_list = []
         for i in chatroom_list:
             index_list.append(i.index)

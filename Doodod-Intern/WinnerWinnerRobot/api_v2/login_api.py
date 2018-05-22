@@ -4,15 +4,20 @@ import json
 import random
 
 import cStringIO
+import uuid
+
 import qrcode
-import requests
+import time
+
 from models_v2.base_model import BaseModel
 from core_v2.send_msg import send_ws_to_android
+from aliyunsdkdysmsapi.request.v20170525 import SendSmsRequest
 
 from flask import request
 
 from configs.config import main_api_v2, ERR_PARAM_SET, ERR_INVALID_PARAMS, SUCCESS, INFO_NO_USED_BOT, \
-    ERR_SET_LENGTH_WRONG, SIGN_DICT, ERR_ALREADY_LOGIN, APP_INFO_DICT
+    ERR_SET_LENGTH_WRONG, SIGN_DICT, ERR_ALREADY_LOGIN, APP_INFO_DICT, ERR_INVALID_PHONE, acs_client, \
+    ERR_INVALID_SMS_CODE, ERR_SMS_CODE_EXPIRED, ERR_UNKNOWN_ERROR
 from core_v2.user_core import UserLogin, cal_user_basic_page_info, add_a_pre_relate_user_bot_info, get_bot_qr_code, \
     set_bot_name
 from core_v2.wechat_core import wechat_conn_dict
@@ -72,14 +77,8 @@ def app_get_user_basic_info():
 
     status, res = cal_user_basic_page_info(user_info)
 
-    client_info = BaseModel.fetch_one("a_contact", "*",
-                                      where_clause=BaseModel.where_dict(
-                                          {"username": user_info.username}
-                                      ))
-    if client_info is None:
-        return make_response(ERR_INVALID_PARAMS)
-    client_info = client_info.to_json_full()
-    client_info["app"] = user_info.app
+    client_info = user_info.to_json_full()
+    client_info['nickname'] = client_info["nick_name"]
 
     # Add hidden func info for test by ZYunH 2018-5-18(trade off).
     hidden_func = []
@@ -363,3 +362,91 @@ if __name__ == "__main__":
 
     a = BaseModel.fetch_by_id("bot_info", "5adaacc6f5d7e26589658e0a")
     print a.username
+
+
+@main_api_v2.route("/verify_sms", methods = ['POST'])
+def verify_sms():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    phone = request.json.get('phone')
+    code = request.json.get('sms_code')
+    if not phone or not code:
+        return make_response(ERR_INVALID_PARAMS)
+
+    if phone and user_info.phone != phone:
+        return make_response(ERR_INVALID_PHONE)
+    if code and user_info.sms_code != code:
+        return make_response(ERR_INVALID_SMS_CODE)
+    now_time = int(time.time())
+    if now_time > user_info.sms_code_expired_time:
+        return make_response(ERR_SMS_CODE_EXPIRED)
+
+    user_info.phone_verified = 1
+    user_info.update()
+
+    return make_response(SUCCESS)
+
+
+@main_api_v2.route('/send_sms', methods = ['POST'])
+def api_send_sms():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    phone = request.json.get('phone')
+    if not phone:
+        return make_response(ERR_INVALID_PARAMS)
+    __business_id = uuid.uuid1()
+
+    print __business_id
+    phone_number = phone
+
+    code = ''
+    for i in range(6):
+        code_i = random.randint(0, 9)
+        code += str(code_i)
+    print code
+
+    sms_code = code
+    params = "{\"code\":\"" + str(sms_code) + "\",\"product\":\"紫豆助手\"}"
+    print 'params', params
+    sign_name = '紫豆助手'
+    template_code = 'SMS_135044557'
+    response_str = send_sms(business_id = __business_id, phone_number = phone_number, sign_name = sign_name, template_code = template_code, template_param = params)
+    logger.info("sms_response: " + response_str)
+    response_json = json.loads(response_str)
+    code = response_json.get('Code')
+    if code == 'isv.MOBILE_NUMBER_ILLEGAL' or code == 'isv.MOBILE_COUNT_OVER_LIMIT':
+        return make_response(ERR_INVALID_PHONE)
+    if code == 'isv.AMOUNT_NOT_ENOUGH':
+        return make_response(ERR_UNKNOWN_ERROR)
+
+    user_info.phone = phone
+    user_info.phone_verified = 0
+    user_info.sms_code = sms_code
+    user_info.sms_code_expired_time = int(time.time()) + 10 * 60
+    user_info.update()
+
+    return make_response(SUCCESS)
+
+
+def send_sms(business_id, phone_number, sign_name, template_code, template_param=None):
+    smsRequest = SendSmsRequest.SendSmsRequest()
+    # 申请的短信模板编码,必填
+    smsRequest.set_TemplateCode(template_code)
+    # 短信模板变量参数,友情提示:如果JSON中需要带换行符,请参照标准的JSON协议对换行符的要求,比如短信内容中包含\r\n的情况在JSON中需要表示成\\r\\n,否则会导致JSON在服务端解析失败
+    if template_param is not None:
+        smsRequest.set_TemplateParam(template_param)
+    # 设置业务请求流水号，必填。
+    smsRequest.set_OutId(business_id)
+    # 短信签名
+    smsRequest.set_SignName(sign_name)
+    # 短信发送的号码，必填。支持以逗号分隔的形式进行批量调用，批量上限为1000个手机号码,批量调用相对于单条调用及时性稍有延迟,验证码类型的短信推荐使用单条调用的方式
+    smsRequest.set_PhoneNumbers(phone_number)
+    # 发送请求
+    smsResponse = acs_client.do_action_with_exception(smsRequest)
+    return smsResponse

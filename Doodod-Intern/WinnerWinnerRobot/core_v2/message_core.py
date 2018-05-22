@@ -28,7 +28,8 @@ import logging
 logger = logging.getLogger('main')
 NEED_UPDATE_REPLY_RULE = True
 SENSITIVE_WORD_RULE_DICT = {}
-EMPLOYEE_PEOPLE_RULE_DICT = {}
+EMPLOYEE_PEOPLE_BE_AT_RULE_DICT = {}
+EMPLOYEE_PEOPLE_RE_RULE_DICT = {}
 REPLY_RULE_DICT = {}
 
 
@@ -90,6 +91,8 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
         # Check if @ someone in rule list.
         if a_message.real_content.find('@') > -1:
             check_or_add_at_log(a_message)
+        # Check if is RE text.
+        check_if_is_re(a_message)
 
     # is_add_friend
     # is_add_friend = check_whether_message_is_add_friend(message_analysis)
@@ -469,21 +472,36 @@ def update_sensitive_word_list():
 
 
 def update_employee_people_list():
-    """Be at func rule."""
+    """Update 1.be at func rule 2.regular expression rule.
+
+    EMPLOYEE_PEOPLE_BE_AT_RULE_DICT = {"@nickname" : "username"}
+    EMPLOYEE_PEOPLE_RE_RULE_DICT ->
+    {
+    "username" : [ ("text_line_1","text_line_2", ...), ("text_line_1","text_line_2", ...), ]
+    }
+    """
     print('update_employee_people_list running')
     people_list = BaseModel.fetch_all('employee_people', '*')
-    global EMPLOYEE_PEOPLE_RULE_DICT
-    EMPLOYEE_PEOPLE_RULE_DICT = {}
+    global EMPLOYEE_PEOPLE_BE_AT_RULE_DICT
+    global EMPLOYEE_PEOPLE_RE_RULE_DICT
+    EMPLOYEE_PEOPLE_BE_AT_RULE_DICT = {}
+    EMPLOYEE_PEOPLE_RE_RULE_DICT = {}
     for man in people_list:
+        if man.tag_list == [0, ]:
+            continue
         man_username = man.username
+        # Update EMPLOYEE_PEOPLE_RE_RULE_DICT.
+        EMPLOYEE_PEOPLE_RE_RULE_DICT[man_username] = make_re_text(man.tag_list)
+        # Update EMPLOYEE_PEOPLE_BE_AT_RULE_DICT.
         man_info = BaseModel.fetch_one('a_contact', '*', BaseModel.or_(['=', 'alias', man_username],
                                                                        ['=', 'username', man_username], ))
         if man_info is None:
             print('-----update_employee_people_list ERROR:', man_username)
             continue
         man_nickname = man_info.nickname
-        EMPLOYEE_PEOPLE_RULE_DICT[u'@' + man_nickname] = man_username
-    print('-----------', EMPLOYEE_PEOPLE_RULE_DICT)
+        EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[u'@' + man_nickname] = man_username
+    print('1-----------', EMPLOYEE_PEOPLE_BE_AT_RULE_DICT)
+    print('2-----------', EMPLOYEE_PEOPLE_RE_RULE_DICT)
 
 
 def update_employee_people_reply_rule():
@@ -571,13 +589,13 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
 
 def check_or_add_at_log(a_message):
     real_content = a_message.real_content
-    at_rule_list = EMPLOYEE_PEOPLE_RULE_DICT.keys()
+    at_rule_list = EMPLOYEE_PEOPLE_BE_AT_RULE_DICT.keys()
     for i in at_rule_list:
         if i in real_content:
-            print('At log:', EMPLOYEE_PEOPLE_RULE_DICT[i], real_content)
+            print('At log:', EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[i], real_content)
             new_thread = threading.Thread(target=add_employee_at_log,
                                           args=(
-                                              EMPLOYEE_PEOPLE_RULE_DICT[i], real_content,
+                                              EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[i], real_content,
                                               a_message.a_message_id, a_message.talker))
             new_thread.setDaemon(True)
             new_thread.start()
@@ -594,6 +612,33 @@ def check_if_is_reply(a_message):
         new_thread = threading.Thread(target=add_reply_employee_at_log, args=(username, chatroomname,))
         new_thread.setDaemon(True)
         new_thread.start()
+
+
+def check_if_is_re(a_message):
+    real_talker = a_message.real_talker
+    real_content = a_message.real_content
+    if real_talker in EMPLOYEE_PEOPLE_RE_RULE_DICT.keys():
+        re_text_list = EMPLOYEE_PEOPLE_RE_RULE_DICT[real_talker]
+        for i in range(len(re_text_list)):
+            if real_content.find(re_text_list[i][0]) == 0:
+                print('----- Catch', real_content)
+                break
+
+
+def make_re_text(tag_list):
+    """Make re text by tag_list."""
+    res = []
+    if 3 in tag_list:
+        res.append([u'交底工作总结', u'交底日期', u'参加人员', u'未参加人员', u'交底记录', u'待整改项', u'需求事项'])
+        res.append([u'节点验收通知', u'验收日期', u'验收内容', u'需参加人员', u'备注'])
+        res.append([u'节点验收总结', u'验收日期', u'参加人员', u'未参加人员', u'验收结果', u'待整改项', u'需求事项'])
+        res.append([u'项目经理工作汇报', u'汇报日期', u'汇报内容', ])
+    if 4 in tag_list:
+        res.append([u'工长工作汇报', u'项目经理', u'拍摄时间', u'照片', u'工长工作安排'])
+    if 5 in tag_list:
+        res.append([u'现场工作汇报', u'项目经理', u'工长', u'拍摄时间', u'照片', u'上周完成', u'本周计划', u'人员安排', u'设计需求',
+                    u'产品需求', u'可复尺产品', u'该工地是否具备参观件', u'工期倒计时', u'是否能按时完工', u'障碍工期问题'])
+    return res
 
 
 def add_reply_employee_at_log(username, chatroomname):
@@ -617,9 +662,6 @@ def add_employee_at_log(username, content, a_message_id, chatroomname):
     try:
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': chatroomname}))
         member_list = this_chatroom.memberlist.split(';')
-        print('---username', username)
-        print('---content', content)
-        print('---member_list', member_list)
         if username not in member_list:
             return 0
     except Exception as e:

@@ -222,11 +222,9 @@ def employee_record():
 @main_api_v2.route('/employee_ranking', methods=['POST'])
 def employee_ranking():
     try:
-        client_id = 0
         status, user_info = UserLogin.verify_token(request.json.get('token'))
         try:
             client_id = user_info.client_id
-            client_username = user_info.username
         except AttributeError:
             return response({'err_code': -2, 'content': 'User token error.'})
 

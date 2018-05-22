@@ -12,6 +12,8 @@ from werkzeug.datastructures import Headers
 # from Crypto import Random
 # from Crypto.PublicKey import RSA
 # from Crypto.Cipher import PKCS1_v1_5
+from aliyunsdkcore.client import AcsClient
+from aliyunsdkcore.profile import region_provider
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'ohayo'
@@ -165,10 +167,10 @@ app.response_class = MyResponse
 config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
-DB_SERVER_URL = u'http://dal.com:8090/'
-# DB_SERVER_URL = u'http://dal.ixuanren.com/'
-# if ENV == "PRODUCTION":
-#     DB_SERVER_URL = u'http://dal.com:8090/'
+# DB_SERVER_URL = u'http://dal.com:8090/'
+DB_SERVER_URL = u'http://dal.ixuanren.com/'
+if ENV == "PRODUCTION":
+    DB_SERVER_URL = u'http://dal.com:8090/'
 
 rds = redis.StrictRedis(host = '127.0.0.1', port = 6379, db = 1, password = "redisRedis_789")
 
@@ -266,9 +268,17 @@ ERROR_CODE[ERR_NOT_IMPLEMENTED] = {'discription': '成员不存在', 'status_cod
 ERR_ALREADY_LOGIN = 'err_already_login'
 ERROR_CODE[ERR_ALREADY_LOGIN] = {'discription': '成员不存在', 'status_code': -18}
 
-# PC 已登录
+# 手机号不合法
 ERR_INVALID_PHONE = 'err_invalid_phone'
 ERROR_CODE[ERR_INVALID_PHONE] = {'discription': '手机号不合法', 'status_code': -19}
+
+# SMS_CODE 过期
+ERR_SMS_CODE_EXPIRED = 'err_sms_code_expired'
+ERROR_CODE[ERR_SMS_CODE_EXPIRED] = {'discription': 'SMS_CODE 过期', 'status_code': -20}
+
+# SMS_CODE 错误
+ERR_INVALID_SMS_CODE = 'err_invalid_sms_code'
+ERROR_CODE[ERR_INVALID_SMS_CODE] = {'discription': 'SMS_CODE 错误', 'status_code': -21}
 
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
@@ -451,3 +461,14 @@ if ENV == 'PRODUCTION':
     ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.xuanren360.com/android/bot_status"
     ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_mass_message"
     ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_message"
+
+# aliyun
+REGION = "cn-hangzhou"  # 暂时不支持多region
+PRODUCT_NAME = "Dysmsapi"
+DOMAIN = "dysmsapi.aliyuncs.com"
+# ACCESS_KEY_ID/ACCESS_KEY_SECRET 根据实际申请的账号信息进行替换
+ACCESS_KEY_ID = "LTAIN1QF1zEIhADM"
+ACCESS_KEY_SECRET = "VDpxavKUCNgFyoAijdTKcGKQqkrNgp"
+
+acs_client = AcsClient(ACCESS_KEY_ID, ACCESS_KEY_SECRET, REGION)
+region_provider.add_endpoint(PRODUCT_NAME, REGION, DOMAIN)
