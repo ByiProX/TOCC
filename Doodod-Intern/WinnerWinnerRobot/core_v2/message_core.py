@@ -627,8 +627,22 @@ def check_if_is_re(a_message):
                     try:
                         if value not in real_content_seq[index]:
                             print('----- Not right', value)
+                            new_thread = threading.Thread(target=add_wrong_re_log,
+                                                          args=(
+                                                              real_talker, real_content,
+                                                              a_message.a_message_id, a_message.talker))
+                            new_thread.setDaemon(True)
+                            new_thread.start()
+                            break
                     except Exception as e:
                         print('----- Not right', e, value)
+                        new_thread = threading.Thread(target=add_wrong_re_log,
+                                                      args=(
+                                                          real_talker, real_content,
+                                                          a_message.a_message_id, a_message.talker))
+                        new_thread.setDaemon(True)
+                        new_thread.start()
+                        break
 
 
 def make_re_text(tag_list):
@@ -683,3 +697,12 @@ def add_employee_at_log(username, content, a_message_id, chatroomname):
     new_log.reply_time = 0
     new_log.save()
     update_employee_people_reply_rule()
+
+
+def add_wrong_re_log(username, content, a_message_id, chatroomname):
+    _new_log = CM('employee_re_log')
+    _new_log.username = username
+    _new_log.content = content
+    _new_log.a_message_id = a_message_id
+    _new_log.chatroomname = chatroomname
+    _new_log.save()
