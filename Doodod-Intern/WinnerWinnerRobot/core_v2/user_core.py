@@ -464,8 +464,8 @@ def _get_a_balanced_bot(user_info):
 
     alive_bot_username_list = [key for key, value in bot_status.iteritems() if value is True and key not in old_bot_username_list]
 
-    if u"wxid_l66m6wuilug912" in alive_bot_username_list:
-        alive_bot_username_list.remove(u"wxid_l66m6wuilug912")
+    # if u"wxid_l66m6wuilug912" in alive_bot_username_list:
+    #     alive_bot_username_list.remove(u"wxid_l66m6wuilug912")
     if u"wxid_6mf4yqgs528e22" in alive_bot_username_list:
         alive_bot_username_list.remove(u"wxid_6mf4yqgs528e22")
     if u"wxid_q05k9d2atjie22" in alive_bot_username_list:

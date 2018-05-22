@@ -35,16 +35,19 @@ class FreeQunCheckThread(threading.Thread):
             if not not_paid_quns:
                 time.sleep(60)
                 continue
-
-            # 通知付款
-            self.inform_to_pay(not_paid_quns)
+            else:
+                # 通知付款
+                self.inform_to_pay(not_paid_quns)
 
             # 等待
             time.sleep(120)
             # 重新查表，查找未缴费群
             not_paid_quns_again = self.check_not_paid_quns(free_clients_id, cur_time)
-
-            self.kick_out(not_paid_quns_again)
+            if not_paid_quns_again:
+                self.kick_out(not_paid_quns_again)
+            else:
+                time.sleep(60)
+                continue
 
     @staticmethod
     def check_not_paid_quns(free_clients_id, cur_time):
@@ -52,8 +55,8 @@ class FreeQunCheckThread(threading.Thread):
                                             where_clause=BaseModel.and_(
                                                 ["in", "client_id", free_clients_id],
                                                 ["=", "is_paid", 0],
-                                                [">", "create_time", cur_time - 28 * 60],
-                                                ["<", "create_time", cur_time - 25 * 60]),
+                                                [">", "create_time", cur_time - 25 * 60],
+                                                ["<", "create_time", cur_time - 20 * 60]),
                                             order_by=BaseModel.order_by({"create_time": "ASC"})
                                             )
 
@@ -79,7 +82,8 @@ class FreeQunCheckThread(threading.Thread):
                 logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
             else:
                 logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
-        # return int(time.time())
+            # 减小安卓服务器压力
+            time.sleep(0.5)
 
     @staticmethod
     def kick_out(quns):

@@ -14,7 +14,7 @@ from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT
     CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, Member, Contact, CHAT_LOGS_ERR_TYPE_0, GLOBAL_RULES_UPDATE_FLAG, \
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, NEW_MSG_Q, \
     MSG_TYPE_ENTERCHATROOM, SUCCESS, ERR_UNKNOWN_ERROR, CONTENT_TYPE_ENTERCHATROOM, \
-    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, GLOBAL_EMPLOYEE_PEOPLE_FLAG
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, GLOBAL_EMPLOYEE_PEOPLE_FLAG, ANDROID_SERVER_URL_SEND_MESSAGE
 from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core_v2.matching_rule_core import get_gm_default_rule_dict, match_message_by_rule, get_gm_rule_dict
 from core_v2.real_time_quotes_core import match_message_by_coin_keyword
@@ -522,7 +522,7 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
                       "type": _type,
                       "content": content,
                   }}
-        resp = requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
+        resp = requests.post(ANDROID_SERVER_URL_SEND_MESSAGE, json=result)
         if dict(resp.json())['err_code'] == -1:
             logger.warning('add_and_send_sensitive_word_log ERROR,because bot dead!')
 

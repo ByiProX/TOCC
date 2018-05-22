@@ -9,9 +9,9 @@ from decimal import Decimal
 from flask import Flask, Blueprint, Response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.datastructures import Headers
-from Crypto import Random
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_v1_5
+# from Crypto import Random
+# from Crypto.PublicKey import RSA
+# from Crypto.Cipher import PKCS1_v1_5
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'ohayo'
@@ -165,9 +165,10 @@ app.response_class = MyResponse
 config = config_map[config_name]
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
-DB_SERVER_URL = u'http://dal.com/'
-if ENV == "PRODUCTION":
-    DB_SERVER_URL = u'http://dal.com:8090/'
+DB_SERVER_URL = u'http://dal.com:8090/'
+# DB_SERVER_URL = u'http://dal.ixuanren.com/'
+# if ENV == "PRODUCTION":
+#     DB_SERVER_URL = u'http://dal.com:8090/'
 
 rds = redis.StrictRedis(host = '127.0.0.1', port = 6379, db = 1, password = "redisRedis_789")
 
@@ -264,6 +265,10 @@ ERROR_CODE[ERR_NOT_IMPLEMENTED] = {'discription': '成员不存在', 'status_cod
 # PC 已登录
 ERR_ALREADY_LOGIN = 'err_already_login'
 ERROR_CODE[ERR_ALREADY_LOGIN] = {'discription': '成员不存在', 'status_code': -18}
+
+# PC 已登录
+ERR_INVALID_PHONE = 'err_invalid_phone'
+ERROR_CODE[ERR_INVALID_PHONE] = {'discription': '手机号不合法', 'status_code': -19}
 
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
@@ -438,6 +443,11 @@ NEW_MSG_Q = Queue()
 SIGN_DICT = dict()
 SENSITIVE_WORD_RULE_DICT = dict()
 
-ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.xuanren360.com/android/bot_status"
-ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_mass_message"
-ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_message"
+ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.ixuanren.com/android/bot_status"
+ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.ixuanren.com/android/send_mass_message"
+ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.ixuanren.com/android/send_message"
+
+if ENV == 'PRODUCTION':
+    ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.xuanren360.com/android/bot_status"
+    ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_mass_message"
+    ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_message"

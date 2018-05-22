@@ -27,25 +27,25 @@ def modelList2Arr(mlist):
 
 # 根据昵称搜索微信用户
 def member_search(nickname):
-    print "\n\n\n ----  member_search ----------\n"
+    # print "\n\n\n ----  member_search ----------\n"
     _where = ["like", "nickname", nickname.encode("utf-8")]
     _where = BaseModel.where_dict(_where)
     data = BaseModel.fetch_all('a_contact', '*', _where)
     data = modelList2Arr(data)
-    print '==== ', _where, '== =======', data, '=== ===='
-    print "\n ----  member_search end  ----------\n\n\n"
+    # print '==== ', _where, '== =======', data, '=== ===='
+    # print "\n ----  member_search end  ----------\n\n\n"
     return data
 
 
 # 获取一个群里所有成员wxID
 def getMembersOfQun(chatroomname):
-    print "\n\n\n ----  getMembersOfQun ----------\n"
+    # print "\n\n\n ----  getMembersOfQun ----------\n"
     _where = ["=", "chatroomname", chatroomname]
     _where = BaseModel.where_dict(_where)
     data = BaseModel.fetch_all('a_member', '*', _where)
     data = modelList2Arr(data)
-    print '===========', _where, '===============', data, '=========='
-    print "\n ----  getMembersOfQun  end  ----------\n\n\n"
+    # print '===========', _where, '===============', data, '=========='
+    # print "\n ----  getMembersOfQun  end  ----------\n\n\n"
     return data
 
 
@@ -81,7 +81,7 @@ def statistics_member():
     search_users = []
     nickname = request.json.get('keywords')
     if nickname:
-        print "\n ------ params:", nickname, chatroomname, "------\n"
+        # print "\n ------ params:", nickname, chatroomname, "------\n"
         users_search = member_search(nickname)
         if users_search:
             membersOfQun = getMembersOfQun(chatroomname)
@@ -97,8 +97,8 @@ def statistics_member():
     if username:
         useranems.append(username)
 
-    print "\n ------ search_users :", search_users, "------\n"
-    print "\n ------ useranems :", useranems, "------\n"
+    # print "\n ------ search_users :", search_users, "------\n"
+    # print "\n ------ useranems :", useranems, "------\n"
 
     # (date_type==1):
     #    run_hour = int( time.strftime('%H',time.localtime(time.time())))
@@ -120,7 +120,7 @@ def statistics_member():
         timestamp_diff = getTimeStamp(1)
         _where = ["and", ["=", "date", timestamp_diff], ["=", "chatroomname", chatroomname],
                   ["in", "username", useranems]]
-        print 'date_type == 2:::: where::',_where
+        # print 'date_type == 2:::: where::',_where
         # where = BaseModel.where_dict({"date":timestamp_diff,"chatroomname":chatroomname})
         table = 'statistics_member_daily'
         group_by = None
@@ -166,13 +166,13 @@ def statistics_member():
         for cd in cacheData:
             return make_response(SUCCESS, member_list = cacheData[cd], last_update_time = cd)
 
-    print "\n ------_where value = -----------\n", _where, order, "-----------------\n"
+    # print "\n ------_where value = -----------\n", _where, order, "-----------------\n"
     _where = BaseModel.where_dict(_where)
 
     member_statis = BaseModel.fetch_all(table, '*', _where, page = page, pagesize = pagesize, orderBy = order, group = group_by)
     member_json_list = []
 
-    print "\n ------member_statis = -----------\n", modelList2Arr(member_statis), "-----------------\n"
+    # print "\n ------member_statis = -----------\n", modelList2Arr(member_statis), "-----------------\n"
 
     # if (len(member_statis) <= 0):
     #     return make_response(SUCCESS, member_list = [], last_update_time = last_update_time)
@@ -197,13 +197,13 @@ def statistics_member():
 
     userInfo = getUserInfo(wxIds)
 
-    print "\n========== userInfo = \n", userInfo, "============\n"
+    # print "\n========== userInfo = \n", userInfo, "============\n"
 
     if (len(userInfo) > 0):
         for ctlist in member_json_list:
             if userInfo.has_key(ctlist['username']):
                 ctlist.update(userInfo[ctlist['username']])
-                print '9999999999', ctlist, '00000000000'
+                # print '9999999999', ctlist, '00000000000'
 
     # last_update_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(_timestamp))
     # last_update_time = _timestamp
@@ -211,28 +211,28 @@ def statistics_member():
     a_member = BaseModel.fetch_one(Member, "*", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
     if a_member :
         a_member_json = a_member.to_json()
-        print "a_member", a_member_json
+        # print "a_member", a_member_json
         members = json.loads(a_member_json.get("members"))
-        print "members", members
+        # print "members", members
         member_username_all = set()
         for member in members:
-            print member
-            print "type_member", type(member)
+            # print member
+            # print "type_member", type(member)
             # member = json.loads(member)
             if member.get("is_deleted") == 0:
                 member_username_all.add(member.get("username"))
-        print "member_username_all", member_username_all
+        # print "member_username_all", member_username_all
         member_username_non_active_list = list(member_username_all - set(wxIds))
-        print "member_username_non_active_list", member_username_non_active_list
+        # print "member_username_non_active_list", member_username_non_active_list
         member_non_active_list = BaseModel.fetch_all(Contact, "*", where_clause = BaseModel.where("in", "username",
                                                                                                   member_username_non_active_list))
-        print "member_non_active_list", modelList2Arr(member_non_active_list)
+        # print "member_non_active_list", modelList2Arr(member_non_active_list)
         for member in member_non_active_list:
             member_json = member.to_json_full()
             member_json_list.append(member_json)
 
     
-    print "\n========== member_json_list = \n", member_json_list, "============\n"
+    # print "\n========== member_json_list = \n", member_json_list, "============\n"
  
     if (len(member_json_list) > 0):
         rds.set(cache_key, json.dumps({last_update_time: member_json_list}))
@@ -263,7 +263,7 @@ def getUserInfo(wxIds):
         if (userInfo):
             for qf in userInfo:
                 _qfjson = qf.to_json()
-                print '6666666666', _qfjson
+                # print '6666666666', _qfjson
                 ret[_qfjson["username"]] = _qfjson
     return ret
 

@@ -272,7 +272,7 @@ def get_non_active_chatroom_list():
 
     chatroom_statis = BaseModel.fetch_all(table, '*', _where, group = group_by)
     chatroom_json_list = []
-    chatroomnames = [r.chatroomname for r in chatroom_statis]
+    chatroomnames = [r.get_id() for r in chatroom_statis]
     _where = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]])
     if group_id:
         _where.append(["=", "group_id", group_id])
