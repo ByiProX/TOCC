@@ -19,6 +19,5 @@ import employee_api
 import data2file_api
 import qun_paid_manage_api
 import assistant_api
-import share_task_api
 
 api_str = ""

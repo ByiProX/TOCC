@@ -432,7 +432,6 @@ Wallet = "wallet"
 BatchSendTask = "batch_send_task"
 Client = "client"
 MaterialLib = "material_lib"
-ShareTask = "share_task"
 
 SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
 
@@ -457,13 +456,11 @@ SENSITIVE_WORD_RULE_DICT = dict()
 ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.ixuanren.com/android/bot_status"
 ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.ixuanren.com/android/send_mass_message"
 ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.ixuanren.com/android/send_message"
-ANDROID_SERVER_URL = u"http://ardsvr.ixuanren.com"
 
 if ENV == 'PRODUCTION':
     ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.xuanren360.com/android/bot_status"
     ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_mass_message"
     ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_message"
-    ANDROID_SERVER_URL = u"http://ardsvr.xuanren360.com"
 
 # aliyun
 REGION = "cn-hangzhou"  # 暂时不支持多region

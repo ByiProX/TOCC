@@ -82,9 +82,7 @@ def app_get_user_basic_info():
 
     # Add hidden func info for test by ZYunH 2018-5-18(trade off).
     hidden_func = []
-    if BaseModel.fetch_one('employee_client', '*', BaseModel.or_(['=', 'username', user_info.username],
-                                                                        ['=', 'client_id', user_info.client_id],),) \
-            is not None:
+    if BaseModel.fetch_one('employee_client', '*', BaseModel.where_dict({'username': user_info.username})) is not None:
         hidden_func.append('employee')
 
     if status == SUCCESS:

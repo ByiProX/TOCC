@@ -96,8 +96,6 @@ class UserLogin:
                     client.client_name = self.user_info_up_to_date.open_id
                     client.admin = self.user_info_up_to_date.open_id
                     client.create_time = datetime_to_timestamp_utc_8(datetime.now())
-                    client.qun_count = 1
-                    client.qun_used = 0
                     client.save()
 
                     # _client = BaseModel.fetch_by_id("client", "1")
