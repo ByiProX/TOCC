@@ -114,7 +114,8 @@ def employee_tag_edit():
     tag_list = request.json.get('tag_list')
 
     # Do not use <> in this line.
-    this_user = BaseModel.fetch_one('employee_people', '*', BaseModel.where_dict({'username': username}))
+    this_user = BaseModel.fetch_one('employee_people', '*',BaseModel.and_(["=", "username", username],
+                                       ["<", "by_client_id", client_id]))
 
     if this_user is None:
         new_user = CM('employee_people')
