@@ -366,7 +366,10 @@ def get_active_chatroom_count():
 
 def get_chatroom_from_client_qun_r(user_info, group_id):
     chatroomname_list = []
-    _where = ["and", ["=", "client_id", user_info.client_id], ["=", "group_id", group_id]]
+    _where = ["and",
+              ["=", "client_id", user_info.client_id],
+              ["=", "group_id", group_id],
+              ["=", "status", 1]],
     _where = BaseModel.where_dict(_where)
     qunList = modelList2Arr(
         BaseModel.fetch_all('client_qun_r', ['chatroomname', 'group_id', 'group_info', 'status'], _where))

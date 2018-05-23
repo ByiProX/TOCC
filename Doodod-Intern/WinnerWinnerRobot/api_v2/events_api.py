@@ -11,7 +11,8 @@ from configs.config import main_api_v2 as app_test
 from core_v2.user_core import UserLogin
 from models_v2.base_model import *
 from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false
-from configs.config import ENV
+from configs.config import ENV,ANDROID_SERVER_URL
+from core_v2.user_core import _get_qr_code_base64_str
 
 logger = logging.getLogger('main')
 
@@ -987,7 +988,7 @@ def create_events():
     # Check chatroom.
     try:
         available_chatroom = len(
-            requests.post('http://ardsvr.walibee.com/android/chatroom_pool',
+            requests.post('%s/android/chatroom_pool'%ANDROID_SERVER_URL,
                           json={'client_id': client_id}).json()['data'])
     except Exception as e:
         return 'Error when request android server for check pool:%s' % e
@@ -1009,7 +1010,7 @@ def create_events():
 
     """Allot chatroom"""
     try:
-        allot_chatroom_list = requests.post('http://ardsvr.walibee.com/android/chatroom_allot',
+        allot_chatroom_list = requests.post('%s/android/chatroom_allot'%ANDROID_SERVER_URL,
                                             json={'client_id': client_id,
                                                   'num': int(request.json.get('request_chatroom'))}).json()['data']
     except Exception as e:
@@ -1207,6 +1208,7 @@ def _get_events_qrcode():
     event = BaseModel.fetch_by_id('events_', event_id)
     if event is None:
         return response({'err_code': -3, 'err_info': 'Fake event_id'})
+    client_id = event.client_id
     # Use event_id search chatroom list, then get a prepared chatroom
     # and return its chatroomname.
     # Add a scan qrcode log.
@@ -1224,14 +1226,14 @@ def _get_events_qrcode():
             if nickname == '':
                 nickname = chatroom_info.nickname_default
             chatroom_dict[i.chatroomname] = (
-                len(chatroom_info.memberlist.split(';')), chatroom_info.qrcode, nickname,
+                chatroom_info.memberlist.split(';'), chatroom_info.qrcode, nickname,
                 chatroom_info.avatar_url,
                 chatroom_info.update_time)
             chatroomname_list.append(i.chatroomname)
 
     if chatroom_dict:
         for k, v in chatroom_dict.items():
-            if v[0] < 100:
+            if len(v[0]) < 100:
                 result = {
                     'err_code': 0,
                     'content': {'event_status': 1,
@@ -1245,11 +1247,29 @@ def _get_events_qrcode():
     """Do not have a chatroom < 100, activate one."""
     chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
                                         BaseModel.where_dict({'event_id': event_id, 'is_activated': 0}))
-    if len(chatroom_list) == 0:
-        # Do not have chatroom, return the bot info to add chatroom.
 
+    # client_all_bot_list = BaseModel.fetch_all('client_bot_r', '*', BaseModel.where_dict({'client_id': client_id}))
+    # bot_username_list = [i.bot_username for i in client_all_bot_list]
+
+    if len(chatroom_list) == 0:
+        # Do not have chatroom, return the bot info to add chatroom.(100<people<500)
+        if chatroom_dict:
+            for k, v in chatroom_dict.items():
+                if 100 <= len(v[0]) < 500:
+                    chatroomname = k
+                    psw = 'SL^lxz'
+                    event_pull_word = 'Ω'.join([psw, chatroomname.split('@')[0][::-1]])
+                    chatroom_pool_info = BaseModel.fetch_one('chatroom_pool','*',BaseModel.where_dict({'chatroomname':chatroomname}))
+                    this_bot_username = chatroom_pool_info.bot_username
+                    this_bot_info = BaseModel.fetch_one('a_contact','*',BaseModel.where_dict({'username':this_bot_username}))
+                    bot_nickname = this_bot_info.nickname
+                    return response({'err_code': 0,
+                                     'content': {'event_status': 5,
+                                                 'event_pull_word': event_pull_word,
+                                                 'bot_qrcode': 'data:image/jpg;base64,' + _get_qr_code_base64_str(this_bot_username),
+                                                 'bot_nickname': bot_nickname}})
         return response({'err_code': 0,
-                         'content': {'event_status': 5, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
+                         'content': {'event_status': 6, 'chatroom_qr': '', 'chatroom_name': '', 'chatroom_avatar': '',
                                      'qr_end_date': '', 'event_pull_word': '', 'bot_qrcode': '', 'bot_nickname': ''}})
     else:
         # Activate one.
@@ -1562,7 +1582,7 @@ def new_event_init(chatroomname, start_name, owner_username):
                       "chatroomname": chatroomname,
                       "chatroomnick": start_name,
                   }}
-        requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
+        requests.post('%s/android/send_message'%ANDROID_SERVER_URL, json=result)
     member_list = now_chatroom_info.memberlist.split(';')
     if owner_username not in member_list:
         result = {'bot_username': _bot_username,
@@ -1571,14 +1591,14 @@ def new_event_init(chatroomname, start_name, owner_username):
                       "chatroomname": chatroomname,
                       "contacts": owner_username
                   }}
-        requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
+        requests.post('%s/android/send_message'%ANDROID_SERVER_URL, json=result)
     # Update chatroom qrcode.
     result = {'bot_username': _bot_username,
               'data': {
                   "task": "update_chatroom_qrcode",
                   "chatroomname": chatroomname,
               }}
-    requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
+    requests.post('%s/android/send_message'%ANDROID_SERVER_URL, json=result)
 
     # Update chatroom info.
     result = {'bot_username': _bot_username,
@@ -1586,7 +1606,7 @@ def new_event_init(chatroomname, start_name, owner_username):
                   "task": "update_chatroom",
                   "chatroomname": chatroomname,
               }}
-    requests.post('http://ardsvr.walibee.com/android/send_message', json=result)
+    requests.post('%s/android/send_message'%ANDROID_SERVER_URL, json=result)
 
 
 new_event_chatroom_send_word_thread = threading.Thread(target=new_event_chatroom_send_word)

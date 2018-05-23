@@ -96,6 +96,8 @@ class UserLogin:
                     client.client_name = self.user_info_up_to_date.open_id
                     client.admin = self.user_info_up_to_date.open_id
                     client.create_time = datetime_to_timestamp_utc_8(datetime.now())
+                    client.qun_count = 1
+                    client.qun_used = 0
                     client.save()
 
                     # _client = BaseModel.fetch_by_id("client", "1")
@@ -256,11 +258,15 @@ def modelList2Arr(mlist):
 
 def cal_user_basic_page_info(user_info):
     ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
-   
 
     if ubr_info:
         chatroomname_set = set()
-        uqr_list = BaseModel.fetch_all(UserQunR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+        # 增加了status判断 by quentin
+        uqr_list = BaseModel.fetch_all(UserQunR, '*',
+                                       where_clause=BaseModel.and_(
+                                           ["=", "client_id", user_info.client_id],
+                                           ["=", "status", 1])
+                                       )
          
         # logger.info(u"\n\n\n uqr_list::: %s." % modelList2Arr(uqr_list))
         for uqr in uqr_list:

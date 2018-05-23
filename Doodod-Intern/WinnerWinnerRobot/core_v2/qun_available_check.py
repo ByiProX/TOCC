@@ -58,6 +58,7 @@ class QunAvailableCheckThread(threading.Thread):
                                             where_clause=BaseModel.and_(
                                                 ["in", "client_id", clients_id],
                                                 ["=", "is_paid", 0],
+                                                ["=", "status", 1],
                                                 [">", "create_time", cur_time - 30 * 60],
                                                 ["<", "create_time", cur_time - 15 * 60]),
                                             order_by=BaseModel.order_by({"create_time": "ASC"})
@@ -116,8 +117,8 @@ class QunAvailableCheckThread(threading.Thread):
                 logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
             else:
                 logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
-            # 退群并删除client_qun_r中的记录
-            ubr.delete()
+            # 退群并修改client_qun_r中status的记录
+            ubr.status = 0
             ubr.save()
 
     @staticmethod
@@ -125,7 +126,8 @@ class QunAvailableCheckThread(threading.Thread):
         for client_id in clients_id:
             qun_used_count = BaseModel.count("client_qun_r",
                                              where_clause=BaseModel.and_(
-                                                 ["=", "client_id", client_id]
+                                                 ["=", "client_id", client_id],
+                                                 ["=", "status", 1]
                                              ))
             client_table = BaseModel.fetch_one("client", "*",
                                                where_clause=BaseModel.and_(

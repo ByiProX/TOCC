@@ -49,9 +49,20 @@ def add_or_modify_tag():
 
 
 @main_api_v2.route('/employee_search', methods=["POST"])
-@para_check('keyword', )
+@para_check('token', 'keyword', )
 def employee_search():
     try:
+        # Check client or return.
+        status, user_info = UserLogin.verify_token(request.json.get('token'))
+        try:
+            client_id = user_info.client_id
+        except AttributeError:
+            return response({'err_code': -2, 'content': 'User token error.'})
+        if BaseModel.fetch_one('employee_client', '*', BaseModel.or_(['=', 'username', user_info.username],
+                                                                     ['=', 'client_id',
+                                                                      user_info.client_id], )) is None:
+            return response({'err_code': -2, 'content': 'User not our client.'})
+
         keyword = unicode(request.json.get('keyword'))
         if keyword == "":
             return response({'err_code': -1, 'err_info': 'keyword could not be blank!'})
@@ -93,10 +104,10 @@ def employee_tag_edit():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
         client_id = user_info.client_id
-        client_username = user_info.username
     except AttributeError:
         return response({'err_code': -2, 'content': 'User token error.'})
-    if BaseModel.fetch_one('employee_client', '*', BaseModel.where_dict({'username': client_username})) is None:
+    if BaseModel.fetch_one('employee_client', '*', BaseModel.or_(['=', 'username', user_info.username],
+                                                                 ['=', 'client_id', user_info.client_id], )) is None:
         return response({'err_code': -2, 'content': 'User not our client.'})
 
     username = request.json.get('username')
@@ -133,8 +144,18 @@ def employee_tag_edit():
 
 
 @main_api_v2.route('/employee_detail', methods=["POST"])
-@para_check('username', )
+@para_check('username', 'token')
 def employee_detail():
+    # Check client or return.
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    try:
+        client_id = user_info.client_id
+    except AttributeError:
+        return response({'err_code': -2, 'content': 'User token error.'})
+    if BaseModel.fetch_one('employee_client', '*', BaseModel.or_(['=', 'username', user_info.username],
+                                                                 ['=', 'client_id', user_info.client_id], )) is None:
+        return response({'err_code': -2, 'content': 'User not our client.'})
+
     username = request.json.get('username')
 
     this_user = BaseModel.fetch_one('employee_people', '*', BaseModel.where_dict({'username': username}))
@@ -183,9 +204,19 @@ def employee_detail():
 
 
 @main_api_v2.route('/employee_record', methods=["POST"])
-@para_check('username', 'page', 'pagesize')
+@para_check('token', 'username', 'page', 'pagesize')
 def employee_record():
     try:
+        # Check client or return.
+        status, user_info = UserLogin.verify_token(request.json.get('token'))
+        try:
+            client_id = user_info.client_id
+        except AttributeError:
+            return response({'err_code': -2, 'content': 'User token error.'})
+        if BaseModel.fetch_one('employee_client', '*', BaseModel.or_(['=', 'username', user_info.username],
+                                                                     ['=', 'client_id',
+                                                                      user_info.client_id], )) is None:
+            return response({'err_code': -2, 'content': 'User not our client.'})
         username = request.json.get('username')
         page = int(request.json.get('page'))
         pagesize = int(request.json.get('pagesize'))
@@ -202,14 +233,23 @@ def employee_record():
         for log in all_log_list:
             chatroomname = log.chatroomname
             this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': chatroomname}))
+            at_msg = BaseModel.fetch_by_id('a_message', log.a_message_id)
+            speaker_username = at_msg.real_talker
+            speaker_info = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': speaker_username}))
+            speaker_avatar_url = speaker_info.avatar_url
+            speaker_nickname = speaker_info.nickname
             _temp = {
                 'chatroom_info': {
                     'chatroom_name': chatroomname,
                     'nickname': this_chatroom.nickname if this_chatroom.nickname != '' else this_chatroom.nickname_default,
                     'avatar_url': this_chatroom.avatar_url,
                 },
-                'be_at_content': log.content,
-                'create_time': log.create_time,
+                'speaker_at_msg': {
+                    'user_info': {'avatar_url': speaker_avatar_url, 'nickname': speaker_nickname},
+                    'content': log.content,
+                    'create_time': log.create_time,
+                },
+                'reply_msg': {},
                 'reply_duration': (log.reply_time - log.create_time) if log.is_reply and (
                         log.reply_time - log.create_time) < 86400 else -1
             }
@@ -220,13 +260,19 @@ def employee_record():
 
 
 @main_api_v2.route('/employee_ranking', methods=['POST'])
+@para_check('token')
 def employee_ranking():
     try:
+        # Check client or return.
         status, user_info = UserLogin.verify_token(request.json.get('token'))
         try:
             client_id = user_info.client_id
         except AttributeError:
             return response({'err_code': -2, 'content': 'User token error.'})
+        if BaseModel.fetch_one('employee_client', '*', BaseModel.or_(['=', 'username', user_info.username],
+                                                                     ['=', 'client_id',
+                                                                      user_info.client_id], )) is None:
+            return response({'err_code': -2, 'content': 'User not our client.'})
 
         people = BaseModel.fetch_all('employee_people', '*', BaseModel.where_dict({'by_client_id': client_id}))
         res = {'err_code': 0, 'content': {'total_count': 0, 'user_info_list': []}}
@@ -278,19 +324,43 @@ def employee_ranking():
 
 
 @main_api_v2.route('/employee_wrong_log', methods=['POST'])
-@para_check('username', 'page', 'pagesize')
+@para_check('token', 'username', 'page', 'pagesize')
 def employee_wrong_log():
     try:
+        # Check client or return.
+        status, user_info = UserLogin.verify_token(request.json.get('token'))
+        try:
+            client_id = user_info.client_id
+        except AttributeError:
+            return response({'err_code': -2, 'content': 'User token error.'})
+        if BaseModel.fetch_one('employee_client', '*', BaseModel.or_(['=', 'username', user_info.username],
+                                                                     ['=', 'client_id',
+                                                                      user_info.client_id], )) is None:
+            return response({'err_code': -2, 'content': 'User not our client.'})
         username = request.json.get('username')
         page = int(request.json.get('page'))
         pagesize = int(request.json.get('pagesize'))
 
-        all_log_list = BaseModel.fetch_all('employee_re_log', '*', BaseModel.where_dict({'username': username}),
-                                           order_by=BaseModel.order_by({"create_time": "desc"}), page=page,
-                                           pagesize=pagesize)
+        if username == '':
+            all_log_list = BaseModel.fetch_all('employee_re_log', '*',
+                                               BaseModel.where_dict({'by_client_id': client_id}),
+                                               order_by=BaseModel.order_by({"create_time": "desc"}), page=page,
+                                               pagesize=pagesize)
 
-        _all_log_list = BaseModel.fetch_all('employee_re_log', '*', BaseModel.where_dict({'username': username}),
-                                            order_by=BaseModel.order_by({"create_time": "desc"}), page=1, pagesize=100)
+            _all_log_list = BaseModel.fetch_all('employee_re_log', '*',
+                                                BaseModel.where_dict({'by_client_id': client_id}),
+                                                order_by=BaseModel.order_by({"create_time": "desc"}), page=1,
+                                                pagesize=100)
+        else:
+            all_log_list = BaseModel.fetch_all('employee_re_log', '*',
+                                               BaseModel.where_dict({'username': username, 'by_client_id': client_id}),
+                                               order_by=BaseModel.order_by({"create_time": "desc"}), page=page,
+                                               pagesize=pagesize)
+
+            _all_log_list = BaseModel.fetch_all('employee_re_log', '*',
+                                                BaseModel.where_dict({'username': username, 'by_client_id': client_id}),
+                                                order_by=BaseModel.order_by({"create_time": "desc"}), page=1,
+                                                pagesize=100)
 
         res = {"err_code": 0, 'content': {'total_count': len(_all_log_list), 'log_list': []}}
 

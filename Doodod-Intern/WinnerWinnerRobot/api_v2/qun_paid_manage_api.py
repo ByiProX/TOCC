@@ -33,7 +33,8 @@ def app_get_paid_quns():
         quns_paid = BaseModel.fetch_all("client_qun_r", "*",
                                         where_clause=BaseModel.and_(
                                             ["=", "client_id", user_info.client_id],
-                                            ["=", "is_paid", 1]
+                                            ["=", "is_paid", 1],
+                                            ["=", "status", 1]
                                         ))
         quns_paid = [qun_paid.to_json() for qun_paid in quns_paid]
     except Exception:

@@ -58,7 +58,12 @@ def get_group_list(user_info):
     ugr_list = BaseModel.fetch_all(UserGroupR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
 
     group_chatroom = dict()
-    uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    # uqr_list = BaseModel.fetch_all(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    uqr_list = BaseModel.fetch_all(UserQunR, "*",
+                                   where_clause = BaseModel.and_(
+                                       ["=", "client_id", user_info.client_id],
+                                       ["=", "status", 1])
+                                   )
     for uqr in uqr_list:
         group_chatroom.setdefault(uqr.group_id, list())
         group_chatroom[uqr.group_id].append(get_chatroom_dict(uqr.chatroomname))
@@ -235,6 +240,15 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
             uqr.save()
             logger.info(u"user与群关系已绑定. user_id: %s. chatroomname: %s." % (user_info.client_id, chatroomname))
         else:
+            # logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. chatroomname: %s." % chatroomname)
+            # add by qunetin
+            uqr_exist.client_id = user_info.client_id
+            uqr_exist.chatroomname = chatroomname
+            uqr_exist.status = 1
+            uqr_exist.group_id = unicode(user_info.client_id) + u"_0"
+            uqr_exist.create_time = datetime_to_timestamp_utc_8(datetime.now())
+            uqr_exist.is_paid = 0
+            uqr_exist.save()
             logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. chatroomname: %s." % chatroomname)
 
         # 修改机器人在群里的群备注
@@ -247,12 +261,13 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
                                          ["=", "client_id", user_info.client_id]
                                      ))
 
-        uqr_count = BaseModel.count(UserQunR,
-                                    where_clause=BaseModel.where_dict(
-                                        {"client_id": user_info.client_id}
-                                    ))
+        qun_used_count = BaseModel.count("client_qun_r",
+                                         where_clause=BaseModel.and_(
+                                             ["=", "client_id", user_info.client_id],
+                                             ["=", "status", 1]
+                                         ))
 
-        client.qun_used = uqr_count
+        client.qun_used = qun_used_count
         client.save()
         ###############################################
 

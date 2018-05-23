@@ -17,6 +17,8 @@ from models_v2.base_model import BaseModel, CM
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 
+from core_v2.qun_message_check import check_is_at_bot
+
 logger = logging.getLogger('main')
 
 
@@ -92,6 +94,10 @@ def android_new_message():
         NEED_UPDATE_REPLY_RULE = False
     route_msg(a_message, gm_rule_dict, gm_default_rule_dict)
     count_msg(a_message)
+    try:
+        check_is_at_bot(a_message)
+    except Exception:
+        pass
     # NEW_MSG_Q.put(a_message)
     # logger.info(u"NEW_MSG_Q.put(a_message)")
     # route_msg(a_message)
