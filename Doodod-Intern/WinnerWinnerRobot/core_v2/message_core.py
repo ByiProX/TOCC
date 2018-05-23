@@ -617,7 +617,7 @@ def check_if_is_reply(a_message):
 def check_if_is_re(a_message):
     real_talker = a_message.real_talker
     real_content = a_message.real_content
-    if real_talker in EMPLOYEE_PEOPLE_RE_RULE_DICT.keys():
+    if real_talker in EMPLOYEE_PEOPLE_RE_RULE_DICT.keys() and len(EMPLOYEE_PEOPLE_RE_RULE_DICT[real_talker]):
         re_text_list = EMPLOYEE_PEOPLE_RE_RULE_DICT[real_talker]
         for i in range(len(re_text_list)):
             if real_content.find(re_text_list[i][0]) == 0:
