@@ -18,6 +18,5 @@ import material_lib
 import employee_api
 import data2file_api
 import qun_paid_manage_api
-import assistant_api
 
 api_str = ""

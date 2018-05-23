@@ -217,10 +217,12 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
         uqr_exist = BaseModel.fetch_one(UserQunR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
                                                                                             "chatroomname": chatroomname}))
         # add by quentin
+        # 统计当前群数量
         uqr_count = BaseModel.count(UserQunR,
                                     where_clause=BaseModel.where_dict(
                                         {"client_id": user_info.client_id}
                                     ))
+        # ------------------------------------#
 
         if not uqr_exist:
             uqr = CM(UserQunR)
@@ -237,6 +239,22 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
 
         # 修改机器人在群里的群备注
         modify_self_displayname(user_info.client_id, chatroomname, bot_username)
+
+        # add by quentin ###################################
+        # 更新client表中的qun_used数据
+        client = BaseModel.fetch_one("client", "*",
+                                     where_clause=BaseModel.and_(
+                                         ["=", "client_id", user_info.client_id]
+                                     ))
+
+        uqr_count = BaseModel.count(UserQunR,
+                                    where_clause=BaseModel.where_dict(
+                                        {"client_id": user_info.client_id}
+                                    ))
+
+        client.qun_used = uqr_count
+        client.save()
+        ###############################################
 
     return SUCCESS, user_info_list
 

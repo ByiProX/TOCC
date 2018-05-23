@@ -45,7 +45,7 @@ def app_get_paid_quns():
 @main_api_v2.route('/add_paid_quns', methods=['POST'])
 def app_add_paid_quns():
     """
-    获取当前的可用的群
+    增加群数量
     """
     verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
@@ -68,3 +68,10 @@ def app_add_paid_quns():
 
     return make_response(SUCCESS)
 
+
+if __name__ == "__main__":
+    free_clients = BaseModel.fetch_all("client", "*",
+                                       where_clause=BaseModel.and_(
+                                           [">=", "qun_count", "qun_used"],
+                                       ))
+    print free_clients

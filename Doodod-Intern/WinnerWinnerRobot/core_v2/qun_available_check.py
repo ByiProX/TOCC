@@ -12,7 +12,7 @@ from configs.config import SUCCESS, UserBotR
 logger = logging.getLogger('main')
 
 
-class FreeQunCheckThread(threading.Thread):
+class QunAvailableCheckThread(threading.Thread):
     def __init__(self, thread_id):
         threading.Thread.__init__(self)
         self.thread_id = thread_id
@@ -21,39 +21,42 @@ class FreeQunCheckThread(threading.Thread):
     def run(self):
         logger.info(u"Start thread id: %s." % str(self.thread_id))
         while self.go_work:
-            free_clients = BaseModel.fetch_all("client", "*",
-                                               where_clause=BaseModel.and_(
-                                                   ["=", "qun_count", 1],
-                                               ))
+            # 查找使用的群数量超出购买数量的客户
+            clients = BaseModel.fetch_all("client", "*",
+                                          where_clause=BaseModel.and_(
+                                              ["<", "qun_count", "qun_used"],
+                                          ))
 
-            free_clients_id = [free_client.client_id for free_client in free_clients]
+            if not clients:
+                time.sleep(60)
+
+            clients_id = [client.client_id for client in clients]
 
             cur_time = int(time.time())
             # 查找免费用户的多余群(未付费群)，--- 半小时内
-            not_paid_quns = self.check_not_paid_quns(free_clients_id, cur_time)
+            not_paid_quns = self.check_not_paid_quns(clients_id, cur_time)
 
-            if not not_paid_quns:
-                time.sleep(60)
-                continue
-            else:
+            if not_paid_quns:
                 # 通知付款
                 self.inform_to_pay(not_paid_quns)
+            else:
+                time.sleep(60)
+                continue
 
-            # 等待
-            # time.sleep(180)
-            # 重新查表，查找未缴费群
-            not_paid_quns_again = self.check_not_paid_quns(free_clients_id, cur_time)
+            # 重新查表，查找未缴费群，然后退群并删除表中的记录
+            not_paid_quns_again = self.check_not_paid_quns(clients_id, cur_time)
             if not_paid_quns_again:
                 self.kick_out(not_paid_quns_again)
+                self.update_client_qun_used(clients_id)
             else:
                 time.sleep(60)
                 continue
 
     @staticmethod
-    def check_not_paid_quns(free_clients_id, cur_time):
+    def check_not_paid_quns(clients_id, cur_time):
         not_paid_quns = BaseModel.fetch_all("client_qun_r", "*",
                                             where_clause=BaseModel.and_(
-                                                ["in", "client_id", free_clients_id],
+                                                ["in", "client_id", clients_id],
                                                 ["=", "is_paid", 0],
                                                 [">", "create_time", cur_time - 30 * 60],
                                                 ["<", "create_time", cur_time - 15 * 60]),
@@ -102,8 +105,8 @@ class FreeQunCheckThread(threading.Thread):
                 "type": 1,
                 "content": "%s 已退群" % qun.chatroomname
             }
-            sleep_time = 29 * 60 - (int(time.time()) - qun.create_time) \
-                if 29 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
+            sleep_time = 28 * 60 - (int(time.time()) - qun.create_time) \
+                if 28 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
             time.sleep(sleep_time)
             try:
                 status = send_ws_to_android(ubr.bot_username, data)
@@ -113,10 +116,27 @@ class FreeQunCheckThread(threading.Thread):
                 logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
             else:
                 logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
+            # 退群并删除client_qun_r中的记录
+            ubr.delete()
+            ubr.save()
+
+    @staticmethod
+    def update_client_qun_used(clients_id):
+        for client_id in clients_id:
+            qun_used_count = BaseModel.count("client_qun_r",
+                                             where_clause=BaseModel.and_(
+                                                 ["=", "client_id", client_id]
+                                             ))
+            client_table = BaseModel.fetch_one("client", "*",
+                                               where_clause=BaseModel.and_(
+                                                   ["=", "client_id", client_id]
+                                               ))
+            client_table.qun_used = qun_used_count
+            client_table.save()
 
     def stop(self):
         logger.info(u"停止进程")
         self.go_work = False
 
 
-free_qun_check_task_thread = FreeQunCheckThread(thread_id='vip checkout task')
+qun_available_check_task_thread = QunAvailableCheckThread(thread_id='free qun checkout task')
