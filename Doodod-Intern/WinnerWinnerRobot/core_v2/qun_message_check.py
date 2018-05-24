@@ -4,9 +4,12 @@ __author__ = "quentin"
 from models_v2.base_model import BaseModel
 import logging
 
+logger = logging.getLogger('main')
+
 
 def check_is_at_bot(a_message):
     # Check if @ bot and content is right.
+    logger.info('[check is at bot]')
     real_talker = a_message.real_talker
     message_list = a_message.content.split()
     chatroomname = a_message.talker

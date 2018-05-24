@@ -46,7 +46,7 @@ def app_get_paid_quns():
 @main_api_v2.route('/add_paid_quns', methods=['POST'])
 def app_add_paid_quns():
     """
-    增加群数量
+    增加可用的群数量qun_count
     """
     verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
@@ -68,6 +68,37 @@ def app_add_paid_quns():
         return make_response(ERR_WRONG_ITEM)
 
     return make_response(SUCCESS)
+
+
+# 以下不对外开放
+@main_api_v2.route('/add_used_quns', methods=['POST'])
+def __app_add_paid_quns():
+    """
+    控制已使用的群的数量qun_used
+    """
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+
+    if status != SUCCESS:
+        return make_response(status)
+
+    add_qun_used_num = request.json.get("add_qun_used_num", 0)
+
+    try:
+        client = BaseModel.fetch_one("client", "*",
+                                     where_clause=BaseModel.and_(
+                                         ["=", "client_id", user_info.client_id],
+                                     ))
+
+        client.qun_used += add_qun_used_num
+        client.save()
+    except Exception:
+        return make_response(ERR_WRONG_ITEM)
+
+    return make_response(SUCCESS)
+
+
+
 
 
 if __name__ == "__main__":

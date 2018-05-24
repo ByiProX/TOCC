@@ -280,6 +280,14 @@ ERROR_CODE[ERR_SMS_CODE_EXPIRED] = {'discription': 'SMS_CODE 过期', 'status_co
 ERR_INVALID_SMS_CODE = 'err_invalid_sms_code'
 ERROR_CODE[ERR_INVALID_SMS_CODE] = {'discription': 'SMS_CODE 错误', 'status_code': -21}
 
+# INVALID_URL
+ERR_INVALID_URL = 'err_invalid_url'
+ERROR_CODE[ERR_INVALID_URL] = {'discription': 'URL 不合法', 'status_code': -22}
+
+# NOT_ALLOWED_EXTENSION
+ERR_NOT_ALLOWED_EXTENSION = 'err_not_allowed_extension'
+ERROR_CODE[ERR_NOT_ALLOWED_EXTENSION] = {'discription': '文件类型错误', 'status_code': -23}
+
 # 建立默认分组时已有默认分组
 WARN_HAS_DEFAULT_QUN = 'warn_has_default_qun'
 ERROR_CODE[WARN_HAS_DEFAULT_QUN] = {'discription': '建立默认分组时已有默认分组', 'status_code': 1}
@@ -432,6 +440,9 @@ Wallet = "wallet"
 BatchSendTask = "batch_send_task"
 Client = "client"
 MaterialLib = "material_lib"
+ShareTask = "share_task"
+ShareRecord = "share_record"
+MPMember = "mp_member"
 
 SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
 
@@ -456,11 +467,13 @@ SENSITIVE_WORD_RULE_DICT = dict()
 ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.ixuanren.com/android/bot_status"
 ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.ixuanren.com/android/send_mass_message"
 ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.ixuanren.com/android/send_message"
+ANDROID_SERVER_URL = u"http://ardsvr.ixuanren.com"
 
 if ENV == 'PRODUCTION':
     ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.xuanren360.com/android/bot_status"
     ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_mass_message"
     ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.xuanren360.com/android/send_message"
+    ANDROID_SERVER_URL = u"http://ardsvr.xuanren360.com"
 
 # aliyun
 REGION = "cn-hangzhou"  # 暂时不支持多region
@@ -472,3 +485,40 @@ ACCESS_KEY_SECRET = "VDpxavKUCNgFyoAijdTKcGKQqkrNgp"
 
 acs_client = AcsClient(ACCESS_KEY_ID, ACCESS_KEY_SECRET, REGION)
 region_provider.add_endpoint(PRODUCT_NAME, REGION, DOMAIN)
+
+DES_TIMELINE = 1
+DES_APP_MSG = 2
+DES_QQ = 3
+DES_WEIBO = 4
+DES_QZONE = 5
+
+DES_LIST = (DES_TIMELINE, DES_APP_MSG, DES_QQ, DES_WEIBO, DES_QZONE)
+DES_DICT = {
+    DES_TIMELINE: 'timeline',
+    DES_APP_MSG: 'app_msg',
+    DES_QQ: 'qq',
+    DES_WEIBO: 'weibo',
+    DES_QZONE: 'qzone',
+}
+DES_NAME_DICT = {
+    DES_TIMELINE: '朋友圈',
+    DES_APP_MSG: '微信好友',
+    DES_QQ: 'QQ 好友',
+    DES_WEIBO: '微博',
+    DES_QZONE: 'QQ 空间',
+}
+
+SHARE_RECORD_CLICK = 0
+SHARE_RECORD_SHARE = 1
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'gif', 'jpeg'}
+
+OSS_KEY = "LTAIfwRTXLl6vMbX"
+OSS_SECRET = "kvSS9E4Ty7nvHHlGukaknJUtfICuen"
+BUCKET_NAME = "ywbdthumb"
+OSS_ENDPOINT = 'oss-cn-beijing.aliyuncs.com'
+OSS_THUMB = '?x-oss-process=style/thumb'
+
+URL_TYPE_TEMP = 0
+URL_TYPE_AD_IFRAM = 1
+URL_TYPE_AD_DIRECT = 2

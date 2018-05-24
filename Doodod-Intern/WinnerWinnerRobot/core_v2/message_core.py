@@ -14,7 +14,8 @@ from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT
     CHAT_LOGS_TYPE_1, CHAT_LOGS_TYPE_3, Member, Contact, CHAT_LOGS_ERR_TYPE_0, GLOBAL_RULES_UPDATE_FLAG, \
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, NEW_MSG_Q, \
     MSG_TYPE_ENTERCHATROOM, SUCCESS, ERR_UNKNOWN_ERROR, CONTENT_TYPE_ENTERCHATROOM, \
-    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, GLOBAL_EMPLOYEE_PEOPLE_FLAG, ANDROID_SERVER_URL_SEND_MESSAGE
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, GLOBAL_EMPLOYEE_PEOPLE_FLAG, ANDROID_SERVER_URL_SEND_MESSAGE, \
+    ANDROID_SERVER_URL
 from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core_v2.matching_rule_core import get_gm_default_rule_dict, match_message_by_rule, get_gm_rule_dict
 from core_v2.real_time_quotes_core import match_message_by_coin_keyword
@@ -93,6 +94,10 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
             check_or_add_at_log(a_message)
         # Check if is RE text.
         check_if_is_re(a_message)
+
+    # Check if pull people word.
+    if a_message.is_to_friend and a_message.type == MSG_TYPE_TXT:
+        check_to_pull_people(a_message)
 
     # is_add_friend
     # is_add_friend = check_whether_message_is_add_friend(message_analysis)
@@ -474,7 +479,10 @@ def update_sensitive_word_list():
 def update_employee_people_list():
     """Update 1.be at func rule 2.regular expression rule.
 
-    EMPLOYEE_PEOPLE_BE_AT_RULE_DICT = {"@nickname" : "username"}
+    EMPLOYEE_PEOPLE_BE_AT_RULE_DICT ->
+     {
+     "@nickname" : [ ["username",by_client_id] , ["username",by_client_id]]
+     }
     EMPLOYEE_PEOPLE_RE_RULE_DICT ->
     {
     "username" : [ ("text_line_1","text_line_2", ...), ("text_line_1","text_line_2", ...), ]
@@ -491,7 +499,11 @@ def update_employee_people_list():
             continue
         man_username = man.username
         # Update EMPLOYEE_PEOPLE_RE_RULE_DICT.
-        EMPLOYEE_PEOPLE_RE_RULE_DICT[man_username] = make_re_text(man.tag_list)
+        if EMPLOYEE_PEOPLE_RE_RULE_DICT.get(man_username) is None:
+            EMPLOYEE_PEOPLE_RE_RULE_DICT[man_username] = make_re_text(man.tag_list, man.by_client_id)
+        else:
+            previous_rule = EMPLOYEE_PEOPLE_RE_RULE_DICT[man_username]
+            EMPLOYEE_PEOPLE_RE_RULE_DICT[man_username] = make_re_text(man.tag_list, man.by_client_id, previous_rule)
         # Update EMPLOYEE_PEOPLE_BE_AT_RULE_DICT.
         man_info = BaseModel.fetch_one('a_contact', '*', BaseModel.or_(['=', 'alias', man_username],
                                                                        ['=', 'username', man_username], ))
@@ -499,7 +511,11 @@ def update_employee_people_list():
             print('-----update_employee_people_list ERROR:', man_username)
             continue
         man_nickname = man_info.nickname
-        EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[u'@' + man_nickname] = man_username
+        if EMPLOYEE_PEOPLE_BE_AT_RULE_DICT.get(u'@' + man_nickname) is None:
+            EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[u'@' + man_nickname] = [[man_username, man.by_client_id],]
+        else:
+            EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[u'@' + man_nickname].append([man_username, man.by_client_id])
+
     print('1-----------', EMPLOYEE_PEOPLE_BE_AT_RULE_DICT)
     print('2-----------', EMPLOYEE_PEOPLE_RE_RULE_DICT)
 
@@ -588,18 +604,26 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
 
 
 def check_or_add_at_log(a_message):
+    """
+    EMPLOYEE_PEOPLE_BE_AT_RULE_DICT ->
+     {
+     "@nickname" : [ ["username",by_client_id] , ["username",by_client_id]]
+     }
+    """
     real_content = a_message.real_content
     at_rule_list = EMPLOYEE_PEOPLE_BE_AT_RULE_DICT.keys()
     for i in at_rule_list:
         if i in real_content:
-            print('At log:', EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[i], real_content)
-            new_thread = threading.Thread(target=add_employee_at_log,
-                                          args=(
-                                              EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[i], real_content,
-                                              a_message.a_message_id, a_message.talker))
-            new_thread.setDaemon(True)
-            new_thread.start()
-            break
+            for j in EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[i]:
+                print('At log:', j, real_content)
+                username = j[0]
+                by_client_id = j[1]
+                new_thread = threading.Thread(target=add_employee_at_log,
+                                              args=(
+                                                  username, real_content,
+                                                  a_message.a_message_id, a_message.talker, by_client_id))
+                new_thread.setDaemon(True)
+                new_thread.start()
     return 0
 
 
@@ -620,17 +644,22 @@ def check_if_is_re(a_message):
     if real_talker in EMPLOYEE_PEOPLE_RE_RULE_DICT.keys() and len(EMPLOYEE_PEOPLE_RE_RULE_DICT[real_talker]):
         re_text_list = EMPLOYEE_PEOPLE_RE_RULE_DICT[real_talker]
         for i in range(len(re_text_list)):
+            if isinstance(re_text_list[i][0], int):
+                continue
             if real_content.find(re_text_list[i][0]) == 0:
                 print('----- Catch', real_content)
                 real_content_seq = real_content.split(u'\n')
                 for index, value in enumerate(re_text_list[i]):
+                    if len(re_text_list[i]) == i + 1:
+                        break
                     try:
+                        by_client_id = re_text_list[i][-1]
                         if value not in real_content_seq[index]:
                             print('----- Not right', value)
                             new_thread = threading.Thread(target=add_wrong_re_log,
                                                           args=(
                                                               real_talker, real_content,
-                                                              a_message.a_message_id, a_message.talker))
+                                                              a_message.a_message_id, a_message.talker, by_client_id))
                             new_thread.setDaemon(True)
                             new_thread.start()
                             break
@@ -639,25 +668,47 @@ def check_if_is_re(a_message):
                         new_thread = threading.Thread(target=add_wrong_re_log,
                                                       args=(
                                                           real_talker, real_content,
-                                                          a_message.a_message_id, a_message.talker))
+                                                          a_message.a_message_id, a_message.talker, by_client_id))
                         new_thread.setDaemon(True)
                         new_thread.start()
                         break
 
 
-def make_re_text(tag_list):
+def check_to_pull_people(a_message):
+    if a_message.real_content.find('SL^lxz') == 0:
+        word_list = a_message.real_content.split(u'Ω')
+        if len(word_list) != 2:
+            return 0
+        bot_username = a_message.bot_username
+        real_talker = a_message.real_talker
+        chatroomname = word_list[1][::-1] + u'@chatroom'
+        chatroom_info = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': chatroomname}))
+        if chatroom_info is None:
+            return 0
+        memberlist = chatroom_info.memberlist.split(';')
+        if bot_username not in memberlist or real_talker in memberlist:
+            return 0
+        new_thread = threading.Thread(target=add_pull_people_task, args=(bot_username, chatroomname, real_talker))
+        new_thread.setDaemon(True)
+        new_thread.start()
+
+
+def make_re_text(tag_list, by_client_id, previous_rule=None):
     """Make re text by tag_list."""
     res = []
+    if previous_rule is not None:
+        res = previous_rule
+
     if 3 in tag_list:
-        res.append([u'交底工作总结', u'交底日期', u'参加人员', u'未参加人员', u'交底记录', u'待整改项', u'需求事项'])
-        res.append([u'节点验收通知', u'验收日期', u'验收内容', u'需参加人员', u'备注'])
-        res.append([u'节点验收总结', u'验收日期', u'参加人员', u'未参加人员', u'验收结果', u'待整改项', u'需求事项'])
-        res.append([u'项目经理工作汇报', u'汇报日期', u'汇报内容', ])
+        res.append([u'交底工作总结', u'交底日期', u'参加人员', u'未参加人员', u'交底记录', u'待整改项', u'需求事项', by_client_id])
+        res.append([u'节点验收通知', u'验收日期', u'验收内容', u'需参加人员', u'备注', by_client_id])
+        res.append([u'节点验收总结', u'验收日期', u'参加人员', u'未参加人员', u'验收结果', u'待整改项', u'需求事项', by_client_id])
+        res.append([u'项目经理工作汇报', u'汇报日期', u'汇报内容', by_client_id])
     if 4 in tag_list:
-        res.append([u'工长工作汇报', u'项目经理', u'拍摄时间', u'照片', u'工长工作安排'])
+        res.append([u'工长工作汇报', u'项目经理', u'拍摄时间', u'照片', u'工长工作安排', by_client_id])
     if 5 in tag_list:
         res.append([u'现场工作汇报', u'项目经理', u'工长', u'拍摄时间', u'照片', u'上周完成', u'本周计划', u'人员安排', u'设计需求',
-                    u'产品需求', u'可复尺产品', u'该工地是否具备参观件', u'工期倒计时', u'是否能按时完工', u'障碍工期问题'])
+                    u'产品需求', u'可复尺产品', u'该工地是否具备参观件', u'工期倒计时', u'是否能按时完工', u'障碍工期问题', by_client_id])
     return res
 
 
@@ -676,7 +727,7 @@ def add_reply_employee_at_log(username, chatroomname):
     return 0
 
 
-def add_employee_at_log(username, content, a_message_id, chatroomname):
+def add_employee_at_log(username, content, a_message_id, chatroomname, by_client_id):
     print('add_employee_at_log running')
     # Check if this employee not in this chatroom.
     try:
@@ -693,17 +744,29 @@ def add_employee_at_log(username, content, a_message_id, chatroomname):
     new_log.content = content
     new_log.a_message_id = a_message_id
     new_log.chatroomname = chatroomname
+    new_log.by_client_id = by_client_id
     new_log.is_reply = 0
     new_log.reply_time = 0
     new_log.save()
     update_employee_people_reply_rule()
 
 
-def add_wrong_re_log(username, content, a_message_id, chatroomname):
+def add_wrong_re_log(username, content, a_message_id, chatroomname, by_client_id):
     _new_log = CM('employee_re_log')
     _new_log.username = username
     _new_log.create_time = int(time.time())
     _new_log.content = content
     _new_log.a_message_id = a_message_id
     _new_log.chatroomname = chatroomname
+    _new_log.by_client_id = by_client_id
     _new_log.save()
+
+
+def add_pull_people_task(bot_username, chatroomname, username):
+    result = {'bot_username': bot_username,
+              'data': {
+                  "task": "add_contact_to_chatroom",
+                  "chatroomname": chatroomname,
+                  "contacts": username
+              }}
+    requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)

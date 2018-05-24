@@ -19,3 +19,4 @@ redis == 2.10.6
 oss2
 pycrypto
 aliyun-python-sdk-dysmsapi==1.0.0
+oss2

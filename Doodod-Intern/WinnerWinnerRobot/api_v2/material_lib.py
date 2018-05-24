@@ -52,8 +52,9 @@ def get_material_lib_list():
                                                 "thumb_url", "title",
                                                 "desc", "size",
                                                 "duration", "real_content", "msg_local_id", "msg_svr_id", "talker"],
-                                               where_clause=BaseModel.where_dict(
-                                                   {"msg_id": material.get("msg_id")}
+                                               where_clause=BaseModel.and_(
+                                                   ["=", "msg_id", material.get("msg_id")],
+                                                   ["not", "title", None]
                                                ))[0]
             material.update(message_info.to_json())
 

@@ -76,7 +76,7 @@ class QunAvailableCheckThread(threading.Thread):
                 "task": "send_message",
                 "to": "%s" % qun.client_id,
                 "type": 1,
-                "content": "%s 尚未缴费, 请及时付款，否则稍后该群服务消失" % qun.chatroomname
+                "content": u"%s 尚未缴费, 请及时付款，否则稍后该群服务消失" % qun.chatroomname
             }
 
             sleep_time = 20 * 60 - (int(time.time()) - qun.create_time) \
@@ -104,7 +104,7 @@ class QunAvailableCheckThread(threading.Thread):
                 "task": "send_message",
                 "to": "%s" % qun.client_id,
                 "type": 1,
-                "content": "%s 已退群" % qun.chatroomname
+                "content": u"%s 已退群" % qun.chatroomname
             }
             sleep_time = 28 * 60 - (int(time.time()) - qun.create_time) \
                 if 28 * 60 - (int(time.time()) - qun.create_time) > 0 else 0

@@ -3,14 +3,17 @@ import json
 import logging
 
 import time
+
+from datetime import datetime
 from flask import request
 
-from configs.config import main_api_v2, SUCCESS, UserInfo, MaterialLib, Message, Contact
+from configs.config import main_api_v2, SUCCESS, UserInfo, MaterialLib, Message, Contact, UserQunR
 from core_v2.send_msg import send_ws_to_android
 from core_v2.user_core import UserLogin, _get_a_balanced_bot
 from crawler.coin_all_crawler_v2 import update_coin_all
-from models_v2.base_model import BaseModel
+from models_v2.base_model import BaseModel, CM
 from utils.u_response import make_response
+from utils.u_time import datetime_to_timestamp_utc_8
 
 logger = logging.getLogger('main')
 
@@ -46,13 +49,25 @@ def script():
     # username = request.json.get("username")
     # a_contact = BaseModel.fetch_one(Contact, "*", where_clause = BaseModel.where_dict({"username": username}))
     # print json.dumps(a_contact.to_json_full())
-    status, user_info = UserLogin.verify_token(request.json.get('token'))
-    if status != SUCCESS:
-        return make_response(status)
+    # status, user_info = UserLogin.verify_token(request.json.get('token'))
+    # if status != SUCCESS:
+    #     return make_response(status)
+    #
+    # bot_info = _get_a_balanced_bot(user_info)
+    # if bot_info:
+    #     return make_response(SUCCESS, a_contact = bot_info.to_json_full())
 
-    bot_info = _get_a_balanced_bot(user_info)
-    if bot_info:
-        return make_response(SUCCESS, a_contact = bot_info.to_json_full())
+    # uqr = CM(UserQunR)
+    # uqr.client_id = 100
+    # uqr.chatroomname = "716646600@chatroom"
+    # uqr.status = 1
+    # uqr.group_id = u"100_0"
+    # uqr.create_time = datetime_to_timestamp_utc_8(datetime.now())
+    # uqr.save()
+
+    ubr = BaseModel.fetch_by_id("client_bot_r", "5aed1e19f5d7e2638e2e6fbb")
+    ubr.bot_username = "wxid_6mf4yqgs528e22"
+    ubr.save()
 
     return make_response(SUCCESS)
 
