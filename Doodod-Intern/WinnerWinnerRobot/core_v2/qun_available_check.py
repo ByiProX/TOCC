@@ -5,11 +5,13 @@ import threading
 import logging
 import time
 from models_v2.base_model import BaseModel
-from configs.config import TIMED_BATCH_SENDING_INTERVAL, BATCH_SEND_TASK_STATUS_3, BATCH_SEND_TASK_STATUS_4
 from core_v2.send_msg import send_ws_to_android
 from configs.config import SUCCESS, UserBotR
 
+from utils.wkx_test_log import MyLogging
+
 logger = logging.getLogger('main')
+wkx_logger = MyLogging()
 
 
 class QunAvailableCheckThread(threading.Thread):
@@ -20,6 +22,7 @@ class QunAvailableCheckThread(threading.Thread):
 
     def run(self):
         logger.info(u"Start thread id: %s." % str(self.thread_id))
+        wkx_logger.debug("群检测入口 thread run")
         while self.go_work:
             # 查找使用的群数量超出购买数量的客户
             clients = BaseModel.fetch_all("client", "*",
@@ -31,23 +34,35 @@ class QunAvailableCheckThread(threading.Thread):
                 time.sleep(60)
 
             clients_id = [client.client_id for client in clients]
+            wkx_logger.debug("client_id %d" % clients_id.__len__())
 
             cur_time = int(time.time())
             # 查找免费用户的多余群(未付费群)，--- 半小时内
             not_paid_quns = self.check_not_paid_quns(clients_id, cur_time)
+            wkx_logger.debug("not_paid_quns %d" % not_paid_quns.__len__())
 
             if not_paid_quns:
                 # 通知付款
+                wkx_logger.debug("into inform to pay")
                 self.inform_to_pay(not_paid_quns)
+                wkx_logger.debug("out inform to pay")
+
             else:
                 time.sleep(60)
                 continue
 
             # 重新查表，查找未缴费群，然后退群并删除表中的记录
             not_paid_quns_again = self.check_not_paid_quns(clients_id, cur_time)
+            wkx_logger.debug("not_paid_quns_again %d" % not_paid_quns_again.__len__())
+
             if not_paid_quns_again:
+                wkx_logger.debug("into kick out")
                 self.kick_out(not_paid_quns_again)
+                wkx_logger.debug("out kick out")
+
+                wkx_logger.debug("into update_client_qun_used")
                 self.update_client_qun_used(clients_id)
+                wkx_logger.debug("out update_client_qun_used")
             else:
                 time.sleep(60)
                 continue

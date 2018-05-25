@@ -11,6 +11,8 @@ from unicodedata import normalize
 
 import re
 
+import cStringIO
+import qrcode
 import requests
 from flask import request, abort
 from configs.config import *
@@ -67,7 +69,7 @@ def create_task():
     open_id = mp_member.open_id
 
     thumb_url = request.json.get("thumb_url")
-    desc = request.json.get("desc")
+    desc = request.json.get("desc", ori_url)
     url_type = request.json.get("url_type")
 
     share_task = CM(ShareTask)
@@ -80,6 +82,8 @@ def create_task():
     share_task.url_type = url_type
     share_task.create_time = int(time.time())
     share_task.update_time = int(time.time())
+    share_task.total_click = 0
+    share_task.total_share = 0
     share_task.save()
 
     state_json = generate_state_json(user_info.app, share_task.share_task_id, ori_id = open_id, ref_id = "0", cur_id = open_id, hierarchy = 0)
@@ -100,11 +104,13 @@ def api_get_share_list():
     page = request.json.get("page", DEFAULT_PAGE)
     pagesize = request.json.get("pagesize", DEFAULT_PAGE_SIZE)
 
+    total_count = BaseModel.count(ShareTask, where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+                                                                                  "is_deleted": 0}))
     share_list = BaseModel.fetch_all(ShareTask, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
                                                                                           "is_deleted": 0}), page = page, pagesize = pagesize, order_by = BaseModel.order_by({"create_time": "desc"}))
     share_list_json = [r.to_json_full() for r in share_list]
 
-    return make_response(SUCCESS, share_list = share_list_json)
+    return make_response(SUCCESS, share_list = share_list_json, total_count = total_count)
 
 
 @main_api_v2.route("/share_task", methods = ['POST'])
@@ -117,6 +123,9 @@ def api_share_task():
     state = request.json.get("state")
 
     app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
+    if app_name is None:
+        return make_response(ERR_INVALID_PARAMS)
+
     share_record = CM(ShareRecord)
     share_record.share_task_id = share_task_id
     share_record.ori_id = ori_id
@@ -127,6 +136,12 @@ def api_share_task():
     share_record.type = SHARE_RECORD_SHARE
     share_record.create_time = int(time.time())
     share_record.save()
+
+    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
+    if share_task.total_share is None:
+        share_task.total_share = 0
+    share_task.total_share += 1
+    share_task.update()
 
     return make_response(SUCCESS)
 
@@ -141,6 +156,8 @@ def api_get_state_by_state():
         return make_response(ERR_INVALID_PARAMS)
 
     app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
+    if app_name is None:
+        return make_response(ERR_INVALID_PARAMS)
 
     share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
     if not code:
@@ -162,6 +179,12 @@ def api_get_state_by_state():
     share_record.create_time = int(time.time())
     share_record.save()
 
+    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
+    if share_task.total_click is None:
+        share_task.total_click = 0
+    share_task.total_click += 1
+    share_task.update()
+
     state_json = generate_state_json(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy)
 
     return make_response(SUCCESS, share_task = share_task.to_json_full(), state_json = state_json)
@@ -181,28 +204,31 @@ def generate_state_json(app_name, share_task_id, ori_id, ref_id, cur_id, hierarc
 
 
 def extract_share_state(share_state):
-    state_tmp = urllib.unquote(base64.b64decode(share_state))
-    params = state_tmp.split('&')
-    state_json = dict()
-    for param in params:
-        key, value = param.split('=')
-        state_json.setdefault(key, value)
+    try:
+        state_tmp = urllib.unquote(base64.b64decode(share_state))
+        params = state_tmp.split('&')
+        state_json = dict()
+        for param in params:
+            key, value = param.split('=')
+            state_json.setdefault(key, value)
 
-    app_name = state_json.get('app')
-    share_task_id = state_json.get('task')
-    ori_id = state_json.get('ori')
-    ref_id = state_json.get('ref')
-    cur_id = state_json.get('cur')
-    hierarchy = state_json.get('hierarchy')
-    des_id = state_json.get('des')
-    logger.info('task_id: ' + str(share_task_id))
-    logger.info('ori_id: ' + str(ori_id))
-    logger.info('ref_id: ' + str(ref_id))
-    logger.info('cur_id: ' + str(cur_id))
-    logger.info('hierarchy: ' + str(hierarchy))
-    logger.info('des_id: ' + str(des_id))
+        app_name = state_json.get('app')
+        share_task_id = state_json.get('task')
+        ori_id = state_json.get('ori')
+        ref_id = state_json.get('ref')
+        cur_id = state_json.get('cur')
+        hierarchy = state_json.get('hierarchy')
+        des_id = state_json.get('des')
+        logger.info('task_id: ' + str(share_task_id))
+        logger.info('ori_id: ' + str(ori_id))
+        logger.info('ref_id: ' + str(ref_id))
+        logger.info('cur_id: ' + str(cur_id))
+        logger.info('hierarchy: ' + str(hierarchy))
+        logger.info('des_id: ' + str(des_id))
 
-    return app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id
+        return app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id
+    except:
+        return None, None, None, None, None, None, None
 
 
 def allowed_file(filename):
@@ -302,3 +328,28 @@ def mp_member_regist(code, app_name):
         # 获取wechat端信息失败
         else:
             return ERR_WRONG_ITEM, None
+
+
+@main_api_v2.route('/get_url_qrcode', methods = ['POST'])
+def get_qrcode():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    content = request.json.get('url')
+
+    qr = qrcode.QRCode(
+        version = 3,
+        error_correction = qrcode.constants.ERROR_CORRECT_H,
+        box_size = 8,
+        border = 3,
+    )
+    qr.add_data(content)
+    qr.make()
+    img = qr.make_image()
+    buffer = cStringIO.StringIO()
+    img.save(buffer, format = "JPEG")
+    img_str = base64.b64encode(buffer.getvalue())
+
+    return make_response(SUCCESS, img = img_str)
