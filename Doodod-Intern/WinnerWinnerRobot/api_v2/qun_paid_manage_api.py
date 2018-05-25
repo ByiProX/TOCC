@@ -98,7 +98,61 @@ def __app_add_paid_quns():
     return make_response(SUCCESS)
 
 
+@main_api_v2.route('/get_wkx_quns', methods=['POST'])
+def __app_get_wkx_quns():
+    """
+    查看自己的微信群数量状态
+    """
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
 
+    if status != SUCCESS:
+        return make_response(status)
+
+    try:
+        client_quns = BaseModel.fetch_all("client_qun_r", "*",
+                                          where_clause=BaseModel.and_(
+                                              ["=", "client_id", user_info.client_id],
+                                              ["=", "status", 1]
+                                          ),
+                                          order_by=BaseModel.order_by({"create_time": "desc"})
+                                          )
+
+        wkx_quns = [client_qun.to_json_full() for client_qun in client_quns]
+    except Exception:
+        return make_response(ERR_WRONG_ITEM)
+
+    return make_response(SUCCESS, wkx_quns=wkx_quns)
+
+
+@main_api_v2.route('/change_qun_is_paid_status', methods=['POST'])
+def __app_change_qun_is_paid_status():
+    """
+    查看自己的微信群数量状态
+    """
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+
+    if status != SUCCESS:
+        return make_response(status)
+
+    chatroomname = request.json.get("chatroomname")
+    is_paid = request.json.get("is_paid")
+
+    try:
+        client_qun = BaseModel.fetch_one("client_qun_r", "*",
+                                         where_clause=BaseModel.and_(
+                                             ["=", "client_id", user_info.client_id],
+                                             ["=", "chatroomname", chatroomname],
+                                             ["=", "status", 1]
+                                         ))
+        client_qun.is_paid = is_paid
+        client_qun.save()
+
+    except Exception:
+        return make_response(ERR_WRONG_ITEM)
+
+    return make_response(SUCCESS)
 
 
 if __name__ == "__main__":
@@ -106,4 +160,11 @@ if __name__ == "__main__":
                                        where_clause=BaseModel.and_(
                                            [">=", "qun_count", "qun_used"],
                                        ))
-    print free_clients
+    # print free_clients
+
+    client_quns = BaseModel.fetch_all("client_qun_r", "*",
+                                      where_clause=BaseModel.and_(
+                                          ["=", "client_id", 5],
+                                      ))
+
+    print client_quns.__len__()

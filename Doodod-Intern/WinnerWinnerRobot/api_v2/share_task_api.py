@@ -1,28 +1,25 @@
 # -*- coding: utf-8 -*-
 import base64
+import cStringIO
 import copy
 import json
-import urllib
-
-import time
-
+import logging
+import re
 import sys
+import time
+import urllib
 from unicodedata import normalize
 
-import re
-
-import cStringIO
 import qrcode
 import requests
-from flask import request, abort
+from flask import request
+
 from configs.config import *
 from core_v2.user_core import UserLogin
 from core_v2.wechat_core import wechat_conn_dict
 from models_v2.base_model import BaseModel, CM
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
-import logging
-
 from utils.u_upload_oss import put_file_to_oss
 
 logger = logging.getLogger('main')
@@ -94,6 +91,23 @@ def create_task():
     return make_response(SUCCESS, share_task = share_task.to_json_full(), state_json = state_json)
 
 
+@main_api_v2.route("/get_share_info", methods = ['POST'])
+def api_get_share_info():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    share_task_id = request.json.get("share_task_id")
+    if not share_task_id:
+        return make_response(ERR_INVALID_PARAMS)
+    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
+    if not share_task:
+        return make_response(ERR_WRONG_ITEM)
+
+    return make_response(SUCCESS, share_task = share_task.to_json_full())
+
+
 @main_api_v2.route("/get_share_list", methods = ['POST'])
 def api_get_share_list():
     verify_json()
@@ -126,6 +140,8 @@ def api_share_task():
     if app_name is None:
         return make_response(ERR_INVALID_PARAMS)
 
+    statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_SHARE)
+
     share_record = CM(ShareRecord)
     share_record.share_task_id = share_task_id
     share_record.ori_id = ori_id
@@ -141,6 +157,7 @@ def api_share_task():
     if share_task.total_share is None:
         share_task.total_share = 0
     share_task.total_share += 1
+    share_task.update_time = int(time.time())
     share_task.update()
 
     return make_response(SUCCESS)
@@ -155,18 +172,20 @@ def api_get_state_by_state():
     if not state:
         return make_response(ERR_INVALID_PARAMS)
 
-    app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
-    if app_name is None:
-        return make_response(ERR_INVALID_PARAMS)
-
     share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
     if not code:
         return make_response(SUCCESS, share_task = share_task.to_json_full())
+
+    app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
+    if app_name is None:
+        return make_response(ERR_INVALID_PARAMS)
 
     regist_status, mp_member = mp_member_regist(code, app_name)
     ref_id = cur_id
     hierarchy = int(hierarchy) + 1
     cur_id = mp_member.open_id
+
+    statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_CLICK)
 
     share_record = CM(ShareRecord)
     share_record.share_task_id = share_task_id
@@ -183,6 +202,7 @@ def api_get_state_by_state():
     if share_task.total_click is None:
         share_task.total_click = 0
     share_task.total_click += 1
+    share_task.update_time = int(time.time())
     share_task.update()
 
     state_json = generate_state_json(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy)
@@ -330,6 +350,33 @@ def mp_member_regist(code, app_name):
             return ERR_WRONG_ITEM, None
 
 
+@main_api_v2.route("/get_statistic_list", methods = ['POST'])
+def api_get_statistic_list():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    share_task_id = request.json.get("share_task_id")
+    if not share_task_id:
+        return make_response(ERR_INVALID_PARAMS)
+    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
+    if not share_task:
+        return make_response(ERR_WRONG_ITEM)
+
+    page = request.json.get("page", DEFAULT_PAGE)
+    pagesize = request.json.get("pagesize", DEFAULT_PAGE_SIZE)
+    order_by = request.json.get("order_by", 1)
+    order_by = SHARE_TASK_ORDER[order_by]
+    order = "decs"
+
+    total_count = BaseModel.count(StatisticsShareTask, where_clause = BaseModel.where_dict({"share_task_id": share_task_id}))
+    statistic_list = BaseModel.fetch_all(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"share_task_id": share_task_id}), page = page, pagesize = pagesize, order_by = BaseModel.order_by({order_by: order}))
+    statistic_list_json = [r.to_json_full() for r in statistic_list]
+
+    return make_response(SUCCESS, share_task = share_task.to_json_full(), statistic_list = statistic_list_json, total_count = total_count)
+
+
 @main_api_v2.route('/get_url_qrcode', methods = ['POST'])
 def get_qrcode():
     verify_json()
@@ -353,3 +400,40 @@ def get_qrcode():
     img_str = base64.b64encode(buffer.getvalue())
 
     return make_response(SUCCESS, img = img_str)
+
+
+def statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id, action_type):
+    now = int(time.time())
+    if ref_id == "0" or cur_id == ref_id:
+        return None
+    ref_s_mp_memebr = BaseModel.fetch_one(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"share_task_id": share_task_id,
+                                                                                                         "open_id": ref_id}))
+    ref_s_mp_memebr.update_time = now
+    if not ref_s_mp_memebr:
+        ref_s_mp_memebr = CM(StatisticsShareTask)
+        ref_s_mp_memebr.create_time = now
+        ref_s_mp_memebr.clicked_uv = 0
+        ref_s_mp_memebr.clicked_pv = 0
+        ref_s_mp_memebr.shared_uv = 0
+        ref_s_mp_memebr.shared_pv = 0
+        ref_s_mp_memebr.shared_list = []
+        ref_s_mp_memebr.clicked_list = []
+
+    if action_type == SHARE_RECORD_SHARE:
+        ref_s_mp_memebr.shared_pv += 1
+        if cur_id in ref_s_mp_memebr.shared_list:
+            pass
+        else:
+            ref_s_mp_memebr.shared_list.append(cur_id)
+            ref_s_mp_memebr.shared_uv += 1
+    else:  # action_type == SHARE_RECORD_CLICK
+        ref_s_mp_memebr.clicked_pv += 1
+        if cur_id in ref_s_mp_memebr.clicked_list:
+            pass
+        else:
+            ref_s_mp_memebr.clicked_list.append(cur_id)
+            ref_s_mp_memebr.clicked_uv += 1
+
+    ref_s_mp_memebr.save()
+
+    return ref_s_mp_memebr

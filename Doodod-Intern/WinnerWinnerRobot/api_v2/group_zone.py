@@ -19,7 +19,8 @@ def get_group_zone_list():
         client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                           where_clause=BaseModel.and_(
                                               ["=", "client_id", client_id],
-                                              ["=", "status", 1])
+                                              ["=", "status", 1]),
+                                          order_by=BaseModel.order_by({"create_time": "desc"})
                                           )
         client_quns = [client_qun.to_json_full() for client_qun in client_quns]
     except Exception:

@@ -443,6 +443,7 @@ MaterialLib = "material_lib"
 ShareTask = "share_task"
 ShareRecord = "share_record"
 MPMember = "mp_member"
+StatisticsShareTask = "statistics_share_task"
 
 SECRET_ATTR_SET = {"chatroomname", "username", "bot_username"}
 
@@ -522,3 +523,10 @@ OSS_THUMB = '?x-oss-process=style/thumb'
 URL_TYPE_TEMP = 0
 URL_TYPE_AD_IFRAM = 1
 URL_TYPE_AD_DIRECT = 2
+
+
+SHARE_TASK_ORDER = ["", "click_uv", "click_pv", "share_uv", "share_pv"]
+SHARE_TASK_CLICK_UV = 1
+SHARE_TASK_CLICK_PV = 2
+SHARE_TASK_SHARE_UV = 3
+SHARE_TASK_SHARE_PV = 4

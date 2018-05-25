@@ -273,7 +273,8 @@ def get_non_active_chatroom_list():
     chatroom_statis = BaseModel.fetch_all(table, '*', _where, group = group_by)
     chatroom_json_list = []
     chatroomnames = [r.get_id() for r in chatroom_statis]
-    _where = BaseModel.where_dict(["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]])
+    _where = BaseModel.where_dict(
+        ["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]])
     if group_id:
         _where.append(["=", "group_id", group_id])
         _where = BaseModel.where_dict(_where)
@@ -295,14 +296,13 @@ def get_non_active_chatroom_list():
                                    'member_count', 'chatroomnotice',
                                    'update_time', 'nickname_default'],
                                   BaseModel.where("in", "chatroomname", chatroomname_list),
-                                  page=page, pagesize=pagesize
+                                  page = page, pagesize = pagesize
                                   )
 
     print "::::::::::::::::::::"
     print qunInfo
     print qunInfo.__len__()
     print "::::::::::::::::::::"
-
 
     for chatroom in qunInfo:
         chatroom_json = chatroom.to_json_full()
@@ -336,20 +336,20 @@ def get_active_chatroom_count():
     table = 'statistics_chatroom_daily'
 
     _where, group_by = statis_chatroom_where(date_type, user_info.client_id, chatroomname_list)
-    #print '_where, group_by',_where, group_by
+    # print '_where, group_by',_where, group_by
 
-    chatroom_statis = BaseModel.fetch_all(table, '*', where_clause = _where, group=group_by)
-    #print 'chatroom_statis::::',chatroom_statis
+    chatroom_statis = BaseModel.fetch_all(table, '*', where_clause = _where, group = group_by)
+    # print 'chatroom_statis::::',chatroom_statis
     # chatroom_statis = BaseModel.fetch_all(table, '*', where_clause = BaseModel.where_dict(_where))
     # chatroomnames = [r.get_id() for r in chatroom_statis]
     chatroomnames = list()
     for r in chatroom_statis:
         if group_by:
-            chatroomnames.append(r.get_id()) 
+            chatroomnames.append(r.get_id())
         else:
             chatroomnames.append(r.chatroomname)
 
-    print 'chatroomnames::::',chatroomnames
+    print 'chatroomnames::::', chatroomnames
 
     active_chatroom_count = len(chatroom_statis)
     _where = ["and", ["=", "client_id", user_info.client_id], ["not in", "chatroomname", chatroomnames]]
@@ -393,22 +393,22 @@ def statis_chatroom_where(date_type, client_id, chatroomname_list):
                            "active_count": {"$avg": "$active_count"}, "invo_count": {"$avg": "$invo_count"}})
     if (date_type == 1):
         timestamp_diff = getTimeStamp(0)
-        _where = ["and", ["=", "date", timestamp_diff], ["=", "client_id", client_id],
+        _where = ["and", ["=", "client_id", client_id], ["=", "date", timestamp_diff],
                   ["in", "chatroomname", chatroomname_list]]
         group_by = None
     elif (date_type == 2):
         timestamp_diff = getTimeStamp(1)
         # _where ={"date":timestamp_diff,"client_id":user_info.client_id}
-        _where = ["and", ["=", "date", timestamp_diff], ["=", "client_id", client_id],
+        _where = ["and", ["=", "client_id", client_id], ["=", "date", timestamp_diff],
                   ["in", "chatroomname", chatroomname_list]]
         group_by = None
     elif (date_type == 3):
         timestamp_diff = getTimeStamp(7)
-        _where = ["and", [">=", "date", timestamp_diff], ["=", "client_id", client_id],
-                  ["in", "chatroomname", chatroomname_list]]
+        where = ["and", ["=", "client_id", client_id], [">=", "date", timestamp_diff],
+                 ["in", "chatroomname", chatroomname_list]]
     elif (date_type == 4):
         timestamp_diff = getTimeStamp(30)
-        _where = ["and", [">=", "date", timestamp_diff], ["=", "client_id", client_id],
+        _where = ["and", ["=", "client_id", client_id], [">=", "date", timestamp_diff],
                   ["in", "chatroomname", chatroomname_list]]
     elif (date_type == 5):
         _where = ["and", ["=", "client_id", client_id], ["in", "chatroomname", chatroomname_list]]

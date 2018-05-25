@@ -94,6 +94,7 @@ class BaseModel(object):
                 if isinstance(value, list) or isinstance(value, dict):
                     value = json.dumps(value)
                 res_json[attr] = value
+        res_json[self.__tablename + "_id"] = self.get_id()
         if self.__tablename == "a_chatroom" and res_json.get('nickname') == "":
             res_json['nickname'] = res_json.get('nickname_default')
         return res_json

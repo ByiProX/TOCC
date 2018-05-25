@@ -5,7 +5,7 @@ import threading
 from flask import request
 
 from configs.config import main_api_v2, ANDROID_SERVER_URL_BOT_STATUS, ANDROID_SERVER_URL_SEND_MESSAGE
-from core_v2.user_core import UserLogin,_get_a_balanced_bot,_get_qr_code_base64_str
+from core_v2.user_core import UserLogin, _get_a_balanced_bot, _get_qr_code_base64_str
 from models_v2.base_model import *
 from utils.z_utils import *
 
@@ -26,10 +26,7 @@ def assistant_list():
     if not bot_list:
         bot_info = _get_a_balanced_bot(user_info)
         bot_username = bot_info.username
-        return response({'err_code':11,'qrcode':'data:image/jpg;base64,' + _get_qr_code_base64_str(bot_username)})
-
-
-
+        return response({'err_code': 11, 'qrcode': 'data:image/jpg;base64,' + _get_qr_code_base64_str(bot_username)})
 
     bot_username_list = [i.bot_username for i in bot_list]
 

@@ -15,7 +15,7 @@ from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, NEW_MSG_Q, \
     MSG_TYPE_ENTERCHATROOM, SUCCESS, ERR_UNKNOWN_ERROR, CONTENT_TYPE_ENTERCHATROOM, \
     GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, GLOBAL_EMPLOYEE_PEOPLE_FLAG, ANDROID_SERVER_URL_SEND_MESSAGE, \
-    ANDROID_SERVER_URL
+    ANDROID_SERVER_URL,ANDROID_SERVER_URL_BOT_STATUS
 from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core_v2.matching_rule_core import get_gm_default_rule_dict, match_message_by_rule, get_gm_rule_dict
 from core_v2.real_time_quotes_core import match_message_by_coin_keyword
@@ -562,10 +562,14 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
 
     def get_owner_bot_username(_owner):
         # Get owner's bot_username
+        bot_status_dict = requests.get(ANDROID_SERVER_URL_BOT_STATUS).json()
         _client_id = _owner
-        client_bot_r = BaseModel.fetch_one('client_bot_r', '*', BaseModel.where_dict({'client_id': _client_id}))
-        __bot_username = client_bot_r.bot_username
-        return __bot_username
+        client_bot_r = BaseModel.fetch_all('client_bot_r', '*', BaseModel.where_dict({'client_id': _client_id}))
+        for i in client_bot_r:
+            if bot_status_dict.get(i.bot_username):
+                return i.bot_username
+        print('get_owner_bot_username Error! because all bots dead!')
+        return ''
 
     new_log = CM("sensitive_message_log")
     new_log.create_time = int(time.time())
