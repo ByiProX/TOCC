@@ -18,6 +18,7 @@ from configs.config import *
 from core_v2.user_core import UserLogin
 from core_v2.wechat_core import wechat_conn_dict
 from models_v2.base_model import BaseModel, CM
+from utils.u_cipher import des_encryt, des_decrypt
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
 from utils.u_upload_oss import put_file_to_oss
@@ -81,13 +82,13 @@ def create_task():
     share_task.update_time = int(time.time())
     share_task.total_click_pv = 0
     share_task.total_click_uv = 0
-    # share_task.total_click_list = [open_id]
+    # share_task.total_click_list = []
     share_task.total_share_pv = 0
     share_task.total_share_uv = 0
-    # share_task.total_share_list = [open_id]
+    # share_task.total_share_list = []
     share_task.save()
 
-    state_json = generate_state_json(user_info.app, share_task.share_task_id, ori_id = open_id, ref_id = "0", cur_id = open_id, hierarchy = 0)
+    state_json = generate_state_json(share_task.share_task_id, ref_id = "0", cur_id = open_id, hierarchy = 0)
 
     share_task.state_json = state_json
     share_task.update()
@@ -137,14 +138,15 @@ def api_share_task():
     # mp_member_id = request.json.get("mp_member_id")
 
     state = request.json.get("state")
+    app_name = request.json.get("app")
 
-    app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
-    if app_name is None:
+    if not app_name:
         return make_response(ERR_INVALID_PARAMS)
+
+    share_task_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
 
     share_record = CM(ShareRecord)
     share_record.share_task_id = share_task_id
-    share_record.ori_id = ori_id
     share_record.ref_id = ref_id
     share_record.cur_id = cur_id
     share_record.hierarchy = int(hierarchy)
@@ -156,7 +158,7 @@ def api_share_task():
     if ref_id == "0":
         return make_response(SUCCESS)
 
-    statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_SHARE)
+    statistic_mp_member(share_task_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_SHARE)
     share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
     if share_task.total_share_pv is None:
         share_task.total_share_pv = 0
@@ -178,13 +180,12 @@ def api_get_state_by_state():
     verify_json()
     code = request.json.get('code')
     state = request.json.get('state')
+    app_name = request.json.get('app')
 
-    if not state:
+    if not state or not app_name:
         return make_response(ERR_INVALID_PARAMS)
 
-    app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
-    if app_name is None:
-        return make_response(ERR_INVALID_PARAMS)
+    share_task_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
 
     share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
     if not code:
@@ -195,11 +196,10 @@ def api_get_state_by_state():
     hierarchy = int(hierarchy) + 1
     cur_id = mp_member.open_id
 
-    statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_CLICK)
+    statistic_mp_member(share_task_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_CLICK)
 
     share_record = CM(ShareRecord)
     share_record.share_task_id = share_task_id
-    share_record.ori_id = ori_id
     share_record.ref_id = ref_id
     share_record.cur_id = cur_id
     share_record.hierarchy = hierarchy
@@ -221,50 +221,89 @@ def api_get_state_by_state():
     share_task.update_time = int(time.time())
     share_task.update()
 
-    state_json = generate_state_json(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy)
+    state_json = generate_state_json(share_task_id, ref_id, cur_id, hierarchy)
 
     return make_response(SUCCESS, share_task = share_task.to_json_full(), state_json = state_json)
 
 
-def generate_state_json(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy):
-    state = 'app=' + str(app_name) + '&task=' + str(share_task_id) + '&ori=' + str(ori_id) + '&ref=' + str(ref_id) + '&cur=' + str(cur_id) + '&hierarchy=' + str(hierarchy)
+def generate_state_json(share_task_id, ref_id, cur_id, hierarchy):
+    state = 't=' + str(share_task_id) + '&r=' + str(ref_id) + '&c=' + str(cur_id) + '&h=' + str(hierarchy)
 
     state_json = dict()
     for des_id in DES_LIST:
         state_tmp = copy.deepcopy(state)
-        state_tmp += '&des=' + str(des_id)
+        state_tmp += '&d=' + str(des_id)
+        # state_tmp = des_encryt(state_tmp)
         state_tmp = urllib.quote(state_tmp)
-        state_tmp = base64.b64encode(state_tmp)
         state_json[DES_DICT[des_id]] = state_tmp
     return state_json
 
 
 def extract_share_state(share_state):
     try:
-        state_tmp = urllib.unquote(base64.b64decode(share_state))
+        # state_tmp = des_decrypt(urllib.unquote(share_state))
+        state_tmp = urllib.unquote(share_state)
         params = state_tmp.split('&')
         state_json = dict()
         for param in params:
             key, value = param.split('=')
             state_json.setdefault(key, value)
 
-        app_name = state_json.get('app')
-        share_task_id = state_json.get('task')
-        ori_id = state_json.get('ori')
-        ref_id = state_json.get('ref')
-        cur_id = state_json.get('cur')
-        hierarchy = state_json.get('hierarchy')
-        des_id = state_json.get('des')
+        share_task_id = state_json.get('t')
+        ref_id = state_json.get('r')
+        cur_id = state_json.get('c')
+        hierarchy = state_json.get('h')
+        des_id = state_json.get('d')
         logger.info('task_id: ' + str(share_task_id))
-        logger.info('ori_id: ' + str(ori_id))
         logger.info('ref_id: ' + str(ref_id))
         logger.info('cur_id: ' + str(cur_id))
         logger.info('hierarchy: ' + str(hierarchy))
         logger.info('des_id: ' + str(des_id))
 
-        return app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id
+        return share_task_id, ref_id, cur_id, hierarchy, des_id
     except:
         return None, None, None, None, None, None, None
+
+
+# def generate_state_json(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy):
+#     state = 'a=' + str(app_name) + '&t=' + str(share_task_id) + '&o=' + str(ori_id) + '&r=' + str(ref_id) + '&c=' + str(cur_id) + '&h=' + str(hierarchy)
+#
+#     state_json = dict()
+#     for des_id in DES_LIST:
+#         state_tmp = copy.deepcopy(state)
+#         state_tmp += '&d=' + str(des_id)
+#         state_tmp = des_encryt(state_tmp)
+#         state_tmp = urllib.quote(state_tmp)
+#         state_json[DES_DICT[des_id]] = state_tmp
+#     return state_json
+#
+#
+# def extract_share_state(share_state):
+#     try:
+#         state_tmp = des_decrypt(urllib.unquote(share_state))
+#         params = state_tmp.split('&')
+#         state_json = dict()
+#         for param in params:
+#             key, value = param.split('=')
+#             state_json.setdefault(key, value)
+#
+#         app_name = state_json.get('a')
+#         share_task_id = state_json.get('t')
+#         ori_id = state_json.get('o')
+#         ref_id = state_json.get('r')
+#         cur_id = state_json.get('c')
+#         hierarchy = state_json.get('h')
+#         des_id = state_json.get('d')
+#         logger.info('task_id: ' + str(share_task_id))
+#         logger.info('ori_id: ' + str(ori_id))
+#         logger.info('ref_id: ' + str(ref_id))
+#         logger.info('cur_id: ' + str(cur_id))
+#         logger.info('hierarchy: ' + str(hierarchy))
+#         logger.info('des_id: ' + str(des_id))
+#
+#         return app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id
+#     except:
+#         return None, None, None, None, None, None, None
 
 
 def allowed_file(filename):
@@ -436,7 +475,7 @@ def get_qrcode():
     return make_response(SUCCESS, img = img_str)
 
 
-def statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id, action_type = None):
+def statistic_mp_member(share_task_id, ref_id, cur_id, hierarchy, des_id, action_type = None):
     now = int(time.time())
     # if ref_id == "0" or cur_id == ref_id:
     #     return None

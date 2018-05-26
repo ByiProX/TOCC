@@ -33,7 +33,9 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
         where = BaseModel.where_dict({"client_id": user_info.client_id,
                                       "is_deleted": 0})
     batch_send_task_count = BaseModel.count(BatchSendTask, where)
-    batch_send_task_list = BaseModel.fetch_all(BatchSendTask, "*", where_clause = where, order_by = BaseModel.order_by({"create_time": "desc"}), page = page_number, pagesize = task_per_page)
+    batch_send_task_list = BaseModel.fetch_all(BatchSendTask, "*", where_clause=where,
+                                               order_by=BaseModel.order_by({"create_time": "desc"}), page=page_number,
+                                               pagesize=task_per_page)
     for batch_send_task in batch_send_task_list:
         res = dict()
         chatroom_list = batch_send_task.chatroom_list
@@ -41,7 +43,8 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
         chatroom_count = len(chatroom_list)
         member_count = 0
         for chatroomname in chatroom_list:
-            chatroom = BaseModel.fetch_one(Chatroom, "member_count", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+            chatroom = BaseModel.fetch_one(Chatroom, "member_count",
+                                           where_clause=BaseModel.where_dict({"chatroomname": chatroomname}))
             if chatroom is None or chatroom.member_count is None:
                 continue
             member_count += chatroom.member_count
@@ -97,7 +100,7 @@ def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
 
 def get_chatroom_dict(chatroomname):
     chatroom = BaseModel.fetch_one(Chatroom, "*",
-                                   where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+                                   where_clause=BaseModel.where_dict({"chatroomname": chatroomname}))
     chatroom_dict = dict()
     chatroom_dict['chatroom_id'] = chatroom.get_id()
     chatroom_dict['chatroom_nickname'] = chatroom.nickname
@@ -126,7 +129,8 @@ def get_task_detail(batch_send_task_id):
 
     chatroom_json_list = list()
     for chatroomname in chatroom_list:
-        chatroom = BaseModel.fetch_one(Chatroom, "member_count", where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+        chatroom = BaseModel.fetch_one(Chatroom, "member_count",
+                                       where_clause=BaseModel.where_dict({"chatroomname": chatroomname}))
         chatroom_dict = dict()
         chatroom_dict['chatroom_id'] = chatroom.get_id()
         chatroom_dict['chatroom_nickname'] = chatroom.nickname
@@ -294,7 +298,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     将前端发送过来的任务放入task表，并将任务放入consumption_task
     :return:
     """
-    ubr = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    ubr = BaseModel.fetch_one(UserBotR, '*', where_clause=BaseModel.where_dict({"client_id": user_info.client_id}))
     if not ubr:
         logger.error(u"该用户没有绑定机器人")
         return ERR_WRONG_ITEM
@@ -303,7 +307,7 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     member_count = 0
     for chatroomname in chatroom_list:
         chatroom = BaseModel.fetch_one(Chatroom, "member_count",
-                                       where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
+                                       where_clause=BaseModel.where_dict({"chatroomname": chatroomname}))
         if not chatroom or chatroom.member_count is None:
             logger.error(u"未获取到 chatroom, chatroomname: %s." % chatroomname)
             continue
@@ -346,11 +350,32 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     batch_send_task.content_list = content_list
 
     batch_send_task.save()
-    ubr = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
-    if not ubr:
-        pass
-    status = send_msg_to_android(ubr.bot_username, content_list, chatroom_list)
+
+    # Added by ZYunH, use chatroomname_list to search its bot_username.
+    chatroom_status_dict = dict()  # {"chatroomname":['member_wxid','member_wxid']}
+    send_msg_dict = dict()  # {"bot_username":['chatroomname1','chatroomname2']}
+    ubr = BaseModel.fetch_all(UserBotR, '*', where_clause=BaseModel.where_dict({"client_id": user_info.client_id}))
+    for _chatroomname in chatroom_list:
+        this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': _chatroomname}))
+        if this_chatroom is None:
+            continue
+        chatroom_status_dict[_chatroomname] = this_chatroom.memberlist.split(';')
+    user_bot_list = [i.bot_username for i in ubr]
+    for k, v in chatroom_status_dict.items():
+        for bot_username in user_bot_list:
+            if bot_username in v:
+                if bot_username not in send_msg_dict.keys():
+                    send_msg_dict[bot_username] = [k, ]
+                else:
+                    send_msg_dict[bot_username].append(k)
+                break
+    # Send msg to android.
+    status = 'Failed'
+    for k, v in send_msg_dict.items():
+        status = send_msg_to_android(k, content_list, v)
+
     batch_send_task.send_time_real = int(time.time())
+
     if status == SUCCESS:
         logger.info(u"任务发送成功, client_id: %s." % user_info.client_id)
         batch_send_task.status = BATCH_SEND_TASK_STATUS_3

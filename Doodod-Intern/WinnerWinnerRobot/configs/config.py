@@ -530,3 +530,5 @@ SHARE_TASK_ORDER = ["", "create_time", "click_uv", "click_pv", "share_uv", "shar
 # SHARE_TASK_CLICK_PV = 2
 # SHARE_TASK_SHARE_UV = 3
 # SHARE_TASK_SHARE_PV = 4
+
+DES_SECRET = "multiof8"

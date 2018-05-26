@@ -516,8 +516,8 @@ def update_employee_people_list():
         else:
             EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[u'@' + man_nickname].append([man_username, man.by_client_id])
 
-    print('1-----------', EMPLOYEE_PEOPLE_BE_AT_RULE_DICT)
-    print('2-----------', EMPLOYEE_PEOPLE_RE_RULE_DICT)
+    # print('1-----------', EMPLOYEE_PEOPLE_BE_AT_RULE_DICT)
+    # print('2-----------', EMPLOYEE_PEOPLE_RE_RULE_DICT)
 
 
 def update_employee_people_reply_rule():

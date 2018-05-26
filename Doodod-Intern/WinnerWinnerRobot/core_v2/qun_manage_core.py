@@ -162,6 +162,15 @@ def check_whether_message_is_add_qun(a_message):
     msg_type = a_message.type
     content = str_to_unicode(a_message.content)
 
+    # add by quentin
+    try:
+        chatroom_nickname_real = BaseModel.fetch_one("a_chatroom", "*",
+                                                     where_clause=BaseModel.and_(
+                                                         ["=", "chatroomname", a_message.talker]
+                                                     )).nickname_real
+    except Exception:
+        chatroom_nickname_real = u"您新建的群"
+
     if msg_type == MSG_TYPE_ENTERCHATROOM and content.find(u'邀请你') != -1:
         is_add_qun = True
         status, invitor_username, user_nickname = extract_enter_chatroom_msg(content)
@@ -176,8 +185,10 @@ def check_whether_message_is_add_qun(a_message):
                 if we_conn is None:
                     logger.info(u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (user_info.app, json.dumps(wechat_conn_dict.keys())))
                 if status == SUCCESS:
-                    we_conn.send_txt_to_follower("恭喜！小助手已经进入您的群了，可立即使用啦\n想再次试用？再次把我拉进群就好啦", user_info.open_id)
+                    we_conn.send_txt_to_follower("恭喜！ 友问币答小助手已经进入%s了，可立即使用啦。\n在群里发 btc 试试？" % chatroom_nickname_real, user_info.open_id)
                 else:
+                    we_conn.send_txt_to_follower("抱歉！友问币答小助手进群%s失败，请尝试再次拉入。" % chatroom_nickname_real, user_info.open_id)
+
                     # EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
                     #                          u"user_nickname: %s." % user_nickname)
                     pass
