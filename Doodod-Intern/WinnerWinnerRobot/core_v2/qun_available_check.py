@@ -22,7 +22,7 @@ class QunAvailableCheckThread(threading.Thread):
 
     def run(self):
         logger.info(u"Start thread id: %s." % str(self.thread_id))
-        logger.info("群检测入口 thread run")
+        logger.info(u"群检测入口 thread run")
         while self.go_work:
             logger.info("进入循环 go work")
             # 查找使用的群数量超出购买数量的客户
@@ -32,16 +32,24 @@ class QunAvailableCheckThread(threading.Thread):
                                               ["=", "client_id", 5]
                                           ))
 
+            # test = BaseModel.fetch_all("client", "*",
+            #                            where_clause=BaseModel.w(
+            #                                ["<", "qun_count", "qun_used"]
+            #                            ))
+
             print clients
-            print "clients" + str(clients.__len__())
+            print "clients length" + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + str(clients.__len__())
 
             if not clients:
                 time.sleep(60)
-                print "sleep end......................."
+                print "sleep end.>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>."
                 continue
 
             clients_id = [client.client_id for client in clients]
-            logger.info("client_id %d" % clients_id.__len__())
+            logger.info("client_id >>>>>>>>>>>>>>>>>>>> %d" % clients_id.__len__())
+
+            logger.info("更新client表中的qun_used and qun_count>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            self.update_client_qun_used(clients_id)
 
             cur_time = int(time.time())
             # 查找免费用户的多余群(未付费群)，--- 半小时内
@@ -60,16 +68,16 @@ class QunAvailableCheckThread(threading.Thread):
 
             # 重新查表，查找未缴费群，然后退群并删除表中的记录
             not_paid_quns_again = self.check_not_paid_quns(clients_id, cur_time)
-            logger.info("not_paid_quns_again %d" % not_paid_quns_again.__len__())
+            logger.info("not_paid_quns_again>>>>>>>>>>>> %d" % not_paid_quns_again.__len__())
 
             if not_paid_quns_again:
-                logger.info("into kick out")
+                logger.info("into kick out>>>>>>>>>>>>")
                 self.kick_out(not_paid_quns_again)
-                logger.info("out kick out")
+                logger.info("out kick out>>>>>>>>>>>>>>>>>>")
 
-                logger.info("into update_client_qun_used")
+                logger.info("into update_client_qun_used>>>>>>>>>>>>>>>>>")
                 self.update_client_qun_used(clients_id)
-                logger.info("out update_client_qun_used")
+                logger.info("out update_client_qun_used>>>>>>>>>>>>>>>>>>>")
             else:
                 time.sleep(60)
                 continue
@@ -86,7 +94,7 @@ class QunAvailableCheckThread(threading.Thread):
                                             ),
                                             order_by=BaseModel.order_by({"create_time": "ASC"})
                                             )
-        print ":::::::::::::::::::::::::::::::::::::::::::"
+        print ":>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         print not_paid_quns
         return not_paid_quns
 
@@ -101,10 +109,15 @@ class QunAvailableCheckThread(threading.Thread):
                                                ["=", "client_id", qun.client_id]
                                            )).username
 
+            print ">>>>>>>>>>>>>>>>>>>>>>>>>>" + username
+
             chatroomname = BaseModel.fetch_one("a_chatroom", "*",
                                                where_clause=BaseModel.and_(
                                                    ["=", "chatroomname", qun.chatroomname]
                                                )).nickname_real
+
+            print ">>>>>>>>>>>>>>>>>>>>>>>>>>" + chatroomname
+
             # TODO to user change
             data = {
                 "task": "send_message",
@@ -156,6 +169,8 @@ class QunAvailableCheckThread(threading.Thread):
             sleep_time = 28 * 60 - (int(time.time()) - qun.create_time) \
                 if 28 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
             time.sleep(sleep_time)
+            # 测试环境
+            time.sleep(2)
             try:
                 status = send_ws_to_android(ubr.bot_username, data)
             except Exception:
@@ -165,8 +180,8 @@ class QunAvailableCheckThread(threading.Thread):
             else:
                 logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
             # 退群并修改client_qun_r中status的记录
-            ubr.status = 0
-            ubr.save()
+            qun.status = 0
+            qun.save()
 
     @staticmethod
     def update_client_qun_used(clients_id):
@@ -176,11 +191,19 @@ class QunAvailableCheckThread(threading.Thread):
                                                  ["=", "client_id", client_id],
                                                  ["=", "status", 1]
                                              ))
+
+            qun_count = BaseModel.count("client_qun_r",
+                                        where_clause=BaseModel.and_(
+                                            ["=", "client_id", client_id],
+                                            ["=", "status", 1],
+                                            ["=", "is_paid", 1]
+                                        ))
             client_table = BaseModel.fetch_one("client", "*",
                                                where_clause=BaseModel.and_(
                                                    ["=", "client_id", client_id]
                                                ))
             client_table.qun_used = qun_used_count
+            client_table.qun_count = qun_count
             client_table.save()
 
     def stop(self):

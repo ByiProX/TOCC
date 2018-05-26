@@ -525,8 +525,8 @@ URL_TYPE_AD_IFRAM = 1
 URL_TYPE_AD_DIRECT = 2
 
 
-SHARE_TASK_ORDER = ["", "click_uv", "click_pv", "share_uv", "share_pv"]
-SHARE_TASK_CLICK_UV = 1
-SHARE_TASK_CLICK_PV = 2
-SHARE_TASK_SHARE_UV = 3
-SHARE_TASK_SHARE_PV = 4
+SHARE_TASK_ORDER = ["", "create_time", "click_uv", "click_pv", "share_uv", "share_pv"]
+# SHARE_TASK_CLICK_UV = 1
+# SHARE_TASK_CLICK_PV = 2
+# SHARE_TASK_SHARE_UV = 3
+# SHARE_TASK_SHARE_PV = 4

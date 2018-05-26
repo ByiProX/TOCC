@@ -158,9 +158,10 @@ def __app_change_qun_is_paid_status():
 if __name__ == "__main__":
     free_clients = BaseModel.fetch_all("client", "*",
                                        where_clause=BaseModel.and_(
-                                           [">=", "qun_count", "qun_used"],
+                                           [">", "qun_count", "qun_used"],
                                        ))
-    # print free_clients
+    print free_clients.__len__()
+    pprint([free_client.to_json_full() for free_client in free_clients])
 
     client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                       where_clause=BaseModel.and_(

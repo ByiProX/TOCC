@@ -680,7 +680,8 @@ def check_if_is_re(a_message):
 
 def check_to_pull_people(a_message):
     if a_message.real_content.find('SL^lxz') == 0:
-        word_list = a_message.real_content.split(u'Ω')
+        print('----- check_to_pull_people Catch!')
+        word_list = a_message.real_content.split(u'&')
         if len(word_list) != 2:
             return 0
         bot_username = a_message.bot_username
@@ -692,6 +693,7 @@ def check_to_pull_people(a_message):
         memberlist = chatroom_info.memberlist.split(';')
         if bot_username not in memberlist or real_talker in memberlist:
             return 0
+        print('----- check_to_pull_people running!')
         new_thread = threading.Thread(target=add_pull_people_task, args=(bot_username, chatroomname, real_talker))
         new_thread.setDaemon(True)
         new_thread.start()

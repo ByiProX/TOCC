@@ -79,8 +79,12 @@ def create_task():
     share_task.url_type = url_type
     share_task.create_time = int(time.time())
     share_task.update_time = int(time.time())
-    share_task.total_click = 0
-    share_task.total_share = 0
+    share_task.total_click_pv = 0
+    share_task.total_click_uv = 0
+    # share_task.total_click_list = [open_id]
+    share_task.total_share_pv = 0
+    share_task.total_share_uv = 0
+    # share_task.total_share_list = [open_id]
     share_task.save()
 
     state_json = generate_state_json(user_info.app, share_task.share_task_id, ori_id = open_id, ref_id = "0", cur_id = open_id, hierarchy = 0)
@@ -130,17 +134,13 @@ def api_get_share_list():
 @main_api_v2.route("/share_task", methods = ['POST'])
 def api_share_task():
     verify_json()
-    status, user_info = UserLogin.verify_token(request.json.get('token'))
-    if status != SUCCESS:
-        return make_response(status)
+    # mp_member_id = request.json.get("mp_member_id")
 
     state = request.json.get("state")
 
     app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
     if app_name is None:
         return make_response(ERR_INVALID_PARAMS)
-
-    statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_SHARE)
 
     share_record = CM(ShareRecord)
     share_record.share_task_id = share_task_id
@@ -153,10 +153,20 @@ def api_share_task():
     share_record.create_time = int(time.time())
     share_record.save()
 
+    if ref_id == "0":
+        return make_response(SUCCESS)
+
+    statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_SHARE)
     share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
-    if share_task.total_share is None:
-        share_task.total_share = 0
+    if share_task.total_share_pv is None:
+        share_task.total_share_pv = 0
     share_task.total_share += 1
+    if share_task.total_share_list is None:
+        share_task.total_share_list = list()
+    if cur_id not in share_task.total_share_list:
+        share_task.total_share_list.append(cur_id)
+    share_task.total_share_uv = len(share_task.total_share_list)
+
     share_task.update_time = int(time.time())
     share_task.update()
 
@@ -172,15 +182,15 @@ def api_get_state_by_state():
     if not state:
         return make_response(ERR_INVALID_PARAMS)
 
-    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
-    if not code:
-        return make_response(SUCCESS, share_task = share_task.to_json_full())
-
     app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
     if app_name is None:
         return make_response(ERR_INVALID_PARAMS)
 
-    regist_status, mp_member = mp_member_regist(code, app_name)
+    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
+    if not code:
+        return make_response(SUCCESS, share_task = share_task.to_json_full())
+
+    regist_status, mp_member = mp_member_regist(code, app_name, share_task_id)
     ref_id = cur_id
     hierarchy = int(hierarchy) + 1
     cur_id = mp_member.open_id
@@ -199,9 +209,15 @@ def api_get_state_by_state():
     share_record.save()
 
     share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
-    if share_task.total_click is None:
-        share_task.total_click = 0
+    if share_task.total_click_pv is None:
+        share_task.total_click_pv = 0
     share_task.total_click += 1
+    if share_task.total_click_list is None:
+        share_task.total_click_list = list()
+    if cur_id not in share_task.total_click_list:
+        share_task.total_click_list.append(cur_id)
+    share_task.total_click_uv = len(share_task.total_click_list)
+
     share_task.update_time = int(time.time())
     share_task.update()
 
@@ -306,7 +322,7 @@ def secure_filename(filename):
     return filename
 
 
-def mp_member_regist(code, app_name):
+def mp_member_regist(code, app_name, share_task_id):
     we_conn = wechat_conn_dict.get(app_name)
     if we_conn is None:
         logger.info(
@@ -319,6 +335,24 @@ def mp_member_regist(code, app_name):
                      u"code微信不认可，库中无该code. code: %s. app: %s." % (code, app_name))
         return ERR_USER_LOGIN_FAILED, None
     else:
+
+        now = int(time.time())
+        s_mp_memebr = BaseModel.fetch_one(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"share_task_id": share_task_id,
+                                                                                                         "open_id": open_id}))
+        if not s_mp_memebr:
+            s_mp_memebr = CM(StatisticsShareTask)
+            s_mp_memebr.create_time = now
+            s_mp_memebr.share_task_id = share_task_id
+            s_mp_memebr.open_id = open_id
+            s_mp_memebr.clicked_uv = 0
+            s_mp_memebr.clicked_pv = 0
+            s_mp_memebr.shared_uv = 0
+            s_mp_memebr.shared_pv = 0
+            s_mp_memebr.shared_list = []
+            s_mp_memebr.clicked_list = []
+            s_mp_memebr.update_time = now
+        s_mp_memebr.save()
+
         mp_member = BaseModel.fetch_one(MPMember, "*", where_clause = BaseModel.where_dict({"open_id": open_id,
                                                                                             "app": app_name}))
         if mp_member:
@@ -341,7 +375,7 @@ def mp_member_regist(code, app_name):
             mp_member.country = res_json.get('country')
             mp_member.avatar_url = res_json.get('avatar_url')
             mp_member.app = app_name
-
+            mp_member.create_time = now
             mp_member.save()
 
             return SUCCESS, mp_member
@@ -402,16 +436,18 @@ def get_qrcode():
     return make_response(SUCCESS, img = img_str)
 
 
-def statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id, action_type):
+def statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id, action_type = None):
     now = int(time.time())
-    if ref_id == "0" or cur_id == ref_id:
-        return None
+    # if ref_id == "0" or cur_id == ref_id:
+    #     return None
     ref_s_mp_memebr = BaseModel.fetch_one(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"share_task_id": share_task_id,
                                                                                                          "open_id": ref_id}))
     ref_s_mp_memebr.update_time = now
     if not ref_s_mp_memebr:
         ref_s_mp_memebr = CM(StatisticsShareTask)
         ref_s_mp_memebr.create_time = now
+        ref_s_mp_memebr.share_task_id = share_task_id
+        ref_s_mp_memebr.open_id = ref_id
         ref_s_mp_memebr.clicked_uv = 0
         ref_s_mp_memebr.clicked_pv = 0
         ref_s_mp_memebr.shared_uv = 0
@@ -426,7 +462,7 @@ def statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarc
         else:
             ref_s_mp_memebr.shared_list.append(cur_id)
             ref_s_mp_memebr.shared_uv += 1
-    else:  # action_type == SHARE_RECORD_CLICK
+    elif action_type == SHARE_RECORD_CLICK:
         ref_s_mp_memebr.clicked_pv += 1
         if cur_id in ref_s_mp_memebr.clicked_list:
             pass
@@ -437,3 +473,25 @@ def statistic_mp_member(app_name, share_task_id, ori_id, ref_id, cur_id, hierarc
     ref_s_mp_memebr.save()
 
     return ref_s_mp_memebr
+
+
+@main_api_v2.route("/get_share_signature", methods=['POST'])
+def get_share_signature():
+    verify_json()
+    url = request.json.get("url")
+
+    # mp_member_id = request.json.get("mp_member_id")
+    app_name = request.json.get("app")
+
+    if url is None:
+        return make_response(ERR_INVALID_PARAMS)
+    try:
+        we_conn = wechat_conn_dict.get(app_name)
+        if we_conn is None:
+            logger.info(
+                u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (app_name, json.dumps(wechat_conn_dict.keys())))
+        timestamp, noncestr, signature = we_conn.get_signature_from_access_token(url)
+        return make_response(SUCCESS, timestamp=timestamp, noncestr=noncestr, signature=signature)
+    except Exception as e:
+        logger.error('ERROR  %s' % e)
+        return make_response(ERR_INVALID_PARAMS)

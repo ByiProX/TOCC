@@ -1256,7 +1256,7 @@ def _get_events_qrcode():
                 if chatroom_limit_1 <= len(v[0]) < chatroom_limit_2:
                     chatroomname = k
                     psw = u'SL^lxz'
-                    event_pull_word = u'Ω'.join([psw, chatroomname.split(u'@')[0][::-1]])
+                    event_pull_word = u'*'.join([psw, chatroomname.split(u'@')[0][::-1]])
                     chatroom_pool_info = BaseModel.fetch_one('chatroom_pool', '*',
                                                              BaseModel.where_dict({'chatroomname': chatroomname}))
                     this_bot_username = chatroom_pool_info.bot_username
