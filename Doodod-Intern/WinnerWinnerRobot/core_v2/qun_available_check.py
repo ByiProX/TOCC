@@ -26,23 +26,19 @@ class QunAvailableCheckThread(threading.Thread):
         while self.go_work:
             logger.info("进入循环 go work")
             # 查找使用的群数量超出购买数量的客户
-            clients = BaseModel.fetch_all("client", "*",
-                                          where_clause=BaseModel.and_(
-                                              # ["<", "qun_count", "qun_used"],
-                                              ["=", "client_id", 5]
-                                          ))
+            # clients = BaseModel.fetch_all("client", "*",
+            #                               where_clause=BaseModel.and_(
+            #                                   # ["<", "qun_count", "qun_used"],
+            #                                   ["=", "client_id", 5]
+            #                               ))
 
-            # test = BaseModel.fetch_all("client", "*",
-            #                            where_clause=BaseModel.w(
-            #                                ["<", "qun_count", "qun_used"]
-            #                            ))
-
-            print clients
-            print "clients length" + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + str(clients.__len__())
+            clients = BaseModel.fetch_all("client", "*")
+            clients = [client for client in clients if client.qun_used > client.qun_count]
+            print ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
+            print([client.client_id for client in clients])
 
             if not clients:
                 time.sleep(60)
-                print "sleep end.>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>."
                 continue
 
             clients_id = [client.client_id for client in clients]
@@ -89,8 +85,8 @@ class QunAvailableCheckThread(threading.Thread):
                                                 ["in", "client_id", clients_id],
                                                 ["=", "is_paid", 0],
                                                 ["=", "status", 1],
-                                                # [">", "create_time", cur_time - 30 * 60],
-                                                # ["<", "create_time", cur_time - 15 * 60],
+                                                [">", "create_time", cur_time - 30 * 60],
+                                                ["<", "create_time", cur_time - 15 * 60],
                                             ),
                                             order_by=BaseModel.order_by({"create_time": "ASC"})
                                             )
@@ -109,32 +105,31 @@ class QunAvailableCheckThread(threading.Thread):
                                                ["=", "client_id", qun.client_id]
                                            )).username
 
-            print ">>>>>>>>>>>>>>>>>>>>>>>>>>" + username
-
             chatroomname = BaseModel.fetch_one("a_chatroom", "*",
                                                where_clause=BaseModel.and_(
                                                    ["=", "chatroomname", qun.chatroomname]
                                                )).nickname_real
 
-            print ">>>>>>>>>>>>>>>>>>>>>>>>>>" + chatroomname
-
-            # TODO to user change
             data = {
                 "task": "send_message",
                 "to": username,
                 "type": 1,
-                "content": u"%s 尚未缴费, 请及时付款，否则稍后该群服务消失" % chatroomname
+                "content": u"恭喜！友问币答小助手已经进入%s了。请在30分钟内联系我们客服mm激活小助手哦" % chatroomname
             }
-
-            # sleep_time = 20 * 60 - (int(time.time()) - qun.create_time) \
-            #     if 20 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
-            sleep_time = 60
-            time.sleep(sleep_time)
 
             try:
                 status = send_ws_to_android(ubr.bot_username, data)
+                # TODO 推送微信客服名片
+                # code ...
+
             except Exception:
                 continue
+
+            sleep_time = 20 * 60 - (int(time.time()) - qun.create_time) \
+                if 20 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
+            # sleep_time = 60
+            time.sleep(sleep_time)
+
             if status == SUCCESS:
                 logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
             else:
@@ -158,27 +153,42 @@ class QunAvailableCheckThread(threading.Thread):
                                                    ["=", "chatroomname", qun.chatroomname]
                                                )).nickname_real
 
-            # TODO 退群接口添加
-            data = {
+            info_data_before_leave = {
                 "task": "send_message",
                 "to": username,
                 "type": 1,
-                "content": u"%s 已退群" % chatroomname
+                "content": u"亲，30分钟快到了，我舍不得离开%s哦，您快快联系我们客户mm，激活小助手哦。" % chatroomname
+            }
+            try:
+                status = send_ws_to_android(ubr.bot_username, info_data_before_leave)
+                if status == SUCCESS:
+                    logger.info(u"退群前通知任务发送成功, client_id: %s." % qun.client_id)
+                else:
+                    logger.info(u"退群前通知任务发送失败, client_id: %s." % qun.client_id)
+            except Exception:
+                pass
+
+            # TODO 退群接口添加
+            data = {
+                "task": "quit_chatroom",
+                "chatroomname": qun.chatroomname
             }
 
             sleep_time = 28 * 60 - (int(time.time()) - qun.create_time) \
                 if 28 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
+
+            # sleep_time = 60
             time.sleep(sleep_time)
-            # 测试环境
-            time.sleep(2)
+
             try:
                 status = send_ws_to_android(ubr.bot_username, data)
             except Exception:
                 continue
+
             if status == SUCCESS:
-                logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
+                logger.info(u"退群任务发送成功, client_id: %s." % qun.client_id)
             else:
-                logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
+                logger.info(u"退群任务发送失败, client_id: %s." % qun.client_id)
             # 退群并修改client_qun_r中status的记录
             qun.status = 0
             qun.save()

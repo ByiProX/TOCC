@@ -1200,7 +1200,7 @@ def _modify_event_word():
 def _get_events_qrcode():
     """Get event base info (for qrcode)."""
     event_id = request.json.get('event_id')
-    chatroom_limit_1 = 3
+    chatroom_limit_1 = 100
     chatroom_limit_2 = 500
     # Handle.
     event = BaseModel.fetch_by_id('events_', event_id)

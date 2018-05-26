@@ -185,9 +185,9 @@ def check_whether_message_is_add_qun(a_message):
                 if we_conn is None:
                     logger.info(u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (user_info.app, json.dumps(wechat_conn_dict.keys())))
                 if status == SUCCESS:
-                    we_conn.send_txt_to_follower("恭喜！ 友问币答小助手已经进入%s了，可立即使用啦。\n在群里发 btc 试试？" % chatroom_nickname_real, user_info.open_id)
+                    we_conn.send_txt_to_follower(u"恭喜！ 友问币答小助手已经进入%s了，可立即使用啦。\n在群里发 btc 试试？" % chatroom_nickname_real, user_info.open_id)
                 else:
-                    we_conn.send_txt_to_follower("抱歉！友问币答小助手进群%s失败，请尝试再次拉入。" % chatroom_nickname_real, user_info.open_id)
+                    we_conn.send_txt_to_follower(u"抱歉！友问币答小助手进群%s失败，请尝试再次拉入。" % chatroom_nickname_real, user_info.open_id)
 
                     # EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
                     #                          u"user_nickname: %s." % user_nickname)

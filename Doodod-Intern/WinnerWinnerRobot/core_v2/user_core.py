@@ -77,6 +77,7 @@ class UserLogin:
                 # 意味着之前有，现在也有
                 if self.now_user_info:
                     self.now_user_info.code = self.code
+                    self.now_user_info.avatar_url = self.user_info_up_to_date.avatar_url
                     self.now_user_info.last_login_time = datetime_to_timestamp_utc_8(datetime.now())
 
                     if datetime_to_timestamp_utc_8(datetime.now()) < self.now_user_info.token_expired_time:
@@ -117,13 +118,13 @@ class UserLogin:
                     # switch
                     user_switch = CM(UserSwitch)
                     user_switch.client_id = client.client_id
-                    user_switch.func_send_qun_messages = 0
-                    user_switch.func_qun_sign = 0
-                    user_switch.func_auto_reply = 0
-                    user_switch.func_welcome_message = 0
-                    user_switch.func_real_time_quotes = 0
-                    user_switch.func_synchronous_announcement = 0
-                    user_switch.func_coin_wallet = 0
+                    user_switch.func_send_qun_messages = 1
+                    user_switch.func_qun_sign = 1
+                    user_switch.func_auto_reply = 1
+                    user_switch.func_welcome_message = 1
+                    user_switch.func_real_time_quotes = 1
+                    user_switch.func_synchronous_announcement = 1
+                    user_switch.func_coin_wallet = 1
 
                     user_switch.save()
                     self.user_info_up_to_date.save()
@@ -169,6 +170,7 @@ class UserLogin:
         res_json = we_conn.get_user_info(open_id=self.open_id, user_access_token=self.user_access_token)
 
         if res_json.get('openid'):
+            print res_json
             self.user_info_up_to_date = CM(UserInfo)
             self.user_info_up_to_date.open_id = res_json.get('openid')
             self.user_info_up_to_date.union_id = res_json.get('unionid')
@@ -177,10 +179,12 @@ class UserLogin:
             self.user_info_up_to_date.province = res_json.get('province')
             self.user_info_up_to_date.city = res_json.get('city')
             self.user_info_up_to_date.country = res_json.get('country')
-            self.user_info_up_to_date.avatar_url = res_json.get('avatar_url')
+            self.user_info_up_to_date.avatar_url = res_json.get('headimgurl')
 
             self.user_info_up_to_date.username = ""
             self.user_info_up_to_date.app = self.app
+
+            print self.user_info_up_to_date.to_json_full()
 
         # 获取wechat端信息失败
         else:
@@ -311,6 +315,19 @@ def cal_user_basic_page_info(user_info):
         res['total_info'].setdefault('cover_member_count', member_count)
 
         user_switch = BaseModel.fetch_one(UserSwitch, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+        if not user_switch:
+            user_switch = CM(UserSwitch)
+            user_switch.client_id = user_info.client_id
+            user_switch.func_send_qun_messages = 1
+            user_switch.func_qun_sign = 1
+            user_switch.func_auto_reply = 1
+            user_switch.func_welcome_message = 1
+            user_switch.func_real_time_quotes = 1
+            user_switch.func_synchronous_announcement = 1
+            user_switch.func_coin_wallet = 1
+
+            user_switch.save()
+
         res.setdefault("user_func", {})
         res['user_func'].setdefault('func_send_messages', user_switch.func_send_qun_messages)
         res['user_func'].setdefault('func_sign', user_switch.func_qun_sign)

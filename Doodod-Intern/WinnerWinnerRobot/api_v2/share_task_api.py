@@ -7,6 +7,7 @@ import logging
 import re
 import sys
 import time
+import traceback
 import urllib
 from unicodedata import normalize
 
@@ -63,14 +64,16 @@ def create_task():
 
     mp_member = CM(MPMember).from_json(user_info.to_json_full())
     mp_member.create_time = int(time.time())
+    mp_member.mp_member_unique_id = mp_member.open_id[-5:] + unicode(mp_member.create_time)
     mp_member.save()
-    open_id = mp_member.open_id
 
     thumb_url = request.json.get("thumb_url")
     desc = request.json.get("desc", ori_url)
     url_type = request.json.get("url_type")
 
+    now = int(time.time())
     share_task = CM(ShareTask)
+    share_task.task_id = unicode(user_info.client_id) + "_" + unicode(now)
     share_task.is_deleted = 0
     share_task.ori_url = ori_url
     share_task.title = title
@@ -78,8 +81,8 @@ def create_task():
     share_task.desc = desc
     share_task.client_id = client_id
     share_task.url_type = url_type
-    share_task.create_time = int(time.time())
-    share_task.update_time = int(time.time())
+    share_task.create_time = now
+    share_task.update_time = now
     share_task.total_click_pv = 0
     share_task.total_click_uv = 0
     # share_task.total_click_list = []
@@ -88,7 +91,7 @@ def create_task():
     # share_task.total_share_list = []
     share_task.save()
 
-    state_json = generate_state_json(share_task.share_task_id, ref_id = "0", cur_id = open_id, hierarchy = 0)
+    state_json = generate_state_json(share_task.task_id, ref_id = "0", cur_id = mp_member.mp_member_unique_id, hierarchy = 0)
 
     share_task.state_json = state_json
     share_task.update()
@@ -103,10 +106,10 @@ def api_get_share_info():
     if status != SUCCESS:
         return make_response(status)
 
-    share_task_id = request.json.get("share_task_id")
-    if not share_task_id:
+    task_id = request.json.get("task_id")
+    if not task_id:
         return make_response(ERR_INVALID_PARAMS)
-    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
+    share_task = BaseModel.fetch_one(ShareTask, "*", where_clause = BaseModel.where_dict({"task_id": task_id}))
     if not share_task:
         return make_response(ERR_WRONG_ITEM)
 
@@ -143,10 +146,10 @@ def api_share_task():
     if not app_name:
         return make_response(ERR_INVALID_PARAMS)
 
-    share_task_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
+    task_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
 
     share_record = CM(ShareRecord)
-    share_record.share_task_id = share_task_id
+    share_record.task_id = task_id
     share_record.ref_id = ref_id
     share_record.cur_id = cur_id
     share_record.hierarchy = int(hierarchy)
@@ -158,11 +161,11 @@ def api_share_task():
     if ref_id == "0":
         return make_response(SUCCESS)
 
-    statistic_mp_member(share_task_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_SHARE)
-    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
+    statistic_mp_member(task_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_SHARE)
+    share_task = BaseModel.fetch_by_id(ShareTask, task_id)
     if share_task.total_share_pv is None:
         share_task.total_share_pv = 0
-    share_task.total_share += 1
+    share_task.total_share_pv += 1
     if share_task.total_share_list is None:
         share_task.total_share_list = list()
     if cur_id not in share_task.total_share_list:
@@ -180,26 +183,29 @@ def api_get_state_by_state():
     verify_json()
     code = request.json.get('code')
     state = request.json.get('state')
-    app_name = request.json.get('app')
+    app_name = request.json.get('app', "test")
 
     if not state or not app_name:
         return make_response(ERR_INVALID_PARAMS)
 
-    share_task_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
+    task_id, ref_id, cur_id, hierarchy, des_id = extract_share_state(state)
 
-    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
+    share_task = BaseModel.fetch_one(ShareTask, "*", where_clause = BaseModel.where_dict({"task_id": task_id}))
     if not code:
-        return make_response(SUCCESS, share_task = share_task.to_json_full())
+        return make_response(SUCCESS, share_task = share_task.to_json_full(), state_json = {})
 
-    regist_status, mp_member = mp_member_regist(code, app_name, share_task_id)
+    regist_status, mp_member = mp_member_regist(code, app_name, task_id)
+    if regist_status != SUCCESS:
+        return make_response(regist_status)
+
     ref_id = cur_id
     hierarchy = int(hierarchy) + 1
-    cur_id = mp_member.open_id
+    cur_id = mp_member.mp_member_unique_id
 
-    statistic_mp_member(share_task_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_CLICK)
+    statistic_mp_member(task_id, ref_id, cur_id, hierarchy, des_id, SHARE_RECORD_CLICK)
 
     share_record = CM(ShareRecord)
-    share_record.share_task_id = share_task_id
+    share_record.task_id = task_id
     share_record.ref_id = ref_id
     share_record.cur_id = cur_id
     share_record.hierarchy = hierarchy
@@ -208,10 +214,9 @@ def api_get_state_by_state():
     share_record.create_time = int(time.time())
     share_record.save()
 
-    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
     if share_task.total_click_pv is None:
         share_task.total_click_pv = 0
-    share_task.total_click += 1
+    share_task.total_click_pv += 1
     if share_task.total_click_list is None:
         share_task.total_click_list = list()
     if cur_id not in share_task.total_click_list:
@@ -221,19 +226,20 @@ def api_get_state_by_state():
     share_task.update_time = int(time.time())
     share_task.update()
 
-    state_json = generate_state_json(share_task_id, ref_id, cur_id, hierarchy)
+    state_json = generate_state_json(task_id, ref_id, cur_id, hierarchy)
 
     return make_response(SUCCESS, share_task = share_task.to_json_full(), state_json = state_json)
 
 
-def generate_state_json(share_task_id, ref_id, cur_id, hierarchy):
-    state = 't=' + str(share_task_id) + '&r=' + str(ref_id) + '&c=' + str(cur_id) + '&h=' + str(hierarchy)
+def generate_state_json(task_id, ref_id, cur_id, hierarchy):
+    state = 't=' + str(task_id) + '&r=' + str(ref_id) + '&c=' + str(cur_id) + '&h=' + str(hierarchy)
 
     state_json = dict()
     for des_id in DES_LIST:
         state_tmp = copy.deepcopy(state)
         state_tmp += '&d=' + str(des_id)
         # state_tmp = des_encryt(state_tmp)
+        state_tmp = base64.b64encode(state_tmp)
         state_tmp = urllib.quote(state_tmp)
         state_json[DES_DICT[des_id]] = state_tmp
     return state_json
@@ -243,30 +249,34 @@ def extract_share_state(share_state):
     try:
         # state_tmp = des_decrypt(urllib.unquote(share_state))
         state_tmp = urllib.unquote(share_state)
+        state_tmp = base64.b64decode(state_tmp)
         params = state_tmp.split('&')
         state_json = dict()
         for param in params:
             key, value = param.split('=')
             state_json.setdefault(key, value)
 
-        share_task_id = state_json.get('t')
+        task_id = state_json.get('t')
         ref_id = state_json.get('r')
         cur_id = state_json.get('c')
         hierarchy = state_json.get('h')
         des_id = state_json.get('d')
-        logger.info('task_id: ' + str(share_task_id))
+        logger.info('task_id: ' + str(task_id))
         logger.info('ref_id: ' + str(ref_id))
         logger.info('cur_id: ' + str(cur_id))
         logger.info('hierarchy: ' + str(hierarchy))
         logger.info('des_id: ' + str(des_id))
 
-        return share_task_id, ref_id, cur_id, hierarchy, des_id
-    except:
-        return None, None, None, None, None, None, None
+        return task_id, ref_id, cur_id, hierarchy, des_id
+    except Exception as e:
+        logger.critical("extract_share_state err")
+        logger.critical(traceback.format_exc())
+        logger.error(e)
+        return None, None, None, None, None
 
 
-# def generate_state_json(app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy):
-#     state = 'a=' + str(app_name) + '&t=' + str(share_task_id) + '&o=' + str(ori_id) + '&r=' + str(ref_id) + '&c=' + str(cur_id) + '&h=' + str(hierarchy)
+# def generate_state_json(app_name, task_id, ori_id, ref_id, cur_id, hierarchy):
+#     state = 'a=' + str(app_name) + '&t=' + str(task_id) + '&o=' + str(ori_id) + '&r=' + str(ref_id) + '&c=' + str(cur_id) + '&h=' + str(hierarchy)
 #
 #     state_json = dict()
 #     for des_id in DES_LIST:
@@ -288,20 +298,20 @@ def extract_share_state(share_state):
 #             state_json.setdefault(key, value)
 #
 #         app_name = state_json.get('a')
-#         share_task_id = state_json.get('t')
+#         task_id = state_json.get('t')
 #         ori_id = state_json.get('o')
 #         ref_id = state_json.get('r')
 #         cur_id = state_json.get('c')
 #         hierarchy = state_json.get('h')
 #         des_id = state_json.get('d')
-#         logger.info('task_id: ' + str(share_task_id))
+#         logger.info('task_id: ' + str(task_id))
 #         logger.info('ori_id: ' + str(ori_id))
 #         logger.info('ref_id: ' + str(ref_id))
 #         logger.info('cur_id: ' + str(cur_id))
 #         logger.info('hierarchy: ' + str(hierarchy))
 #         logger.info('des_id: ' + str(des_id))
 #
-#         return app_name, share_task_id, ori_id, ref_id, cur_id, hierarchy, des_id
+#         return app_name, task_id, ori_id, ref_id, cur_id, hierarchy, des_id
 #     except:
 #         return None, None, None, None, None, None, None
 
@@ -361,7 +371,7 @@ def secure_filename(filename):
     return filename
 
 
-def mp_member_regist(code, app_name, share_task_id):
+def mp_member_regist(code, app_name, task_id):
     we_conn = wechat_conn_dict.get(app_name)
     if we_conn is None:
         logger.info(
@@ -370,31 +380,38 @@ def mp_member_regist(code, app_name, share_task_id):
     open_id = res_json.get('openid')
     user_access_token = res_json.get('access_token')
     if open_id is None:
+
+        mp_member = BaseModel.fetch_one(UserInfo, '*', where_clause = BaseModel.where_dict({"code": code,
+                                                                                            "app": app_name}))
+        if mp_member:
+            return SUCCESS, mp_member
         logger.error(ERR_USER_LOGIN_FAILED +
                      u"code微信不认可，库中无该code. code: %s. app: %s." % (code, app_name))
         return ERR_USER_LOGIN_FAILED, None
     else:
 
         now = int(time.time())
-        s_mp_memebr = BaseModel.fetch_one(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"share_task_id": share_task_id,
+        s_mp_memebr = BaseModel.fetch_one(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"task_id": task_id,
                                                                                                          "open_id": open_id}))
         if not s_mp_memebr:
             s_mp_memebr = CM(StatisticsShareTask)
             s_mp_memebr.create_time = now
-            s_mp_memebr.share_task_id = share_task_id
+            s_mp_memebr.task_id = task_id
             s_mp_memebr.open_id = open_id
             s_mp_memebr.clicked_uv = 0
             s_mp_memebr.clicked_pv = 0
             s_mp_memebr.shared_uv = 0
             s_mp_memebr.shared_pv = 0
-            s_mp_memebr.shared_list = []
-            s_mp_memebr.clicked_list = []
+            # s_mp_memebr.shared_list = []
+            # s_mp_memebr.clicked_list = []
             s_mp_memebr.update_time = now
         s_mp_memebr.save()
 
         mp_member = BaseModel.fetch_one(MPMember, "*", where_clause = BaseModel.where_dict({"open_id": open_id,
                                                                                             "app": app_name}))
         if mp_member:
+            mp_member.code = code
+            mp_member.save()
             logger.info(u"已经注册，nickname: %s" % mp_member.nick_name)
             return SUCCESS, mp_member
         we_conn = wechat_conn_dict.get(app_name)
@@ -405,6 +422,7 @@ def mp_member_regist(code, app_name, share_task_id):
 
         if res_json.get('openid'):
             mp_member = CM(MPMember)
+            mp_member.code = code
             mp_member.open_id = res_json.get('openid')
             mp_member.union_id = res_json.get('unionid')
             mp_member.nick_name = res_json.get('nickname')
@@ -415,6 +433,7 @@ def mp_member_regist(code, app_name, share_task_id):
             mp_member.avatar_url = res_json.get('avatar_url')
             mp_member.app = app_name
             mp_member.create_time = now
+            mp_member.mp_member_unique_id = mp_member.open_id[-5:] + unicode(mp_member.create_time)
             mp_member.save()
 
             return SUCCESS, mp_member
@@ -430,10 +449,10 @@ def api_get_statistic_list():
     if status != SUCCESS:
         return make_response(status)
 
-    share_task_id = request.json.get("share_task_id")
-    if not share_task_id:
+    task_id = request.json.get("task_id")
+    if not task_id:
         return make_response(ERR_INVALID_PARAMS)
-    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
+    share_task = BaseModel.fetch_one(ShareTask, "*", where_clause = BaseModel.where_dict({"task_id": task_id}))
     if not share_task:
         return make_response(ERR_WRONG_ITEM)
 
@@ -443,9 +462,15 @@ def api_get_statistic_list():
     order_by = SHARE_TASK_ORDER[order_by]
     order = "decs"
 
-    total_count = BaseModel.count(StatisticsShareTask, where_clause = BaseModel.where_dict({"share_task_id": share_task_id}))
-    statistic_list = BaseModel.fetch_all(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"share_task_id": share_task_id}), page = page, pagesize = pagesize, order_by = BaseModel.order_by({order_by: order}))
-    statistic_list_json = [r.to_json_full() for r in statistic_list]
+    total_count = BaseModel.count(StatisticsShareTask, where_clause = BaseModel.where_dict({"task_id": task_id}))
+    statistic_list = BaseModel.fetch_all(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"task_id": task_id}), page = page, pagesize = pagesize, order_by = BaseModel.order_by({order_by: order}))
+    statistic_list_json = list()
+    for statistic in statistic_list:
+        statistic_json = statistic.to_json_full()
+        mp_member = BaseModel.fetch_one(MPMember, "*", where_clause = BaseModel.where_dict({"open_id": statistic.open_id}))
+        if mp_member:
+            statistic_json.update(mp_member.to_json_full())
+        statistic_list_json.append(statistic_json)
 
     return make_response(SUCCESS, share_task = share_task.to_json_full(), statistic_list = statistic_list_json, total_count = total_count)
 
@@ -475,39 +500,45 @@ def get_qrcode():
     return make_response(SUCCESS, img = img_str)
 
 
-def statistic_mp_member(share_task_id, ref_id, cur_id, hierarchy, des_id, action_type = None):
+def statistic_mp_member(task_id, ref_id, cur_id, hierarchy, des_id, action_type = None):
     now = int(time.time())
     # if ref_id == "0" or cur_id == ref_id:
     #     return None
-    ref_s_mp_memebr = BaseModel.fetch_one(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"share_task_id": share_task_id,
+    ref_s_mp_memebr = BaseModel.fetch_one(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"task_id": task_id,
                                                                                                          "open_id": ref_id}))
-    ref_s_mp_memebr.update_time = now
     if not ref_s_mp_memebr:
         ref_s_mp_memebr = CM(StatisticsShareTask)
         ref_s_mp_memebr.create_time = now
-        ref_s_mp_memebr.share_task_id = share_task_id
+        ref_s_mp_memebr.task_id = task_id
         ref_s_mp_memebr.open_id = ref_id
         ref_s_mp_memebr.clicked_uv = 0
         ref_s_mp_memebr.clicked_pv = 0
         ref_s_mp_memebr.shared_uv = 0
         ref_s_mp_memebr.shared_pv = 0
-        ref_s_mp_memebr.shared_list = []
-        ref_s_mp_memebr.clicked_list = []
+        # ref_s_mp_memebr.shared_list = []
+        # ref_s_mp_memebr.clicked_list = []
+    ref_s_mp_memebr.update_time = now
 
     if action_type == SHARE_RECORD_SHARE:
         ref_s_mp_memebr.shared_pv += 1
-        if cur_id in ref_s_mp_memebr.shared_list:
-            pass
+        if ref_s_mp_memebr.shared_list is None:
+            ref_s_mp_memebr.shared_list = [cur_id]
         else:
-            ref_s_mp_memebr.shared_list.append(cur_id)
-            ref_s_mp_memebr.shared_uv += 1
+            if cur_id in ref_s_mp_memebr.shared_list:
+                pass
+            else:
+                ref_s_mp_memebr.shared_list.append(cur_id)
+                ref_s_mp_memebr.shared_uv += 1
     elif action_type == SHARE_RECORD_CLICK:
         ref_s_mp_memebr.clicked_pv += 1
-        if cur_id in ref_s_mp_memebr.clicked_list:
-            pass
+        if ref_s_mp_memebr.clicked_list is None:
+            ref_s_mp_memebr.clicked_list = [cur_id]
         else:
-            ref_s_mp_memebr.clicked_list.append(cur_id)
-            ref_s_mp_memebr.clicked_uv += 1
+            if cur_id in ref_s_mp_memebr.clicked_list:
+                pass
+            else:
+                ref_s_mp_memebr.clicked_list.append(cur_id)
+                ref_s_mp_memebr.clicked_uv += 1
 
     ref_s_mp_memebr.save()
 
