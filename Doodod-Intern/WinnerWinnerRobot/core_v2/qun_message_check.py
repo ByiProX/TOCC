@@ -2,7 +2,11 @@
 __author__ = "quentin"
 
 from models_v2.base_model import BaseModel
+from core_v2.send_msg import send_ws_to_android
+from configs.config import SUCCESS, UserBotR
+
 import logging
+import time
 
 logger = logging.getLogger('main')
 
@@ -24,4 +28,33 @@ def check_is_at_bot(a_message):
                                      ))
         client.is_paid = 1
         client.save()
+
+        time.sleep(5)
+        # 通知付费成功信息
+        ubr = BaseModel.fetch_one(UserBotR, '*',
+                                  where_clause=BaseModel.where_dict({"client_id": client.client_id}))
+        try:
+            chatroomname = BaseModel.fetch_one("a_chatroom", "*",
+                                               where_clause=BaseModel.and_(
+                                                   ["=", "chatroomname", chatroomname]
+                                               )).nickname_real
+        except AttributeError:
+            chatroomname = u"您刚刚创建的群"
+
+        info_data = {
+            "task": "send_message",
+            "to": a_message.real_talker,
+            "type": 1,
+            "content": u"谢谢您付费，小助手已经在为您的%s群提供服务啦！" % chatroomname
+        }
+
+        try:
+            status = send_ws_to_android(ubr.bot_username, info_data)
+            if status == SUCCESS:
+                logger.info(u"激活群通知任务发送成功, client_id: %s." % client.client_id)
+            else:
+                logger.info(u"激活群通知任务发送失败, client_id: %s." % client.client_id)
+        except Exception:
+            pass
+
         print "########################################################3"

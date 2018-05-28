@@ -169,7 +169,7 @@ def check_whether_message_is_add_qun(a_message):
                                                          ["=", "chatroomname", a_message.talker]
                                                      )).nickname_real
     except AttributeError:
-        chatroom_nickname_real = u"您新建的群"
+        chatroom_nickname_real = chatroom_nickname_real if not chatroom_nickname_real else u"您新建的群"
 
     if msg_type == MSG_TYPE_ENTERCHATROOM and content.find(u'邀请你') != -1:
         is_add_qun = True
@@ -182,6 +182,7 @@ def check_whether_message_is_add_qun(a_message):
                 return is_add_qun
             for user_info in user_info_list:
                 we_conn = wechat_conn_dict.get(user_info.app)
+
                 if we_conn is None:
                     logger.info(u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (user_info.app, json.dumps(wechat_conn_dict.keys())))
                 if status == SUCCESS:
@@ -192,15 +193,64 @@ def check_whether_message_is_add_qun(a_message):
                                                           ))
 
                     if client_qun_info.qun_count == 1 and client_qun_info.qun_count >= client_qun_info.qun_used:
-                        we_conn.send_txt_to_follower(u"恭喜！ 友问币答小助手已经进入%s了，可立即使用啦。\n在群里发 btc 试试？"
-                                                     % chatroom_nickname_real, user_info.open_id)
+                        # we_conn.send_txt_to_follower(u"恭喜！ 友问币答小助手已经进入%s了，可立即使用啦。\n在群里发 btc 试试？"
+                        #                              % chatroom_nickname_real, user_info.open_id)
+                        info_data = {
+                            "task": "send_message",
+                            "to": user_info.username,
+                            "type": 1,
+                            "content": u"恭喜！ 友问币答小助手已经进入%s了，可立即使用啦。\n在群里发 btc 试试？"
+                                       % chatroom_nickname_real
+                        }
+
+                        try:
+                            status = send_ws_to_android(bot_username, info_data)
+                            if status == SUCCESS:
+                                logger.info(u"首次入群---通知任务发送成功, client_id: %s." % user_info.client_id)
+                            else:
+                                logger.info(u"首次入群---通知任务发送失败, client_id: %s." % user_info.client_id)
+                        except Exception:
+                            pass
+
                     else:
-                        we_conn.send_txt_to_follower(u"恭喜！友问币答小助手已经进入%s了。但目前处于试用阶段，请在30分钟内联系我们客服mm激活小助手哦。"
-                                                     % chatroom_nickname_real, user_info.open_id)
+                        # we_conn.send_txt_to_follower(u"恭喜！友问币答小助手已经进入%s了。但目前处于试用阶段，请在30分钟内联系我们客服mm激活小助手哦。"
+                        #                              % chatroom_nickname_real, user_info.open_id)
+                        info_data = {
+                            "task": "send_message",
+                            "to": user_info.username,
+                            "type": 1,
+                            "content": u"恭喜！友问币答小助手已经进入%s了。但目前处于试用阶段，请在30分钟内联系我们客服mm激活小助手哦。"
+                                       % chatroom_nickname_real
+                        }
+
+                        try:
+                            status = send_ws_to_android(bot_username, info_data)
+                            if status == SUCCESS:
+                                logger.info(u"非首次入群---通知任务发送成功, client_id: %s." % user_info.client_id)
+                            else:
+                                logger.info(u"非首次入群---通知任务发送失败, client_id: %s." % user_info.client_id)
+                        except Exception:
+                            pass
+
                     #########################
                 else:
-                    we_conn.send_txt_to_follower(u"抱歉！友问币答小助手进入%s失败，请尝试再次拉入。" % chatroom_nickname_real, user_info.open_id)
+                    # we_conn.send_txt_to_follower(u"抱歉！友问币答小助手进入%s失败，请尝试再次拉入。" % chatroom_nickname_real, user_info.open_id)
+                    info_data = {
+                        "task": "send_message",
+                        "to": user_info.username,
+                        "type": 1,
+                        "content": u"抱歉！友问币答小助手进入%s失败，请尝试再次拉入。"
+                                   % chatroom_nickname_real
+                    }
 
+                    try:
+                        status = send_ws_to_android(bot_username, info_data)
+                        if status == SUCCESS:
+                            logger.info(u"入群失败---通知任务发送成功, client_id: %s." % user_info.client_id)
+                        else:
+                            logger.info(u"入群失败---通知任务发送失败, client_id: %s." % user_info.client_id)
+                    except Exception:
+                        pass
                     # EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
                     #                          u"user_nickname: %s." % user_nickname)
                     pass

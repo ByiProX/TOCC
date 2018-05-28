@@ -129,12 +129,19 @@ class QunAvailableCheckThread(threading.Thread):
                                            where_clause=BaseModel.and_(
                                                ["=", "client_id", qun.client_id]
                                            )).username
+            try:
+                chatroomname = BaseModel.fetch_one("a_chatroom", "*",
+                                                   where_clause=BaseModel.and_(
+                                                       ["=", "chatroomname", qun.chatroomname]
+                                                   )).nickname_real
+            except AttributeError:
+                chatroomname = u"您刚刚创建的群"
 
             info_data_before_leave = {
                 "task": "send_message",
                 "to": username,
                 "type": 1,
-                "content": u"轻轻地我走了，正如我轻轻地来，挥一挥手，不带走一片云彩，我们有缘再见。"
+                "content": u"轻轻地我离开了%s，正如我轻轻地来，挥一挥手，不带走一片云彩，我们有缘再见。" % chatroomname
             }
 
             data = {
