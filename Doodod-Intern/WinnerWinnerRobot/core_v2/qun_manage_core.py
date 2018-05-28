@@ -193,10 +193,10 @@ def check_whether_message_is_add_qun(a_message):
                                                           ))
 
                     if client_qun_info.qun_count == 1 and client_qun_info.qun_count >= client_qun_info.qun_used:
-                        we_conn.send_txt_to_follower(u"恭喜！ 友问币答小助手已经进入群%s了，可立即使用啦。\n在群里发 btc 试试？"
+                        we_conn.send_txt_to_follower(u"恭喜！ 友问币答小助手已经进入%s了，可立即使用啦。\n在群里发 btc 试试？"
                                                      % chatroom_nickname_real, user_info.open_id)
                     else:
-                        we_conn.send_txt_to_follower(u"恭喜！友问币答小助手已经进入群%s了。但目前处于试用阶段，请在30分钟内联系我们客服mm激活小助手哦。"
+                        we_conn.send_txt_to_follower(u"恭喜！友问币答小助手已经进入%s了。但目前处于试用阶段，请在30分钟内联系我们客服mm激活小助手哦。"
                                                      % chatroom_nickname_real, user_info.open_id)
                     #########################
                 else:
@@ -260,7 +260,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
             uqr.chatroomname = chatroomname
             uqr.status = 1
             uqr.group_id = unicode(user_info.client_id) + u"_0"
-            uqr.create_time = datetime_to_timestamp_utc_8(datetime.now())
+            uqr.create_time = int(time.time())
             uqr.is_paid = 0 if uqr_count > 0 else 1
             uqr.save()
             logger.info(u"user与群关系已绑定. user_id: %s. chatroomname: %s." % (user_info.client_id, chatroomname))
@@ -271,7 +271,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
             uqr_exist.chatroomname = chatroomname
             uqr_exist.status = 1
             uqr_exist.group_id = unicode(user_info.client_id) + u"_0"
-            uqr_exist.create_time = datetime_to_timestamp_utc_8(datetime.now())
+            uqr_exist.create_time = int(time.time())
             uqr_exist.is_paid = 0
             uqr_exist.save()
             logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. chatroomname: %s." % chatroomname)

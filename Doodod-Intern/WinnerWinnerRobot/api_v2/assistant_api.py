@@ -41,7 +41,7 @@ def assistant_list():
         chatroomname = i.chatroomname
         this_chatroom_info = BaseModel.fetch_one('a_chatroom', '*',
                                                  BaseModel.where_dict({'chatroomname': chatroomname}))
-        if this_chatroom_info is None:
+        if this_chatroom_info is None or this_chatroom_info.memberlist is None:
             continue
         memberlist = this_chatroom_info.memberlist.split(';')
         _bot_username_list = [v for v in bot_username_list if v in memberlist]
@@ -76,14 +76,16 @@ def assistant_list():
                 today_new_chatroom_count += 1
 
             cover_user_count += (len(qun_info[1]) - 1)
-
+        # Get qrcode.
+        qr_code = _get_qr_code_base64_str(bot_username)
         temp = {
             'user_info': {
                 'username': bot_username,
                 'avatar_url': avatar_url,
                 'nickname': nickname,
                 'signature': signature,
-                'bot_nickname': bot_nickname
+                'bot_nickname': bot_nickname,
+                'qr_code': 'data:image/jpg;base64,' + qr_code if qr_code is not None else ''
             },
             'today_new_chatroom_count': today_new_chatroom_count,
             'cover_chatroom_count': cover_chatroom_count,

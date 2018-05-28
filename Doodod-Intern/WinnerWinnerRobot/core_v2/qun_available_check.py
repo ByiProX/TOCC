@@ -92,16 +92,16 @@ class QunAvailableCheckThread(threading.Thread):
 
             chatroomname = chatroomname if chatroomname else u"您刚刚创建的群"
 
-            sleep_time = 20 * 60 - (int(time.time()) - qun.create_time) \
-                if 20 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
-            # sleep_time = 60
-            time.sleep(sleep_time)
+            # sleep_time = 20 * 60 - (int(time.time()) - qun.create_time) \
+            #     if 20 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
+            # # sleep_time = 60
+            # time.sleep(sleep_time)
 
             data = {
                 "task": "send_message",
                 "to": username,
                 "type": 1,
-                "content": u"亲，30分钟快到了，我舍不得离开%s哦，您快快联系我们客户mm，激活小助手哦。" % chatroomname
+                "content": u"亲，30分钟快到了，我舍不得离开---%s---哦，您快快联系我们客户mm，激活小助手哦。" % chatroomname
             }
 
             try:
@@ -134,16 +134,8 @@ class QunAvailableCheckThread(threading.Thread):
                 "task": "send_message",
                 "to": username,
                 "type": 1,
-                "content": u"轻轻地我走了，正如我轻轻地来，挥一挥手，不带走一片云彩。"
+                "content": u"轻轻地我走了，正如我轻轻地来，挥一挥手，不带走一片云彩，我们有缘再见。"
             }
-            try:
-                status = send_ws_to_android(ubr.bot_username, info_data_before_leave)
-                if status == SUCCESS:
-                    logger.info(u"退群前通知任务发送成功, client_id: %s." % qun.client_id)
-                else:
-                    logger.info(u"退群前通知任务发送失败, client_id: %s." % qun.client_id)
-            except Exception:
-                pass
 
             data = {
                 "task": "quit_chatroom",
@@ -155,6 +147,15 @@ class QunAvailableCheckThread(threading.Thread):
 
             # sleep_time = 60
             time.sleep(sleep_time)
+
+            try:
+                status = send_ws_to_android(ubr.bot_username, info_data_before_leave)
+                if status == SUCCESS:
+                    logger.info(u"退群前通知任务发送成功, client_id: %s." % qun.client_id)
+                else:
+                    logger.info(u"退群前通知任务发送失败, client_id: %s." % qun.client_id)
+            except Exception:
+                pass
 
             try:
                 status = send_ws_to_android(ubr.bot_username, data)
