@@ -38,7 +38,7 @@ def check_is_at_bot(a_message):
                                                where_clause=BaseModel.and_(
                                                    ["=", "chatroomname", chatroomname]
                                                )).nickname_real
-        except AttributeError:
+        except Exception:
             chatroomname = u"您刚刚创建的群"
 
         info_data = {

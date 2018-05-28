@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from flask import request
 
-from configs.config import main_api_v2, SUCCESS, UserInfo, MaterialLib, Message, Contact, UserQunR
+from configs.config import main_api_v2, SUCCESS, UserInfo, MaterialLib, Message, Contact, UserQunR, UserBotR
 from core_v2.send_msg import send_ws_to_android
 from core_v2.user_core import UserLogin, _get_a_balanced_bot
 from crawler.coin_all_crawler_v2 import update_coin_all
@@ -65,9 +65,20 @@ def script():
     # uqr.create_time = datetime_to_timestamp_utc_8(datetime.now())
     # uqr.save()
 
-    ubr = BaseModel.fetch_by_id("client_bot_r", "5aed1e19f5d7e2638e2e6fbb")
-    ubr.bot_username = "wxid_6mf4yqgs528e22"
-    ubr.save()
+    # ubr = BaseModel.fetch_by_id("client_bot_r", "5aed1e19f5d7e2638e2e6fbb")
+    # ubr.bot_username = "wxid_6mf4yqgs528e22"
+    # ubr.save()
+
+    user_info_list = BaseModel.fetch_all(UserInfo, "*", BaseModel.where("!=", "username", ""))
+    for user_info in user_info_list:
+        ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+        if not ubr:
+            bot_info = _get_a_balanced_bot(user_info)
+            ubr_info = CM(UserBotR)
+            ubr_info.client_id = user_info.client_id
+            ubr_info.bot_username = bot_info.username
+            ubr_info.is_work = 1
+            ubr_info.save()
 
     return make_response(SUCCESS)
 

@@ -66,7 +66,7 @@ class QunAvailableCheckThread(threading.Thread):
                                                 ["=", "is_paid", 0],
                                                 ["=", "status", 1],
                                                 [">", "create_time", cur_time - 30 * 60],
-                                                ["<", "create_time", cur_time - 15 * 60],
+                                                ["<", "create_time", cur_time - 10 * 60],
                                             ),
                                             order_by=BaseModel.order_by({"create_time": "ASC"})
                                             )
@@ -99,6 +99,10 @@ class QunAvailableCheckThread(threading.Thread):
                 "content": u"亲，30分钟快到了，我舍不得离开---%s---哦，您快快联系我们客户mm，激活小助手哦。" % chatroomname
             }
 
+            sleep_time = 15 * 60 - (int(time.time()) - qun.create_time) \
+                if 15 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
+            time.sleep(sleep_time)
+
             try:
                 status = send_ws_to_android(ubr.bot_username, data)
                 # TODO 推送微信客服名片
@@ -114,10 +118,7 @@ class QunAvailableCheckThread(threading.Thread):
             # 减小安卓服务器压力
             # time.sleep(0.1)
 
-            sleep_time = 20 * 60 - (int(time.time()) - qun.create_time) \
-                if 20 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
-            # sleep_time = 60
-            time.sleep(sleep_time)
+            # sleep_time = 3
 
     @staticmethod
     def kick_out(quns):
@@ -134,7 +135,7 @@ class QunAvailableCheckThread(threading.Thread):
                                                    where_clause=BaseModel.and_(
                                                        ["=", "chatroomname", qun.chatroomname]
                                                    )).nickname_real
-            except AttributeError:
+            except Exception:
                 chatroomname = u"您刚刚创建的群"
 
             info_data_before_leave = {

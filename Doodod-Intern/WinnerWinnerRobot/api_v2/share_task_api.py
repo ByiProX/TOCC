@@ -436,6 +436,9 @@ def mp_member_regist(code, app_name, task_id):
             mp_member.mp_member_unique_id = mp_member.open_id[-5:] + unicode(mp_member.create_time)
             mp_member.save()
 
+            # Mark 先匹配昵称，匹配到多个则匹配头像
+            # 这里有坑，匹配到一个也不能保证是同一个人
+
             return SUCCESS, mp_member
         # 获取wechat端信息失败
         else:

@@ -405,7 +405,14 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     #     logger.info(u'但是放宽限制，暂时给予通过')
     #     # return ERR_WRONG_ITEM, None
 
-    user_info_list = CM(UserInfo).fetch_all(UserInfo, '*', where_clause = BaseModel.where_dict({"nick_name": user_nickname, "username": u""}))
+    user_info_list = CM(UserInfo).fetch_all(UserInfo, '*', where_clause = BaseModel.where_dict({"nick_name": user_nickname}))
+    for user_info in user_info_list:
+        if user_info.username == "":
+            pass
+        elif user_info.username == user_username:
+            ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id", user_info.client_id}))
+            if ubr:
+                user_info_list.remove(user_info)
     if len(user_info_list) > 1:
         logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
                      (bot_info.username, user_username))
@@ -473,7 +480,7 @@ def _get_a_balanced_bot(user_info):
     old_bot_username_list = list()
     old_user_info_list = BaseModel.fetch_all(UserInfo, "*", where_clause = BaseModel.where_dict({"nick_name": user_info.nick_name}))
     for old_user_info in old_user_info_list:
-        logger.info(u"该用户之前可能有注册信息, nick_name: %s." % user_info.nick_name)
+        logger.info(u"该用户之前可能有注册信息, nick_name: %s. client_id: %s" % (user_info.nick_name, user_info.client_id))
         ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": old_user_info.client_id}))
         if ubr:
             logger.info(u"该用户之前绑定过机器人. bot_username: %s." % ubr.bot_username)

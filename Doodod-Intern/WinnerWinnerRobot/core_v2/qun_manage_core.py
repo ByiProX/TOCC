@@ -168,8 +168,9 @@ def check_whether_message_is_add_qun(a_message):
                                                      where_clause=BaseModel.and_(
                                                          ["=", "chatroomname", a_message.talker]
                                                      )).nickname_real
-    except AttributeError:
-        chatroom_nickname_real = chatroom_nickname_real if not chatroom_nickname_real else u"您新建的群"
+
+    except Exception:
+        chatroom_nickname_real = u"您新建的群"
 
     if msg_type == MSG_TYPE_ENTERCHATROOM and content.find(u'邀请你') != -1:
         is_add_qun = True
@@ -193,8 +194,6 @@ def check_whether_message_is_add_qun(a_message):
                                                           ))
 
                     if client_qun_info.qun_count == 1 and client_qun_info.qun_count >= client_qun_info.qun_used:
-                        # we_conn.send_txt_to_follower(u"恭喜！ 友问币答小助手已经进入%s了，可立即使用啦。\n在群里发 btc 试试？"
-                        #                              % chatroom_nickname_real, user_info.open_id)
                         info_data = {
                             "task": "send_message",
                             "to": user_info.username,
@@ -213,8 +212,6 @@ def check_whether_message_is_add_qun(a_message):
                             pass
 
                     else:
-                        # we_conn.send_txt_to_follower(u"恭喜！友问币答小助手已经进入%s了。但目前处于试用阶段，请在30分钟内联系我们客服mm激活小助手哦。"
-                        #                              % chatroom_nickname_real, user_info.open_id)
                         info_data = {
                             "task": "send_message",
                             "to": user_info.username,
@@ -234,7 +231,6 @@ def check_whether_message_is_add_qun(a_message):
 
                     #########################
                 else:
-                    # we_conn.send_txt_to_follower(u"抱歉！友问币答小助手进入%s失败，请尝试再次拉入。" % chatroom_nickname_real, user_info.open_id)
                     info_data = {
                         "task": "send_message",
                         "to": user_info.username,
