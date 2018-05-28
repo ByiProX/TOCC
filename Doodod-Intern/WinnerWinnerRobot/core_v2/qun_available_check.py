@@ -92,11 +92,6 @@ class QunAvailableCheckThread(threading.Thread):
 
             chatroomname = chatroomname if chatroomname else u"您刚刚创建的群"
 
-            # sleep_time = 20 * 60 - (int(time.time()) - qun.create_time) \
-            #     if 20 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
-            # # sleep_time = 60
-            # time.sleep(sleep_time)
-
             data = {
                 "task": "send_message",
                 "to": username,
@@ -117,7 +112,12 @@ class QunAvailableCheckThread(threading.Thread):
             else:
                 logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
             # 减小安卓服务器压力
-            time.sleep(0.1)
+            # time.sleep(0.1)
+
+            sleep_time = 20 * 60 - (int(time.time()) - qun.create_time) \
+                if 20 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
+            # sleep_time = 60
+            time.sleep(sleep_time)
 
     @staticmethod
     def kick_out(quns):
@@ -156,6 +156,8 @@ class QunAvailableCheckThread(threading.Thread):
                     logger.info(u"退群前通知任务发送失败, client_id: %s." % qun.client_id)
             except Exception:
                 pass
+
+            time.sleep(2)
 
             try:
                 status = send_ws_to_android(ubr.bot_username, data)

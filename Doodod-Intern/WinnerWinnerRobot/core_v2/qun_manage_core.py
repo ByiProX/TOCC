@@ -163,13 +163,12 @@ def check_whether_message_is_add_qun(a_message):
     content = str_to_unicode(a_message.content)
 
     # add by quentin
-
-    chatroom_nickname_real = BaseModel.fetch_one("a_chatroom", "*",
-                                                 where_clause=BaseModel.and_(
-                                                     ["=", "chatroomname", a_message.talker]
-                                                 )).nickname_real
-
-    if not chatroom_nickname_real:
+    try:
+        chatroom_nickname_real = BaseModel.fetch_one("a_chatroom", "*",
+                                                     where_clause=BaseModel.and_(
+                                                         ["=", "chatroomname", a_message.talker]
+                                                     )).nickname_real
+    except AttributeError:
         chatroom_nickname_real = u"您新建的群"
 
     if msg_type == MSG_TYPE_ENTERCHATROOM and content.find(u'邀请你') != -1:
@@ -200,7 +199,7 @@ def check_whether_message_is_add_qun(a_message):
                                                      % chatroom_nickname_real, user_info.open_id)
                     #########################
                 else:
-                    we_conn.send_txt_to_follower(u"抱歉！友问币答小助手进群%s失败，请尝试再次拉入。" % chatroom_nickname_real, user_info.open_id)
+                    we_conn.send_txt_to_follower(u"抱歉！友问币答小助手进入%s失败，请尝试再次拉入。" % chatroom_nickname_real, user_info.open_id)
 
                     # EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
                     #                          u"user_nickname: %s." % user_nickname)
