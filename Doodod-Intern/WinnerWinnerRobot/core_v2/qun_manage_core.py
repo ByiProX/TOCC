@@ -168,10 +168,12 @@ def check_whether_message_is_add_qun(a_message):
                                                      where_clause=BaseModel.and_(
                                                          ["=", "chatroomname", a_message.talker]
                                                      )).nickname_real
-
+        if not chatroom_nickname_real:
+            chatroom_nickname_real = u"您新建的群"
     except Exception:
         chatroom_nickname_real = u"您新建的群"
 
+    ###################
     if msg_type == MSG_TYPE_ENTERCHATROOM and content.find(u'邀请你') != -1:
         is_add_qun = True
         status, invitor_username, user_nickname = extract_enter_chatroom_msg(content)

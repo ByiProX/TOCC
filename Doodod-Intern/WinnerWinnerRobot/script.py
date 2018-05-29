@@ -63,8 +63,8 @@ logger = logging.getLogger('main')
 #     print '---'
 #
 # db.session.commit()
-from models.qun_friend_models import UserQunBotRelateInfo, UserQunRelateInfo, GroupInfo
-from models.user_bot_models import UserBotRelateInfo, BotInfo, UserInfo
+# from models.qun_friend_models import UserQunBotRelateInfo, UserQunRelateInfo, GroupInfo
+# from models.user_bot_models import UserBotRelateInfo, BotInfo, UserInfo
 
 from utils.u_time import get_today_0, datetime_to_timestamp_utc_8
 
@@ -347,8 +347,11 @@ def test_msg(message_list):
 
 if __name__ == '__main__':
     BaseModel.extract_from_json()
-    username_list = ["wxid_u391xytt57gc21"] * 500
-    a_contact = BaseModel.fetch_all("a_contact", "*", BaseModel.where("in", "username", username_list))
+    a_contact_list = BaseModel.fetch_all(Contact, "*", where_clause = BaseModel.where("like", "nickname", "阿凯哥哥"))
+    for a_contact in a_contact_list:
+        print a_contact.username
+    # username_list = ["wxid_u391xytt57gc21"] * 500
+    # a_contact = BaseModel.fetch_all("a_contact", "*", BaseModel.where("in", "username", username_list))
     # update_coin_all()
     # BaseModel.fetch_all('sensitive_message_log', '*',
     #                     BaseModel.and_([">", "create_time", 1524733303],
@@ -525,15 +528,15 @@ if __name__ == '__main__':
     # #     msg_json = model_to_dict(message, message.__class__)
     # #     msg_json["bot_username"] = msg_json["username"]
     # #     response = requests.post("http://127.0.0.1:5505/yaca_api_v2/android/new_message", json = msg_json)
-    pass
-    client_id = 11
-    send_time = 10
-
-    a = BaseModel.fetch_all("batch_sending_task",
-                            where_clause=BaseModel.and_(
-                                ["=", "client_id", client_id],
-                                ["<", "send_time", int(time.time())+5*60]),
-                            order_by=BaseModel.order_by({"send_time": "DESC"}))
+    # pass
+    # client_id = 11
+    # send_time = 10
+    #
+    # a = BaseModel.fetch_all("batch_sending_task",
+    #                         where_clause=BaseModel.and_(
+    #                             ["=", "client_id", client_id],
+    #                             ["<", "send_time", int(time.time())+5*60]),
+    #                         order_by=BaseModel.order_by({"send_time": "DESC"}))
 
 
 pass

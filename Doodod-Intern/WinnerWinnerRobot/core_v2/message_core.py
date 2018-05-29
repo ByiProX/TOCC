@@ -212,7 +212,7 @@ def extract_msg_be_at(msg, chatroomname):
                     name_be_at = name_be_at.replace(u'\u2005', u' ')
                 logger.debug(u'nick_name_be_at: ' + name_be_at)
                 member_be_at = fetch_member_by_nickname(chatroomname=chatroomname,
-                                                        nickname=name_be_at)
+                                                        nickname=name_be_at,update_flag = False)
                 # 匹配到 member
                 if member_be_at:
                     logger.info(u'member_be_at ' + unicode(member_be_at))
@@ -380,12 +380,16 @@ def fetch_member_by_nickname(chatroomname, nickname, update_flag=True):
             if member.get("displayname") == nickname:
                 return member.get("username")
         member_usernames = [member.get("username") for member in members]
-        a_contact_list = BaseModel.fetch_all(Contact, ["username", "nickname"],
-                                             where_clause=BaseModel.where("in", "username", member_usernames))
+        a_contact_list = BaseModel.fetch_all(Contact, "*", where_clause = BaseModel.where_dict({"nickname": nickname}))
         for a_contact in a_contact_list:
-            # Mark 不处理匹配到多个的情况
-            if a_contact.nickname == nickname:
+            if a_contact.username in member_usernames:
                 return a_contact.username
+        # a_contact_list = BaseModel.fetch_all(Contact, ["username", "nickname"],
+        #                                      where_clause=BaseModel.where("in", "username", member_usernames))
+        # for a_contact in a_contact_list:
+        #     # Mark 不处理匹配到多个的情况
+        #     if a_contact.nickname == nickname:
+        #         return a_contact.username
 
     if update_flag:
         update_members(chatroomname)
