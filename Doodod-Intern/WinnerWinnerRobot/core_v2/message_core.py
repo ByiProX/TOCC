@@ -15,10 +15,10 @@ from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, NEW_MSG_Q, \
     MSG_TYPE_ENTERCHATROOM, SUCCESS, ERR_UNKNOWN_ERROR, CONTENT_TYPE_ENTERCHATROOM, \
     GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, GLOBAL_EMPLOYEE_PEOPLE_FLAG, ANDROID_SERVER_URL_SEND_MESSAGE, \
-    ANDROID_SERVER_URL,ANDROID_SERVER_URL_BOT_STATUS
+    ANDROID_SERVER_URL, ANDROID_SERVER_URL_BOT_STATUS
 from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core_v2.matching_rule_core import get_gm_default_rule_dict, match_message_by_rule, get_gm_rule_dict
-from core_v2.real_time_quotes_core import match_message_by_coin_keyword
+from core_v2.real_time_quotes_core import match_message_by_coin_keyword, match_general_message
 from core_v2.redis_core import rds_lpush
 from core_v2.coin_wallet_core import check_whether_message_is_a_coin_wallet
 from models_v2.base_model import BaseModel, CM
@@ -134,7 +134,12 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
     if coin_price_status is True:
         return
 
-    return
+    # add by quentin
+    # 非以上特殊内容的自动回复,即对普通内容的自动回复
+    status = match_general_message(a_message)
+    if status:
+        return
+    ###########
 
 
 def count_msg(msg):
@@ -212,7 +217,7 @@ def extract_msg_be_at(msg, chatroomname):
                     name_be_at = name_be_at.replace(u'\u2005', u' ')
                 logger.debug(u'nick_name_be_at: ' + name_be_at)
                 member_be_at = fetch_member_by_nickname(chatroomname=chatroomname,
-                                                        nickname=name_be_at,update_flag = False)
+                                                        nickname=name_be_at, update_flag=False)
                 # 匹配到 member
                 if member_be_at:
                     logger.info(u'member_be_at ' + unicode(member_be_at))
@@ -380,7 +385,7 @@ def fetch_member_by_nickname(chatroomname, nickname, update_flag=True):
             if member.get("displayname") == nickname:
                 return member.get("username")
         member_usernames = [member.get("username") for member in members]
-        a_contact_list = BaseModel.fetch_all(Contact, "*", where_clause = BaseModel.where_dict({"nickname": nickname}))
+        a_contact_list = BaseModel.fetch_all(Contact, "*", where_clause=BaseModel.where_dict({"nickname": nickname}))
         for a_contact in a_contact_list:
             if a_contact.username in member_usernames:
                 return a_contact.username
@@ -516,7 +521,7 @@ def update_employee_people_list():
             continue
         man_nickname = man_info.nickname
         if EMPLOYEE_PEOPLE_BE_AT_RULE_DICT.get(u'@' + man_nickname) is None:
-            EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[u'@' + man_nickname] = [[man_username, man.by_client_id],]
+            EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[u'@' + man_nickname] = [[man_username, man.by_client_id], ]
         else:
             EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[u'@' + man_nickname].append([man_username, man.by_client_id])
 
@@ -621,7 +626,7 @@ def check_or_add_at_log(a_message):
     real_content = a_message.real_content
     at_rule_list = EMPLOYEE_PEOPLE_BE_AT_RULE_DICT.keys()
     for i in at_rule_list:
-        if i in real_content:
+        if i + u' ' in real_content:
             for j in EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[i]:
                 print('At log:', j, real_content)
                 username = j[0]

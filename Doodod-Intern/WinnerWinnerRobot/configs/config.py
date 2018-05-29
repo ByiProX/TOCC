@@ -465,6 +465,8 @@ NEW_MSG_Q = Queue()
 SIGN_DICT = dict()
 SENSITIVE_WORD_RULE_DICT = dict()
 
+TURING_API_URL = u"http://www.tuling123.com/openapi/api"
+
 ANDROID_SERVER_URL_BOT_STATUS = u"http://ardsvr.ixuanren.com/android/bot_status"
 ANDROID_SERVER_URL_SEND_MASS_MESSAGE = u"http://ardsvr.ixuanren.com/android/send_mass_message"
 ANDROID_SERVER_URL_SEND_MESSAGE = u"http://ardsvr.ixuanren.com/android/send_message"
@@ -525,10 +527,10 @@ URL_TYPE_AD_IFRAM = 1
 URL_TYPE_AD_DIRECT = 2
 
 
-SHARE_TASK_ORDER = ["", "create_time", "click_uv", "click_pv", "share_uv", "share_pv"]
-# SHARE_TASK_CLICK_UV = 1
-# SHARE_TASK_CLICK_PV = 2
-# SHARE_TASK_SHARE_UV = 3
-# SHARE_TASK_SHARE_PV = 4
+SHARE_TASK_ORDER = ["", "create_time", "clicked_uv", "clicked_pv", "shared_uv", "shared_pv"]
+# SHARE_TASK_CLICKED_UV = 1
+# SHARE_TASK_CLICKED_PV = 2
+# SHARE_TASK_SHARED_UV = 3
+# SHARE_TASK_SHARED_PV = 4
 
-DES_SECRET = "multiof8"
+DES_SECRET = "multiple"

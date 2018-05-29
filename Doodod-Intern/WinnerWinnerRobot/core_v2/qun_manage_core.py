@@ -94,13 +94,41 @@ def get_chatroom_dict(chatroomname):
     chatroom = BaseModel.fetch_one(Chatroom, "*",
                                    where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
     chatroom_dict = dict()
-    chatroom_dict['chatroom_id'] = chatroom.get_id()
-    chatroom_dict['chatroom_nickname'] = chatroom.nickname_real
-    if chatroom.nickname_real == "":
-        chatroom_dict['chatroom_nickname'] = chatroom.nickname_default
+
+    try:
+        chatroom_id = chatroom.get_id()
+    except AttributeError:
+        chatroom_id = None
+    chatroom_dict['chatroom_id'] = chatroom_id
+
+    try:
+        chatroom_nickname = chatroom.nickname_real
+    except AttributeError:
+        chatroom_nickname = None
+    chatroom_dict['chatroom_nickname'] = chatroom_nickname
+
+    try:
+        nickname_real = chatroom.nickname_real
+        if not nickname_real:
+            nickname_real = chatroom.nickname_default
+    except AttributeError:
+        nickname_real = None
+    chatroom_dict['chatroom_nickname'] = nickname_real
+
     chatroom_dict['chatroomname'] = chatroomname
-    chatroom_dict['chatroom_member_count'] = chatroom.member_count
-    chatroom_dict['avatar_url'] = chatroom.avatar_url
+
+    try:
+        chatroom_member_count = chatroom.member_count
+    except AttributeError:
+        chatroom_member_count = None
+    chatroom_dict['chatroom_member_count'] = chatroom_member_count
+
+    try:
+        avatar_url = chatroom.avatar_url
+    except AttributeError:
+        avatar_url = None
+    chatroom_dict['avatar_url'] = avatar_url
+
     chatroom_dict['chatroom_status'] = 0
 
     return chatroom_dict

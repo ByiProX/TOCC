@@ -31,11 +31,14 @@ def get_group_zone_list():
             chatroom_info = BaseModel.fetch_all("a_chatroom", "*",
                                                 where_clause=BaseModel.where_dict(
                                                     {"chatroomname": client_qun.get('chatroomname')}))[0]
-            client_qun.update(chatroom_info.to_json_full())
+
+            if chatroom_info:
+                client_qun.update(chatroom_info.to_json_full())
+
+        return make_response(SUCCESS, client_quns_list=client_quns)
+
     except Exception:
         return make_response(ERR_WRONG_ITEM)
-
-    return make_response(SUCCESS, client_quns_list=client_quns)
 
 
 @main_api_v2.route("/count_sources", methods=['POST'])
@@ -84,7 +87,8 @@ def get_group_zone_sources():
     try:
         client_quns = BaseModel.fetch_all("client_qun_r", "*",
                                           where_clause=BaseModel.where_dict({"client_id": client_id}))
-    except Exception:
+    except Exception as e:
+        print e
         return make_response(ERR_WRONG_ITEM)
 
     if not talker:
@@ -149,25 +153,28 @@ def get_group_zone_sources():
 
     try:
         for source in sources:
-            chatroom_info = BaseModel.fetch_all('a_chatroom', ['avatar_url', 'chatroomname',
+            chatroom_info = BaseModel.fetch_one('a_chatroom', ['avatar_url', 'chatroomname',
                                                                'nickname', 'nickname_real',
                                                                'member_count'],
                                                 where_clause=BaseModel.where_dict(
                                                     {"chatroomname": source.get("talker")}
-                                                ))[0]
-            source["chatroom_info"] = chatroom_info.to_json()
+                                                ))
+            if chatroom_info:
+                source["chatroom_info"] = chatroom_info.to_json()
 
-            client_info = BaseModel.fetch_all('a_contact', ['avatar_url', 'nickname', 'username'],
-                                              where_clause=BaseModel.where_dict(
-                                                  {"username": source.get("real_talker")}
-                                              ))[0]
+                client_info = BaseModel.fetch_one('a_contact', ['avatar_url', 'nickname', 'username'],
+                                                  where_clause=BaseModel.where_dict(
+                                                      {"username": source.get("real_talker")}
+                                                  ))
 
-            source["client_info"] = client_info.to_json()
+                if client_info:
+                    source["client_info"] = client_info.to_json()
 
         # print '::::::::::::::::::::::::::::bb'
         # print sources
         return make_response(SUCCESS, sources=sources, total_count=total_count)
-    except Exception:
+    except Exception as e:
+        print e
         return make_response(ERR_WRONG_ITEM)
 
 

@@ -239,8 +239,8 @@ def employee_record():
             at_msg = BaseModel.fetch_by_id('a_message', log.a_message_id)
             speaker_username = at_msg.real_talker
             speaker_info = BaseModel.fetch_one('a_contact', '*', BaseModel.where_dict({'username': speaker_username}))
-            speaker_avatar_url = speaker_info.avatar_url
-            speaker_nickname = speaker_info.nickname
+            speaker_avatar_url = speaker_info.avatar_url if speaker_info is not None and speaker_info.avatar_url is not None else ''
+            speaker_nickname = speaker_info.nickname if speaker_info is not None and speaker_info.nickname is not None else ''
             _temp = {
                 'chatroom_info': {
                     'chatroom_name': chatroomname,

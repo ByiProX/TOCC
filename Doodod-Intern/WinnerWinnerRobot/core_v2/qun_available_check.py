@@ -84,13 +84,15 @@ class QunAvailableCheckThread(threading.Thread):
                                            where_clause=BaseModel.and_(
                                                ["=", "client_id", qun.client_id]
                                            )).username
+            try:
+                chatroomname = BaseModel.fetch_one("a_chatroom", "*",
+                                                   where_clause=BaseModel.and_(
+                                                       ["=", "chatroomname", qun.chatroomname]
+                                                   )).nickname_real
 
-            chatroomname = BaseModel.fetch_one("a_chatroom", "*",
-                                               where_clause=BaseModel.and_(
-                                                   ["=", "chatroomname", qun.chatroomname]
-                                               )).nickname_real
-
-            chatroomname = chatroomname if chatroomname else u"您刚刚创建的群"
+                chatroomname = chatroomname if chatroomname else u"您刚刚创建的群"
+            except Exception:
+                chatroomname = u"您刚刚创建的群"
 
             data = {
                 "task": "send_message",
@@ -135,6 +137,8 @@ class QunAvailableCheckThread(threading.Thread):
                                                    where_clause=BaseModel.and_(
                                                        ["=", "chatroomname", qun.chatroomname]
                                                    )).nickname_real
+
+                chatroomname = chatroomname if chatroomname else u"您刚刚创建的群"
             except Exception:
                 chatroomname = u"您刚刚创建的群"
 

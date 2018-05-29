@@ -410,7 +410,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
         if user_info.username == "":
             pass
         elif user_info.username == user_username:
-            ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id", user_info.client_id}))
+            ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
             if ubr:
                 user_info_list.remove(user_info)
     if len(user_info_list) > 1:

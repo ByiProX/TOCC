@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import requests
 
 from datetime import datetime
 
@@ -11,6 +12,7 @@ from configs.config import db, SUCCESS, ERR_WRONG_ITEM, CONSUMPTION_TASK_TYPE, T
 from core_v2.send_msg import send_msg_to_android
 from models_v2.base_model import BaseModel
 from utils.u_transformat import str_to_unicode, trim_str
+from configs.config import TURING_API_URL
 
 logger = logging.getLogger('main')
 
@@ -36,16 +38,16 @@ def switch_func_real_time_quotes(user_info, switch):
 def get_rt_quotes_list_and_status(user_info, per_page, page_number):
     # FIXME 此处应按照个人读取，而不应该所有人读取相同的结果
     # 因为目前进度比较急，所以直接读取全部人的结果
-    ds_info_list = BaseModel.fetch_all(Coin, ["coin_id", "coin_name", "coin_icon"], where_clause = BaseModel.where_dict({"is_integral": 1}), order_by = BaseModel.order_by({"marketcap": "desc"}), page = page_number, pagesize = per_page)
+    ds_info_list = BaseModel.fetch_all(Coin, "*", where_clause = BaseModel.where_dict({"is_integral": 1}), order_by = BaseModel.order_by({"rank": "asc"}), page = page_number, pagesize = per_page)
 
     ds_info_count = BaseModel.count(Coin, where_clause = BaseModel.where_dict({"is_integral": 1}))
 
     res = []
     for ds_info in ds_info_list:
-        res_dict = {}
-        res_dict.setdefault("coin_id", ds_info.coin_id)
-        res_dict.setdefault("coin_name", ds_info.coin_name)
-        res_dict.setdefault("logo", ds_info.coin_icon)
+        res_dict = ds_info.to_json_full()
+        # res_dict.setdefault("coin_id", ds_info.coin_id)
+        # res_dict.setdefault("coin_name", ds_info.coin_name)
+        # res_dict.setdefault("logo", ds_info.coin_icon)
         res.append(res_dict)
     user_switch = BaseModel.fetch_one(UserSwitch, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
     return SUCCESS, res, user_switch.func_real_time_quotes, ds_info_count
@@ -152,6 +154,45 @@ def match_message_by_coin_keyword(gm_default_rule_dict, a_message):
 
     return is_match_coin_keyword
 
+
+# add by quentin
+def match_general_message(a_message):
+    bot_username = a_message.bot_username
+    chatroomname = a_message.talker
+    real_content = str_to_unicode(a_message.real_content)
+    real_talker = a_message.real_talker
+
+    url = TURING_API_URL
+    data = dict()
+    data.setdefault("key", u"30bed3b370d443ccba7b468d1508ca06")
+    data.setdefault("info", real_content)
+    data.setdefault("username", real_talker)
+    data.setdefault("loc", u"北京市海淀区")
+    response = requests.post(url=url, json=data)
+
+    print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    logger.info(response.content)
+    print "_______________________________"
+
+    if response.status_code == 200:
+        response_json = json.loads(response.content)
+    else:
+        return False
+
+    resp_content = response_json.get('text')
+
+    message_json = dict()
+    message_json["type"] = MSG_TYPE_TXT
+    message_json["content"] = resp_content
+    message_json["seq"] = 0
+    message_list = [message_json]
+    to_list = [chatroomname]
+    status = send_msg_to_android(bot_username, message_list, to_list)
+
+    if status == SUCCESS:
+        return True
+
+###########
 
 # def activate_rule_and_add_task_to_consumption_task(coin_id, message_chatroomname, message_said_username):
 #     ds_info = db.session.query(Coin).filter(

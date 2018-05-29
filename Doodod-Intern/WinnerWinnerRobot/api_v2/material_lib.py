@@ -47,7 +47,7 @@ def get_material_lib_list():
 
     try:
         for material in materials:
-            message_info = BaseModel.fetch_all('a_message',
+            message_info = BaseModel.fetch_one('a_message',
                                                ["source_url", "img_path",
                                                 "thumb_url", "title",
                                                 "desc", "size",
@@ -55,11 +55,13 @@ def get_material_lib_list():
                                                where_clause=BaseModel.and_(
                                                    ["=", "msg_id", material.get("msg_id")],
                                                    ["not", "title", None]
-                                               ))[0]
-            material.update(message_info.to_json())
+                                               ))
+            if message_info:
+                material.update(message_info.to_json())
 
         return make_response(SUCCESS, materials=materials)
     except Exception as e:
+        print e
         return make_response(ERR_WRONG_ITEM)
 
 
