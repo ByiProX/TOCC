@@ -16,8 +16,12 @@ from core_v2.wechat_core import WechatConn, wechat_conn_dict
 from models_v2.base_model import BaseModel, CM
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
+from core_v2.send_msg import send_ws_to_android
 
 from core_v2.qun_message_check import check_is_at_bot
+from share_task_api import api_upload_oss, allowed_file, secure_filename
+from unicodedata import normalize
+from utils.u_upload_oss import put_file_to_oss
 
 logger = logging.getLogger('main')
 
@@ -144,3 +148,57 @@ def android_get_bot_list():
         bot_list.append(bot_info_json)
 
     return make_response(SUCCESS, bot_info_list=bot_list)
+
+@main_api_v2.route("/android/modify_bot_nickname", methods=['POST'])
+def modify_bot_nickname():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+    
+    bot_username = request.json.get('bot_username')
+    new_nickname = request.json.get('new_nickname')
+    data = {
+        "task": "update_nickname",
+        "new_nickname": new_nickname
+    }
+    try:
+        status = send_ws_to_android(bot_username, data)
+        if status == SUCCESS:
+            logger.info(u"更改%s名字成功, 新名字为: %s." % (bot_username, new_nickname))
+        else:
+            logger.info(u"更改%s名字失败." % bot_username)
+    except Exception:
+        pass
+    return make_response(status)
+
+@main_api_v2.route("/android/modify_bot_avatar", methods=['POST'])
+def modify_bot_avatar():
+    status, user_info = UserLogin.verify_token(request.form.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    upload_file = request.files['file']
+    logger.info('upload filename: ' + upload_file.filename)
+    if not upload_file or not allowed_file(upload_file.filename):
+        return make_response(ERR_NOT_ALLOWED_EXTENSION)
+
+    filename = str(user_info.client_id) + '_' + secure_filename(normalize('NFKD', upload_file.filename).encode('utf-8', 'ignore').decode('utf-8'))
+    oss_url = put_file_to_oss(filename, data = upload_file.stream._file)
+
+    bot_username = request.form.get('bot_username')
+    logger.info("头像url为%s"%oss_url)
+    data = {
+        "task": "update_avatar",
+        "new_avatar_url": oss_url,
+        "filename": oss_url.split('/')[-1]
+    }
+    try:
+        status = send_ws_to_android(bot_username, data)
+        if status == SUCCESS:
+            logger.info(u"更改%s头像成功." % bot_username)
+        else:
+            logger.info(u"更改%s头像失败." % bot_username)
+    except Exception:
+        pass
+    return make_response(status, oss_url = oss_url)

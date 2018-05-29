@@ -9,11 +9,15 @@ from core_v2.user_core import UserLogin, _get_a_balanced_bot, _get_qr_code_base6
 from models_v2.base_model import *
 from utils.z_utils import *
 
+# "client_id" : "bot_username"
+user_already_get_bot = {}
+
 
 @main_api_v2.route('/assistant_list', methods=["POST"])
 @para_check('token')
 def assistant_list():
     # Check client or return.
+    global user_already_get_bot
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     try:
         client_id = user_info.client_id
@@ -24,8 +28,12 @@ def assistant_list():
 
     # If this client no bot, return one.
     if not bot_list:
+        if client_id in user_already_get_bot:
+            return response({'err_code': 11, 'qrcode': 'data:image/jpg;base64,' + _get_qr_code_base64_str(
+                user_already_get_bot[client_id])})
         bot_info = _get_a_balanced_bot(user_info)
         bot_username = bot_info.username
+        user_already_get_bot[client_id] = bot_username
         return response({'err_code': 11, 'qrcode': 'data:image/jpg;base64,' + _get_qr_code_base64_str(bot_username)})
 
     bot_username_list = [i.bot_username for i in bot_list]

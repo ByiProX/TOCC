@@ -135,8 +135,8 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
         return
 
     # add by quentin
-    # 非以上特殊内容的自动回复,即对普通内容的自动回复
-    status = match_general_message(a_message)
+    # 非以上特殊内容的自动回复,即对普通内容的自动回复，目前设置为不回复
+    status = match_general_message(a_message, reply=False)
     if status:
         return
     ###########

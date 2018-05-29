@@ -466,7 +466,7 @@ def api_get_statistic_list():
     pagesize = request.json.get("pagesize", DEFAULT_PAGE_SIZE)
     order_by = request.json.get("order_by", 1)
     order_by = SHARE_TASK_ORDER[order_by]
-    order = "decs"
+    order = "desc"
 
     total_count = BaseModel.count(StatisticsShareTask, where_clause = BaseModel.where_dict({"task_id": task_id}))
     statistic_list = BaseModel.fetch_all(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"task_id": task_id}), page = page, pagesize = pagesize, order_by = BaseModel.order_by({order_by: order}))

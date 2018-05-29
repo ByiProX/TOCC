@@ -156,42 +156,43 @@ def match_message_by_coin_keyword(gm_default_rule_dict, a_message):
 
 
 # add by quentin
-def match_general_message(a_message):
-    bot_username = a_message.bot_username
-    chatroomname = a_message.talker
-    real_content = str_to_unicode(a_message.real_content)
-    real_talker = a_message.real_talker
+def match_general_message(a_message, reply=True):
+    if reply:
+        bot_username = a_message.bot_username
+        chatroomname = a_message.talker
+        real_content = str_to_unicode(a_message.real_content)
+        real_talker = a_message.real_talker
 
-    url = TURING_API_URL
-    data = dict()
-    data.setdefault("key", u"30bed3b370d443ccba7b468d1508ca06")
-    data.setdefault("info", real_content)
-    data.setdefault("username", real_talker)
-    data.setdefault("loc", u"北京市海淀区")
-    response = requests.post(url=url, json=data)
+        url = TURING_API_URL
+        data = dict()
+        data.setdefault("key", u"30bed3b370d443ccba7b468d1508ca06")
+        data.setdefault("info", real_content)
+        data.setdefault("username", real_talker)
+        data.setdefault("loc", u"北京市海淀区")
+        response = requests.post(url=url, json=data)
 
-    print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    logger.info(response.content)
-    print "_______________________________"
+        print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        logger.info(response.content)
+        print "_______________________________"
 
-    if response.status_code == 200:
-        response_json = json.loads(response.content)
-    else:
-        return False
+        if response.status_code == 200:
+            response_json = json.loads(response.content)
+        else:
+            return False
 
-    resp_content = response_json.get('text')
+        resp_content = response_json.get('text')
 
-    message_json = dict()
-    message_json["type"] = MSG_TYPE_TXT
-    message_json["content"] = resp_content
-    message_json["seq"] = 0
-    message_list = [message_json]
-    to_list = [chatroomname]
-    status = send_msg_to_android(bot_username, message_list, to_list)
+        message_json = dict()
+        message_json["type"] = MSG_TYPE_TXT
+        message_json["content"] = resp_content
+        message_json["seq"] = 0
+        message_list = [message_json]
+        to_list = [chatroomname]
+        status = send_msg_to_android(bot_username, message_list, to_list)
 
-    if status == SUCCESS:
-        return True
-
+        if status == SUCCESS:
+            return True
+    return
 ###########
 
 # def activate_rule_and_add_task_to_consumption_task(coin_id, message_chatroomname, message_said_username):
