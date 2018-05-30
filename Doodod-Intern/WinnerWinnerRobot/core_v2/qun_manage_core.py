@@ -185,6 +185,7 @@ def check_whether_message_is_add_qun(a_message):
     """
     根据一条Message，返回是否为加群，如果是，则完成加群动作
     :return:
+    重复代码较多，有时间重构一下吧 by quentin
     """
     is_add_qun = False
     msg_type = a_message.type
@@ -197,10 +198,11 @@ def check_whether_message_is_add_qun(a_message):
                                                          ["=", "chatroomname", a_message.talker]
                                                      )).nickname_real
         if not chatroom_nickname_real:
-            chatroom_nickname_real = u"您新建的群"
+            chatroom_nickname_real = u"您的群聊"
     except Exception:
-        chatroom_nickname_real = u"您新建的群"
+        chatroom_nickname_real = u"您的群聊"
 
+    chatroom_nickname_real = chatroom_nickname_real if chatroom_nickname_real == u"您的群聊" else u'<' + chatroom_nickname_real + u'>'
     ###################
     if msg_type == MSG_TYPE_ENTERCHATROOM and content.find(u'邀请你') != -1:
         is_add_qun = True
@@ -228,8 +230,7 @@ def check_whether_message_is_add_qun(a_message):
                             "task": "send_message",
                             "to": user_info.username,
                             "type": 1,
-                            "content": u"恭喜！ 友问币答小助手已经进入%s了，可立即使用啦。\n在群里发 btc 试试？"
-                                       % chatroom_nickname_real
+                            "content": u"恭喜！ 友问币答小助手已经进入%s了，可立即使用啦。\n在群里发 btc 试试？" % chatroom_nickname_real
                         }
 
                         try:
@@ -242,13 +243,20 @@ def check_whether_message_is_add_qun(a_message):
                             pass
 
                     else:
-                        info_data = {
-                            "task": "send_message",
-                            "to": user_info.username,
-                            "type": 1,
-                            "content": u"恭喜！友问币答小助手已经进入%s了。但目前处于试用阶段，请在30分钟内联系我们客服mm激活小助手哦。"
-                                       % chatroom_nickname_real
-                        }
+                        if client_qun_info.qun_count >= client_qun_info.qun_used:
+                            info_data = {
+                                "task": "send_message",
+                                "to": user_info.username,
+                                "type": 1,
+                                "content": u"恭喜！友问币答小助手已经进入%s了, 可立即使用。" % chatroom_nickname_real
+                            }
+                        else:
+                            info_data = {
+                                "task": "send_message",
+                                "to": user_info.username,
+                                "type": 1,
+                                "content": u"恭喜！友问币答小助手已经进入%s了。但目前处于试用阶段，请在30分钟内联系我们客服mm激活小助手哦。" % chatroom_nickname_real
+                            }
 
                         try:
                             status = send_ws_to_android(bot_username, info_data)
@@ -265,8 +273,7 @@ def check_whether_message_is_add_qun(a_message):
                         "task": "send_message",
                         "to": user_info.username,
                         "type": 1,
-                        "content": u"抱歉！友问币答小助手进入%s失败，请尝试再次拉入。"
-                                   % chatroom_nickname_real
+                        "content": u"抱歉！友问币答小助手进入%s失败，请尝试再次拉入。" % chatroom_nickname_real
                     }
 
                     try:

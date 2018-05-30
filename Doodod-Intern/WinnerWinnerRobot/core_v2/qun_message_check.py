@@ -39,10 +39,11 @@ def check_is_at_bot(a_message):
                                                    ["=", "chatroomname", chatroomname]
                                                )).nickname_real
             if not chatroomname:
-                chatroomname = u"您刚刚创建的群"
+                chatroomname = u"您的群聊"
         except Exception:
-            chatroomname = u"您刚刚创建的群"
+            chatroomname = u"您的群聊"
 
+        chatroomname = chatroomname if chatroomname == u"您的群聊" else u'<' + chatroomname + u'>'
         info_data = {
             "task": "send_message",
             "to": a_message.real_talker,

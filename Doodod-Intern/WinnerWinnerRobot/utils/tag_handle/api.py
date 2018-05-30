@@ -16,13 +16,15 @@ func_config = {
     10: (True, 'group_zone'),  # 群空间
     11: (True, 'employee'),  # 业务员监控 # 尚层
     12: (True, 'assistant'),  # 小助手管理
+    13: (True, 'share_task'),  # 链接追踪
 }
 
 
 class Tag:
     default_config = {
-        'yaca': [3, 4, 5, 6, 7, 8, 9, 10, 12],
-        'zidou': [4, 5, 7, 8, 9, 10, 12]
+        'yaca': [3, 4, 5, 6, 7, 8, 9, 10, 12, 13],
+        'zidou': [4, 5, 7, 8, 9, 10, 12, 13],
+        'test': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     }
 
     def __init__(self, bitmap=0):
@@ -117,4 +119,3 @@ class Tag:
 
     def __iter__(self):
         return (i for i in self.get_open_name_list())
-

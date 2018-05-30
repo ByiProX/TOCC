@@ -90,15 +90,16 @@ class QunAvailableCheckThread(threading.Thread):
                                                        ["=", "chatroomname", qun.chatroomname]
                                                    )).nickname_real
 
-                chatroomname = chatroomname if chatroomname else u"您刚刚创建的群"
+                chatroomname = chatroomname if chatroomname else u"您的群聊"
             except Exception:
-                chatroomname = u"您刚刚创建的群"
+                chatroomname = u"您的群聊"
 
+            chatroomname = chatroomname if chatroomname == u"您的群聊" else u'<' + chatroomname + u'>'
             data = {
                 "task": "send_message",
                 "to": username,
                 "type": 1,
-                "content": u"亲，30分钟快到了，我舍不得离开---%s---哦，您快快联系我们客户mm，激活小助手哦。" % chatroomname
+                "content": u"亲，30分钟快到了，我舍不得离开%s哦，您快快联系我们客户mm，激活小助手哦。" % chatroomname
             }
 
             sleep_time = 15 * 60 - (int(time.time()) - qun.create_time) \
@@ -138,10 +139,11 @@ class QunAvailableCheckThread(threading.Thread):
                                                        ["=", "chatroomname", qun.chatroomname]
                                                    )).nickname_real
 
-                chatroomname = chatroomname if chatroomname else u"您刚刚创建的群"
+                chatroomname = chatroomname if chatroomname else u"您的群聊"
             except Exception:
-                chatroomname = u"您刚刚创建的群"
+                chatroomname = u"您的群聊"
 
+            chatroomname = chatroomname if chatroomname == u"您的群聊" else u'<' + chatroomname + u'>'
             info_data_before_leave = {
                 "task": "send_message",
                 "to": username,

@@ -69,16 +69,23 @@ def script():
     # ubr.bot_username = "wxid_6mf4yqgs528e22"
     # ubr.save()
 
-    user_info_list = BaseModel.fetch_all(UserInfo, "*", BaseModel.where("!=", "username", ""))
-    for user_info in user_info_list:
-        ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
-        if not ubr:
-            bot_info = _get_a_balanced_bot(user_info)
-            ubr_info = CM(UserBotR)
-            ubr_info.client_id = user_info.client_id
-            ubr_info.bot_username = bot_info.username
-            ubr_info.is_work = 1
-            ubr_info.save()
+    # user_info_list = BaseModel.fetch_all(UserInfo, "*", BaseModel.where("!=", "username", ""))
+    # for user_info in user_info_list:
+    #     ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+    #     if not ubr:
+    #         bot_info = _get_a_balanced_bot(user_info)
+    #         ubr_info = CM(UserBotR)
+    #         ubr_info.client_id = user_info.client_id
+    #         ubr_info.bot_username = bot_info.username
+    #         ubr_info.is_work = 1
+    #         ubr_info.save()
+    client_id = request.json.get("client_id", 99)
+    ubr = BaseModel.fetch_one("client_bot_r", "*", where_clause = BaseModel.where_dict({"client_id": client_id}))
+    ubr.bot_username = "wxid_u44s9oamh0tx22"
+    ubr.save()
+    # ubr = BaseModel.fetch_one("client_bot_r", "*", where_clause = BaseModel.where_dict({"client_id": 139}))
+    # ubr.bot_username = "wxid_u44s9oamh0tx22"
+    # ubr.save()
 
     return make_response(SUCCESS)
 
