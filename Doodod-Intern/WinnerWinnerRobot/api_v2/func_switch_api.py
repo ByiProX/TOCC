@@ -11,13 +11,13 @@ from utils.z_utils import *
 from utils.tag_handle import Tag
 
 
-@main_api_v2.route('/_func', methods=["POST"])
+@main_api_v2.route('/_func_init', methods=["POST"])
 def test():
     all_client_list = BaseModel.fetch_all('client_member', '*', BaseModel.where_dict({'func_switch': None}))
-
+    res = {'data': []}
     for client in all_client_list:
         client.func_switch = Tag().load_config(client.app).as_int()
         client.save()
-        print(Tag().load_config(client.app).as_int())
+        res['data'].append(client.to_json_full())
 
-    return ''
+    return response(res)

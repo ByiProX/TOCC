@@ -43,10 +43,40 @@ def app_get_paid_quns():
     return make_response(SUCCESS, client_qun_statis=client_qun_statistic, quns_paid=quns_paid)
 
 
+@main_api_v2.route('/add_paid_quns_by_id', methods=['POST'])
+def app_add_paid_quns_by_id():
+    """
+    增加可用的群数量qun_count
+    后期添加管理员身份验证
+    """
+    verify_json()
+    # status, user_info = UserLogin.verify_token(request.json.get('token'))
+    #
+    # if status != SUCCESS:
+    #     return make_response(status)
+
+    add_qun_num = request.json.get("add_qun_num", 0)
+    client_id = request.json.get("client_id")
+
+    try:
+        client = BaseModel.fetch_one("client", "*",
+                                     where_clause=BaseModel.and_(
+                                         ["=", "client_id", client_id],
+                                     ))
+
+        client.qun_count += add_qun_num
+        client.save()
+    except Exception:
+        return make_response(ERR_WRONG_ITEM)
+
+    return make_response(SUCCESS)
+
+
 @main_api_v2.route('/add_paid_quns', methods=['POST'])
 def app_add_paid_quns():
     """
     增加可用的群数量qun_count
+    现在暂时不再使用啦
     """
     verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
