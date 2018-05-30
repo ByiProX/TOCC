@@ -7,10 +7,12 @@ from flask import request
 
 from configs.config import SUCCESS, main_api_v2, BotInfo, Message, NEW_MSG_Q, Contact, GLOBAL_RULES_UPDATE_FLAG, \
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, \
-    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, MaterialLib, UserInfo, UserBotR, GLOBAL_EMPLOYEE_PEOPLE_FLAG
+    GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, MaterialLib, UserInfo, UserBotR, GLOBAL_EMPLOYEE_PEOPLE_FLAG, \
+    ERR_NOT_ALLOWED_EXTENSION, ERR_HAVE_SAME_PEOPLE, ERR_WRONG_ITEM
 from core_v2.matching_rule_core import gm_rule_dict, gm_default_rule_dict, get_gm_rule_dict, get_gm_default_rule_dict
 from core_v2.message_core import route_msg, count_msg, update_sensitive_word_list, update_employee_people_list, \
     NEED_UPDATE_REPLY_RULE, update_employee_people_reply_rule
+from core_v2.qun_manage_core import _bind_qun_success
 from core_v2.user_core import _bind_bot_success, UserLogin
 from core_v2.wechat_core import WechatConn, wechat_conn_dict
 from models_v2.base_model import BaseModel, CM
@@ -52,6 +54,70 @@ def android_add_friend():
             #                              u"user_username: %s." % user_username)
 
     return make_response(SUCCESS)
+
+
+@main_api_v2.route('/android/add_friend_by_force', methods=['POST'])
+def android_add_friend_by_force():
+    verify_json()
+    user_nickname = request.json.get('user_nickname')
+    user_username = request.json.get('user_username')
+    bot_username = request.json.get('bot_username')
+
+    logger.info(u"发现加 bot 好友用户. username: %s." % user_username)
+    user_info_list = CM(UserInfo).fetch_all(UserInfo, '*', where_clause = BaseModel.where_dict({"nick_name": user_nickname}))
+    if len(user_info_list) > 1:
+        logger.error(u"发现多个 nickname: %s. bot_username: %s. user_username: %s." % (user_nickname, bot_username, user_username))
+        logger.error(u"发现多个 nickname: %s. : %s. user_username: %s" % (user_nickname, bot_username, user_username))
+        return ERR_HAVE_SAME_PEOPLE, None
+    elif len(user_info_list) == 0:
+        logger.error(u"未找到 nickname: %s. bot_username: %s. user_username: %s" % (user_nickname, bot_username, user_username))
+        return ERR_WRONG_ITEM, None
+
+    user_info = user_info_list[0]
+    user_info.username = user_username
+    user_info.save()
+    logger.info(u"username 绑定成功")
+
+    ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+                                                                                       "bot_username": bot_username}))
+    if not ubr_info:
+        ubr_info = CM(UserBotR)
+        ubr_info.client_id = user_info.client_id
+        ubr_info.is_work = 1
+
+    ubr_info.bot_username = bot_username
+    ubr_info.save()
+    logger.info(u"ubr 绑定成功")
+
+    return make_response(SUCCESS)
+
+
+# @main_api_v2.route('/android/add_qun', methods=['POST'])
+# def android_add_friend():
+#     verify_json()
+#     # user_nickname = request.json.get('user_nickname')
+#     user_username = request.json.get('user_username')
+#     bot_username = request.json.get('bot_username')
+#     chatroomname = request.json.get("chatroomname")
+#
+#     logger.info(u"发现加bot好友用户. username: %s." % user_username)
+#     status, user_info_list = _bind_qun_success(chatroomname, "", bot_username, user_username)
+#     if status == SUCCESS:
+#         if user_info.app == "yaca":
+#             we_conn = wechat_conn_dict.get(user_info.app)
+#             if we_conn is None:
+#                 logger.info(
+#                     u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (
+#                         user_info.app, json.dumps(wechat_conn_dict.keys())))
+#             we_conn.send_txt_to_follower(
+#                 "您好，欢迎使用友问币答！请将我拉入您要管理的区块链社群，拉入成功后即可为您的群提供实时查询币价，涨幅榜，币种成交榜，交易所榜，最新动态，行业百科等服务。步骤如下：\n拉我入群➡确认拉群成功➡ "
+#                 "机器人在群发自我介绍帮助群友了解规则➡群友按照命令发关键字➡机器人回复➡完毕",
+#                 user_info.open_id)
+#             # else:
+#             #     EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
+#             #                              u"user_username: %s." % user_username)
+#
+#     return make_response(SUCCESS)
 
 
 @main_api_v2.route('/android/add_material', methods=['POST'])
@@ -149,6 +215,7 @@ def android_get_bot_list():
 
     return make_response(SUCCESS, bot_info_list=bot_list)
 
+
 @main_api_v2.route("/android/modify_bot_nickname", methods=['POST'])
 def modify_bot_nickname():
     verify_json()
@@ -171,6 +238,7 @@ def modify_bot_nickname():
     except Exception:
         pass
     return make_response(status)
+
 
 @main_api_v2.route("/android/modify_bot_avatar", methods=['POST'])
 def modify_bot_avatar():

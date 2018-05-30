@@ -26,6 +26,11 @@ class Tag:
         'zidou': [4, 5, 7, 8, 9, 10, 12, 13],
         'test': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     }
+    default_display_config = {
+        'yaca': [3, 4, 5, 6, 7, 8, 9, 10, 12, 13],
+        'zidou': [4, 5, 7, 8, 9, 10, 12, 13],
+        'test': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    }
 
     def __init__(self, bitmap=0):
         self.bitmap = bitmap

@@ -330,10 +330,20 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
                                                                                             "chatroomname": chatroomname}))
         # add by quentin
         # 统计当前群数量
-        uqr_count = BaseModel.count(UserQunR,
-                                    where_clause=BaseModel.where_dict(
-                                        {"client_id": user_info.client_id}
-                                    ))
+        # uqr_count = BaseModel.count(UserQunR,
+        #                             where_clause=BaseModel.where_dict(
+        #                                 {"client_id": user_info.client_id}
+        #                             ))
+        qun_count = BaseModel.fetch_one("client", "*",
+                                        where_clause=BaseModel.where_dict(
+                                            {"client_id": user_info.client_id}
+                                        )).qun_count
+
+        qun_used = BaseModel.fetch_one("client", "*",
+                                       where_clause=BaseModel.where_dict(
+                                           {"client_id": user_info.client_id}
+                                       )).qun_used
+
         # ------------------------------------#
 
         if not uqr_exist:
@@ -343,7 +353,8 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
             uqr.status = 1
             uqr.group_id = unicode(user_info.client_id) + u"_0"
             uqr.create_time = int(time.time())
-            uqr.is_paid = 0 if uqr_count > 0 else 1
+            # uqr.is_paid = 0 if uqr_count > 0 else 1
+            uqr.is_paid = 0 if qun_count <= qun_used else 1
             uqr.save()
             logger.info(u"user与群关系已绑定. user_id: %s. chatroomname: %s." % (user_info.client_id, chatroomname))
         else:
@@ -354,7 +365,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
             uqr_exist.status = 1
             uqr_exist.group_id = unicode(user_info.client_id) + u"_0"
             uqr_exist.create_time = int(time.time())
-            uqr_exist.is_paid = 0
+            uqr_exist.is_paid = 0 if qun_count <= qun_used else 1
             uqr_exist.save()
             logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. chatroomname: %s." % chatroomname)
 

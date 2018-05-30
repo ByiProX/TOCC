@@ -100,7 +100,7 @@ def app_add_paid_quns():
     return make_response(SUCCESS)
 
 
-# 以下不对外开放
+# 以下不对外开放，被删库，迫不得已而为之啊
 @main_api_v2.route('/add_used_quns', methods=['POST'])
 def __app_add_paid_quns():
     """
@@ -185,17 +185,50 @@ def __app_change_qun_is_paid_status():
     return make_response(SUCCESS)
 
 
+@main_api_v2.route('/get_client_info', methods=['POST'])
+def __app_get_client_info():
+    pass
+
+
+@main_api_v2.route('/change_qun_status', methods=['POST'])
+def __app_change_qun_status():
+    verify_json()
+
+    status = request.json.get("status")
+    chatroomname = request.json.get("chatroomname")
+
+    try:
+        client = BaseModel.fetch_one("client_qun_r", "*",
+                                     where_clause=BaseModel.and_(
+                                         ["=", "chatroomname", chatroomname],
+                                     ))
+
+        client.status = status
+        client.save()
+    except Exception:
+        return make_response(ERR_WRONG_ITEM)
+
+    return make_response(SUCCESS)
+
+
 if __name__ == "__main__":
-    free_clients = BaseModel.fetch_all("client", "*",
-                                       where_clause=BaseModel.and_(
-                                           [">", "qun_count", "qun_used"],
-                                       ))
-    print free_clients.__len__()
-    pprint([free_client.to_json_full() for free_client in free_clients])
 
-    client_quns = BaseModel.fetch_all("client_qun_r", "*",
-                                      where_clause=BaseModel.and_(
-                                          ["=", "client_id", 5],
-                                      ))
+    jsons = {
+        "bot_username": "wxid_lkruzsl7w2r822",
+        "data": {
+            "task": "send_message",
+            "to": "wkx0105",
+            "type": 2,
+            "content": "Einstein",
+            "title": "wangkunxiang",
+            "source_url": "http://ywbdthumb.oss-cn-beijing.aliyuncs.com/5_favicon.png"
+        }
+    }
 
-    print client_quns.__len__()
+    a_message = CM("a_message").from_json(jsons)
+    # a_message = CM("a_message")
+
+    print dir(a_message)
+    print a_message.__dict__
+
+

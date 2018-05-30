@@ -1,19 +1,12 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 
-import time
-
-from datetime import datetime
 from flask import request
 
-from configs.config import main_api_v2, SUCCESS, UserInfo, MaterialLib, Message, Contact, UserQunR, UserBotR
-from core_v2.send_msg import send_ws_to_android
-from core_v2.user_core import UserLogin, _get_a_balanced_bot
-from crawler.coin_all_crawler_v2 import update_coin_all
+from configs.config import *
+from core_v2.user_core import _get_a_balanced_bot
 from models_v2.base_model import BaseModel, CM
 from utils.u_response import make_response
-from utils.u_time import datetime_to_timestamp_utc_8
 
 logger = logging.getLogger('main')
 
@@ -69,23 +62,38 @@ def script():
     # ubr.bot_username = "wxid_6mf4yqgs528e22"
     # ubr.save()
 
-    # user_info_list = BaseModel.fetch_all(UserInfo, "*", BaseModel.where("!=", "username", ""))
-    # for user_info in user_info_list:
-    #     ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
-    #     if not ubr:
-    #         bot_info = _get_a_balanced_bot(user_info)
-    #         ubr_info = CM(UserBotR)
-    #         ubr_info.client_id = user_info.client_id
-    #         ubr_info.bot_username = bot_info.username
-    #         ubr_info.is_work = 1
-    #         ubr_info.save()
-    client_id = request.json.get("client_id", 99)
-    ubr = BaseModel.fetch_one("client_bot_r", "*", where_clause = BaseModel.where_dict({"client_id": client_id}))
-    ubr.bot_username = "wxid_u44s9oamh0tx22"
-    ubr.save()
+    user_info_list = BaseModel.fetch_all(UserInfo, "*", BaseModel.where("!=", "username", ""))
+    for user_info in user_info_list:
+        ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+        if not ubr:
+            bot_info = _get_a_balanced_bot(user_info)
+            ubr_info = CM(UserBotR)
+            ubr_info.client_id = user_info.client_id
+            ubr_info.bot_username = bot_info.username
+            ubr_info.is_work = 1
+            ubr_info.save()
+
+    # client_id = request.json.get("client_id", 99)
+    # ubr = BaseModel.fetch_one("client_bot_r", "*", where_clause = BaseModel.where_dict({"client_id": client_id}))
+    # ubr.bot_username = "wxid_u44s9oamh0tx22"
+    # ubr.save()
     # ubr = BaseModel.fetch_one("client_bot_r", "*", where_clause = BaseModel.where_dict({"client_id": 139}))
     # ubr.bot_username = "wxid_u44s9oamh0tx22"
     # ubr.save()
+
+    return make_response(SUCCESS)
+
+
+@main_api_v2.route("/exchange_bot_usrname", methods = ['GET', 'POST'])
+def exchange_bot_usrname():
+    client_id = request.json.get("client_id")
+    bot_username = request.json.get("bot_username")
+    if not client_id or not bot_username:
+        return make_response(ERR_INVALID_PARAMS)
+
+    ubr = BaseModel.fetch_one("client_bot_r", "*", where_clause = BaseModel.where_dict({"client_id": client_id}))
+    ubr.bot_username = bot_username
+    ubr.save()
 
     return make_response(SUCCESS)
 

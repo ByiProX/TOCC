@@ -195,18 +195,18 @@ class QunAvailableCheckThread(threading.Thread):
                                                  ["=", "status", 1]
                                              ))
 
-            qun_count = BaseModel.count("client_qun_r",
-                                        where_clause=BaseModel.and_(
-                                            ["=", "client_id", client_id],
-                                            ["=", "status", 1],
-                                            ["=", "is_paid", 1]
-                                        ))
+            # qun_count = BaseModel.count("client_qun_r",
+            #                             where_clause=BaseModel.and_(
+            #                                 ["=", "client_id", client_id],
+            #                                 ["=", "status", 1],
+            #                                 ["=", "is_paid", 1]
+            #                             ))
             client_table = BaseModel.fetch_one("client", "*",
                                                where_clause=BaseModel.and_(
                                                    ["=", "client_id", client_id]
                                                ))
             client_table.qun_used = qun_used_count
-            client_table.qun_count = qun_count
+            # client_table.qun_count = qun_count
             client_table.save()
 
     def stop(self):

@@ -1030,7 +1030,8 @@ def create_events():
             new_event_chatroom.is_activated = 1
         success_status[chatroomname] = new_event_chatroom.save()
         index += 1
-        new_thread_ = threading.Thread(target=new_event_init(chatroomname, new_event_chatroom.start_name, username))
+        new_thread_ = threading.Thread(target=new_event_init(chatroomname, new_event_chatroom.start_name, username,
+                                                             new_event.chatroom_name_protect))
         new_thread_.setDaemon(True)
         new_thread_.start()
     new_event_info = new_event.to_json()
@@ -1382,7 +1383,7 @@ def new_open_chatroom_status_protect():
                                       "chatroomname": this_chatroom.chatroomname,
                                       "chatroomnick": real_name,
                                   }}
-                        requests.post('%s/android/send_message'%ANDROID_SERVER_URL, json=result)
+                        requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)
                     # Update qrcode.
                     now_qrcode = now_chatroom_info.to_json().get('qrcode')
                     print(now_qrcode)
@@ -1395,7 +1396,7 @@ def new_open_chatroom_status_protect():
                                       "task": "update_chatroom_qrcode",
                                       "chatroomname": this_chatroom.chatroomname,
                                   }}
-                        requests.post('%s/android/send_message'%ANDROID_SERVER_URL, json=result)
+                        requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)
                         this_chatroom.qrcode_update_time = int(time.time())
                         this_chatroom.save()
                     # Pull owner to this chatroom.
@@ -1411,7 +1412,7 @@ def new_open_chatroom_status_protect():
                                       "chatroomname": this_chatroom.chatroomname,
                                       "contacts": owner_username
                                   }}
-                        requests.post('%s/android/send_message'%ANDROID_SERVER_URL, json=result)
+                        requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)
                     if flag:
                         # Update chatroom info.
                         result = {'bot_username': _bot_username,
@@ -1419,7 +1420,7 @@ def new_open_chatroom_status_protect():
                                       "task": "update_chatroom",
                                       "chatroomname": this_chatroom.chatroomname,
                                   }}
-                        requests.post('%s/android/send_message'%ANDROID_SERVER_URL, json=result)
+                        requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)
         except Exception as e:
             print('new_open_chatroom_name_protect', e)
         time.sleep(30)
@@ -1462,7 +1463,7 @@ def new_event_chatroom_send_word():
                       "type": _type,
                       "content": content,
                   }}
-        resp = requests.post('%s/android/send_message'%ANDROID_SERVER_URL, json=result)
+        resp = requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)
         if dict(resp.json())['err_code'] == -1:
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
@@ -1475,7 +1476,7 @@ def new_event_chatroom_send_word():
                       "source_url": source_url,
                       "title": source_url.split('/')[-1]
                   }}
-        resp = requests.post('%s/android/send_message'%ANDROID_SERVER_URL, json=result)
+        resp = requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)
         if dict(resp.json())['err_code'] == -1:
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
@@ -1494,7 +1495,7 @@ def new_event_chatroom_send_word():
                       "chatroomname": chatroomname,
                       "chatroomnotice": chatroomnotice,
                   }}
-        resp = requests.post('%s/android/send_message'%ANDROID_SERVER_URL, json=result)
+        resp = requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)
         if dict(resp.json())['err_code'] == -1:
             logger.warning('event_chatroom_send_word ERROR,because bot dead!')
 
@@ -1563,7 +1564,7 @@ def new_event_chatroom_send_word():
         time.sleep(15)
 
 
-def new_event_init(chatroomname, start_name, owner_username):
+def new_event_init(chatroomname, start_name, owner_username, chatroom_name_protect):
     """
     1.Modify its chatroomname.
     2.Pull owner to this chatroom.
@@ -1576,7 +1577,7 @@ def new_event_init(chatroomname, start_name, owner_username):
                                              BaseModel.where_dict(
                                                  {'chatroomname': chatroomname}))
     _bot_username = this_chatroom_info.bot_username
-    if now_chatroom_info.nickname_real != start_name:
+    if now_chatroom_info.nickname_real != start_name and chatroom_name_protect:
         result = {'bot_username': _bot_username,
                   'data': {
                       "task": "update_chatroom_nick",

@@ -502,6 +502,8 @@ def _get_a_balanced_bot(user_info):
         alive_bot_username_list.remove(u"wxid_q05k9d2atjie22")
     if u"wxid_u44s9oamh0tx22" in alive_bot_username_list:
         alive_bot_username_list.remove(u"wxid_u44s9oamh0tx22")
+    if u"wxid_eg8kqg9ajk4d22" in alive_bot_username_list:
+        alive_bot_username_list.remove(u"wxid_eg8kqg9ajk4d22")
     # if u"wxid_jxqmadytiexe22" in alive_bot_username_list:
     #     alive_bot_username_list.remove(u"wxid_jxqmadytiexe22")
     # if u"wxid_77txprhfmu5n22" in alive_bot_username_list:
