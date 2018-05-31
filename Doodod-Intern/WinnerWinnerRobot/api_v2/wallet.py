@@ -8,55 +8,13 @@ from configs.config import ERR_PARAM_SET, main_api_v2, SUCCESS, ERR_WRONG_ITEM
 from core_v2.user_core import UserLogin
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
-
-
+from utils.z_utils import para_check,response
+from utils.tag_handle import Tag
 from models_v2.base_model import *
-from functools import wraps
-import time
 
-import xlwt
-import os
 
 logger = logging.getLogger('main')
 
-
-def para_check(need_list, *parameters):
-    def _wrapper(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            _para_check = parameters_check(need_list, *parameters)
-            if _para_check is not True:
-                return _para_check
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return _wrapper
-
-
-def parameters_check(need_list, *args):
-    """Check each parameter (For POST)
-    if could not get this parameter return 'Lack of (parameter)'
-    """
-
-    if request.json is None:
-        return response({'err_code': -1, 'content': 'Lack of json.'})
-
-    if isinstance(need_list, str):
-        need = args + (need_list,)
-    else:
-        need = need_list + args
-
-    for i in need:
-        if request.json.get(i) is None:
-            return response({'err_code': -1, 'content': 'Lack of %s.' % i})
-    return True
-
-
-def response(body_as_dict):
-    """Use make_response or not."""
-    response_body = jsonify(body_as_dict)
-    return response_body
 
 
 @main_api_v2.route('/wallets', methods=['POST'])
@@ -119,15 +77,21 @@ def app_wallets():
 
 
 @main_api_v2.route('/wallets_switch', methods=['POST'])
+@para_check('token', 'switch')
 def app_wallets_switch():
-    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
 
+    # Switch func.
     switch = request.json.get('switch')
-    if switch is None:
-        return make_response(ERR_PARAM_SET)
+    if switch not in (True, False):
+        return response({'err_code': -1})
+    if switch:
+        user_info.func_switch = Tag(user_info.func_switch).put_name('wallet').as_int()
+    else:
+        user_info.func_switch = Tag(user_info.func_switch).delete_name('wallet').as_int()
+    user_info.save()
 
     switchModel = BaseModel.fetch_one('client_switch', '*', BaseModel.where_dict({"client_id": user_info.client_id}))
     switchModel.func_coin_wallet = switch

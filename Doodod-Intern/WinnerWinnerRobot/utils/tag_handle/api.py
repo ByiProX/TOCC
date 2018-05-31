@@ -68,28 +68,32 @@ class Tag:
     def put_name(self, name):
         for k, v in func_config.items():
             if v[1] == name:
-                return self.put_tag(k)
-        return False
+                self.put_tag(k)
+                return self
+        raise NameError('Error tag name:%s' % name)
 
     def put_names(self, name_list):
         tag_list = []
         for k, v in func_config.items():
             if v[1] in name_list:
                 tag_list.append(k)
-        return self.put_tags(tag_list)
+        self.put_tags(tag_list)
+        return self
 
     def delete_name(self, name):
         for k, v in func_config.items():
             if v[1] == name:
-                return self.delete_tag(k)
-        return False
+                self.delete_tag(k)
+                return self
+        raise NameError('Error tag name:%s' % name)
 
     def delete_names(self, name_list):
         tag_list = []
         for k, v in func_config.items():
             if v[1] in name_list:
                 tag_list.append(k)
-        return self.delete_tags(tag_list)
+        self.delete_tags(tag_list)
+        return self
 
     def load_config(self, app_name):
         if app_name in self.default_config:

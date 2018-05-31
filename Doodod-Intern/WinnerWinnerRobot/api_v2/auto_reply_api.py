@@ -9,6 +9,9 @@ from core_v2.auto_reply_core import create_a_auto_reply_setting, switch_func_aut
 from core_v2.user_core import UserLogin
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
+from models_v2.base_model import *
+from utils.tag_handle import Tag
+from utils.z_utils import para_check, response
 
 logger = logging.getLogger('main')
 
@@ -37,7 +40,7 @@ def app_create_a_auto_reply_setting():
     # 注：此处，如果有setting时，则意味着此处为修改，如果没有，则意味着此处为新建
     # 文法和磊的临时约定 BY FRank5433 20180210
     keywords_id = request.json.get('keywords_id')
-    status = create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list, keywords_id = keywords_id)
+    status = create_a_auto_reply_setting(user_info, chatroom_list, message_list, keyword_list, keywords_id=keywords_id)
     if status == SUCCESS:
         return make_response(SUCCESS)
     else:
@@ -45,11 +48,21 @@ def app_create_a_auto_reply_setting():
 
 
 @main_api_v2.route('/switch_func_auto_reply', methods=['POST'])
+@para_check('token', 'switch')
 def app_switch_func_auto_reply():
-    verify_json()
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
+
+    # Switch func.
+    switch = request.json.get('switch')
+    if switch not in (True, False):
+        return response({'err_code': -1})
+    if switch:
+        user_info.func_switch = Tag(user_info.func_switch).put_name('auto_reply').as_int()
+    else:
+        user_info.func_switch = Tag(user_info.func_switch).delete_name('auto_reply').as_int()
+    user_info.save()
 
     switch = request.json.get('switch')
     if not (switch is True or switch is False):

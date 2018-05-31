@@ -84,7 +84,7 @@ def script():
     return make_response(SUCCESS)
 
 
-@main_api_v2.route("/exchange_bot_usrname", methods = ['GET', 'POST'])
+@main_api_v2.route("/exchange_bot_username", methods = ['POST'])
 def exchange_bot_usrname():
     client_id = request.json.get("client_id")
     bot_username = request.json.get("bot_username")
@@ -100,31 +100,6 @@ def exchange_bot_usrname():
 
 @main_api_v2.route("/get_code", methods = ['GET', 'POST'])
 def get_code():
-    # uqr = BaseModel.fetch_by_id("client_qun_r", "5ad46153f5d7e26589658ba7")
-    # uqr.group_id = u"4_0"
-    # uqr.update()
-    # user_info_list = BaseModel.fetch_all("client_member", "*")
-    # for user_info in user_info_list:
-    #     user_info.app = "yaca"
-    #     user_info.save()
-    # user_info = BaseModel.fetch_one(UserInfo, "*", where_clause = BaseModel.where_dict({"client_id": 15}))
-    # user_info.username = u"ada390859"
-    # user_info.save()
-    # update_coin_all()
-    # ubr = BaseModel.fetch_by_id("client_bot_r", "5ad44cb1f5d7e2658a2c175b")
-    # ubr.bot_username = "wxid_l66m6wuilug912"
-    # ubr.save()
-    #
-    # material_list = BaseModel.fetch_all(MaterialLib, "*")
-    # for material in material_list:
-    #     msg_id = material.msg_id
-    #     msg = BaseModel.fetch_one(Message, "*", where_clause = BaseModel.where_dict({"msg_id": msg_id}))
-    #     print json.dumps(msg.to_json_full())
-
-    # bot_username = "wxid_l66m6wuilug912"
-    # data = {"chatroomname": "4893318868@chatroom",
-    #         "task": "update_chatroom"}
-    # send_ws_to_android(bot_username, data)
     client_id = 1
     if request.method == 'GET':
         client_id = request.args.get("client_id", 1)

@@ -23,7 +23,7 @@ from core_v2.redis_core import rds_lpush
 from core_v2.coin_wallet_core import check_whether_message_is_a_coin_wallet
 from models_v2.base_model import BaseModel, CM
 from utils.u_transformat import str_to_unicode, unicode_to_str
-
+from utils.tag_handle import Tag
 import logging
 
 logger = logging.getLogger('main')
@@ -85,8 +85,13 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
     if a_message.is_send == 1:
         return
 
-    # Check if contain sensitive word.
+    # Check this chatroom's client.
+    # status_dict = chatroom_client_info(a_message)
+    # print(status_dict)
+
+    # Check chatroom word.
     if not a_message.is_to_friend and a_message.type == MSG_TYPE_TXT:
+        # if status_dict.get('sensitive'):
         check_and_add_sensitive_word_log(a_message)
         check_if_is_reply(a_message)
         # Check if @ someone in rule list.
@@ -611,7 +616,11 @@ def add_and_send_sensitive_word_log(sensitive_word, new_a_message, owner, rule_i
                           unicode(datetime.datetime.now())[:-7], str_to_unicode(speaker_nickname),
                           str_to_unicode(chatroom_nickname), str_to_unicode(sensitive_word),
                           str_to_unicode(new_a_message.real_content))
-    username = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'client_id': owner})).username
+    user = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'client_id': owner}))
+    if user is None:
+        logger.warning('can not find this client', owner)
+        return -1
+    username = user.username
 
     send_message(owner_bot_username, username, 1, message_content)
 
@@ -785,3 +794,25 @@ def add_pull_people_task(bot_username, chatroomname, username):
                   "contacts": username
               }}
     requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)
+
+
+def chatroom_client_info(a_message):
+    if a_message.is_to_friend:
+        return Tag(0).get_name_dict()
+
+    chatroomname = a_message.talker
+    client = BaseModel.fetch_one('client_qun_r', '*', BaseModel.where_dict({'chatroomname': chatroomname}))
+
+    if client is None:
+        print('client is none,client_qun_r')
+        return Tag(0).get_name_dict()
+
+    client_id = client.client_id
+
+    client_info = BaseModel.fetch_one('client_member', '*', BaseModel.where_dict({'client_id': client_id}))
+
+    if client_info is None:
+        print('client is none,client_member')
+        return Tag(0).get_name_dict()
+
+    return Tag(client_info.func_switch).get_name_dict()

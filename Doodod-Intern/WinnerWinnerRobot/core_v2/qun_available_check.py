@@ -49,6 +49,7 @@ class QunAvailableCheckThread(threading.Thread):
                 continue
 
             # 重新查表，查找未缴费群，然后退群并删除表中的记录
+            time.sleep(60 * 13)
             not_paid_quns_again = self.check_not_paid_quns(clients_id, cur_time)
 
             if not_paid_quns_again:
@@ -156,8 +157,8 @@ class QunAvailableCheckThread(threading.Thread):
                 "chatroomname": qun.chatroomname
             }
 
-            sleep_time = 28 * 60 - (int(time.time()) - qun.create_time) \
-                if 28 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
+            sleep_time = 29 * 60 - (int(time.time()) - qun.create_time) \
+                if 29 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
 
             # sleep_time = 60
             time.sleep(sleep_time)

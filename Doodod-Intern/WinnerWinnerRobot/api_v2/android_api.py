@@ -8,7 +8,7 @@ from flask import request
 from configs.config import SUCCESS, main_api_v2, BotInfo, Message, NEW_MSG_Q, Contact, GLOBAL_RULES_UPDATE_FLAG, \
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, \
     GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, MaterialLib, UserInfo, UserBotR, GLOBAL_EMPLOYEE_PEOPLE_FLAG, \
-    ERR_NOT_ALLOWED_EXTENSION, ERR_HAVE_SAME_PEOPLE, ERR_WRONG_ITEM
+    ERR_NOT_ALLOWED_EXTENSION, ERR_HAVE_SAME_PEOPLE, ERR_WRONG_ITEM, ERR_INVALID_PARAMS
 from core_v2.matching_rule_core import gm_rule_dict, gm_default_rule_dict, get_gm_rule_dict, get_gm_default_rule_dict
 from core_v2.message_core import route_msg, count_msg, update_sensitive_word_list, update_employee_people_list, \
     NEED_UPDATE_REPLY_RULE, update_employee_people_reply_rule
@@ -66,8 +66,7 @@ def android_add_friend_by_force():
     logger.info(u"发现加 bot 好友用户. username: %s." % user_username)
     user_info_list = CM(UserInfo).fetch_all(UserInfo, '*', where_clause = BaseModel.where_dict({"nick_name": user_nickname}))
     if len(user_info_list) > 1:
-        logger.error(u"发现多个 nickname: %s. bot_username: %s. user_username: %s." % (user_nickname, bot_username, user_username))
-        logger.error(u"发现多个 nickname: %s. : %s. user_username: %s" % (user_nickname, bot_username, user_username))
+        logger.error(u"发现多个 nickname: %s. bot_username: %s. user_username: %s. client_id_list: %s." % (user_nickname, bot_username, user_username, json.dumps([r.client_id for r in user_info_list])))
         return ERR_HAVE_SAME_PEOPLE, None
     elif len(user_info_list) == 0:
         logger.error(u"未找到 nickname: %s. bot_username: %s. user_username: %s" % (user_nickname, bot_username, user_username))
@@ -92,32 +91,18 @@ def android_add_friend_by_force():
     return make_response(SUCCESS)
 
 
-# @main_api_v2.route('/android/add_qun', methods=['POST'])
-# def android_add_friend():
-#     verify_json()
-#     # user_nickname = request.json.get('user_nickname')
-#     user_username = request.json.get('user_username')
-#     bot_username = request.json.get('bot_username')
-#     chatroomname = request.json.get("chatroomname")
-#
-#     logger.info(u"发现加bot好友用户. username: %s." % user_username)
-#     status, user_info_list = _bind_qun_success(chatroomname, "", bot_username, user_username)
-#     if status == SUCCESS:
-#         if user_info.app == "yaca":
-#             we_conn = wechat_conn_dict.get(user_info.app)
-#             if we_conn is None:
-#                 logger.info(
-#                     u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (
-#                         user_info.app, json.dumps(wechat_conn_dict.keys())))
-#             we_conn.send_txt_to_follower(
-#                 "您好，欢迎使用友问币答！请将我拉入您要管理的区块链社群，拉入成功后即可为您的群提供实时查询币价，涨幅榜，币种成交榜，交易所榜，最新动态，行业百科等服务。步骤如下：\n拉我入群➡确认拉群成功➡ "
-#                 "机器人在群发自我介绍帮助群友了解规则➡群友按照命令发关键字➡机器人回复➡完毕",
-#                 user_info.open_id)
-#             # else:
-#             #     EmailAlert.send_ue_alert(u"有用户尝试绑定机器人，但未绑定成功.疑似网络通信问题. "
-#             #                              u"user_username: %s." % user_username)
-#
-#     return make_response(SUCCESS)
+@main_api_v2.route('/android/add_qun', methods=['POST'])
+def android_add_friend():
+    verify_json()
+    # user_nickname = request.json.get('user_nickname')
+    user_username = request.json.get('user_username')
+    bot_username = request.json.get('bot_username')
+    chatroomname = request.json.get("chatroomname")
+
+    logger.info(u"发现加bot好友用户. username: %s." % user_username)
+    status, user_info_list = _bind_qun_success(chatroomname, "", bot_username, user_username)
+
+    return make_response(SUCCESS)
 
 
 @main_api_v2.route('/android/add_material', methods=['POST'])
@@ -222,7 +207,10 @@ def modify_bot_nickname():
     status, user_info = UserLogin.verify_token(request.json.get('token'))
     if status != SUCCESS:
         return make_response(status)
-    
+    logger.info(request.json.get('bot_username'))
+    logger.info(request.json.get('new_nickname'))
+    if not request.json.get('bot_username') or not request.json.get('new_nickname'):
+        return make_response(ERR_INVALID_PARAMS)
     bot_username = request.json.get('bot_username')
     new_nickname = request.json.get('new_nickname')
     data = {
@@ -246,6 +234,8 @@ def modify_bot_avatar():
     if status != SUCCESS:
         return make_response(status)
 
+    if not request.form.get('bot_username'):
+        return make_response(ERR_INVALID_PARAMS)
     upload_file = request.files['file']
     logger.info('upload filename: ' + upload_file.filename)
     if not upload_file or not allowed_file(upload_file.filename):
@@ -253,6 +243,7 @@ def modify_bot_avatar():
 
     filename = str(user_info.client_id) + '_' + secure_filename(normalize('NFKD', upload_file.filename).encode('utf-8', 'ignore').decode('utf-8'))
     oss_url = put_file_to_oss(filename, data = upload_file.stream._file)
+
 
     bot_username = request.form.get('bot_username')
     logger.info("头像url为%s"%oss_url)
