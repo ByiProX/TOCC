@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
+import time
 from flask import request
 
 from configs.config import *
@@ -98,6 +99,23 @@ def exchange_bot_usrname():
     return make_response(SUCCESS)
 
 
+@main_api_v2.route("/add_ubr", methods = ['POST'])
+def add_ubr():
+    client_id = request.json.get("client_id")
+    bot_username = request.json.get("bot_username")
+    if not client_id or not bot_username:
+        return make_response(ERR_INVALID_PARAMS)
+
+    ubr = CM("client_bot_r")
+    ubr.client_id = client_id
+    ubr.bot_username = bot_username
+    ubr.create_time = int(time.time())
+    ubr.is_work = 1
+    ubr.save()
+
+    return make_response(SUCCESS)
+
+
 @main_api_v2.route("/get_code", methods = ['GET', 'POST'])
 def get_code():
     client_id = 1
@@ -108,3 +126,24 @@ def get_code():
     client = BaseModel.fetch_one(UserInfo, "*", where_clause = BaseModel.where_dict({"client_id": client_id}))
 
     return make_response(SUCCESS, client = client)
+
+
+@main_api_v2.route('/delete_client_qun_r', methods=['POST'])
+def api_delete_client_qun_r():
+    bot_username = request.json.get("bot_username")
+    client_id = request.json.get("client_id")
+
+    client_bot_r = BaseModel.fetch_one("client_bot_r", "*",
+                                       where_clause=BaseModel.and_(
+                                           ["=", "client_id", client_id],
+                                           ["=", "bot_username", bot_username]
+                                       ))
+
+    print client_bot_r.to_json_full()
+    print ">>>>>>>>>>>>>>>>>>>>>>>>>."
+    client_bot_r.delete()
+    # client_bot_r.save()
+
+    return make_response(SUCCESS)
+
+

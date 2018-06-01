@@ -307,6 +307,11 @@ ERROR_CODE[SHORT_DURATION_TIME_ERROR] = {'discription': '设置时间太短', 's
 EMPTY_CONTENT = 'EMPTY_CONTENT'
 ERROR_CODE[EMPTY_CONTENT] = {'discription': '文件内容为空', 'status_code': -10010}
 
+#URL 请求错误
+URL_ERROR = 'URL_ERROR'
+ERROR_CODE[URL_ERROR] = {'discription': 'URL请求错误', 'status_code': -24}
+
+
 
 # 用户的token过期时间（单位为日）
 TOKEN_EXPIRED_THRESHOLD = 365

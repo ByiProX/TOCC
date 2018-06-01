@@ -30,7 +30,7 @@ def send_msg_to_android(bot_username, message_list, to_list):
                 return SUCCESS
         else:
             req_count += 1
-            time.sleep(0.5)
+            time.sleep(3)
             logger.info(u"任务发送失败. bot_username: %s." % bot_username)
             logger.info(u"任务发送失败. response.content: %s." % response.content)
 
@@ -53,7 +53,7 @@ def send_ws_to_android(bot_username, data):
                 return SUCCESS
         else:
             req_count += 1
-            time.sleep(0.5)
+            time.sleep(3)
             logger.info(u"send_ws_to_android failed. bot_username: %s." % bot_username)
             logger.info(u"send_ws_to_android failed. response.content: %s." % response.content)
 

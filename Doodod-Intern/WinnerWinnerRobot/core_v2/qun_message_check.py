@@ -22,12 +22,20 @@ def check_is_at_bot(a_message):
         return
 
     if message_list[0][:-1] == real_talker and message_list[1].startswith(u'@') and message_list[2] == u'激活小助手':
-        client = BaseModel.fetch_one("client_qun_r", "*",
+        client_qun_r = BaseModel.fetch_one("client_qun_r", "*",
+                                           where_clause=BaseModel.and_(
+                                               ["=", "chatroomname", chatroomname]
+                                           ))
+
+        client = BaseModel.fetch_one("client", "*",
                                      where_clause=BaseModel.and_(
-                                         ["=", "chatroomname", chatroomname]
+                                         ["=", "client_id", client_qun_r.client_id]
                                      ))
-        client.is_paid = 1
-        client.save()
+        if client.qun_count >= client.qun_used:
+            client_qun_r.is_paid = 1
+            client_qun_r.save()
+        else:
+            return
 
         time.sleep(5)
         # 通知付费成功信息

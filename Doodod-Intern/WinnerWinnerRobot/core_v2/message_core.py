@@ -86,13 +86,12 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
         return
 
     # Check this chatroom's client.
-    # status_dict = chatroom_client_info(a_message)
-    # print(status_dict)
+    status_dict = chatroom_client_info(a_message)
 
     # Check chatroom word.
     if not a_message.is_to_friend and a_message.type == MSG_TYPE_TXT:
-        # if status_dict.get('sensitive'):
-        check_and_add_sensitive_word_log(a_message)
+        if status_dict.get('sensitive'):
+            check_and_add_sensitive_word_log(a_message)
         check_if_is_reply(a_message)
         # Check if @ someone in rule list.
         if a_message.real_content.find('@') > -1:
@@ -120,19 +119,21 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
         return
 
     # is_a_coin_wallet
-    is_a_coin_wallet = check_whether_message_is_a_coin_wallet(a_message)
-    if is_a_coin_wallet:
-        return
+    if status_dict.get('wallet'):
+        is_a_coin_wallet = check_whether_message_is_a_coin_wallet(a_message)
+        if is_a_coin_wallet:
+            return
 
     # 检测是否是别人的进群提示
     # is_friend_into_qun = check_whether_message_is_friend_into_qun(a_message)
 
     # 根据规则和内容进行匹配，并生成任务
-    rule_status = match_message_by_rule(gm_rule_dict, a_message)
-    if rule_status is True:
-        return
-    else:
-        pass
+    if status_dict.get('auto_reply'):
+        rule_status = match_message_by_rule(gm_rule_dict, a_message)
+        if rule_status is True:
+            return
+        else:
+            pass
 
     # 对内容进行判断，是否为查询比价的情况
     coin_price_status = match_message_by_coin_keyword(gm_default_rule_dict, a_message)
@@ -140,7 +141,8 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
         return
 
     # add by quentin
-    # 非以上特殊内容的自动回复,即对普通内容的自动回复，目前设置为不回复
+    # 非以上特殊内容的自动回复,即对普通内容的自动回复，目前设置为FALSE不回复
+    # TODO : 如要开启，将reply改为True
     status = match_general_message(a_message, reply=False)
     if status:
         return

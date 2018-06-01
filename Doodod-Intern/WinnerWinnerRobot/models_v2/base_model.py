@@ -229,7 +229,7 @@ class BaseModel(object):
         # return self
 
     def delete(self):
-        if self.__tablename not in ["client_group_r", "wallet", "keywords", "client_qun_r"]:
+        if self.__tablename not in ["client_group_r", "wallet", "keywords", "client_qun_r", "client_bot_r"]:
             return False
         return self.db_delete()
 

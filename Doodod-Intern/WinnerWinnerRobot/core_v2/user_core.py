@@ -17,7 +17,7 @@ from configs.config import SUCCESS, TOKEN_EXPIRED_THRESHOLD, ERR_USER_TOKEN_EXPI
 from core_v2.wechat_core import wechat_conn_dict
 from models_v2.base_model import BaseModel, CM
 from utils.u_time import datetime_to_timestamp_utc_8
-
+from utils.tag_handle import Tag
 logger = logging.getLogger('main')
 
 
@@ -180,7 +180,8 @@ class UserLogin:
             self.user_info_up_to_date.city = res_json.get('city')
             self.user_info_up_to_date.country = res_json.get('country')
             self.user_info_up_to_date.avatar_url = res_json.get('headimgurl')
-
+            #####
+            self.user_info_up_to_date.func_switch = Tag().load_config(self.app)
             self.user_info_up_to_date.username = ""
             self.user_info_up_to_date.app = self.app
 
@@ -386,7 +387,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     确认将一个bot绑入一个user之中
     :return:
     """
-
+    print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> _bind_bot_success"
     # 因为AFriend等库更新未必在Message之前（在网速较慢的情况下可能出现）
     # 所以此处先sleep一段时间，等待AFriend更新后再读取
     # time.sleep(5)
@@ -405,13 +406,16 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     #     logger.info(u'但是放宽限制，暂时给予通过')
     #     # return ERR_WRONG_ITEM, None
 
-    user_info_list = CM(UserInfo).fetch_all(UserInfo, '*', where_clause = BaseModel.where_dict({"nick_name": user_nickname}))
+    user_info_list = BaseModel.fetch_all(UserInfo, '*', where_clause = BaseModel.where_dict({"nick_name": user_nickname}))
+    print([user_info.to_json_full() for user_info in user_info_list])
+
     for user_info in user_info_list:
         if user_info.username == "":
             pass
         elif user_info.username == user_username:
             ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
-            if ubr:
+            # if ubr:
+            if ubr.bot_username == bot_info.username:
                 user_info_list.remove(user_info)
     if len(user_info_list) > 1:
         logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
@@ -444,19 +448,43 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.client_id, user_username))
     ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
                                                                                        "bot_username": bot_info.username}))
+
+    print "11111111111111"
     if not ubr_info:
-        logger.debug(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.client_id)
-        ubr_info = CM(UserBotR)
-        ubr_info.client_id = user_info.client_id
-        ubr_info.bot_username = bot_info.username
+        # 判断该用户是否存在
+        client_bot_info = BaseModel.fetch_one("client_bot_r", "*",
+                                              where_clause=BaseModel.and_(
+                                                  ["=", "client_id", user_info.client_id]
+                                              ))
+
+        print "2222222222222222222222"
+        if not client_bot_info:
+            print "333333333333333333333"
+            logger.debug(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.client_id)
+            client_bot_info = CM(UserBotR)
+            client_bot_info.client_id = user_info.client_id
+            client_bot_info.bot_username = bot_info.username
+            client_bot_info.is_work = 1
+            client_bot_info.standby_bots = list()
+            client_bot_info.save()
+        else:
+            print "444444444444444444444444"
+            client_bot_info.is_work = 1
+            bot = dict()
+            bot.setdefault("username", bot_info.username)
+
+            if not client_bot_info.standby_bots:
+                client_bot_info.standby_bots = list()
+
+            client_bot_info.standby_bots.append(bot)
+            client_bot_info.save()
+
+    else:
         ubr_info.is_work = 1
         ubr_info.save()
-
-    ubr_info.is_work = 1
-    ubr_info.save()
-
-    # set_default_group(user_info.client_id)
-    logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.client_id, bot_info.bot_info_id))
+        print "555555555555555555555"
+        # set_default_group(user_info.client_id)
+        logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.client_id, bot_info.bot_info_id))
     return SUCCESS, user_info
 
 
@@ -504,6 +532,10 @@ def _get_a_balanced_bot(user_info):
         alive_bot_username_list.remove(u"wxid_u44s9oamh0tx22")
     if u"wxid_eg8kqg9ajk4d22" in alive_bot_username_list:
         alive_bot_username_list.remove(u"wxid_eg8kqg9ajk4d22")
+    if u"wxid_3pu658yyz9dy22" in alive_bot_username_list:
+        alive_bot_username_list.remove(u"wxid_3pu658yyz9dy22")
+    if u"wxid_ljpr5royfums21" in alive_bot_username_list:
+        alive_bot_username_list.remove(u"wxid_ljpr5royfums21")
     # if u"wxid_jxqmadytiexe22" in alive_bot_username_list:
     #     alive_bot_username_list.remove(u"wxid_jxqmadytiexe22")
     # if u"wxid_77txprhfmu5n22" in alive_bot_username_list:

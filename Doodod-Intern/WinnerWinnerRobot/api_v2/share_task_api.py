@@ -420,9 +420,7 @@ def mp_member_regist(code, app_name, task_id):
             mp_member.create_time = now
             mp_member.mp_member_unique_id = mp_member.open_id[-5:] + unicode(mp_member.create_time)
             mp_member.save()
-
-            # Mark 先匹配昵称，匹配到多个则匹配头像
-            # 这里有坑，匹配到一个也不能保证是同一个人
+            check_mp_member(mp_member, task_id)
 
         mp_member.code = code
         mp_member.save()
@@ -446,6 +444,75 @@ def mp_member_regist(code, app_name, task_id):
             s_mp_memebr.save()
 
         return SUCCESS, mp_member
+
+
+def check_mp_member(mp_member, task_id):
+    # 先匹配昵称和多于一个匹配头像
+    # 这里有坑，匹配到一个也不能保证是同一个人
+    undetermined_member_pool = BaseModel.fetch_all(Contact, "*", 
+        where_clause=BaseModel.where_dict({"nickname": mp_member.nick_name}))
+    undetermined_member = None
+    if len(undetermined_member_pool) == 0:
+        #在Contact没查到相同昵称直接退出
+        logger.info("在Contact没查到相同昵称直接退出")
+        return
+    elif  len(undetermined_member_pool) == 1:
+        undetermined_member = undetermined_member_pool[0]
+    elif  len(undetermined_member_pool) > 1:
+        # for undetermined_member_ in undetermined_member_pool:
+        #     if undetermined_member_.avatar_url == mp_member.avatar_url:
+        #         undetermined_member = undetermined_member_
+        #         break
+        logger.error("在Contact中匹配到多个和mp_member昵称相同的人。nickname=%s"%mp_member.nick_name)
+    if not undetermined_member:
+        #头像不匹配直接退出
+        logger.info("头像不匹配")
+        return
+    client_id = BaseModel.fetch_one(ShareTask, "client_id", 
+        where_clause=BaseModel.where_dict({"task_id": task_id})).client_id
+
+    chatroomname_models = BaseModel.fetch_all(UserQunR, "chatroomname", 
+        where_clause=BaseModel.where_dict({"client_id": client_id}))
+    
+    if len(chatroomname_models) == 0:
+        #发任务的人没有在UserQunR的任何群里，直接退出
+        logger.info("发任务的人没有在UserQunR的任何群里，直接退出, client_id=%s"%client_id)
+        return
+    true_member = None
+    for chatroomname_model in chatroomname_models:
+        chatroomname = chatroomname_model.chatroomname
+        members_model = BaseModel.fetch_one(Member, "members", 
+        where_clause=BaseModel.where_dict({"chatroomname": chatroomname}))
+
+        for member in members_model.members:
+            if member.get("username") == undetermined_member.username:
+                true_member = undetermined_member
+                break
+        if true_member:
+            break
+    if not true_member:
+        #待定人员没有在发任务的人的任何群里，直接退出
+        logger.info("待定人员没有在发任务的人的任何群里，直接退出, username=%s"%undetermined_member.username)
+        return
+    display_chatroomname = None
+    mp_member_client_id = BaseModel.fetch_one(UserInfo, "client_id", 
+        where_clause=BaseModel.where_dict({"open_id": mp_member.open_id})).client_id
+    mp_member_chatroomname_models = BaseModel.fetch_all(UserQunR, "chatroomname", 
+        where_clause=BaseModel.where_dict({"client_id": mp_member_client_id}))
+    if len(mp_member_chatroomname_models) == 0:
+        #mp_member不在任何群里，理论上不可能
+        return
+    mp_member_chatroomname_pool = []
+    for mp_member_chatroomname_model in mp_member_chatroomname_models:
+        if not display_chatroomname:
+            display_chatroomname = mp_member_chatroomname_model.chatroomname
+        mp_member_chatroomname_pool.append(mp_member_chatroomname_model.chatroomname)
+    
+    mp_member.chatroomname = display_chatroomname
+    mp_member.chatroom_list = ";".join(mp_member_chatroomname_pool)
+    logger.info("display_chatroomname: %s"%display_chatroomname)
+    logger.info("chatroom_list: %s"%mp_member.chatroom_list)
+    mp_member.update()
 
 
 @main_api_v2.route("/get_statistic_list", methods = ['POST'])
@@ -574,3 +641,79 @@ def get_share_signature():
     except Exception as e:
         logger.error('ERROR  %s' % e)
         return make_response(ERR_INVALID_PARAMS)
+
+
+
+
+
+@main_api_v2.route("/get_url_info", methods=['POST'])
+def get_url_info ():
+    try: 
+        url = request.json.get("url")
+        timeout = request.json.get("timeout",5)
+        header = {'user-agent': 'Mozilla/5.0 (Linux; U; Android 6.0; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'}
+        rsp = requests.get(url = url,headers=header,timeout=timeout)
+        h = rsp.headers
+        Security = h.get('Content-Security-Policy')
+        iframe = 1
+        if Security:
+            for pli in Security.split(';',10) :
+                if(pli.find('frame-ancestors'))>-1:
+                    if(pli.find("'none'") or pli.find("'self'")):
+                        iframe = 2
+        rsp.encoding = 'UTF-8'
+        content =  rsp.content 
+        pic = ''
+        if(url.find('mp.weixin.qq.com'))>-1:
+            title = re.search('msg_title\s=\s"(.*)"', content)
+            keywords =  re.search('msg_desc\s*=\s*"(.*)"', content)
+            desc =  re.search('msg_desc\s*=\s*"(.*)"', content)
+            pic = re.search('msg_cdn_url\s*=\s*"(.*)"', content) 
+            if pic:
+                pic = pic.group(1)
+                pic = uploadPic(pic)
+            
+        else:
+            title =  re.search('<title>(.*)</title>', content)
+            keywords =  re.search('<meta\s*name="keywords"\s*content="(.*)" />', content)
+            desc =  re.search('<meta\s*name="description"\s*content="(.*)" />', content)
+        
+        if not title:
+            title = ''
+        else:
+            title = title.group(1)
+        if not keywords:
+            keywords = ''
+        else:
+            keywords = keywords.group(1)
+        if not desc:
+            desc = ''
+        else:
+            desc = desc.group(1)
+        
+        return make_response(SUCCESS, title=title,keywords=keywords,desc=desc,pic=pic,iframe=iframe)
+        #ret={'code':0,'data':{'title':title,'keywords':keywords,'desc':desc,'pic':pic},'iframe':iframe}
+    except Exception as ex :  
+        #ret={'code':-1,'msg':'request err'}
+        return make_response(URL_ERROR)
+        #return  json.dumps(ret) 
+
+
+def uploadPic (url):
+    try:
+        if url:
+            header = {'user-agent': 'Mozilla/5.0 (Linux; U; Android 6.0; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'}
+            rsp = requests.get(url = url,headers=header,timeout=5)
+            if rsp:
+                import hashlib
+                hash_md5 = hashlib.md5(url)
+                urlmd5 = hash_md5.hexdigest()
+                pic =  rsp.content
+                filename =   urlmd5 + str(int(time.time())) + '.jpg'
+                return put_file_to_oss(filename, pic)
+    except Exception as ex :  
+        return False
+            
+
+    
+    

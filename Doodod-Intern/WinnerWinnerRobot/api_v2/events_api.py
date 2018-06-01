@@ -1125,6 +1125,9 @@ def _events_detail():
     for event_chatroom in event_chatroom_list:
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*',
                                             BaseModel.where_dict({'chatroomname': event_chatroom.chatroomname}))
+        if this_chatroom is None:
+            logger.warning('events_detail can not find %s' % event_chatroom.chatroomname)
+            continue
         real_nickname = this_chatroom.nickname
         if real_nickname == '':
             real_nickname = this_chatroom.nickname_default

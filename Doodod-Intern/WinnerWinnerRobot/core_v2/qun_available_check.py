@@ -103,22 +103,31 @@ class QunAvailableCheckThread(threading.Thread):
                 "content": u"亲，30分钟快到了，我舍不得离开%s哦，您快快联系我们客户mm，激活小助手哦。" % chatroomname
             }
 
+            customer_service_data = {
+                "task": "send_message",
+                "to": username,
+                "type": 2,
+                "content": u"客服二维码",
+                "title": u"客服二维码",
+                "source_url": "http://ywbdthumb.oss-cn-beijing.aliyuncs.com/5_kefu-qrcode.jpeg"
+            }
+
             sleep_time = 15 * 60 - (int(time.time()) - qun.create_time) \
                 if 15 * 60 - (int(time.time()) - qun.create_time) > 0 else 0
             time.sleep(sleep_time)
 
             try:
-                status = send_ws_to_android(ubr.bot_username, data)
-                # TODO 推送微信客服名片
-                # code ...
+                status1 = send_ws_to_android(ubr.bot_username, data)
+                status2 = send_ws_to_android(ubr.bot_username, customer_service_data)
+
+                if status1 == status2 == SUCCESS:
+                    logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
+                else:
+                    logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
 
             except Exception:
-                continue
+                pass
 
-            if status == SUCCESS:
-                logger.info(u"任务发送成功, client_id: %s." % qun.client_id)
-            else:
-                logger.info(u"任务发送失败, client_id: %s." % qun.client_id)
             # 减小安卓服务器压力
             # time.sleep(0.1)
 

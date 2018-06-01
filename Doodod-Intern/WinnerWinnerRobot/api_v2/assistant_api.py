@@ -8,6 +8,9 @@ from configs.config import main_api_v2, ANDROID_SERVER_URL_BOT_STATUS, ANDROID_S
 from core_v2.user_core import UserLogin, _get_a_balanced_bot, _get_qr_code_base64_str
 from models_v2.base_model import *
 from utils.z_utils import *
+from core_v2.send_msg import send_ws_to_android
+from utils.u_model_json_str import verify_json
+from events_api import put_img_to_oss
 
 # "client_id" : "bot_username"
 user_already_get_bot = {}
@@ -154,3 +157,61 @@ def assistant_modify():
                 resp = requests.post(ANDROID_SERVER_URL_SEND_MESSAGE, json=msg)
 
     return response({'err_code': 0, 'content': 'success'})
+
+
+@main_api_v2.route("/assistant_modify_nickname_avatar", methods=['POST'])
+@para_check('token', 'bot_username')
+def assistant_modify_nickname_avatar():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    try:
+        client_id = user_info.client_id
+    except AttributeError:
+        return response({'err_code': -2, 'content': 'User token error.'})
+    
+    bot_username = request.json.get('bot_username')
+    oss_url = None
+    avatar_raw = request.json.get('avatar_raw')
+
+    if avatar_raw:
+        if 'http://ywbdposter.oss-cn-beijing.aliyuncs.com' not in avatar_raw:
+            try:
+                avatar_raw = avatar_raw.replace('data:image/png;base64,', '')
+                oss_url = put_img_to_oss(bot_username+"_"+str(time.time()), avatar_raw)
+            except Exception:
+                return response({'err_code': -2, 'content': 'Give me base64 avatar_raw'})
+
+        logger.info("头像url为%s"%oss_url)
+        data = {
+            "task": "update_avatar",
+            "new_avatar_url": oss_url,
+            "filename": oss_url.split('/')[-1]
+        }
+        try:
+            status = send_ws_to_android(bot_username, data)
+            if status == SUCCESS:
+                logger.info(u"更改%s头像成功." % bot_username)
+            else:
+                logger.info(u"更改%s头像失败." % bot_username)
+                return response({'err_code': -2, 'content': 'Update avatar failure'})
+
+        except Exception:
+            pass
+
+    new_nickname = request.json.get('nickname')
+    if new_nickname:
+        data = {
+            "task": "update_nickname",
+            "new_nickname": new_nickname
+        }
+        try:
+            nick_name_status = send_ws_to_android(bot_username, data)
+            if nick_name_status == SUCCESS:
+                logger.info(u"更改%s名字成功, 新名字为: %s." % (bot_username, new_nickname))
+                return response({'err_code': 0, 'content': 'Update nickname success'})
+            else:
+                logger.info(u"更改%s名字失败." % bot_username)
+                return response({'err_code': -2, 'content': 'Update nickname failure'})
+        except Exception:
+            pass
+    return response({'err_code': 0, 'content': 'Update nothing'})

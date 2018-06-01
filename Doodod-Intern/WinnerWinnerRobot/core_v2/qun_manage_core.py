@@ -250,6 +250,16 @@ def check_whether_message_is_add_qun(a_message):
                                 "type": 1,
                                 "content": u"恭喜！友问币答小助手已经进入%s了, 可立即使用。" % chatroom_nickname_real
                             }
+                            try:
+                                status = send_ws_to_android(bot_username, info_data)
+
+                                if status == SUCCESS:
+                                    logger.info(u"非首次入群---通知任务发送成功, client_id: %s." % user_info.client_id)
+                                else:
+                                    logger.info(u"非首次入群---通知任务发送失败, client_id: %s." % user_info.client_id)
+                            except Exception:
+                                pass
+
                         else:
                             info_data = {
                                 "task": "send_message",
@@ -258,14 +268,25 @@ def check_whether_message_is_add_qun(a_message):
                                 "content": u"恭喜！友问币答小助手已经进入%s了。但目前处于试用阶段，请在30分钟内联系我们客服mm激活小助手哦。" % chatroom_nickname_real
                             }
 
-                        try:
-                            status = send_ws_to_android(bot_username, info_data)
-                            if status == SUCCESS:
-                                logger.info(u"非首次入群---通知任务发送成功, client_id: %s." % user_info.client_id)
-                            else:
-                                logger.info(u"非首次入群---通知任务发送失败, client_id: %s." % user_info.client_id)
-                        except Exception:
-                            pass
+                            customer_service_data = {
+                                "task": "send_message",
+                                "to": user_info.username,
+                                "type": 2,
+                                "content": u"客服二维码",
+                                "title": u"客服二维码",
+                                "source_url": "http://ywbdthumb.oss-cn-beijing.aliyuncs.com/5_kefu-qrcode.jpeg"
+                            }
+
+                            try:
+                                status1 = send_ws_to_android(bot_username, info_data)
+                                status2 = send_ws_to_android(bot_username, customer_service_data)
+
+                                if status1 == status2 == SUCCESS:
+                                    logger.info(u"非首次入群---通知任务发送成功, client_id: %s." % user_info.client_id)
+                                else:
+                                    logger.info(u"非首次入群---通知任务发送失败, client_id: %s." % user_info.client_id)
+                            except Exception:
+                                pass
 
                     #########################
                 else:

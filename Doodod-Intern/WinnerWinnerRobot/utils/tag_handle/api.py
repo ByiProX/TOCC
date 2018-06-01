@@ -128,3 +128,4 @@ class Tag:
 
     def __iter__(self):
         return (i for i in self.get_open_name_list())
+print(Tag().load_config('test'))
