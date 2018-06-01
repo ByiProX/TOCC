@@ -482,6 +482,16 @@ def extract_enter_chatroom_msg(content):
         return ERR_UNKNOWN_ERROR, None, None
 
 
+def is_vip(client_id):
+    client = BaseModel.fetch_one('client', '*', BaseModel.where_dict({'client_id':client_id}))
+    if client is None:
+        return False
+    _is_vip = client.to_json_full().get('vip')
+    if _is_vip:
+        return True
+    return False
+
+
 if __name__ == '__main__':
     # content = '<sysmsg type="sysmsgtemplate"> <sysmsgtemplate> <content_template type="tmpl_type_profile"> <plain><![CDATA[]]></plain> <template><![CDATA["$username$"邀请"$names$"加入了群聊]]></template> <link_list> <link name="username" type="link_profile"> <memberlist> <member> <username><![CDATA[wxid_zy8gemkhx2r222]]></username> <nickname><![CDATA[ZYunH]]></nickname> </member> </memberlist> </link> <link name="names" type="link_profile"> <memberlist> <member> <username><![CDATA[wxid_56mqtj11ewa022]]></username> <nickname><![CDATA[呆呆球]]></nickname> </member> </memberlist> <separator><![CDATA[、]]></separator> </link> </link_list> </content_template> </sysmsgtemplate> </sysmsg>'
     # print extract_enter_chatroom_msg(content)

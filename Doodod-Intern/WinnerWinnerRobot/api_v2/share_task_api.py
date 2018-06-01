@@ -102,6 +102,51 @@ def create_task():
     return make_response(SUCCESS, share_task = share_task.to_json_full(), state_json = state_json)
 
 
+@main_api_v2.route("/modify_share_task", methods = ['POST'])
+def modify_share_task():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    share_task_id = request.json.get("share_task_id")
+    if not share_task_id:
+        return make_response(ERR_INVALID_PARAMS)
+    share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
+    if not share_task:
+        return make_response(ERR_WRONG_ITEM)
+
+    ori_url = request.json.get("ori_url")
+    title = request.json.get("title")
+    if not ori_url or not title:
+        return make_response(ERR_INVALID_PARAMS)
+
+    thumb_url = request.json.get("thumb_url")
+    desc = request.json.get("desc", ori_url)
+    url_type = request.json.get("url_type")
+
+    now = int(time.time())
+    # share_task.task_id = unicode(user_info.client_id) + "_" + unicode(now)
+    # share_task.is_deleted = 0
+    share_task.ori_url = ori_url
+    share_task.title = title
+    share_task.thumb_url = thumb_url
+    share_task.desc = desc
+    # share_task.client_id = client_id
+    share_task.url_type = url_type
+    # share_task.create_time = now
+    share_task.update_time = now
+    # share_task.total_click_pv = 0
+    # share_task.total_click_uv = 0
+    # # share_task.total_click_list = []
+    # share_task.total_share_pv = 0
+    # share_task.total_share_uv = 0
+    # # share_task.total_share_list = []
+    share_task.update()
+
+    return make_response(SUCCESS, share_task = share_task.to_json_full())
+
+
 @main_api_v2.route("/get_share_info", methods = ['POST'])
 def api_get_share_info():
     verify_json()
@@ -136,6 +181,31 @@ def api_get_share_list():
     share_list_json = [r.to_json_full() for r in share_list]
 
     return make_response(SUCCESS, share_list = share_list_json, total_count = total_count)
+
+
+@main_api_v2.route("/delete_one_share", methods = ['POST'])
+def api_delete_one_share():
+    verify_json()
+    status, user_info = UserLogin.verify_token(request.json.get('token'))
+    if status != SUCCESS:
+        return make_response(status)
+
+    share_task_id = request.json.get("share_task_id")
+    if not share_task_id:
+        return make_response(ERR_INVALID_PARAMS)
+    page = request.json.get("page", DEFAULT_PAGE)
+    pagesize = request.json.get("pagesize", DEFAULT_PAGE_SIZE)
+
+    deleted_share_task = BaseModel.fetch_by_id(ShareTask, share_task_id)
+    if not deleted_share_task:
+        return make_response(ERR_WRONG_ITEM)
+    deleted_share_task.is_deleted = 1
+    deleted_share_task.update()
+
+    new_share_task = BaseModel.fetch_one(ShareTask, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+                                                                                              "is_deleted": 0}), limit = 1, offset = (page - 1) * pagesize + pagesize - 1)
+
+    return make_response(SUCCESS, new_share_task = new_share_task)
 
 
 @main_api_v2.route("/share_task", methods = ['POST'])

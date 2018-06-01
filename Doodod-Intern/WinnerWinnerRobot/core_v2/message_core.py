@@ -532,8 +532,8 @@ def update_employee_people_list():
         else:
             EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[u'@' + man_nickname].append([man_username, man.by_client_id])
 
-    # print('1-----------', EMPLOYEE_PEOPLE_BE_AT_RULE_DICT)
-    # print('2-----------', EMPLOYEE_PEOPLE_RE_RULE_DICT)
+    print('1-----------', EMPLOYEE_PEOPLE_BE_AT_RULE_DICT)
+    print('2-----------', EMPLOYEE_PEOPLE_RE_RULE_DICT)
 
 
 def update_employee_people_reply_rule():
@@ -634,8 +634,9 @@ def check_or_add_at_log(a_message):
      "@nickname" : [ ["username",by_client_id] , ["username",by_client_id]]
      }
     """
-    real_content = a_message.real_content
+    real_content = str_to_unicode(a_message.real_content)
     at_rule_list = EMPLOYEE_PEOPLE_BE_AT_RULE_DICT.keys()
+
     for i in at_rule_list:
         if i + u' ' in real_content:
             for j in EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[i]:
@@ -757,6 +758,13 @@ def add_employee_at_log(username, content, a_message_id, chatroomname, by_client
     print('add_employee_at_log running')
     # Check if this employee not in this chatroom.
     try:
+        client_chatroomname_list = []
+        client_chatroom_list = BaseModel.fetch_all('client_qun_r','*',BaseModel.where_dict({'client_id':by_client_id}))
+        for i in client_chatroom_list:
+            temp = i.to_json().get('chatroomname')
+            client_chatroomname_list.append(temp)
+        if chatroomname not in client_chatroomname_list:
+            return 0
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': chatroomname}))
         member_list = this_chatroom.memberlist.split(';')
         if username not in member_list:
@@ -778,6 +786,17 @@ def add_employee_at_log(username, content, a_message_id, chatroomname, by_client
 
 
 def add_wrong_re_log(username, content, a_message_id, chatroomname, by_client_id):
+    try:
+        client_chatroomname_list = []
+        client_chatroom_list = BaseModel.fetch_all('client_qun_r', '*', BaseModel.where_dict({'client_id': by_client_id}))
+        for i in client_chatroom_list:
+            temp = i.to_json().get('chatroomname')
+            client_chatroomname_list.append(temp)
+        if chatroomname not in client_chatroomname_list:
+            return 0
+    except Exception as e:
+        print('add_wrong_re_log,',e)
+
     _new_log = CM('employee_re_log')
     _new_log.username = username
     _new_log.create_time = int(time.time())

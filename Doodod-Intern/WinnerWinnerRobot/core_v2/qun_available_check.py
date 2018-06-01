@@ -26,7 +26,10 @@ class QunAvailableCheckThread(threading.Thread):
         while self.go_work:
             logger.info("进入循环 go work")
 
-            clients = BaseModel.fetch_all("client", "*")
+            clients = BaseModel.fetch_all("client", "*",
+                                          where_clause=BaseModel.and_(
+                                              ["=", "vip", 0]
+                                          ))
             clients = [client for client in clients if client.qun_used > client.qun_count]
 
             if not clients:

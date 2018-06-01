@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import requests
+from configs.config import ANDROID_SERVER_URL_BOT_STATUS
+import json
 
 import time
 from flask import request
@@ -96,7 +99,6 @@ def android_add_qun():
     bot_username = request.json.get('bot_username')
     chatroomname = request.json.get("chatroomname")
 
-    logger.info(u"发现加bot好友用户. username: %s." % user_username)
     status, user_info_list = _bind_qun_success(chatroomname, "", bot_username, user_username)
 
     return make_response(SUCCESS)
@@ -124,6 +126,28 @@ def android_new_message():
     verify_json()
     a_message = CM(Message).from_json(request.json)
     a_message.set_id(request.json.get('a_message_id'))
+
+    # 判断主副机器人的存活状态
+    # client = BaseModel.fetch_one("client_member", "*",
+    #                              where_clause=BaseModel.and_(
+    #                                  ["=", "username", a_message.real_talker]
+    #                              ))
+    #
+    # client_bot_r = BaseModel.fetch_one("client_qun_r", "*",
+    #                                    where_clause=BaseModel.and_(
+    #                                        ["=", "client_id", client.client_id]
+    #                                    ))
+
+    req = requests.get(ANDROID_SERVER_URL_BOT_STATUS)
+    if req.status_code == 200:
+        pass
+
+    client_bots_status = json.loads(req.content)
+
+    if not client_bots_status[a_message.bot_username]:
+        return
+
+    ################################
 
     global gm_rule_dict
     global gm_default_rule_dict

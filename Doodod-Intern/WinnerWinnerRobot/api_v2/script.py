@@ -141,8 +141,8 @@ def api_delete_client_qun_r():
 
     print client_bot_r.to_json_full()
     print ">>>>>>>>>>>>>>>>>>>>>>>>>."
-    client_bot_r.delete()
-    # client_bot_r.save()
+    client_bot_r.standby_bots.pop(0)
+    client_bot_r.save()
 
     return make_response(SUCCESS)
 

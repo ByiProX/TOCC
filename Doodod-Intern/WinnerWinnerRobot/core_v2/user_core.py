@@ -414,6 +414,7 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
             pass
         elif user_info.username == user_username:
             ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+            # 修改 if 判定 by quentin
             # if ubr:
             if ubr.bot_username == bot_info.username:
                 user_info_list.remove(user_info)
@@ -471,12 +472,22 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
             print "444444444444444444444444"
             client_bot_info.is_work = 1
             bot = dict()
-            bot.setdefault("username", bot_info.username)
+            bot.setdefault("bot_username", bot_info.username)
 
             if not client_bot_info.standby_bots:
                 client_bot_info.standby_bots = list()
+                client_bot_info.standby_bots.append(bot)
 
-            client_bot_info.standby_bots.append(bot)
+            else:
+                bot_list = [bot['bot_username'] for bot in client_bot_info.standby_bots[:1]]
+                if bot_info.username not in bot_list:
+                    client_bot_info.standby_bots.append(bot)
+
+            # if not client_bot_info.standby_bots:
+            #     client_bot_info.standby_bots = list()
+            #
+            # client_bot_info.standby_bots.append(bot)
+
             client_bot_info.save()
 
     else:
