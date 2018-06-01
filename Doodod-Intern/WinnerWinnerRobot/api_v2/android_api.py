@@ -11,7 +11,7 @@ from flask import request
 from configs.config import SUCCESS, main_api_v2, BotInfo, Message, NEW_MSG_Q, Contact, GLOBAL_RULES_UPDATE_FLAG, \
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, \
     GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, MaterialLib, UserInfo, UserBotR, GLOBAL_EMPLOYEE_PEOPLE_FLAG, \
-    ERR_HAVE_SAME_PEOPLE, ERR_WRONG_ITEM
+    ERR_HAVE_SAME_PEOPLE, ERR_WRONG_ITEM, BOT_DEAD
 from core_v2.matching_rule_core import gm_rule_dict, gm_default_rule_dict, get_gm_rule_dict, get_gm_default_rule_dict
 from core_v2.message_core import route_msg, count_msg, update_sensitive_word_list, update_employee_people_list, \
     NEED_UPDATE_REPLY_RULE, update_employee_people_reply_rule
@@ -127,25 +127,34 @@ def android_new_message():
     a_message = CM(Message).from_json(request.json)
     a_message.set_id(request.json.get('a_message_id'))
 
-    # 判断主副机器人的存活状态
-    # client = BaseModel.fetch_one("client_member", "*",
-    #                              where_clause=BaseModel.and_(
-    #                                  ["=", "username", a_message.real_talker]
-    #                              ))
-    #
-    # client_bot_r = BaseModel.fetch_one("client_qun_r", "*",
-    #                                    where_clause=BaseModel.and_(
-    #                                        ["=", "client_id", client.client_id]
-    #                                    ))
-
     req = requests.get(ANDROID_SERVER_URL_BOT_STATUS)
-    if req.status_code == 200:
-        pass
+    client_bots_alive = json.loads(req.content)
 
-    client_bots_status = json.loads(req.content)
+    # 判断主副机器人的存活状态
+    client_id = BaseModel.fetch_one("client_qun_r", "*",
+                                    where_clause=BaseModel.and_(
+                                        ["=", "chatroomname", a_message.talker]
+                                    )).client_id
 
-    if not client_bots_status[a_message.bot_username]:
-        return
+    client_bot_r = BaseModel.fetch_one("client_bot_r", "*",
+                                       where_clause=BaseModel.and_(
+                                           ["=", "client_id", client_id]
+                                       ))
+
+    host_bot = client_bot_r.bot_username
+    standby_bots_list = [standby_bot['bot_username'] for standby_bot in client_bot_r.standby_bots]
+    bot_who_catch_msg = a_message.bot_username
+
+    # 如果该消息是主机器人收集到
+    if bot_who_catch_msg == host_bot:
+        if not client_bots_alive[bot_who_catch_msg]:
+            return make_response(BOT_DEAD)
+
+    # 如果该消息是备用机器人收集到
+    elif bot_who_catch_msg in standby_bots_list:
+        # 如果备用机器人活着
+        if client_bots_alive[host_bot]:
+            return make_response(SUCCESS)
 
     ################################
 

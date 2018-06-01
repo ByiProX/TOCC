@@ -638,7 +638,8 @@ def check_or_add_at_log(a_message):
     at_rule_list = EMPLOYEE_PEOPLE_BE_AT_RULE_DICT.keys()
 
     for i in at_rule_list:
-        if i + u' ' in real_content:
+        # Delete u'' because real_content diff.
+        if i + u'\u2005' in real_content or i + u' ' in real_content:
             for j in EMPLOYEE_PEOPLE_BE_AT_RULE_DICT[i]:
                 print('At log:', j, real_content)
                 username = j[0]
@@ -837,3 +838,50 @@ def chatroom_client_info(a_message):
         return Tag(0).get_name_dict()
 
     return Tag(client_info.func_switch).get_name_dict()
+
+
+def _extract_msg_be_at(msg):
+    print('_extract_msg_be_at work----')
+    at_count = 0
+    chatroomname = msg.talker
+    is_at = False
+    member_be_at_list = list()
+    content = str_to_unicode(msg.real_content)
+    content_tmp = copy.deepcopy(content)
+
+    if content_tmp.find(u'@') != -1:
+        is_at = True
+        content_index = 0
+        while content_tmp[content_index:].find(u'@') != -1:
+            offset = content_index + content_tmp[content_index:].find(u'@') + 1
+            end_index = 0
+            if content_tmp[content_index:].find(u'\u2005') == -1:
+                content_tmp = content_tmp.replace(u' ', u'\u2005')
+                # print content_tmp.__repr__()
+            while content_tmp[offset + end_index:].find(u'\u2005') != -1:
+                end_index += content_tmp[offset + end_index:].find(u'\u2005') + 1
+                name_be_at = content_tmp[offset:offset + end_index - 1]
+                if name_be_at == u'':
+                    is_at = False
+                    break
+                if name_be_at.find(u'\u2005') != -1:
+                    name_be_at = name_be_at.replace(u'\u2005', u' ')
+                logger.debug(u'nick_name_be_at: ' + name_be_at)
+                member_be_at = fetch_member_by_nickname(chatroomname=chatroomname,
+                                                        nickname=name_be_at, update_flag=False)
+                # 匹配到 member
+                if member_be_at:
+                    logger.info(u'member_be_at ' + unicode(member_be_at))
+                    is_at = True
+                    offset += end_index
+                    member_be_at_list.append(member_be_at)
+                    at_count += 1
+                    break
+                else:
+                    logger.info(u'really not find ' + name_be_at)
+                    # Mark 一个异常，全部异常
+                    return False, None
+            content_index = offset
+
+    print(member_be_at_list)
+    # return is_at, at_count

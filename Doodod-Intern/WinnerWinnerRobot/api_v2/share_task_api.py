@@ -205,7 +205,7 @@ def api_delete_one_share():
     new_share_task = BaseModel.fetch_one(ShareTask, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
                                                                                               "is_deleted": 0}), limit = 1, offset = (page - 1) * pagesize + pagesize - 1)
 
-    return make_response(SUCCESS, new_share_task = new_share_task)
+    return make_response(SUCCESS, new_share_task = new_share_task.to_json_full())
 
 
 @main_api_v2.route("/share_task", methods = ['POST'])
@@ -614,6 +614,10 @@ def api_get_statistic_list():
         if mp_member:
             mp_member_json = mp_member.to_json_full()
             mp_member_json.update(statistic_json)
+            if mp_member.chatroomname:
+                chatroom = BaseModel.fetch_one(Chatroom, "*", where_clause = BaseModel.where_dict({"chatroomname": mp_member.chatroomname}))
+                if chatroom:
+                    mp_member_json.update(chatroom.to_json_full())
             statistic_list_json.append(mp_member_json)
         else:
             statistic_list_json.append(statistic_json)

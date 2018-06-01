@@ -208,6 +208,10 @@ ERROR_CODE = dict()
 # 正常
 SUCCESS = 'success'
 ERROR_CODE[SUCCESS] = {'status_code': 0}
+
+# 机器人死掉
+BOT_DEAD = 'dead_bot'
+ERROR_CODE[BOT_DEAD] = {'status_code': -100190}
 # 参数不合法
 ERR_INVALID_PARAMS = 'err_invalid_params'
 ERROR_CODE[ERR_INVALID_PARAMS] = {'discription': '参数不合法', 'status_code': -1}
