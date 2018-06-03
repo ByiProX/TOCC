@@ -470,6 +470,7 @@ def mp_member_regist(code, app_name, task_id):
         mp_member = BaseModel.fetch_one(MPMember, "*", where_clause = BaseModel.where_dict({"open_id": open_id,
                                                                                             "app": app_name}))
         if not mp_member:
+            logger.info(u"尚未注册，开始注册")
             we_conn = wechat_conn_dict.get(app_name)
             if we_conn is None:
                 logger.info(
@@ -490,10 +491,10 @@ def mp_member_regist(code, app_name, task_id):
             mp_member.create_time = now
             mp_member.mp_member_unique_id = mp_member.open_id[-5:] + unicode(mp_member.create_time)
             mp_member.save()
-            check_mp_member(mp_member, task_id)
 
         mp_member.code = code
         mp_member.save()
+        check_mp_member(mp_member, task_id)
         logger.info(u"已经注册，nickname: %s" % mp_member.nick_name)
 
         s_mp_memebr = BaseModel.fetch_one(StatisticsShareTask, "*",
@@ -517,71 +518,66 @@ def mp_member_regist(code, app_name, task_id):
 
 
 def check_mp_member(mp_member, task_id):
-    # 先匹配昵称和多于一个匹配头像
+    # 匹配昵称
     # 这里有坑，匹配到一个也不能保证是同一个人
+    logger.info("开始匹配")
     undetermined_member_pool = BaseModel.fetch_all(Contact, "*", 
         where_clause=BaseModel.where_dict({"nickname": mp_member.nick_name}))
     undetermined_member = None
     if len(undetermined_member_pool) == 0:
-        #在Contact没查到相同昵称直接退出
         logger.info("在Contact没查到相同昵称直接退出")
         return
     elif  len(undetermined_member_pool) == 1:
         undetermined_member = undetermined_member_pool[0]
+        logger.info("匹配到一个")
     elif  len(undetermined_member_pool) > 1:
-        # for undetermined_member_ in undetermined_member_pool:
-        #     if undetermined_member_.avatar_url == mp_member.avatar_url:
-        #         undetermined_member = undetermined_member_
-        #         break
         logger.error("在Contact中匹配到多个和mp_member昵称相同的人。nickname=%s"%mp_member.nick_name)
-    if not undetermined_member:
-        #头像不匹配直接退出
-        logger.info("头像不匹配")
         return
+ 
     client_id = BaseModel.fetch_one(ShareTask, "client_id", 
         where_clause=BaseModel.where_dict({"task_id": task_id})).client_id
-
+    logger.info("cliend_id%s"%client_id)
     chatroomname_models = BaseModel.fetch_all(UserQunR, "chatroomname", 
         where_clause=BaseModel.where_dict({"client_id": client_id}))
-    
+    logger.info("匹配到群列表, 有%d个群"%len(chatroomname_models))
     if len(chatroomname_models) == 0:
-        #发任务的人没有在UserQunR的任何群里，直接退出
         logger.info("发任务的人没有在UserQunR的任何群里，直接退出, client_id=%s"%client_id)
         return
-    true_member = None
+
+    chatroom_pool = []
+
     for chatroomname_model in chatroomname_models:
         chatroomname = chatroomname_model.chatroomname
-        members_model = BaseModel.fetch_one(Member, "members", 
+        memberlist_model = BaseModel.fetch_one(Chatroom, "memberlist", 
         where_clause=BaseModel.where_dict({"chatroomname": chatroomname}))
 
-        for member in members_model.members:
-            if member.get("username") == undetermined_member.username:
-                true_member = undetermined_member
+        if not memberlist_model:
+            logger.debug(u"Chatroom表里没这个群")
+            continue
+        if not memberlist_model.memberlist:
+            logger.debug(u"没有memberlist这个属性")
+            #不知道为什么会没有memberlist
+            continue
+
+        members = memberlist_model.memberlist.split(";")
+        for member in members:
+            if member == undetermined_member.username:
+                chatroom_pool.append(chatroomname)
                 break
-        if true_member:
-            break
-    if not true_member:
-        #待定人员没有在发任务的人的任何群里，直接退出
-        logger.info("待定人员没有在发任务的人的任何群里，直接退出, username=%s"%undetermined_member.username)
+
+    if len(chatroom_pool) == 0:
+        logger.error("共同群为0，理论上不可能")
         return
+
     display_chatroomname = None
-    mp_member_client_id = BaseModel.fetch_one(UserInfo, "client_id", 
-        where_clause=BaseModel.where_dict({"open_id": mp_member.open_id})).client_id
-    mp_member_chatroomname_models = BaseModel.fetch_all(UserQunR, "chatroomname", 
-        where_clause=BaseModel.where_dict({"client_id": mp_member_client_id}))
-    if len(mp_member_chatroomname_models) == 0:
-        #mp_member不在任何群里，理论上不可能
-        return
-    mp_member_chatroomname_pool = []
-    for mp_member_chatroomname_model in mp_member_chatroomname_models:
+    for chatroom in chatroom_pool:
         if not display_chatroomname:
-            display_chatroomname = mp_member_chatroomname_model.chatroomname
-        mp_member_chatroomname_pool.append(mp_member_chatroomname_model.chatroomname)
+            display_chatroomname = chatroom
     
     mp_member.chatroomname = display_chatroomname
-    mp_member.chatroom_list = ";".join(mp_member_chatroomname_pool)
-    logger.info("display_chatroomname: %s"%display_chatroomname)
-    logger.info("chatroom_list: %s"%mp_member.chatroom_list)
+    mp_member.chatroom_list = ";".join(chatroom_pool)
+    logger.info(u"display_chatroomname: %s"%display_chatroomname.encode("utf-8"))
+    logger.info(u"chatroom_list: %s"%mp_member.chatroom_list)
     mp_member.update()
 
 
@@ -617,7 +613,8 @@ def api_get_statistic_list():
             if mp_member.chatroomname:
                 chatroom = BaseModel.fetch_one(Chatroom, "*", where_clause = BaseModel.where_dict({"chatroomname": mp_member.chatroomname}))
                 if chatroom:
-                    mp_member_json.update(chatroom.to_json_full())
+                    mp_member_json['chatroom'] = chatroom.to_json_full()
+                    # mp_member_json.update(chatroom.to_json_full())
             statistic_list_json.append(mp_member_json)
         else:
             statistic_list_json.append(statistic_json)

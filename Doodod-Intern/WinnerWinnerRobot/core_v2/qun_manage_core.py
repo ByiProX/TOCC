@@ -312,6 +312,7 @@ def check_whether_message_is_add_qun(a_message):
 
 
 def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username):
+    logger.info(u"scofield _bind_qun_success %s%s%s%s" % (chatroomname, user_nickname, bot_username, member_username))
     """
     当确认message为加群时，将群加入到系统中
     :param user_nickname: 除了有可能是nickname，还有可能是displayname
@@ -325,6 +326,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
     # if not member_username:
     #     logger.error(u"找不到该成员. nickname: %s." % user_nickname)
     #     return ERR_WRONG_ITEM, None
+    #UserInfo = client_member
 
     user_info_list = BaseModel.fetch_all(UserInfo, "*", where_clause = BaseModel.where_dict({"username": member_username}))
     # user_info = BaseModel.fetch_one(UserInfo, "*", where_clause = BaseModel.where_dict({"username": member_username}))
@@ -333,6 +335,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
         return ERR_WRONG_ITEM, None
 
     # user_id = user_info.user_id
+    # UserBotR = client_bot_r
 
     logger.info(u"已匹配到 " + unicode(len(user_info_list)) + u" 个 client")
     for user_info in user_info_list:
@@ -371,11 +374,13 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
             uqr = CM(UserQunR)
             uqr.client_id = user_info.client_id
             uqr.chatroomname = chatroomname
+            uqr.bot_username = bot_username 
             uqr.status = 1
             uqr.group_id = unicode(user_info.client_id) + u"_0"
             uqr.create_time = int(time.time())
             # uqr.is_paid = 0 if uqr_count > 0 else 1
             uqr.is_paid = 0 if qun_count <= qun_used else 1
+            logger.error(u"scofield not find cqr bot is  %s data is  %s" % (uqr.bot_username,uqr.to_json()))
             uqr.save()
             logger.info(u"user与群关系已绑定. user_id: %s. chatroomname: %s." % (user_info.client_id, chatroomname))
         else:
@@ -383,6 +388,17 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
             # add by qunetin
             uqr_exist.client_id = user_info.client_id
             uqr_exist.chatroomname = chatroomname
+            
+            #scofield 2018/6/2
+            _bak_bots = []
+            if hasattr(uqr_exist,'bak_bots') and uqr_exist.bak_bots:
+                _bak_bots = uqr_exist.bak_bots
+            logger.info(u"scofield bot_username %s" % bot_username)
+            if  bot_username != uqr_exist.bot_username:
+                _bak_bots.append(bot_username)
+            uqr_exist.bak_bots = _bak_bots
+            logger.info(u"scofield get _bak_bots from c_q_r %s" % _bak_bots)
+             
             uqr_exist.status = 1
             uqr_exist.group_id = unicode(user_info.client_id) + u"_0"
             uqr_exist.create_time = int(time.time())

@@ -9,7 +9,7 @@ import requests
 from sqlalchemy import func, desc
 
 from configs.config import db, ERR_WRONG_ITEM, SUCCESS, ERR_WRONG_USER_ITEM, CONSUMPTION_TASK_TYPE, BatchSendTask, \
-    Chatroom, BATCH_SEND_TASK_STATUS_1, BATCH_SEND_TASK_STATUS_3, BATCH_SEND_TASK_STATUS_4, UserBotR, ERR_UNKNOWN_ERROR
+    Chatroom, BATCH_SEND_TASK_STATUS_1, BATCH_SEND_TASK_STATUS_3, BATCH_SEND_TASK_STATUS_4, UserBotR, ERR_UNKNOWN_ERROR,ANDROID_SERVER_URL_BOT_STATUS, UserQunR
 from core.consumption_core import add_task_to_consumption_task
 from core_v2.send_msg import send_msg_to_android
 from models_v2.base_model import BaseModel, CM
@@ -17,6 +17,11 @@ from utils.u_time import datetime_to_timestamp_utc_8
 
 logger = logging.getLogger('main')
 
+
+def get_all_bots ():
+    req = requests.get(ANDROID_SERVER_URL_BOT_STATUS)
+    return json.loads(req.content)
+    
 
 def get_batch_sending_task(user_info, task_per_page, page_number, task_status):
     """
@@ -291,14 +296,33 @@ def create_a_timed_sending_task(user_info, chatroom_list, message_list, send_tim
     batch_send_task.save()
 
     return SUCCESS
+ 
+def get_master_bot(chatroomname,bot_name):
+    cqr = BaseModel.fetch_one(UserQunR, '*', where_clause=BaseModel.where_dict({'chatroomname':chatroomname,"bot_username":bot_name}))
+    logger.info("scofield chatroomname,bot_name %s %s"  % (chatroomname,bot_name))
+    all_bots = get_all_bots()
+    if not cqr:
+        #its bak bot
+        cqrs = BaseModel.fetch_all(UserQunR, '*', where_clause=BaseModel.where_dict({'chatroomname':chatroomname}))
+        for cqr in cqrs:
+            if not all_bots[cqr.bot_username]:
+                if hasattr(cqr,'bak_bots') and bot_name in cqr.bak_bots:
+                    return bot_name
+        return False
+    else:
+    	#bot master live
+        return bot_name
+
 
 
 def create_a_sending_task(user_info, chatroom_list, message_list):
     """
     将前端发送过来的任务放入task表，并将任务放入consumption_task
     :return:
-    """
-    ubr = BaseModel.fetch_one(UserBotR, '*', where_clause=BaseModel.where_dict({"client_id": user_info.client_id}))
+    """ 
+    #UserBotR = client_bot_r
+    #ubr = BaseModel.fetch_one(UserBotR, '*', where_clause=BaseModel.where_dict({"client_id": user_info.client_id}))
+    ubr = BaseModel.fetch_all(UserBotR, '*', where_clause=BaseModel.where_dict({"client_id": user_info.client_id}))
     if not ubr:
         logger.error(u"该用户没有绑定机器人")
         return ERR_WRONG_ITEM
@@ -306,12 +330,21 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     chatroom_count = len(chatroom_list)
     member_count = 0
     for chatroomname in chatroom_list:
-        chatroom = BaseModel.fetch_one(Chatroom, "member_count",
-                                       where_clause=BaseModel.where_dict({"chatroomname": chatroomname}))
-        if not chatroom or chatroom.member_count is None:
+        chatroom = BaseModel.fetch_one(Chatroom, "member_count",where_clause=BaseModel.where_dict({"chatroomname": chatroomname}))
+        
+        if not chatroom:
             logger.error(u"未获取到 chatroom, chatroomname: %s." % chatroomname)
             continue
+        else:
+            if not chatroom.member_count :
+                chatroom.member_count = 0
         member_count += chatroom.member_count
+
+ 
+        #if not chatroom or chatroom.member_count is None:
+        #    logger.error(u"未获取到 chatroom, chatroomname: %s." % chatroomname)
+        #    continue
+        #member_count += chatroom.member_count
 
     if chatroom_count == 0 or member_count == 0:
         logger.error(u"没有发送对象, 批量发送任务创建失败")
@@ -354,7 +387,42 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
     # Added by ZYunH, use chatroomname_list to search its bot_username.
     chatroom_status_dict = dict()  # {"chatroomname":['member_wxid','member_wxid']}
     send_msg_dict = dict()  # {"bot_username":['chatroomname1','chatroomname2']}
-    ubr = BaseModel.fetch_all(UserBotR, '*', where_clause=BaseModel.where_dict({"client_id": user_info.client_id}))
+    #ubr = BaseModel.fetch_all(UserBotR, '*', where_clause=BaseModel.where_dict({"client_id": user_info.client_id}))
+    
+ 
+    _where = BaseModel.where_dict(["in", "chatroomname", chatroom_list])
+    c_q_rs = BaseModel.fetch_all(UserQunR, '*', where_clause=_where)
+    all_bots = get_all_bots()
+    logger.info(u"scofield all bots is=: %s." % all_bots)
+    for cqr in c_q_rs:
+        _bot_name = ''
+        if not hasattr(cqr,'bot_username') or not cqr.bot_username:
+            logger.error(u"scofield _bot_name is none: %s." % cqr)
+            continue
+        else:
+            _bot_name = False 
+            if cqr.bot_username in all_bots :
+                if  not all_bots[cqr.bot_username]:
+                    logger.info(u"scofield cqr.bak_bots==: %s." % cqr.to_json())
+                    if hasattr(cqr,'bak_bots') and cqr.bak_bots  and len(cqr.bak_bots)>0:
+                        _bot_name = cqr.bak_bots[0]
+                else:
+                   logger.info(u"scofield not live bots")
+                   continue
+            
+        if not _bot_name:
+            logger.info(u"scofield not find live bot")
+            continue
+        
+        logger.info(u"scofield _bot_name ==: %s." % _bot_name)
+        if _bot_name not in send_msg_dict.keys():
+            send_msg_dict[_bot_name] = [cqr.chatroomname, ]
+        else:
+            send_msg_dict[_bot_name].append(cqr.chatroomname)
+        logger.info(u"scofield send_msg_dict==: %s." % send_msg_dict)
+    
+    #send_msg_dict[bot_username].append(chatroomname)
+    '''
     for _chatroomname in chatroom_list:
         this_chatroom = BaseModel.fetch_one('a_chatroom', '*', BaseModel.where_dict({'chatroomname': _chatroomname}))
         if this_chatroom is None:
@@ -369,6 +437,9 @@ def create_a_sending_task(user_info, chatroom_list, message_list):
                 else:
                     send_msg_dict[bot_username].append(k)
                 break
+    '''
+
+
     # Send msg to android.
     status = 'Failed'
     for k, v in send_msg_dict.items():

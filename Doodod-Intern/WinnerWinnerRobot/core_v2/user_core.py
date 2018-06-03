@@ -181,7 +181,6 @@ class UserLogin:
             self.user_info_up_to_date.country = res_json.get('country')
             self.user_info_up_to_date.avatar_url = res_json.get('headimgurl')
             #####
-            self.user_info_up_to_date.func_switch = Tag().load_config(self.app)
             self.user_info_up_to_date.username = ""
             self.user_info_up_to_date.app = self.app
 
@@ -382,12 +381,129 @@ def get_bot_qr_code(user_info):
     return SUCCESS, img_str
 
 
+# def _bind_bot_success(user_nickname, user_username, bot_info):
+#     """
+#     确认将一个bot绑入一个user之中
+#     :return:
+#     """
+#     print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> _bind_bot_success"
+#     # 因为AFriend等库更新未必在Message之前（在网速较慢的情况下可能出现）
+#     # 所以此处先sleep一段时间，等待AFriend更新后再读取
+#     # time.sleep(5)
+#
+#     # 验证是否是好友
+#     # a_friend = AFriend.get_a_friend(from_username = bot_info.username,
+#     #                                 to_username = user_username)
+#     # if not a_friend:
+#     #     logger.error(u"好友信息出错. bot_username: %s. user_username: %s" %
+#     #                  (bot_info.username, user_username))
+#     #     return ERR_WRONG_ITEM, None
+#     #
+#     # if a_friend.type % 2 != 1:
+#     #     logger.error(u"用户与bot不是好友. bot_username: %s. user_username: %s" %
+#     #                  (bot_info.username, user_username))
+#     #     logger.info(u'但是放宽限制，暂时给予通过')
+#     #     # return ERR_WRONG_ITEM, None
+#
+#     user_info_list = BaseModel.fetch_all(UserInfo, '*', where_clause = BaseModel.where_dict({"nick_name": user_nickname}))
+#     print([user_info.to_json_full() for user_info in user_info_list])
+#
+#     for user_info in user_info_list:
+#         if user_info.username == "":
+#             pass
+#         elif user_info.username == user_username:
+#             ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
+#             # 修改 if 判定 by quentin
+#             # if ubr:
+#             if ubr.bot_username == bot_info.username:
+#                 user_info_list.remove(user_info)
+#     if len(user_info_list) > 1:
+#         logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
+#                      (bot_info.username, user_username))
+#         return ERR_HAVE_SAME_PEOPLE, None
+#     elif len(user_info_list) == 0:
+#         logger.error(u"配对user信息出错，可能是已经绑定成功. bot_username: %s. user_username: %s" %
+#                      (bot_info.username, user_username))
+#         return ERR_WRONG_ITEM, None
+#
+#     # user_info_list_2 = db.session.query(UserInfo).filter(UserInfo.username == user_username).all()
+#     # if user_info_list_2:
+#     #     logger.error(u"已绑定username与user关系. bot_username: %s. user_username: %s" %
+#     #                  (bot_info.username, user_username))
+#     #     return ERR_HAVE_SAME_PEOPLE, None
+#
+#     user_info = user_info_list[0]
+#     user_info.username = user_username
+#     user_info.save()
+#
+#     user_switch = CM(UserSwitch)
+#     user_switch.client_id = user_info.client_id
+#     user_switch.func_send_qun_messages = 1
+#     user_switch.func_auto_reply = 0
+#     user_switch.func_real_time_quotes = 1
+#     user_switch.func_synchronous_announcement = 1
+#     user_switch.func_coin_wallet = 0
+#     user_switch.save()
+#
+#     logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.client_id, user_username))
+#     ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+#                                                                                        "bot_username": bot_info.username}))
+#
+#     print "11111111111111"
+#     if not ubr_info:
+#         # 判断该用户是否存在
+#         client_bot_info = BaseModel.fetch_one("client_bot_r", "*",
+#                                               where_clause=BaseModel.and_(
+#                                                   ["=", "client_id", user_info.client_id]
+#                                               ))
+#
+#         print "2222222222222222222222"
+#         if not client_bot_info:
+#             print "333333333333333333333"
+#             logger.debug(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.client_id)
+#             client_bot_info = CM(UserBotR)
+#             client_bot_info.client_id = user_info.client_id
+#             client_bot_info.bot_username = bot_info.username
+#             client_bot_info.is_work = 1
+#             # client_bot_info.standby_bots = list()
+#             client_bot_info.save()
+#         else:
+#             print "444444444444444444444444"
+#             client_bot_info.is_work = 1
+#             bot = dict()
+#             bot.setdefault("bot_username", bot_info.username)
+#
+#             if not client_bot_info.standby_bots:
+#                 client_bot_info.standby_bots = list()
+#                 client_bot_info.standby_bots.append(bot)
+#
+#             else:
+#                 bot_list = [bot['bot_username'] for bot in client_bot_info.standby_bots[:1]]
+#                 if bot_info.username not in bot_list:
+#                     client_bot_info.standby_bots.append(bot)
+#
+#             # if not client_bot_info.standby_bots:
+#             #     client_bot_info.standby_bots = list()
+#             #
+#             # client_bot_info.standby_bots.append(bot)
+#
+#             client_bot_info.save()
+#
+#     else:
+#         ubr_info.is_work = 1
+#         ubr_info.save()
+#         print "555555555555555555555"
+#         # set_default_group(user_info.client_id)
+#         logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.client_id, bot_info.bot_info_id))
+#     return SUCCESS, user_info
+
+
 def _bind_bot_success(user_nickname, user_username, bot_info):
     """
     确认将一个bot绑入一个user之中
     :return:
     """
-    print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> _bind_bot_success"
+
     # 因为AFriend等库更新未必在Message之前（在网速较慢的情况下可能出现）
     # 所以此处先sleep一段时间，等待AFriend更新后再读取
     # time.sleep(5)
@@ -406,17 +522,13 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     #     logger.info(u'但是放宽限制，暂时给予通过')
     #     # return ERR_WRONG_ITEM, None
 
-    user_info_list = BaseModel.fetch_all(UserInfo, '*', where_clause = BaseModel.where_dict({"nick_name": user_nickname}))
-    print([user_info.to_json_full() for user_info in user_info_list])
-
+    user_info_list = CM(UserInfo).fetch_all(UserInfo, '*', where_clause = BaseModel.where_dict({"nick_name": user_nickname}))
     for user_info in user_info_list:
         if user_info.username == "":
             pass
         elif user_info.username == user_username:
             ubr = BaseModel.fetch_one(UserBotR, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id}))
-            # 修改 if 判定 by quentin
-            # if ubr:
-            if ubr.bot_username == bot_info.username:
+            if ubr:
                 user_info_list.remove(user_info)
     if len(user_info_list) > 1:
         logger.error(u"根据username无法确定其身份. bot_username: %s. user_username: %s" %
@@ -449,53 +561,19 @@ def _bind_bot_success(user_nickname, user_username, bot_info):
     logger.debug(u"完成绑定user与username关系. user_id: %s. username: %s." % (user_info.client_id, user_username))
     ubr_info = BaseModel.fetch_one(UserBotR, '*', where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
                                                                                        "bot_username": bot_info.username}))
-
-    print "11111111111111"
     if not ubr_info:
-        # 判断该用户是否存在
-        client_bot_info = BaseModel.fetch_one("client_bot_r", "*",
-                                              where_clause=BaseModel.and_(
-                                                  ["=", "client_id", user_info.client_id]
-                                              ))
-
-        print "2222222222222222222222"
-        if not client_bot_info:
-            print "333333333333333333333"
-            logger.debug(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.client_id)
-            client_bot_info = CM(UserBotR)
-            client_bot_info.client_id = user_info.client_id
-            client_bot_info.bot_username = bot_info.username
-            client_bot_info.is_work = 1
-            client_bot_info.standby_bots = list()
-            client_bot_info.save()
-        else:
-            print "444444444444444444444444"
-            client_bot_info.is_work = 1
-            bot = dict()
-            bot.setdefault("bot_username", bot_info.username)
-
-            if not client_bot_info.standby_bots:
-                client_bot_info.standby_bots = list()
-                client_bot_info.standby_bots.append(bot)
-
-            else:
-                bot_list = [bot['bot_username'] for bot in client_bot_info.standby_bots[:1]]
-                if bot_info.username not in bot_list:
-                    client_bot_info.standby_bots.append(bot)
-
-            # if not client_bot_info.standby_bots:
-            #     client_bot_info.standby_bots = list()
-            #
-            # client_bot_info.standby_bots.append(bot)
-
-            client_bot_info.save()
-
-    else:
+        logger.debug(u"没有完成bot与user的预绑定过程. user_id: %s." % user_info.client_id)
+        ubr_info = CM(UserBotR)
+        ubr_info.client_id = user_info.client_id
+        ubr_info.bot_username = bot_info.username
         ubr_info.is_work = 1
         ubr_info.save()
-        print "555555555555555555555"
-        # set_default_group(user_info.client_id)
-        logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.client_id, bot_info.bot_info_id))
+
+    ubr_info.is_work = 1
+    ubr_info.save()
+
+    # set_default_group(user_info.client_id)
+    logger.info(u"已绑定bot与user关系. user_id: %s. bot_id: %s." % (user_info.client_id, bot_info.bot_info_id))
     return SUCCESS, user_info
 
 

@@ -15,7 +15,7 @@ from configs.config import MSG_TYPE_SYS, MSG_TYPE_TXT, CONTENT_TYPE_SYS, CONTENT
     GLOBAL_USER_MATCHING_RULES_UPDATE_FLAG, GLOBAL_MATCHING_DEFAULT_RULES_UPDATE_FLAG, NEW_MSG_Q, \
     MSG_TYPE_ENTERCHATROOM, SUCCESS, ERR_UNKNOWN_ERROR, CONTENT_TYPE_ENTERCHATROOM, \
     GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG, GLOBAL_EMPLOYEE_PEOPLE_FLAG, ANDROID_SERVER_URL_SEND_MESSAGE, \
-    ANDROID_SERVER_URL, ANDROID_SERVER_URL_BOT_STATUS
+    ANDROID_SERVER_URL, ANDROID_SERVER_URL_BOT_STATUS, UserQunR
 from core_v2.qun_manage_core import check_whether_message_is_add_qun, check_is_removed
 from core_v2.matching_rule_core import get_gm_default_rule_dict, match_message_by_rule, get_gm_rule_dict
 from core_v2.real_time_quotes_core import match_message_by_coin_keyword, match_general_message
@@ -39,6 +39,27 @@ def start_listen_new_msg():
     new_msg_thread = threading.Thread(target=route_and_count_msg)
     new_msg_thread.setDaemon(True)
     new_msg_thread.start()
+
+def get_all_bots():
+    req = requests.get(ANDROID_SERVER_URL_BOT_STATUS)
+    return json.loads(req.content)
+    
+#bot_name is master bot
+def get_master_bot(chatroomname,bot_name):
+    cqr = BaseModel.fetch_one(UserQunR, '*', where_clause=BaseModel.where_dict({'chatroomname':chatroomname,"bot_username":bot_name}))
+    logger.info("scofield chatroomname,bot_name %s %s"  % (chatroomname,bot_name))
+    all_bots = get_all_bots()
+    if not cqr:
+        #its bak bot
+        cqrs = BaseModel.fetch_all(UserQunR, '*', where_clause=BaseModel.where_dict({'chatroomname':chatroomname}))
+        for cqr in cqrs:
+            if not all_bots[cqr.bot_username]:
+                if hasattr(cqr,'bak_bots') and bot_name in cqr.bak_bots:
+                    return bot_name
+        return False
+    else:
+    	#bot master live
+        return bot_name
 
 
 def route_and_count_msg():
@@ -113,10 +134,21 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
     if is_add_qun:
         return
 
+
+
     # is_removed
     is_removed = check_is_removed(a_message)
     if is_removed:
         return
+
+        
+    #scofield change a_message bot_username 
+    bot_name = get_master_bot(a_message.talker,a_message.bot_username)
+    logger.info("scofield get_master_bot  %s"  % bot_name)
+    if not bot_name:
+        return 
+    else:
+        a_message.bot_username = bot_name
 
     # is_a_coin_wallet
     if status_dict.get('wallet'):

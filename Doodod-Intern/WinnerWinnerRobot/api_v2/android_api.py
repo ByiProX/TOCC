@@ -93,6 +93,7 @@ def android_add_friend_by_force():
 
 @main_api_v2.route('/android/add_qun', methods=['POST'])
 def android_add_qun():
+    print ">>>>>>>>>>>>>>>>>>>我要开始建群啦啦啦啦啦"
     verify_json()
     # user_nickname = request.json.get('user_nickname')
     user_username = request.json.get('user_username')
@@ -127,14 +128,20 @@ def android_new_message():
     a_message = CM(Message).from_json(request.json)
     a_message.set_id(request.json.get('a_message_id'))
 
+    '''
     req = requests.get(ANDROID_SERVER_URL_BOT_STATUS)
     client_bots_alive = json.loads(req.content)
 
     # 判断主副机器人的存活状态
-    client_id = BaseModel.fetch_one("client_qun_r", "*",
-                                    where_clause=BaseModel.and_(
-                                        ["=", "chatroomname", a_message.talker]
-                                    )).client_id
+    client_qun_r = BaseModel.fetch_one("client_qun_r", "*",
+                                       where_clause=BaseModel.and_(
+                                           ["=", "chatroomname", a_message.talker]
+                                       ))
+
+    print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>."
+    print client_qun_r
+    print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    client_id = client_qun_r.client_id
 
     client_bot_r = BaseModel.fetch_one("client_bot_r", "*",
                                        where_clause=BaseModel.and_(
@@ -155,7 +162,7 @@ def android_new_message():
         # 如果备用机器人活着
         if client_bots_alive[host_bot]:
             return make_response(SUCCESS)
-
+    '''
     ################################
 
     global gm_rule_dict
