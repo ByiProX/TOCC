@@ -79,7 +79,7 @@ class MyResponse(Response):
         else:
             headers = Headers([origin, methods, credentials, header])
         kwargs['headers'] = headers
-        return super(MyResponse, self).__init__(response, **kwargs)
+        super(MyResponse, self).__init__(response, **kwargs)
 
 
 

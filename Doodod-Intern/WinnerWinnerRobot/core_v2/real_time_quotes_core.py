@@ -157,6 +157,9 @@ def match_message_by_coin_keyword(gm_default_rule_dict, a_message):
 
 # add by quentin
 def match_general_message(a_message, reply=True):
+    # Mark 暂时关闭尚层聊天功能
+    if a_message.bot_username == "wxid_eg8kqg9ajk4d22":
+        return False
     if reply:
         bot_username = a_message.bot_username
         chatroomname = a_message.talker
@@ -181,6 +184,9 @@ def match_general_message(a_message, reply=True):
             return False
 
         resp_content = response_json.get('text')
+        # 亲爱的，当天请求次数已用完。
+        if resp_content.find("次数已用完"):
+            return True
 
         message_json = dict()
         message_json["type"] = MSG_TYPE_TXT

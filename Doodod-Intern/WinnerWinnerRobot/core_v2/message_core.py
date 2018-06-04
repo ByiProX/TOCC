@@ -142,13 +142,13 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
         return
 
         
-    #scofield change a_message bot_username 
-    bot_name = get_master_bot(a_message.talker,a_message.bot_username)
-    logger.info("scofield get_master_bot  %s"  % bot_name)
-    if not bot_name:
-        return 
-    else:
-        a_message.bot_username = bot_name
+    # #scofield change a_message bot_username
+    # bot_name = get_master_bot(a_message.talker,a_message.bot_username)
+    # logger.info("scofield get_master_bot  %s"  % bot_name)
+    # if not bot_name:
+    #     return
+    # else:
+    #     a_message.bot_username = bot_name
 
     # is_a_coin_wallet
     if status_dict.get('wallet'):

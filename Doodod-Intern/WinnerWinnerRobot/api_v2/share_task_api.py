@@ -22,6 +22,7 @@ from models_v2.base_model import BaseModel, CM
 from utils.u_cipher import des_encryt, des_decrypt
 from utils.u_model_json_str import verify_json
 from utils.u_response import make_response
+from utils.u_transformat import unicode_to_str
 from utils.u_upload_oss import put_file_to_oss
 
 logger = logging.getLogger('main')
@@ -39,7 +40,8 @@ def api_upload_oss():
     if not upload_file or not allowed_file(upload_file.filename):
         return make_response(ERR_NOT_ALLOWED_EXTENSION)
 
-    filename = str(user_info.client_id) + '_' + secure_filename(normalize('NFKD', upload_file.filename).encode('utf-8', 'ignore').decode('utf-8'))
+    filename = str(user_info.client_id) + '_' + secure_filename(
+        normalize('NFKD', upload_file.filename).encode('utf-8', 'ignore').decode('utf-8'))
     oss_url = put_file_to_oss(filename, data = upload_file.stream._file)
 
     return make_response(SUCCESS, oss_url = oss_url)
@@ -94,7 +96,8 @@ def create_task():
     # share_task.total_share_list = []
     share_task.save()
 
-    state_json = generate_state_json(share_task.task_id, ref_id = "0", cur_id = mp_member.mp_member_unique_id, hierarchy = 0)
+    state_json = generate_state_json(share_task.task_id, ref_id = "0", cur_id = mp_member.mp_member_unique_id,
+                                     hierarchy = 0)
 
     share_task.state_json = state_json
     share_task.update()
@@ -176,8 +179,10 @@ def api_get_share_list():
 
     total_count = BaseModel.count(ShareTask, where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
                                                                                   "is_deleted": 0}))
-    share_list = BaseModel.fetch_all(ShareTask, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
-                                                                                          "is_deleted": 0}), page = page, pagesize = pagesize, order_by = BaseModel.order_by({"create_time": "desc"}))
+    share_list = BaseModel.fetch_all(ShareTask, "*",
+                                     where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+                                                                          "is_deleted": 0}), page = page,
+                                     pagesize = pagesize, order_by = BaseModel.order_by({"create_time": "desc"}))
     share_list_json = [r.to_json_full() for r in share_list]
 
     return make_response(SUCCESS, share_list = share_list_json, total_count = total_count)
@@ -202,8 +207,10 @@ def api_delete_one_share():
     deleted_share_task.is_deleted = 1
     deleted_share_task.update()
 
-    new_share_task = BaseModel.fetch_one(ShareTask, "*", where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
-                                                                                              "is_deleted": 0}), limit = 1, offset = (page - 1) * pagesize + pagesize - 1)
+    new_share_task = BaseModel.fetch_one(ShareTask, "*",
+                                         where_clause = BaseModel.where_dict({"client_id": user_info.client_id,
+                                                                              "is_deleted": 0}), limit = 1,
+                                         offset = (page - 1) * pagesize + pagesize - 1)
 
     return make_response(SUCCESS, new_share_task = new_share_task.to_json_full())
 
@@ -431,7 +438,7 @@ def secure_filename(filename):
             filename = filename.replace(sep, ' ')
     _filename_gbk_strip_re = re.compile(u"[^\u4e00-\u9fa5A-Za-z0-9_.-]")
     filename = _filename_gbk_strip_re.sub('', '_'.join(
-                   filename.split())).encode('utf-8').strip('._')
+        filename.split())).encode('utf-8').strip('._')
     # filename = _filename_gbk_strip_re.sub('', '_'.join(
     #                filename.split())).strip('._')
 
@@ -441,7 +448,7 @@ def secure_filename(filename):
     _windows_device_files = ('CON', 'AUX', 'COM1', 'COM2', 'COM3', 'COM4', 'LPT1',
                              'LPT2', 'LPT3', 'PRN', 'NUL')
     if os.name == 'nt' and filename and \
-       filename.split('.')[0].upper() in _windows_device_files:
+            filename.split('.')[0].upper() in _windows_device_files:
         filename = '_' + filename
 
     return filename
@@ -521,42 +528,43 @@ def check_mp_member(mp_member, task_id):
     # 匹配昵称
     # 这里有坑，匹配到一个也不能保证是同一个人
     logger.info("开始匹配")
-    undetermined_member_pool = BaseModel.fetch_all(Contact, "*", 
-        where_clause=BaseModel.where_dict({"nickname": mp_member.nick_name}))
+    undetermined_member_pool = BaseModel.fetch_all(Contact, "*",
+                                                   where_clause = BaseModel.where_dict(
+                                                       {"nickname": mp_member.nick_name}))
     undetermined_member = None
     if len(undetermined_member_pool) == 0:
         logger.info("在Contact没查到相同昵称直接退出")
         return
-    elif  len(undetermined_member_pool) == 1:
+    elif len(undetermined_member_pool) == 1:
         undetermined_member = undetermined_member_pool[0]
         logger.info("匹配到一个")
-    elif  len(undetermined_member_pool) > 1:
-        logger.error("在Contact中匹配到多个和mp_member昵称相同的人。nickname=%s"%mp_member.nick_name)
+    elif len(undetermined_member_pool) > 1:
+        logger.error("在Contact中匹配到多个和mp_member昵称相同的人。nickname=%s" % unicode_to_str(mp_member.nick_name))
         return
- 
-    client_id = BaseModel.fetch_one(ShareTask, "client_id", 
-        where_clause=BaseModel.where_dict({"task_id": task_id})).client_id
-    logger.info("cliend_id%s"%client_id)
-    chatroomname_models = BaseModel.fetch_all(UserQunR, "chatroomname", 
-        where_clause=BaseModel.where_dict({"client_id": client_id}))
-    logger.info("匹配到群列表, 有%d个群"%len(chatroomname_models))
+
+    client_id = BaseModel.fetch_one(ShareTask, "client_id",
+                                    where_clause = BaseModel.where_dict({"task_id": task_id})).client_id
+    logger.info("cliend_id%s" % client_id)
+    chatroomname_models = BaseModel.fetch_all(UserQunR, "chatroomname",
+                                              where_clause = BaseModel.where_dict({"client_id": client_id}))
+    logger.info("匹配到群列表, 有%d个群" % len(chatroomname_models))
     if len(chatroomname_models) == 0:
-        logger.info("发任务的人没有在UserQunR的任何群里，直接退出, client_id=%s"%client_id)
+        logger.info("发任务的人没有在UserQunR的任何群里，直接退出, client_id=%s" % client_id)
         return
 
     chatroom_pool = []
 
     for chatroomname_model in chatroomname_models:
         chatroomname = chatroomname_model.chatroomname
-        memberlist_model = BaseModel.fetch_one(Chatroom, "memberlist", 
-        where_clause=BaseModel.where_dict({"chatroomname": chatroomname}))
+        memberlist_model = BaseModel.fetch_one(Chatroom, "memberlist",
+                                               where_clause = BaseModel.where_dict({"chatroomname": chatroomname}))
 
         if not memberlist_model:
             logger.debug(u"Chatroom表里没这个群")
             continue
         if not memberlist_model.memberlist:
             logger.debug(u"没有memberlist这个属性")
-            #不知道为什么会没有memberlist
+            # 不知道为什么会没有memberlist
             continue
 
         members = memberlist_model.memberlist.split(";")
@@ -573,11 +581,11 @@ def check_mp_member(mp_member, task_id):
     for chatroom in chatroom_pool:
         if not display_chatroomname:
             display_chatroomname = chatroom
-    
+
     mp_member.chatroomname = display_chatroomname
     mp_member.chatroom_list = ";".join(chatroom_pool)
-    logger.info(u"display_chatroomname: %s"%display_chatroomname.encode("utf-8"))
-    logger.info(u"chatroom_list: %s"%mp_member.chatroom_list)
+    logger.info(u"display_chatroomname: %s" % display_chatroomname.encode("utf-8"))
+    logger.info(u"chatroom_list: %s" % mp_member.chatroom_list)
     mp_member.update()
 
 
@@ -602,16 +610,20 @@ def api_get_statistic_list():
     order = "desc"
 
     total_count = BaseModel.count(StatisticsShareTask, where_clause = BaseModel.where_dict({"task_id": task_id}))
-    statistic_list = BaseModel.fetch_all(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"task_id": task_id}), page = page, pagesize = pagesize, order_by = BaseModel.order_by({order_by: order}))
+    statistic_list = BaseModel.fetch_all(StatisticsShareTask, "*",
+                                         where_clause = BaseModel.where_dict({"task_id": task_id}), page = page,
+                                         pagesize = pagesize, order_by = BaseModel.order_by({order_by: order}))
     statistic_list_json = list()
     for statistic in statistic_list:
         statistic_json = statistic.to_json_full()
-        mp_member = BaseModel.fetch_one(MPMember, "*", where_clause = BaseModel.where_dict({"mp_member_unique_id": statistic.mp_member_unique_id}))
+        mp_member = BaseModel.fetch_one(MPMember, "*", where_clause = BaseModel.where_dict(
+            {"mp_member_unique_id": statistic.mp_member_unique_id}))
         if mp_member:
             mp_member_json = mp_member.to_json_full()
             mp_member_json.update(statistic_json)
             if mp_member.chatroomname:
-                chatroom = BaseModel.fetch_one(Chatroom, "*", where_clause = BaseModel.where_dict({"chatroomname": mp_member.chatroomname}))
+                chatroom = BaseModel.fetch_one(Chatroom, "*", where_clause = BaseModel.where_dict(
+                    {"chatroomname": mp_member.chatroomname}))
                 if chatroom:
                     mp_member_json['chatroom'] = chatroom.to_json_full()
                     # mp_member_json.update(chatroom.to_json_full())
@@ -619,7 +631,8 @@ def api_get_statistic_list():
         else:
             statistic_list_json.append(statistic_json)
 
-    return make_response(SUCCESS, share_task = share_task.to_json_full(), statistic_list = statistic_list_json, total_count = total_count)
+    return make_response(SUCCESS, share_task = share_task.to_json_full(), statistic_list = statistic_list_json,
+                         total_count = total_count)
 
 
 @main_api_v2.route('/get_url_qrcode', methods = ['POST'])
@@ -651,8 +664,9 @@ def statistic_mp_member(task_id, ref_id, cur_id, hierarchy, des_id, action_type 
     now = int(time.time())
     # if ref_id == "0" or cur_id == ref_id:
     #     return None
-    ref_s_mp_memebr = BaseModel.fetch_one(StatisticsShareTask, "*", where_clause = BaseModel.where_dict({"task_id": task_id,
-                                                                                                         "mp_member_unique_id": ref_id}))
+    ref_s_mp_memebr = BaseModel.fetch_one(StatisticsShareTask, "*",
+                                          where_clause = BaseModel.where_dict({"task_id": task_id,
+                                                                               "mp_member_unique_id": ref_id}))
     if not ref_s_mp_memebr:
         ref_s_mp_memebr = CM(StatisticsShareTask)
         ref_s_mp_memebr.create_time = now
@@ -692,7 +706,7 @@ def statistic_mp_member(task_id, ref_id, cur_id, hierarchy, des_id, action_type 
     return ref_s_mp_memebr
 
 
-@main_api_v2.route("/get_share_signature", methods=['POST'])
+@main_api_v2.route("/get_share_signature", methods = ['POST'])
 def get_share_signature():
     verify_json()
     url = request.json.get("url")
@@ -708,47 +722,45 @@ def get_share_signature():
             logger.info(
                 u"没有找到对应的 app: %s. wechat_conn_dict.keys: %s." % (app_name, json.dumps(wechat_conn_dict.keys())))
         timestamp, noncestr, signature = we_conn.get_signature_from_access_token(url)
-        return make_response(SUCCESS, timestamp=timestamp, noncestr=noncestr, signature=signature)
+        return make_response(SUCCESS, timestamp = timestamp, noncestr = noncestr, signature = signature)
     except Exception as e:
         logger.error('ERROR  %s' % e)
         return make_response(ERR_INVALID_PARAMS)
 
 
-
-
-
-@main_api_v2.route("/get_url_info", methods=['POST'])
-def get_url_info ():
-    try: 
+@main_api_v2.route("/get_url_info", methods = ['POST'])
+def get_url_info():
+    try:
         url = request.json.get("url")
-        timeout = request.json.get("timeout",5)
-        header = {'user-agent': 'Mozilla/5.0 (Linux; U; Android 6.0; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'}
-        rsp = requests.get(url = url,headers=header,timeout=timeout)
+        timeout = request.json.get("timeout", 5)
+        header = {
+            'user-agent': 'Mozilla/5.0 (Linux; U; Android 6.0; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'}
+        rsp = requests.get(url = url, headers = header, timeout = timeout)
         h = rsp.headers
         Security = h.get('Content-Security-Policy')
         iframe = 1
         if Security:
-            for pli in Security.split(';',10) :
-                if(pli.find('frame-ancestors'))>-1:
-                    if(pli.find("'none'") or pli.find("'self'")):
+            for pli in Security.split(';', 10):
+                if (pli.find('frame-ancestors')) > -1:
+                    if (pli.find("'none'") or pli.find("'self'")):
                         iframe = 2
         rsp.encoding = 'UTF-8'
-        content =  rsp.content 
+        content = rsp.content
         pic = ''
-        if(url.find('mp.weixin.qq.com'))>-1:
+        if (url.find('mp.weixin.qq.com')) > -1:
             title = re.search('msg_title\s=\s"(.*)"', content)
-            keywords =  re.search('msg_desc\s*=\s*"(.*)"', content)
-            desc =  re.search('msg_desc\s*=\s*"(.*)"', content)
-            pic = re.search('msg_cdn_url\s*=\s*"(.*)"', content) 
+            keywords = re.search('msg_desc\s*=\s*"(.*)"', content)
+            desc = re.search('msg_desc\s*=\s*"(.*)"', content)
+            pic = re.search('msg_cdn_url\s*=\s*"(.*)"', content)
             if pic:
                 pic = pic.group(1)
                 pic = uploadPic(pic)
-            
+
         else:
-            title =  re.search('<title>(.*)</title>', content)
-            keywords =  re.search('<meta\s*name="keywords"\s*content="(.*)" />', content)
-            desc =  re.search('<meta\s*name="description"\s*content="(.*)" />', content)
-        
+            title = re.search('<title>(.*)</title>', content)
+            keywords = re.search('<meta\s*name="keywords"\s*content="(.*)" />', content)
+            desc = re.search('<meta\s*name="description"\s*content="(.*)" />', content)
+
         if not title:
             title = ''
         else:
@@ -761,30 +773,27 @@ def get_url_info ():
             desc = ''
         else:
             desc = desc.group(1)
-        
-        return make_response(SUCCESS, title=title,keywords=keywords,desc=desc,pic=pic,iframe=iframe)
-        #ret={'code':0,'data':{'title':title,'keywords':keywords,'desc':desc,'pic':pic},'iframe':iframe}
-    except Exception as ex :  
-        #ret={'code':-1,'msg':'request err'}
+
+        return make_response(SUCCESS, title = title, keywords = keywords, desc = desc, pic = pic, iframe = iframe)
+        # ret={'code':0,'data':{'title':title,'keywords':keywords,'desc':desc,'pic':pic},'iframe':iframe}
+    except Exception as ex:
+        # ret={'code':-1,'msg':'request err'}
         return make_response(URL_ERROR)
-        #return  json.dumps(ret) 
+        # return  json.dumps(ret)
 
 
-def uploadPic (url):
+def uploadPic(url):
     try:
         if url:
-            header = {'user-agent': 'Mozilla/5.0 (Linux; U; Android 6.0; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'}
-            rsp = requests.get(url = url,headers=header,timeout=5)
+            header = {
+                'user-agent': 'Mozilla/5.0 (Linux; U; Android 6.0; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'}
+            rsp = requests.get(url = url, headers = header, timeout = 5)
             if rsp:
                 import hashlib
                 hash_md5 = hashlib.md5(url)
                 urlmd5 = hash_md5.hexdigest()
-                pic =  rsp.content
-                filename =   urlmd5 + str(int(time.time())) + '.jpg'
+                pic = rsp.content
+                filename = urlmd5 + str(int(time.time())) + '.jpg'
                 return put_file_to_oss(filename, pic)
-    except Exception as ex :  
+    except Exception as ex:
         return False
-            
-
-    
-    
