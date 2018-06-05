@@ -46,7 +46,7 @@ class ClientInfo:
 
         while self.continue_flag:
 
-            self.get_my_ip_address()
+            # self.get_my_ip_address()
             self.refresh_client_system_info()
             # 平均负载
             avg_load = os.getloadavg()
@@ -73,7 +73,8 @@ class ClientInfo:
                 EmailAlert.send_it_alert(u"当前交换内存占用率均值超过90%.")
 
             if self.memory_percent > 90.0:
-                logger.warning(u"当前物理内存占用率超过90%.")
+                logger.warning(u"当前物理内存占用率超过90%% total:%.1f used:%.1f percent:%.1f"%(self.memory_total, 
+                    self.memory_used, self.memory_percent))
                 # EmailAlert.send_it_alert(u"当前物理内存占用率均值超过90%.")
 
             # 处理硬盘
@@ -97,8 +98,8 @@ class ClientInfo:
 
         # 真实内存
         self.memory_total = psutil.virtual_memory().total
-        self.memory_free = psutil.virtual_memory().free
-        self.memory_percent = float(1.0 - (float(self.memory_free) / float(self.memory_total))) * 100.0
+        self.memory_used = psutil.virtual_memory().used
+        self.memory_percent = float(self.memory_used) / float(self.memory_total) * 100.0
 
         # 交换内存
         self.swap_memory_total = psutil.swap_memory().total

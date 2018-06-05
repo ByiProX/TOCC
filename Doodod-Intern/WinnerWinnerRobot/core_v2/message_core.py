@@ -24,6 +24,9 @@ from core_v2.coin_wallet_core import check_whether_message_is_a_coin_wallet
 from models_v2.base_model import BaseModel, CM
 from utils.u_transformat import str_to_unicode, unicode_to_str
 from utils.tag_handle import Tag
+
+from core_v2.ad_check_core import check_msg_is_an_ad
+
 import logging
 
 logger = logging.getLogger('main')
@@ -134,9 +137,13 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
     #     continue
 
     # 检查信息是否为加了一个群
-    is_add_qun = check_whether_message_is_add_qun(a_message)
-    if is_add_qun:
-        return
+    ##########################
+    # modified by quentin 绑定群功能提到了外层，即a_message入口处
+    # is_add_qun = check_whether_message_is_add_qun(a_message)
+    # if is_add_qun:
+    #     return
+
+    ################
 
 
 
@@ -159,6 +166,14 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
         is_a_coin_wallet = check_whether_message_is_a_coin_wallet(a_message)
         if is_a_coin_wallet:
             return
+
+    # by quentin
+    # 发广告者，被提醒并被踢
+    is_ad = check_msg_is_an_ad(a_message, switch=True)
+    if is_ad:
+        return
+    ######################
+
 
     # 检测是否是别人的进群提示
     # is_friend_into_qun = check_whether_message_is_friend_into_qun(a_message)

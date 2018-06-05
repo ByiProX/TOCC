@@ -362,9 +362,38 @@ def sensitive_message_log():
 @main_api_v2.route('/_sensitive_add', methods=['POST'])
 @para_check("username_list", "sensitive_word_list")
 def _sensitive_add():
+    def get_token(_username):
+        _client = BaseModel.fetch_all('client_member', '*', BaseModel.where_dict({'username': _username}))
+        if _client is not None and _client.token is not None:
+            return _client.token
+        return False
+
+    def get_group_list_by_token(_token):
+        res = requests.post('http://api.walibee.com/yaca_api_v2/get_group_list', json={'token': _token}).json()
+        if res['err_code'] == 0:
+            chatroom_list = res['content']['group_list'][0]['chatroom_list']
+            return [i['chatroomname'] for i in chatroom_list]
+        else:
+            return []
+
     username_list = request.json.get('username_list')
+    sensitive_word_list = request.json.get('sensitive_word_list')
+
     real_username_list = []
+    token_list = []
+    set_dict = {}
+
     for i in username_list:
         real_username_list.append(get_real_username(i))
 
-    return response({'data': real_username_list})
+    for i in real_username_list:
+        _token = get_token(i)
+        if _token:
+            token_list.append(_token)
+
+    for i in token_list:
+        its_chatroom_list = get_group_list_by_token(i)
+        if its_chatroom_list != []:
+            set_dict[i] = its_chatroom_list
+
+    return response({'1': real_username_list, '2': token_list, '3': set_dict})

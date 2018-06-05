@@ -147,3 +147,15 @@ def api_delete_client_qun_r():
     return make_response(SUCCESS)
 
 
+@main_api_v2.route('/get_client_info', methods=['POST'])
+def api_get_client_info():
+    nick_name = request.json.get("nick_name")
+
+    client_list = BaseModel.fetch_all("client_member", "*",
+                                      where_clause=BaseModel.and_(
+                                          ["=", "nick_name", nick_name]
+                                      ))
+
+    client_list = [client.to_json_full() for client in client_list]
+
+    return make_response(SUCCESS, client_list=client_list)

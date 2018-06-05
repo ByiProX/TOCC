@@ -15,7 +15,7 @@ from configs.config import SUCCESS, main_api_v2, BotInfo, Message, NEW_MSG_Q, Co
 from core_v2.matching_rule_core import gm_rule_dict, gm_default_rule_dict, get_gm_rule_dict, get_gm_default_rule_dict
 from core_v2.message_core import route_msg, count_msg, update_sensitive_word_list, update_employee_people_list, \
     NEED_UPDATE_REPLY_RULE, update_employee_people_reply_rule
-from core_v2.qun_manage_core import _bind_qun_success
+from core_v2.qun_manage_core import _bind_qun_success, check_whether_message_is_add_qun
 from core_v2.user_core import _bind_bot_success, UserLogin
 from core_v2.wechat_core import WechatConn, wechat_conn_dict
 from models_v2.base_model import BaseModel, CM
@@ -124,45 +124,68 @@ def android_add_material():
 
 @main_api_v2.route("/android/new_message", methods=['POST'])
 def android_new_message():
+    """
+    # 首先需要检查信息是否为加了一个群，保证入群信息存到数据库后才能继续下面的流程
+    is_add_qun = check_whether_message_is_add_qun(a_message)
+    if is_add_qun:
+        return
+    """
     verify_json()
     a_message = CM(Message).from_json(request.json)
     a_message.set_id(request.json.get('a_message_id'))
 
-    '''
+    # 首先新建群的时候数据要入库，后期扩展
+    is_add_qun = check_whether_message_is_add_qun(a_message)
+    if is_add_qun:
+        pass
+    ###########################
+
     req = requests.get(ANDROID_SERVER_URL_BOT_STATUS)
     client_bots_alive = json.loads(req.content)
 
     # 判断主副机器人的存活状态
-    client_qun_r = BaseModel.fetch_one("client_qun_r", "*",
+    client_qun_r = BaseModel.fetch_all("client_qun_r", "*",
                                        where_clause=BaseModel.and_(
-                                           ["=", "chatroomname", a_message.talker]
+                                           ["=", "chatroomname", a_message.talker],
+                                           ["=", "bot_username", a_message.bot_username]
                                        ))
 
-    print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>."
-    print client_qun_r
-    print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    client_id = client_qun_r.client_id
-
-    client_bot_r = BaseModel.fetch_one("client_bot_r", "*",
+    client_bot_r = BaseModel.fetch_all("client_bot_r", "*",
                                        where_clause=BaseModel.and_(
-                                           ["=", "client_id", client_id]
+                                           ["=", "bot_username", a_message.bot_username]
                                        ))
+    try:
+        client_qun_r_id = set([client_qun.client_id for client_qun in client_qun_r])
+        client_bot_r_id = set([client_bot.client_id for client_bot in client_bot_r])
+        client_id = list(client_qun_r_id & client_bot_r_id)
+    except Exception:
+        return make_response(ERR_WRONG_ITEM)
 
-    host_bot = client_bot_r.bot_username
-    standby_bots_list = [standby_bot['bot_username'] for standby_bot in client_bot_r.standby_bots]
-    bot_who_catch_msg = a_message.bot_username
+    if len(client_id) == 1:
+        client_id = client_id[0]
+    else:
+        return make_response(ERR_WRONG_ITEM)
+
+    client_qun_bot_master_bak = BaseModel.fetch_one("client_qun_bot_master_bak", "*",
+                                                    where_clause=BaseModel.and_(
+                                                        ["=", "client_id", client_id],
+                                                        ["=", "chatroomname", a_message.talker]
+                                                    ))
+
+    master_bot = client_qun_bot_master_bak.master_bot_username
+    bak_bot = client_qun_bot_master_bak.bak_bot_username
 
     # 如果该消息是主机器人收集到
-    if bot_who_catch_msg == host_bot:
-        if not client_bots_alive[bot_who_catch_msg]:
+    if a_message.bot_username == master_bot:
+        if not client_bots_alive[master_bot]:
             return make_response(BOT_DEAD)
 
     # 如果该消息是备用机器人收集到
-    elif bot_who_catch_msg in standby_bots_list:
+    elif a_message.bot_usernam == bak_bot:
         # 如果备用机器人活着
-        if client_bots_alive[host_bot]:
+        if client_bots_alive[master_bot]:
             return make_response(SUCCESS)
-    '''
+
     ################################
 
     global gm_rule_dict
