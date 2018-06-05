@@ -5,6 +5,7 @@ import time
 import logging
 import requests
 import psutil
+import os
 
 from utils.u_email import EmailAlert
 
@@ -47,23 +48,33 @@ class ClientInfo:
 
             self.get_my_ip_address()
             self.refresh_client_system_info()
-
+            # 平均负载
+            avg_load = os.getloadavg()
+            if avg_load[0] >= 3.0:
+                logger.warning(u"一分钟内平均负载超过3.")
+                EmailAlert.send_it_alert(u"一分钟内平均负载超过3.")
+            if avg_load[1] >= 3.0:
+                logger.warning(u"五分钟内平均负载超过3.")
+                EmailAlert.send_it_alert(u"五分钟内平均负载超过3.")
+            if avg_load[2] >= 3.0:
+                logger.warning(u"十五分钟内平均负载超过3.")
+                EmailAlert.send_it_alert(u"十五分钟内平均负载超过3.")
             # 处理cpu
             if len(cpu_percent_list) >= 3:
                 cpu_percent_list.pop(0)
             cpu_percent_list.append(self.cpu_percent)
-            if self._get_list_average(cpu_percent_list) > 95.0:
-                logger.warning(u"近期cpu使用率均值超过95%.")
-                EmailAlert.send_it_alert(u"近期cpu使用率均值超过95%.")
+            if self._get_list_average(cpu_percent_list) > 90.0:
+                logger.warning(u"近期cpu使用率均值超过90%.")
+                EmailAlert.send_it_alert(u"近期cpu使用率均值超过90%.")
 
             # 处理两个memory
-            if self.swap_memory_percent > 95.0:
-                logger.warning(u"当前交换内存占用率超过95%.")
-                EmailAlert.send_it_alert(u"当前交换内存占用率均值超过95%.")
+            if self.swap_memory_percent > 90.0:
+                logger.warning(u"当前交换内存占用率超过90%.")
+                EmailAlert.send_it_alert(u"当前交换内存占用率均值超过90%.")
 
-            if self.memory_percent > 95.0:
-                logger.warning(u"当前物理内存占用率超过95%.")
-                EmailAlert.send_it_alert(u"当前物理内存占用率均值超过95%.")
+            if self.memory_percent > 90.0:
+                logger.warning(u"当前物理内存占用率超过90%.")
+                # EmailAlert.send_it_alert(u"当前物理内存占用率均值超过90%.")
 
             # 处理硬盘
             for disk_name, disk_info in self.disk_dicts.items():
@@ -71,7 +82,7 @@ class ClientInfo:
                     logger.warning(u"磁盘 %s 的占用空间已达到95%%." % disk_name)
                     EmailAlert.send_it_alert(u"磁盘 %s 的占用空间已达到95%%." % disk_name)
 
-            time.sleep(120)
+            time.sleep(300)
 
     def stop(self):
         self.continue_flag = False

@@ -180,7 +180,7 @@ class UserLogin:
             self.user_info_up_to_date.city = res_json.get('city')
             self.user_info_up_to_date.country = res_json.get('country')
             self.user_info_up_to_date.avatar_url = res_json.get('headimgurl')
-            #####
+            self.func_switch = 0
             self.user_info_up_to_date.username = ""
             self.user_info_up_to_date.app = self.app
 

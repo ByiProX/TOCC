@@ -107,7 +107,11 @@ def route_msg(a_message, gm_rule_dict, gm_default_rule_dict):
         return
 
     # Check this chatroom's client.
-    status_dict = chatroom_client_info(a_message)
+    try:
+        status_dict = chatroom_client_info(a_message)
+    except Exception as e:
+        print(e)
+        status_dict = Tag(0).get_name_dict()
 
     # Check chatroom word.
     if not a_message.is_to_friend and a_message.type == MSG_TYPE_TXT:

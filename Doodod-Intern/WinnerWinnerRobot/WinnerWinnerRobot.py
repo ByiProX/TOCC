@@ -20,6 +20,7 @@ import models
 import api
 import api_v2
 import configs
+from maintenance.environment import environment_client_info
 
 monkey.patch_all()
 app.register_blueprint(main_api, url_prefix='/yaca_api')
@@ -68,8 +69,8 @@ qun_available_check_task_thread.start()
 BaseModel.extract_from_json()
 
 # 开启环境监测线程
-# if config_name_s == 'p':
-#     environment_client_info.start()
+if configs.config.config_name_s == 'p':
+    environment_client_info.run()
 
 if __name__ == '__main__':
     logger.debug("开始程序")

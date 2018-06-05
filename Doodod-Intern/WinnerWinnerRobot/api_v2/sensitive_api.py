@@ -6,7 +6,7 @@ from flask import request
 from configs.config import main_api_v2
 from core_v2.user_core import UserLogin
 from models_v2.base_model import *
-from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false
+from utils.z_utils import para_check, response, true_false_to_10, _10_to_true_false, get_real_username
 from configs.config import GLOBAL_RULES_UPDATE_FLAG, GLOBAL_SENSITIVE_WORD_RULES_UPDATE_FLAG
 
 
@@ -357,3 +357,14 @@ def sensitive_message_log():
     result['content'] = content
 
     return response(result)
+
+
+@main_api_v2.route('/_sensitive_add', methods=['POST'])
+@para_check("username_list", "sensitive_word_list")
+def _sensitive_add():
+    username_list = request.json.get('username_list')
+    real_username_list = []
+    for i in username_list:
+        real_username_list.append(get_real_username(i))
+
+    return response({'data': real_username_list})

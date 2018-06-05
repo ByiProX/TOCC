@@ -864,20 +864,6 @@ def event_chatroom_status_detect(is_activated, member_count):
     return 2
 
 
-# new_thread_2 = threading.Thread(target=event_chatroom_send_word)
-# new_thread_2.setDaemon(True)
-# new_thread_2.start()
-
-
-# new_thread_3 = threading.Thread(target=open_chatroom_name_protect)
-# new_thread_3.setDaemon(True)
-# new_thread_3.start()
-
-# new_thread_4 = threading.Thread(target=events_chatroomname_check)
-# new_thread_4.setDaemon(True)
-# new_thread_4.start()
-
-
 @app_test.route('/_events_client', methods=['POST'])
 @para_check('psw', 'username', 'app', 'available_chatroom')
 def create_events_client():
@@ -1612,6 +1598,109 @@ def new_event_init(chatroomname, start_name, owner_username, chatroom_name_prote
                   "chatroomname": chatroomname,
               }}
     requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)
+
+
+def new_event_chatroom_send_word_v2():
+    # print('event_chatroom_send_word Running.')
+    """
+    chatroom_status_dict:{
+            'chatroomname':()
+    }
+    """
+    # Base status.
+    chatroom_status_dict = dict()
+
+    event_list = BaseModel.fetch_all('events_', '*', BaseModel.where_dict({'is_work': 1}))
+
+    for event in event_list:
+        event_id = event.get_id()
+        # Get all chatroom in this event.
+        chatroom_list = BaseModel.fetch_all('events_chatroom_', '*', BaseModel.where_dict({'event_id': event_id}))
+        for chatroom in chatroom_list:
+            # Update status
+            this_chatroom = BaseModel.fetch_one('a_chatroom', 'memberlist',
+                                                BaseModel.where_dict({'chatroomname': chatroom.chatroomname}))
+
+            if not this_chatroom:
+                logger.warning('member_count ERROR!!! Can not find this_chatroom:%s' % chatroom.chatroomname)
+                member_count = 0
+            else:
+                member_count = len(this_chatroom.memberlist.split(';'))
+
+            chatroom_status_dict[chatroom.chatroomname] = member_count
+
+    def send_message(_bot_username, to, _type, content):
+        result = {'bot_username': _bot_username,
+                  'data': {
+                      "task": "send_message",
+                      "to": to,
+                      "type": _type,
+                      "content": content,
+                  }}
+        resp = requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)
+        if dict(resp.json())['err_code'] == -1:
+            logger.warning('event_chatroom_send_word ERROR,because bot dead!')
+
+    def send_img(_bot_username, to, source_url):
+        result = {'bot_username': _bot_username,
+                  'data': {
+                      "task": "send_message",
+                      "to": to,
+                      "type": 2,
+                      "source_url": source_url,
+                      "title": source_url.split('/')[-1]
+                  }}
+        resp = requests.post('%s/android/send_message' % ANDROID_SERVER_URL, json=result)
+        if dict(resp.json())['err_code'] == -1:
+            logger.warning('event_chatroom_send_word ERROR,because bot dead!')
+
+    def get_owner_bot_username(__chatroomname):
+        # Get roomowner's bot_username
+        this_chatroom_bot = BaseModel.fetch_one('chatroom_pool', '*',
+                                                BaseModel.where_dict({'chatroomname': __chatroomname}))
+        __bot_username = this_chatroom_bot.bot_username
+
+        return __bot_username
+
+    while True:
+        try:
+            # print('-----running')
+            # Get all event.
+            event_list = BaseModel.fetch_all('events_', '*',
+                                             BaseModel.where_dict({'is_work': 1}))
+            previous_chatroom_status_dict = chatroom_status_dict.copy()
+            for event in event_list:
+                event_id = event.get_id()
+                # Get all chatroom in this event.
+                chatroom_list = BaseModel.fetch_all('events_chatroom_', '*',
+                                                    BaseModel.where_dict({'event_id': event_id}))
+                for chatroom in chatroom_list:
+                    # Update status
+                    this_chatroom = BaseModel.fetch_one('a_chatroom', 'memberlist',
+                                                        BaseModel.where_dict({'chatroomname': chatroom.chatroomname}))
+
+                    if not this_chatroom:
+                        logger.warning('member_count ERROR!!! Can not find this_chatroom:%s' % chatroom.chatroomname)
+                        member_count = 0
+                    else:
+                        member_count = len(this_chatroom.memberlist.split(';'))
+
+                    chatroom_status_dict[chatroom.chatroomname] = member_count
+                    # If previous chatroom list also have same chatroomname.
+                    if previous_chatroom_status_dict.get(chatroom.chatroomname):
+                        previous_chatroom_member_count = previous_chatroom_status_dict[chatroom.chatroomname]
+                        now_chatroom_member_count = chatroom_status_dict[chatroom.chatroomname]
+                        # print(previous_chatroom_member_count, now_chatroom_member_count)
+                        if now_chatroom_member_count > previous_chatroom_member_count:
+                            # Send welcome message.
+                            this_bot_username = get_owner_bot_username(chatroom.chatroomname)
+                            send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_1)
+                            send_message(this_bot_username, chatroom.chatroomname, 1, event.fission_word_2)
+                            if event.poster_url != "":
+                                send_img(this_bot_username, chatroom.chatroomname, event.poster_url)
+        except Exception as e:
+            print('new_event_chatroom_send_word', e)
+        time.sleep(15)
 
 
 new_event_chatroom_send_word_thread = threading.Thread(target=new_event_chatroom_send_word)

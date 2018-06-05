@@ -5,6 +5,17 @@
 import re
 from flask import request, jsonify
 from functools import wraps
+from models_v2.base_model import *
+
+
+def get_real_username(_username):
+    _user = BaseModel.fetch_one('a_contact', '*', BaseModel.or_(['=', 'alias', _username],
+                                                                ['=', 'username', _username]))
+
+    if _user is not None and _user.username is not None:
+        return _user.username
+
+    return _username
 
 
 def para_check(need_list, *parameters):

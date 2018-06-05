@@ -374,7 +374,7 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
             uqr = CM(UserQunR)
             uqr.client_id = user_info.client_id
             uqr.chatroomname = chatroomname
-            uqr.bot_username = bot_username 
+            uqr.bot_username = bot_username
             uqr.status = 1
             uqr.group_id = unicode(user_info.client_id) + u"_0"
             uqr.create_time = int(time.time())
@@ -383,28 +383,70 @@ def _bind_qun_success(chatroomname, user_nickname, bot_username, member_username
             logger.error(u"scofield not find cqr bot is  %s data is  %s" % (uqr.bot_username,uqr.to_json()))
             uqr.save()
             logger.info(u"user与群关系已绑定. user_id: %s. chatroomname: %s." % (user_info.client_id, chatroomname))
+
+            # qun_bot_master_bak
+            client_qun_bot_master_bak = CM("client_qun_bot_master_bak")
+            client_qun_bot_master_bak.client_id = user_info.client_id
+            client_qun_bot_master_bak.chatroomname = chatroomname
+            client_qun_bot_master_bak.master_bot_username = bot_username
+            client_qun_bot_master_bak.save()
+            ################
+
         else:
             # logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. chatroomname: %s." % chatroomname)
-            # add by qunetin
+            # add by quentin
             uqr_exist.client_id = user_info.client_id
             uqr_exist.chatroomname = chatroomname
-            
+            # 这个地方很迷，不敢动不敢动，如果报错群绑定出现问题，数据库对应出错，有可能此处有问题，watchout！！！
+
+            uqr_exist.bot_username = bot_username
+            ##########################
+
+            # 下面代码更迷，不敢动不敢动
             #scofield 2018/6/2
             _bak_bots = []
-            if hasattr(uqr_exist,'bak_bots') and uqr_exist.bak_bots:
+            if hasattr(uqr_exist, 'bak_bots') and uqr_exist.bak_bots:
                 _bak_bots = uqr_exist.bak_bots
             logger.info(u"scofield bot_username %s" % bot_username)
-            if  bot_username != uqr_exist.bot_username:
+            if bot_username != uqr_exist.bot_username:
                 _bak_bots.append(bot_username)
             uqr_exist.bak_bots = _bak_bots
             logger.info(u"scofield get _bak_bots from c_q_r %s" % _bak_bots)
-             
+            ######################
+
+            # quentin
+            client_qun_bot_master_bak = BaseModel.fetch_one("client_qun_bot_master_bak", "*",
+                                                            where_clause=BaseModel.and_(
+                                                                ["=", "chatroomname", chatroomname],
+                                                                ["=", "client_id", user_info.client_id]
+                                                            ))
+
+            if not client_qun_bot_master_bak:
+                client_qun_bot_master_bak = CM("client_qun_bot_master_bak")
+
+            if uqr_exist.status == 0:
+                client_qun_bot_master_bak.client_id = user_info.client_id
+                client_qun_bot_master_bak.chatroomname = chatroomname
+                client_qun_bot_master_bak.master_bot_username = bot_username
+
+            else:
+                client_qun_bot_master_bak.client_id = user_info.client_id
+                client_qun_bot_master_bak.chatroomname = chatroomname
+                client_qun_bot_master_bak.master_bot_username = uqr_exist.bot_username
+                client_qun_bot_master_bak.bak_bot_username = bot_username
+
+            client_qun_bot_master_bak.save()
+
+            #######################
+
             uqr_exist.status = 1
             uqr_exist.group_id = unicode(user_info.client_id) + u"_0"
             uqr_exist.create_time = int(time.time())
             uqr_exist.is_paid = 0 if qun_count <= qun_used else 1
             uqr_exist.save()
             logger.warning(u"机器人未出错，但却重新进群，逻辑可能有误. chatroomname: %s." % chatroomname)
+
+
 
         # 修改机器人在群里的群备注
         modify_self_displayname(user_info.client_id, chatroomname, bot_username)

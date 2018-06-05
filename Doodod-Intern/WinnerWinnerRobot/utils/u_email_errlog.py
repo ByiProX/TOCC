@@ -3,21 +3,52 @@ from smtplib import SMTP_SSL
 from email.header import Header
 from email.mime.text import MIMEText
 import time
-import re
+import datetime
+import os
+
 
 log = ''
-if time.localtime().tm_hour < 12:
-    with open('/www/WinnerWinnerRobot/logs/procedure_error.log','r') as f:
+now_time = datetime.datetime.now()
+now_time_str = now_time.strftime('%Y-%m-%d')
+yes_time = now_time + datetime.timedelta(days=-1)
+yes_time_str = yes_time.strftime('%Y-%m-%d')
+abs_path = '/www/WinnerWinnerRobot/'
+
+if time.localtime().tm_hour >= 12:
+    #中午12点的错误报告发送，如果log文件中log时间是当天就直接发送，不然不发送
+    with open('%slogs/procedure_error.log'%abs_path,'r') as f:
         log = f.read()
+        if log[:10] != now_time_str:
+            print '本日12点前没有错误log'
+            log = ''
 else:
-    with open('/www/WinnerWinnerRobot/logs/procedure_error.log','r') as f:
-        r = f.read().split('\n')
-        new_log_switch = False
-        for line in r:
-            if not new_log_switch and re.match('[0-9]{4}-[0-9]{2}-[0-9]{2}',line) and line[11:13] >= '12':
-                new_log_switch = True
-            if new_log_switch:
-                log += line + '\n'
+    #半夜0点的错误报告发送
+    #先判断log文件是否已经分片
+    new_log_switch = False
+    with open('%slogs/procedure_error.log'%abs_path,'r') as f:
+        tmp = f.read()
+        if tmp[:10] == now_time_str:
+            new_log_switch = True
+    path = None
+    if new_log_switch:
+        #如果已分片， 读取前一天log
+        if os.path.exists('%slogs/procedure_error.log.%s'%(abs_path,yes_time_str)):
+
+            path = '%slogs/procedure_error.log.%s'%(abs_path,yes_time_str)
+    else:
+        #如果未分片， 读取当前log
+        path = '%slogs/procedure_error.log'%abs_path
+    if path:
+        with open(path,'r') as f:
+            tmp_log = f.read().split('\n')
+            after12 = False
+            for line in tmp_log:
+                if line[:10] == yes_time_str and line[11:13] >= '12':
+                    after12 = True
+                if after12:
+                    log += line + '\n'
+    else:
+        print '昨日12点后无错误log'
 
 mail_info = {
     "from": "zidoubot@doodod.com",
@@ -31,7 +62,7 @@ mail_info = {
     "mail_encoding": "utf-8"
 }
 
-if len(log) != 0:
+if log != '':
         
     smtp = SMTP_SSL(mail_info["hostname"])
     smtp.set_debuglevel(1)
@@ -44,8 +75,8 @@ if len(log) != 0:
     msg["from"] = mail_info["from"]
     for receiver in mail_info["to"]:
         smtp.sendmail(mail_info["from"], receiver, msg.as_string())
-
     smtp.quit()
+    print "已发送%s的log"%now_time_str
 
 
 
