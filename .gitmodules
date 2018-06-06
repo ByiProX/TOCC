@@ -4,3 +4,6 @@
 [submodule "Doodod-Intern/android_api"]
 	path = Doodod-Intern/android_api
 	url = git@gitlab.doodod.com:ZYunH/android_api.git
+[submodule "Doodod-Intern/WinnerWinerRobot"]
+	path = Doodod-Intern/WinnerWinerRobot
+	url = git@gitlab.doodod.com:frank5433/WinnerWinnerRobot.git
