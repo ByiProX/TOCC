@@ -1,3 +1,6 @@
 [submodule "Doodod-Intern/Doodod-Intern/android_api"]
 	path = Doodod-Intern/Doodod-Intern/android_api
 	url = git@gitlab.doodod.com:ZYunH/android_api.git
+[submodule "Doodod-Intern/android_api"]
+	path = Doodod-Intern/android_api
+	url = git@gitlab.doodod.com:ZYunH/android_api.git
