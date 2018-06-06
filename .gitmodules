@@ -7,3 +7,6 @@
 [submodule "Doodod-Intern/WinnerWinerRobot"]
 	path = Doodod-Intern/WinnerWinerRobot
 	url = git@gitlab.doodod.com:frank5433/WinnerWinnerRobot.git
+[submodule "Doodod-Intern/config"]
+	path = Doodod-Intern/config
+	url = git@gitlab.doodod.com:scofield/config.git
