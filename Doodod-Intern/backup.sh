@@ -1,4 +1,4 @@
-tar zcvf this.tar.gz ./
+tar zcvf backup_files.tar.gz ./
 
 git add .
 git commit -m 'backup files'
