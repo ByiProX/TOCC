@@ -13,6 +13,7 @@ import java.util.List;
 public class Todtps implements Metric{
     private String ip;
     private String metric;
+    private String service;
     private List<TodtpsValue> todtpsValues = new ArrayList<>();
 
     @Override
@@ -41,13 +42,21 @@ public class Todtps implements Metric{
     public void setMetric(String metric) {
         this.metric = metric;
     }
+
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
 }
 
 
 class TodtpsValue implements MetricValue{
     private String time;
     private String hostname;
-    private String tps;
+    private double tps;
 
     public String getTime() {
         return time;
@@ -67,11 +76,11 @@ class TodtpsValue implements MetricValue{
         this.hostname = hostname;
     }
 
-    public String getTps() {
+    public double getTps() {
         return tps;
     }
 
-    public void setTps(String tps) {
+    public void setTps(double tps) {
         this.tps = tps;
     }
 }
