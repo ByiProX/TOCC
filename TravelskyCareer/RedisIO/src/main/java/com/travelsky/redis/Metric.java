@@ -2,7 +2,7 @@ package com.travelsky.redis;
 
 public interface Metric {
 
-    void setIP(String ip);
+    void setIp(String ip);
     void setMetric(String metric);
     void addValue(MetricValue metricValue);
 }

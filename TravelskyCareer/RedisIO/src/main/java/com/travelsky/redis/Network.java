@@ -15,13 +15,13 @@ import java.util.List;
 */
 
 public class Network implements Metric {
-    private String IP;
+    private String ip;
     private String metric;
     private List<NetworkValue> networkValues = new ArrayList<>();
 
     public static void main(String[] args){
         Network network = new Network();
-        network.setIP("1.1.1.1");
+        network.setIp("1.1.1.1");
         network.setMetric("network");
         System.out.println(network.getMetric());
 
@@ -48,25 +48,27 @@ public class Network implements Metric {
         networkValues.add((NetworkValue) metricValue);
     }
 
-    public void setIP(String IP) {
-        this.IP = IP;
+
+
+    public List<NetworkValue> getNetworkValues() {
+        return networkValues;
     }
 
-    public void setMetric(String metric) {
-        this.metric = metric;
+    public String getIp() {
+        return ip;
     }
 
-
-    public String getIP() {
-        return IP;
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 
     public String getMetric() {
         return metric;
     }
 
-    public List<NetworkValue> getNetworkValues() {
-        return networkValues;
+    @Override
+    public void setMetric(String metric) {
+        this.metric = metric;
     }
 }
 

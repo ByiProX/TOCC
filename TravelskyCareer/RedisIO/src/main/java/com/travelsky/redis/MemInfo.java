@@ -12,7 +12,7 @@ import java.util.List;
 
 public class MemInfo implements Metric{
 
-    private String IP;
+    private String ip;
     private String metric;
     private List<MemInfoValue> memInfoValues = new ArrayList<>();
 
@@ -22,13 +22,19 @@ public class MemInfo implements Metric{
         memInfoValues.add((MemInfoValue) metricValue);
     }
 
-    public String getIP() {
-        return IP;
+
+    public List<MemInfoValue> getMemInfoValues() {
+        return memInfoValues;
+    }
+
+
+    public String getIp() {
+        return ip;
     }
 
     @Override
-    public void setIP(String IP) {
-        this.IP = IP;
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 
     public String getMetric() {
@@ -38,14 +44,6 @@ public class MemInfo implements Metric{
     @Override
     public void setMetric(String metric) {
         this.metric = metric;
-    }
-
-    public List<MemInfoValue> getMemInfoValues() {
-        return memInfoValues;
-    }
-
-    public void setMemInfoValues(List<MemInfoValue> memInfoValues) {
-        this.memInfoValues = memInfoValues;
     }
 }
 

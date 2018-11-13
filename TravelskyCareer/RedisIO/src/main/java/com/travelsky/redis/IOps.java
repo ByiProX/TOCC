@@ -13,18 +13,27 @@ import java.util.List;
 
 public class IOps implements Metric{
 
-    private String IP;
+    private String ip;
     private String metric;
     private List<IOpsValue> iOpsValues = new ArrayList<>();
 
 
-    public String getIP() {
-        return IP;
+    @Override
+    public void addValue(MetricValue metricValue) {
+        iOpsValues.add((IOpsValue) metricValue);
+    }
+
+    public List<IOpsValue> getiOpsValues(){
+        return iOpsValues;
+    }
+
+    public String getIp() {
+        return ip;
     }
 
     @Override
-    public void setIP(String IP) {
-        this.IP = IP;
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 
     public String getMetric() {
@@ -34,19 +43,6 @@ public class IOps implements Metric{
     @Override
     public void setMetric(String metric) {
         this.metric = metric;
-    }
-
-    @Override
-    public void addValue(MetricValue metricValue) {
-        iOpsValues.add((IOpsValue) metricValue);
-    }
-
-    public List<IOpsValue> getiOpsValues() {
-        return iOpsValues;
-    }
-
-    public void setiOpsValues(List<IOpsValue> iOpsValues) {
-        this.iOpsValues = iOpsValues;
     }
 }
 
