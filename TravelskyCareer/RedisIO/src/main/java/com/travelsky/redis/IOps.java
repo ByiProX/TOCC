@@ -38,7 +38,7 @@ public class IOps implements Metric{
 
     @Override
     public void addValue(MetricValue metricValue) {
-        iOpsValues.add((IOpsValue) iOpsValues);
+        iOpsValues.add((IOpsValue) metricValue);
     }
 
     public List<IOpsValue> getiOpsValues() {

@@ -68,11 +68,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Network.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Network.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/Network.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="51" column="21" lean-forward="true" selection-start-line="51" selection-start-column="21" selection-end-line="51" selection-end-column="21" />
+            <state relative-caret-position="325">
+              <caret line="47" column="52" selection-start-line="47" selection-start-column="52" selection-end-line="47" selection-end-column="52" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#302#303#0" expanded="true" />
@@ -108,11 +108,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="IOps.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="IOps.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/IOps.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="760">
-              <caret line="40" column="47" lean-forward="true" selection-start-line="40" selection-start-column="47" selection-end-line="40" selection-end-column="47" />
+            <state relative-caret-position="395">
+              <caret line="42" lean-forward="true" selection-start-line="42" selection-end-line="42" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#456#457#0" expanded="true" />
@@ -149,6 +149,60 @@
                 <element signature="e#1703#1704#0" expanded="true" />
                 <element signature="e#1743#1744#0" expanded="true" />
                 <element signature="e#1775#1776#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MemInfo.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/MemInfo.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="304">
+              <caret line="16" column="52" selection-start-line="16" selection-start-column="52" selection-end-line="16" selection-end-column="52" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#537#538#0" expanded="true" />
+                <element signature="e#554#555#0" expanded="true" />
+                <element signature="e#573#574#0" expanded="true" />
+                <element signature="e#598#599#0" expanded="true" />
+                <element signature="e#648#649#0" expanded="true" />
+                <element signature="e#676#677#0" expanded="true" />
+                <element signature="e#709#710#0" expanded="true" />
+                <element signature="e#738#739#0" expanded="true" />
+                <element signature="e#796#797#0" expanded="true" />
+                <element signature="e#832#833#0" expanded="true" />
+                <element signature="e#884#885#0" expanded="true" />
+                <element signature="e#920#921#0" expanded="true" />
+                <element signature="e#990#991#0" expanded="true" />
+                <element signature="e#1040#1041#0" expanded="true" />
+                <element signature="e#1485#1486#0" expanded="true" />
+                <element signature="e#1512#1513#0" expanded="true" />
+                <element signature="e#1566#1567#0" expanded="true" />
+                <element signature="e#1598#1599#0" expanded="true" />
+                <element signature="e#1633#1634#0" expanded="true" />
+                <element signature="e#1664#1665#0" expanded="true" />
+                <element signature="e#1726#1727#0" expanded="true" />
+                <element signature="e#1766#1767#0" expanded="true" />
+                <element signature="e#1799#1800#0" expanded="true" />
+                <element signature="e#1830#1831#0" expanded="true" />
+                <element signature="e#1876#1877#0" expanded="true" />
+                <element signature="e#1916#1917#0" expanded="true" />
+                <element signature="e#1946#1947#0" expanded="true" />
+                <element signature="e#1974#1975#0" expanded="true" />
+                <element signature="e#2014#2015#0" expanded="true" />
+                <element signature="e#2048#2049#0" expanded="true" />
+                <element signature="e#2077#2078#0" expanded="true" />
+                <element signature="e#2104#2105#0" expanded="true" />
+                <element signature="e#2142#2143#0" expanded="true" />
+                <element signature="e#2174#2175#0" expanded="true" />
+                <element signature="e#2211#2212#0" expanded="true" />
+                <element signature="e#2244#2245#0" expanded="true" />
+                <element signature="e#2296#2297#0" expanded="true" />
+                <element signature="e#2340#2341#0" expanded="true" />
+                <element signature="e#2379#2380#0" expanded="true" />
+                <element signature="e#2414#2415#0" expanded="true" />
+                <element signature="e#2470#2471#0" expanded="true" />
+                <element signature="e#2518#2519#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -192,9 +246,10 @@
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisIO.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/JsonDemo.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/Network.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/Metric.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/MemInfo.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/IOps.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/Network.java" />
       </list>
     </option>
   </component>
@@ -397,12 +452,12 @@
       <option name="presentableId" value="Default" />
       <updated>1541987795270</updated>
       <workItem from="1541987799618" duration="22785000" />
-      <workItem from="1542027510884" duration="6962000" />
+      <workItem from="1542027510884" duration="7897000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="29747000" />
+    <option name="totallyTimeSpent" value="30682000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1920" height="1013" extended-state="6" />
@@ -417,14 +472,14 @@
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="right" id="Maven Projects" order="3" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3176856" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.3176856" />
       <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Terminal" order="7" weight="0.26200873" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.43995634" />
       <window_info id="Capture Tool" order="2" />
       <window_info id="Designer" order="2" />
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.6992" visible="true" weight="0.16986156" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.6978558" visible="true" weight="0.16986156" />
       <window_info anchor="right" id="Database" order="3" />
-      <window_info id="Structure" order="1" sideWeight="0.3008" side_tool="true" visible="true" weight="0.16986156" />
+      <window_info id="Structure" order="1" sideWeight="0.30214426" side_tool="true" visible="true" weight="0.16986156" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info id="UI Designer" order="2" />
       <window_info anchor="right" id="Theme Preview" order="3" />
@@ -745,48 +800,62 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/Network.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/MemInfo.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="51" column="21" lean-forward="true" selection-start-line="51" selection-start-column="21" selection-end-line="51" selection-end-column="21" />
+        <state relative-caret-position="304">
+          <caret line="16" column="52" selection-start-line="16" selection-start-column="52" selection-end-line="16" selection-end-column="52" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#302#303#0" expanded="true" />
-            <element signature="e#349#350#0" expanded="true" />
-            <element signature="e#385#386#0" expanded="true" />
-            <element signature="e#413#414#0" expanded="true" />
-            <element signature="e#457#458#0" expanded="true" />
-            <element signature="e#493#494#0" expanded="true" />
-            <element signature="e#523#524#0" expanded="true" />
-            <element signature="e#548#549#0" expanded="true" />
-            <element signature="e#581#582#0" expanded="true" />
-            <element signature="e#610#611#0" expanded="true" />
-            <element signature="e#850#851#0" expanded="true" />
-            <element signature="e#878#879#0" expanded="true" />
-            <element signature="e#1927#1928#0" expanded="true" />
-            <element signature="e#1954#1955#0" expanded="true" />
-            <element signature="e#1198#1199#0" expanded="true" />
-            <element signature="e#1230#1231#0" expanded="true" />
-            <element signature="e#1198#1199#0" expanded="true" />
-            <element signature="e#1229#1230#0" expanded="true" />
-            <element signature="e#1277#1278#0" expanded="true" />
-            <element signature="e#1317#1318#0" expanded="true" />
-            <element signature="e#1348#1349#0" expanded="true" />
-            <element signature="e#1375#1376#0" expanded="true" />
-            <element signature="e#1415#1416#0" expanded="true" />
-            <element signature="e#1447#1448#0" expanded="true" />
-            <element signature="e#1478#1479#0" expanded="true" />
-            <element signature="e#1505#1506#0" expanded="true" />
-            <element signature="e#1545#1546#0" expanded="true" />
-            <element signature="e#1577#1578#0" expanded="true" />
+            <element signature="e#537#538#0" expanded="true" />
+            <element signature="e#554#555#0" expanded="true" />
+            <element signature="e#573#574#0" expanded="true" />
+            <element signature="e#598#599#0" expanded="true" />
+            <element signature="e#648#649#0" expanded="true" />
+            <element signature="e#676#677#0" expanded="true" />
+            <element signature="e#709#710#0" expanded="true" />
+            <element signature="e#738#739#0" expanded="true" />
+            <element signature="e#796#797#0" expanded="true" />
+            <element signature="e#832#833#0" expanded="true" />
+            <element signature="e#884#885#0" expanded="true" />
+            <element signature="e#920#921#0" expanded="true" />
+            <element signature="e#990#991#0" expanded="true" />
+            <element signature="e#1040#1041#0" expanded="true" />
+            <element signature="e#1485#1486#0" expanded="true" />
+            <element signature="e#1512#1513#0" expanded="true" />
+            <element signature="e#1566#1567#0" expanded="true" />
+            <element signature="e#1598#1599#0" expanded="true" />
+            <element signature="e#1633#1634#0" expanded="true" />
+            <element signature="e#1664#1665#0" expanded="true" />
+            <element signature="e#1726#1727#0" expanded="true" />
+            <element signature="e#1766#1767#0" expanded="true" />
+            <element signature="e#1799#1800#0" expanded="true" />
+            <element signature="e#1830#1831#0" expanded="true" />
+            <element signature="e#1876#1877#0" expanded="true" />
+            <element signature="e#1916#1917#0" expanded="true" />
+            <element signature="e#1946#1947#0" expanded="true" />
+            <element signature="e#1974#1975#0" expanded="true" />
+            <element signature="e#2014#2015#0" expanded="true" />
+            <element signature="e#2048#2049#0" expanded="true" />
+            <element signature="e#2077#2078#0" expanded="true" />
+            <element signature="e#2104#2105#0" expanded="true" />
+            <element signature="e#2142#2143#0" expanded="true" />
+            <element signature="e#2174#2175#0" expanded="true" />
+            <element signature="e#2211#2212#0" expanded="true" />
+            <element signature="e#2244#2245#0" expanded="true" />
+            <element signature="e#2296#2297#0" expanded="true" />
+            <element signature="e#2340#2341#0" expanded="true" />
+            <element signature="e#2379#2380#0" expanded="true" />
+            <element signature="e#2414#2415#0" expanded="true" />
+            <element signature="e#2470#2471#0" expanded="true" />
+            <element signature="e#2518#2519#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/IOps.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="760">
-          <caret line="40" column="47" lean-forward="true" selection-start-line="40" selection-start-column="47" selection-end-line="40" selection-end-column="47" />
+        <state relative-caret-position="395">
+          <caret line="42" lean-forward="true" selection-start-line="42" selection-end-line="42" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#456#457#0" expanded="true" />
@@ -823,6 +892,44 @@
             <element signature="e#1703#1704#0" expanded="true" />
             <element signature="e#1743#1744#0" expanded="true" />
             <element signature="e#1775#1776#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/Network.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="325">
+          <caret line="47" column="52" selection-start-line="47" selection-start-column="52" selection-end-line="47" selection-end-column="52" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#302#303#0" expanded="true" />
+            <element signature="e#349#350#0" expanded="true" />
+            <element signature="e#385#386#0" expanded="true" />
+            <element signature="e#413#414#0" expanded="true" />
+            <element signature="e#457#458#0" expanded="true" />
+            <element signature="e#493#494#0" expanded="true" />
+            <element signature="e#523#524#0" expanded="true" />
+            <element signature="e#548#549#0" expanded="true" />
+            <element signature="e#581#582#0" expanded="true" />
+            <element signature="e#610#611#0" expanded="true" />
+            <element signature="e#850#851#0" expanded="true" />
+            <element signature="e#878#879#0" expanded="true" />
+            <element signature="e#1927#1928#0" expanded="true" />
+            <element signature="e#1954#1955#0" expanded="true" />
+            <element signature="e#1198#1199#0" expanded="true" />
+            <element signature="e#1230#1231#0" expanded="true" />
+            <element signature="e#1198#1199#0" expanded="true" />
+            <element signature="e#1229#1230#0" expanded="true" />
+            <element signature="e#1277#1278#0" expanded="true" />
+            <element signature="e#1317#1318#0" expanded="true" />
+            <element signature="e#1348#1349#0" expanded="true" />
+            <element signature="e#1375#1376#0" expanded="true" />
+            <element signature="e#1415#1416#0" expanded="true" />
+            <element signature="e#1447#1448#0" expanded="true" />
+            <element signature="e#1478#1479#0" expanded="true" />
+            <element signature="e#1505#1506#0" expanded="true" />
+            <element signature="e#1545#1546#0" expanded="true" />
+            <element signature="e#1577#1578#0" expanded="true" />
           </folding>
         </state>
       </provider>

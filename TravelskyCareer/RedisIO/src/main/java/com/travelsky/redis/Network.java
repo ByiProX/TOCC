@@ -44,8 +44,8 @@ public class Network implements Metric {
         System.out.println(jsonString);
     }
 
-    public void addValue(MetricValue networkValue) {
-        networkValues.add((NetworkValue) networkValue);
+    public void addValue(MetricValue metricValue) {
+        networkValues.add((NetworkValue) metricValue);
     }
 
     public void setIP(String IP) {
