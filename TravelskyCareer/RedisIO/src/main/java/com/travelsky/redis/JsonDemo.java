@@ -14,11 +14,11 @@ public class JsonDemo {
         group.setId(0L);
         group.setName("admin");
 
-        U guestUser = new U();
+        User guestUser = new User();
         guestUser.setId(2L);
         guestUser.setName("guest");
 
-        U rootUser = new U();
+        User rootUser = new User();
         rootUser.setId(3L);
         rootUser.setName("root");
 
@@ -32,7 +32,7 @@ public class JsonDemo {
 }
 
 
-class U {
+class User {
 
     private Long id;
     private String name;
@@ -58,7 +58,7 @@ class Group {
 
     private Long id;
     private String name;
-    private List<U> u = new ArrayList<U>();
+    private List<User> users = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -76,15 +76,15 @@ class Group {
         this.name = name;
     }
 
-    public List<U> getUsers() {
-        return u;
+    public List<User> getUsers() {
+        return users;
     }
 
-    public void setUsers(List<U> user) {
-        this.u = user;
+    public void setUsers(List<User> user) {
+        this.users = user;
     }
 
-    public void addUser(U user) {
-        u.add(user);
+    public void addUser(User user) {
+        users.add(user);
     }
 }
