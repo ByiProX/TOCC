@@ -1,6 +1,8 @@
 package com.travelsky.redis;
 
 
+import com.alibaba.fastjson.JSON;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +19,33 @@ public class Network implements Metric {
     private String metric;
     private List<NetworkValue> networkValues = new ArrayList<>();
 
-    public void addValue(NetworkValue networkValue) {
-        networkValues.add(networkValue);
+    public static void main(String[] args){
+        Network network = new Network();
+        network.setIP("1.1.1.1");
+        network.setMetric("network");
+        System.out.println(network.getMetric());
+
+        NetworkValue networkValue1 = new NetworkValue();
+        networkValue1.setHostname("wkx");
+        networkValue1.setTime("2018");
+        networkValue1.setRxre(1.);
+        networkValue1.setTxre(2.);
+
+        NetworkValue networkValue2 = new NetworkValue();
+        networkValue2.setHostname("pyy");
+        networkValue2.setTime("2017");
+        networkValue2.setRxre(10.);
+        networkValue2.setTxre(20.);
+
+        network.addValue(networkValue1);
+        network.addValue(networkValue2);
+
+        String jsonString = JSON.toJSONString(network);
+        System.out.println(jsonString);
+    }
+
+    public void addValue(MetricValue networkValue) {
+        networkValues.add((NetworkValue) networkValue);
     }
 
     public void setIP(String IP) {
@@ -44,14 +71,12 @@ public class Network implements Metric {
 }
 
 
-class NetworkValue{
+class NetworkValue implements MetricValue{
 
     private String time;
     private String hostname;
     private double rxre;
     private double txre;
-
-
 
     public String getTime() {
         return time;
