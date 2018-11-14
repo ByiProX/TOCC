@@ -32,10 +32,8 @@ public class RedisIO {
 
     }
 
-    private static void parseRedis2Json(Jedis jedis){
+    private static void parseRedis2JsonTest(Jedis jedis){
         Set keys = jedis.keys("*");
-//        Set kyes = jedis.scan("0");
-//        System.out.println(keys);
 
         Out out;
         out = new Out("ans.json");
@@ -50,6 +48,16 @@ public class RedisIO {
         out.close();
 
     }
+
+    private static void parseRedis2Json(Jedis jedis){
+        Set keys = jedis.keys("*");
+
+        Out out = new Out("data.json");
+
+
+
+    }
+
 
 
     private static boolean isCorrectLineFormat(String line) {
@@ -76,7 +84,7 @@ public class RedisIO {
 
         Jedis jedis = connectRedisDB("localhost", 6379);
 
-        RedisIO.parseRedis2Json(jedis);
+        RedisIO.parseRedis2JsonTest(jedis);
 
 
 
