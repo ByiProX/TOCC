@@ -4,6 +4,7 @@ public interface Metric {
 
     void setIp(String ip);
     void setMetric(String metric);
+    String getIp();
     void addValue(MetricValue metricValue);
 }
 
