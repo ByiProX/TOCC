@@ -34,21 +34,23 @@ public class RedisIO {
 
     private static void parseRedis2Json(Jedis jedis){
         Set keys = jedis.keys("*");
-        System.out.println(keys);
+//        Set kyes = jedis.scan("0");
+//        System.out.println(keys);
 
         Out out;
         out = new Out("ans.json");
+        Map<String, List> map= new HashMap<>();
         for (Object key : keys) {
-            Map<String, List> map= new HashMap<>();
             map.put(key.toString(), jedis.lrange(key.toString(),0,-1));
 
-            String ans = JSON.toJSONString(map);
-            out.println(ans);
         }
+        String ans = JSON.toJSONString(map);
+        out.println(ans);
 
         out.close();
 
     }
+
 
     private static boolean isCorrectLineFormat(String line) {
         String[] parseList = line.trim().split("[ \t]+");
