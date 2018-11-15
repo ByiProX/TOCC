@@ -10,11 +10,34 @@ import java.util.List;
  * 10.6.156.9|TUXSerCall|TUMSINTAVSE   20180517-23:46:39|v490a9-tux|0.00
  */
 
-public class TUXSerCall implements Metric{
+
+public class TUXSerCall implements Metric {
     private String ip;
     private String metric;
     private String service;
     private List<TUXSerCallValue> tuxSerCallValues = new ArrayList<>();
+
+    public TUXSerCall(Object redisKey, List<String> redisValue) {
+        String[] argList = redisKey.toString().split("[|]");
+        ip = argList[0];
+        metric = argList[1];
+        service = argList[2];
+        for (String value : redisValue) {
+            String[] valueList = value.split("[|]");
+
+            TUXSerCallValue tuxSerCallValue = new TUXSerCallValue();
+            tuxSerCallValue.setTime(valueList[0]);
+            tuxSerCallValue.setHostname(valueList[1]);
+            tuxSerCallValue.setTps(Double.parseDouble(valueList[2]));
+
+            tuxSerCallValues.add(tuxSerCallValue);
+
+        }
+    }
+
+
+    public TUXSerCall() {
+    }
 
 
     @Override
@@ -53,7 +76,7 @@ public class TUXSerCall implements Metric{
     }
 }
 
-class TUXSerCallValue implements MetricValue{
+class TUXSerCallValue implements MetricValue {
     private String time;
     private String hostname;
     private double tps;

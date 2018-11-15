@@ -17,6 +17,30 @@ public class JdbcPool implements Metric{
     private String metric;
     private List<JdbcPoolValue> jdbcPoolValues = new ArrayList<>();
 
+    public JdbcPool(Object redisKey, List<String> redisValue){
+        String[] argList = redisKey.toString().split("[|]");
+        ip = argList[0];
+        metric = argList[1];
+        for (String value: redisValue) {
+            String[] valueList = value.split("[|]");
+
+            JdbcPoolValue jdbcPoolValue = new JdbcPoolValue();
+            jdbcPoolValue.setTime(valueList[0]);
+            jdbcPoolValue.setHostname(valueList[1]);
+            jdbcPoolValue.setTotalNum(Integer.parseInt(valueList[2]));
+            jdbcPoolValue.setUsage(Integer.parseInt(valueList[3]));
+            jdbcPoolValue.setFree(Integer.parseInt(valueList[4]));
+            jdbcPoolValue.setUsageRatio(Double.parseDouble(valueList[5]));
+            jdbcPoolValue.setSurplusRatio(Double.parseDouble(valueList[6]));
+
+            jdbcPoolValues.add(jdbcPoolValue);
+
+
+        }
+    }
+
+    public JdbcPool(){}
+
 
     @Override
     public void addValue(MetricValue metricValue) {

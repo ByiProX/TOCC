@@ -16,6 +16,27 @@ public class CpuInfo implements Metric{
     private String metric;
     private List<CpuInfoValue> cpuInfoValues = new ArrayList<>();
 
+    public CpuInfo(Object redisKey, List<String> redisValue){
+        String[] argList = redisKey.toString().split("[|]");
+        ip = argList[0];
+        metric = argList[1];
+        for (String value: redisValue) {
+            String[] valueList = value.split("[|]");
+
+            CpuInfoValue cpuInfoValue = new CpuInfoValue();
+            cpuInfoValue.setTime(valueList[0]);
+            cpuInfoValue.setHostname(valueList[1]);
+            cpuInfoValue.setUser(Double.parseDouble(valueList[2]));
+            cpuInfoValue.setSys(Double.parseDouble(valueList[3]));
+            cpuInfoValue.setIowait(Double.parseDouble(valueList[4]));
+            cpuInfoValue.setIdle(Double.parseDouble(valueList[5]));
+
+            cpuInfoValues.add(cpuInfoValue);
+        }
+    }
+
+    public CpuInfo(){}
+
     @Override
     public void addValue(MetricValue metricValue) {
         cpuInfoValues.add((CpuInfoValue) metricValue);

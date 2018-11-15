@@ -10,18 +10,42 @@ import java.util.List;
  * 10.5.72.5|todtps|av_comm   20180517-23:50:01|tr730z53-tod|89.8333
  */
 
-public class Todtps implements Metric{
+
+public class Todtps implements Metric {
     private String ip;
     private String metric;
     private String service;
     private List<TodtpsValue> todtpsValues = new ArrayList<>();
+
+
+    public Todtps(Object redisKey, List<String> redisValue) {
+        String[] argList = redisKey.toString().split("[|]");
+        ip = argList[0];
+        metric = argList[1];
+        service = argList[2];
+        for (String value : redisValue) {
+            String[] valueList = value.split("[|]");
+
+            TodtpsValue todtpsValue = new TodtpsValue();
+            todtpsValue.setTime(valueList[0]);
+            todtpsValue.setHostname(valueList[1]);
+            todtpsValue.setTps(Double.parseDouble(valueList[2]));
+
+            todtpsValues.add(todtpsValue);
+
+        }
+    }
+
+
+    public Todtps() {
+    }
 
     @Override
     public void addValue(MetricValue metricValue) {
         todtpsValues.add((TodtpsValue) metricValue);
     }
 
-    public List<TodtpsValue> getTodtpsValues(){
+    public List<TodtpsValue> getTodtpsValues() {
         return todtpsValues;
     }
 
@@ -53,7 +77,7 @@ public class Todtps implements Metric{
 }
 
 
-class TodtpsValue implements MetricValue{
+class TodtpsValue implements MetricValue {
     private String time;
     private String hostname;
     private double tps;

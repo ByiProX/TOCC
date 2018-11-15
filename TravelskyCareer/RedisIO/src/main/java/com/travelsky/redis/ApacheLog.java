@@ -17,6 +17,29 @@ public class ApacheLog implements Metric{
     private String visitType;
     private List<ApacheLogValue> apacheLogValues = new ArrayList<>();
 
+    public ApacheLog(Object redisKey, List<String> redisValue){
+        String[] argList = redisKey.toString().split("[|]");
+        ip = argList[0];
+        metric = argList[1];
+        visitType = argList[2];
+
+        for (String value: redisValue){
+            String[] valueList = value.split("[|]");
+
+            ApacheLogValue apacheLogValue = new ApacheLogValue();
+            apacheLogValue.setTime(valueList[0]);
+            apacheLogValue.setHostname(valueList[1]);
+            apacheLogValue.setTps(Double.parseDouble(valueList[2]));
+            apacheLogValue.setMinResponseTime(Double.parseDouble(valueList[3]));
+            apacheLogValue.setMaxResponseTime(Double.parseDouble(valueList[4]));
+            apacheLogValue.setAveResponseTime(Double.parseDouble(valueList[5]));
+            apacheLogValue.setAveNetFlow(Double.parseDouble(valueList[6]));
+
+            apacheLogValues.add(apacheLogValue);
+        }
+    }
+
+    public ApacheLog(){}
 
     @Override
     public void addValue(MetricValue metricValue) {

@@ -15,6 +15,28 @@ public class SwapInfo implements Metric{
     private String metric;
     private List<SwapInfoValue> swapInfoValues = new ArrayList<>();
 
+    public SwapInfo(Object redisKey, List<String> redisValue){
+        String[] argList = redisKey.toString().split("[|]");
+        ip = argList[0];
+        metric = argList[1];
+        for (String value: redisValue) {
+            String[] valueList = value.split("[|]");
+
+            SwapInfoValue swapInfoValue = new SwapInfoValue();
+            swapInfoValue.setTime(valueList[0]);
+            swapInfoValue.setHostname(valueList[1]);
+            swapInfoValue.setTotalNum(Long.parseLong(valueList[2]));
+            swapInfoValue.setUsage(Long.parseLong(valueList[3]));
+            swapInfoValue.setFree(Long.parseLong(valueList[4]));
+            swapInfoValue.setUsageRatio(Double.parseDouble(valueList[5]));
+            swapInfoValue.setSurplusRatio(Double.parseDouble(valueList[6]));
+
+            swapInfoValues.add(swapInfoValue);
+        }
+    }
+
+    public SwapInfo(){}
+
 
     @Override
     public void addValue(MetricValue metricValue) {

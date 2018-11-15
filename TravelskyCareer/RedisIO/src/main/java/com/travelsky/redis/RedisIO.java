@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import redis.clients.jedis.Jedis;
 
 
+import javax.sound.midi.Soundbank;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -64,8 +65,12 @@ public class RedisIO {
         for (Object redisKey : redisKeys) {
             List<String> redisValue = jedis.lrange(redisKey.toString(), 0, -1);
             Metric metricObj = createMetricInstance(redisKey, redisValue);
+            metricMap.put(redisKey.toString().trim().split("[|]")[1], metricObj);
         }
+        String jsonString = JSON.toJSONString(metricMap);
+        out.println(jsonString);
 
+        out.close();
 
     }
 
@@ -142,15 +147,23 @@ public class RedisIO {
             NoSuchMethodException, InvocationTargetException,
             IllegalAccessException, InstantiationException {
 
-        Jedis jedis = connectRedisDB("localhost", 6379);
-        String redisKey = "10.5.72.5|network";
-        List<String> values =  jedis.lrange(redisKey, 0, -1);
-        System.out.println(values);
-
-        Metric metric = RedisIO.createMetricInstance(redisKey, values);
-
-        String jsonString = JSON.toJSONString(metric);
-        System.out.println(jsonString);
+//        Jedis jedis = connectRedisDB("localhost", 6379);
+//        String redisKey = "10.5.72.5|network";
+//        List<String> values =  jedis.lrange(redisKey, 0, -1);
+//        System.out.println(values);
+//
+//        Metric metric = RedisIO.createMetricInstance(redisKey, values);
+//
+//        String jsonString = JSON.toJSONString(metric);
+//        System.out.println(jsonString);
+//
+//        String test = "20180517-01:10:12||50|0|50|0.000000|100.000000";
+//        for (String a : test.split("[|]"))
+//            System.out.println(a);
+//
+//
+//        String m = test.split("[|]")[1];
+//        System.out.println(Double.parseDouble(m));
 
 
 
@@ -162,9 +175,9 @@ public class RedisIO {
 
         //1. 将txt数据导入redis
 //        RedisIO.parseTXT2Redis("localhost",6379,"./value.txt");
-//        Jedis jedis = connectRedisDB("localhost", 6379);
+        Jedis jedis = connectRedisDB("localhost", 6379);
 
-//        RedisIO.parseRedis2JsonTest(jedis);
+        RedisIO.parseRedis2Json(jedis);
 
 
 //        Map<String, Metric> metricMap = new HashMap<>();

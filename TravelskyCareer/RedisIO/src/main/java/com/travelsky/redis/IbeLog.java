@@ -17,6 +17,30 @@ public class IbeLog implements Metric{
     private List<IbeLogValue> ibeLogValues = new ArrayList<>();
 
 
+    public IbeLog(Object redisKey, List<String> redisValue){
+        String[] argList = redisKey.toString().split("[|]");
+        ip = argList[0];
+        metric = argList[1];
+        command = argList[2];
+        for (String value: redisValue) {
+            String[] valueList = value.split("[|]");
+
+            IbeLogValue ibeLogValue = new IbeLogValue();
+            ibeLogValue.setTime(valueList[0]);
+            ibeLogValue.setHostname(valueList[1]);
+            ibeLogValue.setPeriod(Integer.parseInt(valueList[2]));
+            ibeLogValue.setTps(Double.parseDouble(valueList[3]));
+            ibeLogValue.setMaxResponseTime(Integer.parseInt(valueList[4]));
+            ibeLogValue.setMinResponseTime(Integer.parseInt(valueList[5]));
+            ibeLogValue.setAveResponseTime(Integer.parseInt(valueList[6]));
+
+            ibeLogValues.add(ibeLogValue);
+        }
+    }
+
+    public IbeLog(){}
+
+
     @Override
     public void addValue(MetricValue metricValue) {
         ibeLogValues.add((IbeLogValue) metricValue);

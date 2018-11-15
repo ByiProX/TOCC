@@ -16,6 +16,24 @@ public class ApachePort implements Metric{
     private String metric;
     private List<ApachePortValue> apachePortValues = new ArrayList<>();
 
+    public ApachePort(Object redisKey, List<String> redisValue){
+        String[] argList = redisKey.toString().split("[|]");
+        ip = argList[0];
+        metric = argList[1];
+        for (String value: redisValue){
+            String[] valueList = value.split("[|]");
+
+            ApachePortValue apachePortValue = new ApachePortValue();
+            apachePortValue.setTime(valueList[0]);
+            apachePortValue.setHostname(valueList[1]);
+            apachePortValue.setConnectNum(valueList[2]);
+
+            apachePortValues.add(apachePortValue);
+        }
+    }
+
+    public ApachePort(){}
+
 
     @Override
     public void addValue(MetricValue metricValue) {

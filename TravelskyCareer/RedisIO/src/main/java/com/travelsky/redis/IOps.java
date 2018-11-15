@@ -1,5 +1,7 @@
 package com.travelsky.redis;
 
+import org.omg.CORBA.PUBLIC_MEMBER;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +18,27 @@ public class IOps implements Metric{
     private String ip;
     private String metric;
     private List<IOpsValue> iOpsValues = new ArrayList<>();
+
+    public IOps(Object redisKey, List<String> redisValue){
+        String[] argList = redisKey.toString().split("[|]");
+        ip = argList[0];
+        metric = argList[1];
+        for (String value: redisValue) {
+            String[] valueList = value.split("[|]");
+
+            IOpsValue iOpsValue = new IOpsValue();
+            iOpsValue.setTime(valueList[0]);
+            iOpsValue.setHostname(valueList[1]);
+            iOpsValue.setRead(Double.parseDouble(valueList[2]));
+            iOpsValue.setWrite(Double.parseDouble(valueList[3]));
+            iOpsValue.setUtil(Double.parseDouble(valueList[4]));
+
+            iOpsValues.add(iOpsValue);
+
+        }
+    }
+
+    public IOps(){}
 
 
     @Override

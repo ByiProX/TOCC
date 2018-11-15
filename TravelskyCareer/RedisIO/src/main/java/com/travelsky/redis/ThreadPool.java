@@ -12,10 +12,34 @@ import java.util.List;
  * 10.5.73.45|Threadpool|AutoBOXServer|8109   20180517-01:10:12||-1|-1|0|100.000000|0.000000
  */
 
-public class ThreadPool implements Metric{
+
+public class ThreadPool implements Metric {
     private String ip;
     private String metric;
     private List<ThreadPoolValue> threadPoolValues = new ArrayList<>();
+
+    public ThreadPool(Object redisKey, List<String> redisValue) {
+        String[] argList = redisKey.toString().split("[|]");
+        ip = argList[0];
+        metric = argList[1];
+        for (String value : redisValue) {
+            String[] valueList = value.split("[|]");
+
+            ThreadPoolValue threadPoolValue = new ThreadPoolValue();
+            threadPoolValue.setTime(valueList[0]);
+            threadPoolValue.setHostname(valueList[1]);
+            threadPoolValue.setTotalNum(Integer.parseInt(valueList[2]));
+            threadPoolValue.setUsage(Integer.parseInt(valueList[3]));
+            threadPoolValue.setFree(Integer.parseInt(valueList[4]));
+            threadPoolValue.setUsageRatio(Double.parseDouble(valueList[5]));
+            threadPoolValue.setSurplusRatio(Double.parseDouble(valueList[6]));
+
+            threadPoolValues.add(threadPoolValue);
+        }
+    }
+
+    public ThreadPool() {
+    }
 
 
     @Override
@@ -47,12 +71,12 @@ public class ThreadPool implements Metric{
     }
 }
 
-class ThreadPoolValue implements MetricValue{
+class ThreadPoolValue implements MetricValue {
     private String time;
     private String hostname;
-    private long totalNum;
-    private long usage;
-    private long free;
+    private int totalNum;
+    private int usage;
+    private int free;
     private double usageRatio;
     private double surplusRatio;
 
@@ -74,27 +98,27 @@ class ThreadPoolValue implements MetricValue{
         this.hostname = hostname;
     }
 
-    public long getTotalNum() {
+    public int getTotalNum() {
         return totalNum;
     }
 
-    public void setTotalNum(long totalNum) {
+    public void setTotalNum(int totalNum) {
         this.totalNum = totalNum;
     }
 
-    public long getUsage() {
+    public int getUsage() {
         return usage;
     }
 
-    public void setUsage(long usage) {
+    public void setUsage(int usage) {
         this.usage = usage;
     }
 
-    public long getFree() {
+    public int getFree() {
         return free;
     }
 
-    public void setFree(long free) {
+    public void setFree(int free) {
         this.free = free;
     }
 

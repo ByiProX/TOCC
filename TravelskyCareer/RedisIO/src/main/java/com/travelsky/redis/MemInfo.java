@@ -16,6 +16,28 @@ public class MemInfo implements Metric{
     private String metric;
     private List<MemInfoValue> memInfoValues = new ArrayList<>();
 
+    public MemInfo(Object redisKey, List<String> redisValue){
+        String[] argList = redisKey.toString().split("[|]");
+        ip = argList[0];
+        metric = argList[1];
+        for (String value: redisValue) {
+            String[] valueList = value.split("[|]");
+
+           MemInfoValue memInfoValue = new MemInfoValue();
+           memInfoValue.setTime(valueList[0]);
+           memInfoValue.setHostname(valueList[1]);
+           memInfoValue.setTotalNum(Integer.parseInt(valueList[2]));
+           memInfoValue.setUsage(Integer.parseInt(valueList[3]));
+           memInfoValue.setFree(Integer.parseInt(valueList[4]));
+           memInfoValue.setUsageRatio(Double.parseDouble(valueList[5]));
+           memInfoValue.setSurplusRatio(Double.parseDouble(valueList[6]));
+
+           memInfoValues.add(memInfoValue);
+        }
+    }
+
+    public MemInfo(){}
+
 
     @Override
     public void addValue(MetricValue metricValue) {
