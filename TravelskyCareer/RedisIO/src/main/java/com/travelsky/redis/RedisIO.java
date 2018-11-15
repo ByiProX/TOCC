@@ -67,6 +67,35 @@ public class RedisIO {
 
     }
 
+    private Metric createMetricObj(String metricMapKey) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+
+        String clsName = getTrueClsName(metricMapKey);
+        Class cls = Class.forName(Config.PACKAGE_NAME + clsName);
+        return  (Metric) cls.newInstance();
+
+    }
+
+    private static String getTrueClsName(String metricMapKey) {
+        switch (metricMapKey) {
+            case "ApacheLog": return "ApacheLog";
+            case "apache_port": return "ApachePort";
+            case "cpuinfo": return "CpuInfo";
+            case "ibelog": return "IbeLog";
+            case "iops": return "IOps";
+            case "jboss_tcp": return "JbossTcp";
+            case "jdbcpool": return "JdbcPool";
+            case "meminfo":return "MemInfo";
+            case "network": return "Network";
+            case "swapinfo": return "SwapInfo";
+            case "Threadpool": return "ThreadPool";
+            case "todtps": return "Todtps";
+            case "TUXSerCall": return "TUXSerCall";
+
+            default:
+                return null;
+        }
+    }
+
 
     private static boolean isCorrectLineFormat(String line) {
         String[] parseList = line.trim().split("[ \t]+");
@@ -86,7 +115,9 @@ public class RedisIO {
     }
 
 
-    public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    public static void main(String[] args) throws ClassNotFoundException,
+            NoSuchMethodException, InvocationTargetException,
+            IllegalAccessException, InstantiationException {
         //1. 将txt数据导入redis
 //        RedisIO.parseTXT2Redis("localhost",6379,"./value.txt");
 
@@ -162,7 +193,7 @@ public class RedisIO {
 
         Class cls = null;
 
-        cls = Class.forName("com.travelsky.redis.Network");
+        cls = Class.forName("com.travelsky.redis." + "Network");
         Metric obj = (Metric) cls.newInstance();
         Method method = cls.getMethod("setIp", String.class);
         method.invoke(obj, "1.2.3.4");
@@ -170,9 +201,7 @@ public class RedisIO {
         obj.getIp();
         System.out.println(obj.getIp());
 
-
-
-
+        System.out.println(getTrueClsName("network"));
 
 
     }
