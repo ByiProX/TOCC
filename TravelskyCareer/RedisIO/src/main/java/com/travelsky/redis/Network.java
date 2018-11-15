@@ -19,6 +19,27 @@ public class Network implements Metric {
     private String metric;
     private List<NetworkValue> networkValues = new ArrayList<>();
 
+
+    public Network(Object redisKey, List<String> redisValue){
+        ip = redisKey.toString().split("[|]")[0];
+        metric = redisKey.toString().split("[|]")[1];
+
+        for (String value: redisValue){
+            NetworkValue networkValue = new NetworkValue();
+            networkValue.setTime(value.split("[|]")[0]);
+            networkValue.setHostname(value.split("[|]")[1]);
+            networkValue.setRxre(Double.parseDouble(value.split("[|]")[2]));
+            networkValue.setTxre(Double.parseDouble(value.split("[|]")[3]));
+
+            networkValues.add(networkValue);
+        }
+
+    }
+
+    public Network() {
+
+    }
+
     public static void main(String[] args){
         Network network = new Network();
         network.setIp("1.1.1.1");

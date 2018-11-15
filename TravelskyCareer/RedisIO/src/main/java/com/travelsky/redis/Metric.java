@@ -3,8 +3,9 @@ package com.travelsky.redis;
 public interface Metric {
 
     void setIp(String ip);
-    void setMetric(String metric);
     String getIp();
+    void setMetric(String metric);
+    String getMetric();
     void addValue(MetricValue metricValue);
 }
 

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import redis.clients.jedis.Jedis;
 
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ public class RedisIO {
     }
 
     private static void parseRedis2JsonTest(Jedis jedis) {
-        Set keys = jedis.keys("*");
+        Set<String> keys = jedis.keys("*");
 
         Out out;
         out = new Out("ans.json");
@@ -52,44 +53,66 @@ public class RedisIO {
 
     }
 
-    private static void parseRedis2Json(Jedis jedis) {
-        Set keys = jedis.keys("*");
+    private static void parseRedis2Json(Jedis jedis) throws IllegalAccessException,
+            InstantiationException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
+        Set redisKeys = jedis.keys("*");
 
         Out out = new Out("data.json");
 
         Map<String, Metric> metricMap = new HashMap<>();
 
-        for (Object key : keys) {
-            String metricMapKey = key.toString().trim().split("[|]")[1];
-
+        for (Object redisKey : redisKeys) {
+            List<String> redisValue = jedis.lrange(redisKey.toString(), 0, -1);
+            Metric metricObj = createMetricInstance(redisKey, redisValue);
         }
 
 
     }
 
-    private Metric createMetricObj(String metricMapKey) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+    private static Metric createMetricInstance(Object redisKey, List<String> redisValue) throws ClassNotFoundException,
+            IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+
+        String metricMapKey = redisKey.toString().trim().split("[|]")[1];
+        System.out.println(metricMapKey);
 
         String clsName = getTrueClsName(metricMapKey);
         Class cls = Class.forName(Config.PACKAGE_NAME + clsName);
-        return  (Metric) cls.newInstance();
+        Constructor<?> constructor = cls.getDeclaredConstructor(Object.class, List.class);
+//        System.out.println("i am in now ....");
+//        Metric metric  = (Metric) constructor.newInstance(redisKey, redisValue);
+//        System.out.println(metric.getMetric());
+        return (Metric) constructor.newInstance(redisKey, redisValue);
 
     }
 
     private static String getTrueClsName(String metricMapKey) {
         switch (metricMapKey) {
-            case "ApacheLog": return "ApacheLog";
-            case "apache_port": return "ApachePort";
-            case "cpuinfo": return "CpuInfo";
-            case "ibelog": return "IbeLog";
-            case "iops": return "IOps";
-            case "jboss_tcp": return "JbossTcp";
-            case "jdbcpool": return "JdbcPool";
-            case "meminfo":return "MemInfo";
-            case "network": return "Network";
-            case "swapinfo": return "SwapInfo";
-            case "Threadpool": return "ThreadPool";
-            case "todtps": return "Todtps";
-            case "TUXSerCall": return "TUXSerCall";
+            case "ApacheLog":
+                return "ApacheLog";
+            case "apache_port":
+                return "ApachePort";
+            case "cpuinfo":
+                return "CpuInfo";
+            case "ibelog":
+                return "IbeLog";
+            case "iops":
+                return "IOps";
+            case "jboss_tcp":
+                return "JbossTcp";
+            case "jdbcpool":
+                return "JdbcPool";
+            case "meminfo":
+                return "MemInfo";
+            case "network":
+                return "Network";
+            case "swapinfo":
+                return "SwapInfo";
+            case "Threadpool":
+                return "ThreadPool";
+            case "todtps":
+                return "Todtps";
+            case "TUXSerCall":
+                return "TUXSerCall";
 
             default:
                 return null;
@@ -118,90 +141,68 @@ public class RedisIO {
     public static void main(String[] args) throws ClassNotFoundException,
             NoSuchMethodException, InvocationTargetException,
             IllegalAccessException, InstantiationException {
+
+        Jedis jedis = connectRedisDB("localhost", 6379);
+        String redisKey = "10.5.72.5|network";
+        List<String> values =  jedis.lrange(redisKey, 0, -1);
+        System.out.println(values);
+
+        Metric metric = RedisIO.createMetricInstance(redisKey, values);
+
+        String jsonString = JSON.toJSONString(metric);
+        System.out.println(jsonString);
+
+
+
+
+
+
+
+
+
         //1. 将txt数据导入redis
 //        RedisIO.parseTXT2Redis("localhost",6379,"./value.txt");
-
 //        Jedis jedis = connectRedisDB("localhost", 6379);
 
 //        RedisIO.parseRedis2JsonTest(jedis);
 
 
 //        Map<String, Metric> metricMap = new HashMap<>();
-
-        String netstring = "10.5.72.5|network   20180517-00:02:01|tr730z53-tod|7974.95|6728.77";
-
-        String[] parseList = netstring.trim().split("[ \t]+");
-
-        System.out.println(parseList[1]);
-
-        Network network = new Network();
-        NetworkValue networkValue = new NetworkValue();
-
-        String ip = parseList[0].trim().split("[|]")[0];
-        String cmd = parseList[0].trim().split("[|]")[1];
-        String time = parseList[1].trim().split("[|]")[0];
-        System.out.println(time);
-
-
-        String hostname = parseList[1].trim().split("[|]")[1];
-        String rxre = parseList[1].trim().split("[|]")[2];
-        String txre = parseList[1].trim().split("[|]")[3];
-
-        network.setIp(ip);
-        network.setMetric(cmd);
-        networkValue.setTime(time);
-        networkValue.setHostname(hostname);
-        networkValue.setRxre(Double.parseDouble(rxre));
-        networkValue.setTxre(Double.parseDouble(txre));
-        network.addValue(networkValue);
-
-
-        String iopsString = "10.5.72.5|iops   20180517-23:48:01|tr730z53-tod|13.93|288.42|0.92";
-        String[] parseList1 = iopsString.trim().split("[ \t]+");
-
-        IOps iOps = new IOps();
-        IOpsValue iOpsValue = new IOpsValue();
-        String ip1 = parseList1[0].trim().split("[|]")[0];
-        String cmd1 = parseList1[0].trim().split("[|]")[1];
-        String time1 = parseList1[1].trim().split("[|]")[0];
-        String hostname1 = parseList1[1].trim().split("[|]")[1];
-        String read1 = parseList1[1].trim().split("[|]")[2];
-        String write1 = parseList1[1].trim().split("[|]")[3];
-        String util1 = parseList1[1].trim().split("[|]")[4];
-
-        iOps.setIp(ip1);
-        iOps.setMetric(cmd1);
-
-        iOpsValue.setHostname(hostname1);
-        iOpsValue.setTime(time1);
-        iOpsValue.setRead(Double.parseDouble(read1));
-        iOpsValue.setWrite(Double.parseDouble(write1));
-        iOpsValue.setUtil(Double.parseDouble(util1));
-
-        iOps.addValue(iOpsValue);
+//
+//        String netstring = "10.5.72.5|network   20180517-00:02:01|tr730z53-tod|7974.95|6728.77";
+//
+//        String[] parseList = netstring.trim().split("[ \t]+");
+//
+//        System.out.println(parseList[1]);
+//
+//        Network network = new Network();
+//        NetworkValue networkValue = new NetworkValue();
+//
+//        String ip = parseList[0].trim().split("[|]")[0];
+//        String cmd = parseList[0].trim().split("[|]")[1];
+//        String time = parseList[1].trim().split("[|]")[0];
+//        String hostname = parseList[1].trim().split("[|]")[1];
+//        String rxre = parseList[1].trim().split("[|]")[2];
+//        String txre = parseList[1].trim().split("[|]")[3];
+//
+//        network.setIp(ip);
+//        network.setMetric(cmd);
+//        networkValue.setTime(time);
+//        networkValue.setHostname(hostname);
+//        networkValue.setRxre(Double.parseDouble(rxre));
+//        networkValue.setTxre(Double.parseDouble(txre));
+//        network.addValue(networkValue);
+//
+//
+//        Map<String, Metric> metricMap = new HashMap<>();
+//        metricMap.put("network", network);
+//
+//
+//        String jsonString = JSON.toJSONString(metricMap);
+//
+//        System.out.println(jsonString);
 
 
-        Map<String, Metric> metricMap = new HashMap<>();
-        metricMap.put("network", network);
-        metricMap.put("iops", iOps);
-
-
-        String jsonString = JSON.toJSONString(metricMap);
-
-        System.out.println(jsonString);
-
-
-        Class cls = null;
-
-        cls = Class.forName("com.travelsky.redis." + "Network");
-        Metric obj = (Metric) cls.newInstance();
-        Method method = cls.getMethod("setIp", String.class);
-        method.invoke(obj, "1.2.3.4");
-
-        obj.getIp();
-        System.out.println(obj.getIp());
-
-        System.out.println(getTrueClsName("network"));
 
 
     }
