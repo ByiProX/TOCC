@@ -20,7 +20,6 @@ public class JdbcPool implements Metric{
     public JdbcPool(Object redisKey, List<String> redisValue){
         String[] argList = redisKey.toString().split("[|]", 2);
 
-        System.out.println(argList);
         ip = argList[0];
         metric = argList[1];
         for (String value: redisValue) {

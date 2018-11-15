@@ -52,11 +52,11 @@ public class RedisIO {
 
     }
 
-    private static void parseRedis2Json(Jedis jedis) throws IllegalAccessException,
+    private static void parseRedis2Json(Jedis jedis, String fileName) throws IllegalAccessException,
             InstantiationException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
         Set redisKeys = jedis.keys("*");
 
-        Out out = new Out("data.json");
+        Out out = new Out(fileName);
 
         Map<String, Metric> metricMap = new HashMap<>();
 
@@ -175,8 +175,9 @@ public class RedisIO {
         //1. 将txt数据导入redis
 //        RedisIO.parseTXT2Redis("localhost",6379,"./value.txt");
         Jedis jedis = connectRedisDB("localhost", 6379);
+        String fileName = "data.json";
 
-        RedisIO.parseRedis2Json(jedis);
+        RedisIO.parseRedis2Json(jedis, fileName);
 
 
 //        Map<String, Metric> metricMap = new HashMap<>();
