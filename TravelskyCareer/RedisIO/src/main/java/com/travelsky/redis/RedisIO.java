@@ -4,10 +4,8 @@ import com.alibaba.fastjson.JSON;
 import redis.clients.jedis.Jedis;
 
 
-import javax.sound.midi.Soundbank;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +30,7 @@ public class RedisIO {
 
             }
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println(">>>>>" + e);
         }
 
     }
@@ -78,7 +76,6 @@ public class RedisIO {
             IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 
         String metricMapKey = redisKey.toString().trim().split("[|]")[1];
-        System.out.println(metricMapKey);
 
         String clsName = getTrueClsName(metricMapKey);
         Class cls = Class.forName(Config.PACKAGE_NAME + clsName);
@@ -105,6 +102,8 @@ public class RedisIO {
             case "jboss_tcp":
                 return "JbossTcp";
             case "jdbcpool":
+                return "JdbcPool";
+            case "jdbc":
                 return "JdbcPool";
             case "meminfo":
                 return "MemInfo";
@@ -214,7 +213,6 @@ public class RedisIO {
 //        String jsonString = JSON.toJSONString(metricMap);
 //
 //        System.out.println(jsonString);
-
 
 
 
