@@ -22,7 +22,7 @@ public class RedisIO {
                 String line = in.readLine();
                 if (!isCorrectLineFormat(line)) {
                     //此处可以打印错误日志
-                    System.out.println("本条记录错误：" + line);
+                    System.out.println("本条记录存在错误：" + line);
                 } else {
                     Map kv = getKV(line);
                     jedis.rpush(kv.get("key").toString(), kv.get("value").toString());
@@ -165,7 +165,7 @@ public class RedisIO {
 
 //        Jedis jedis = connectRedisDB(redisHost, redisPort);
         //1. 将txt数据导入redis
-        RedisIO.parseTXT2Redis("localhost",6379,"./value.txt");
+//        RedisIO.parseTXT2Redis("localhost",6379,"./value.txt");
 
         String redisHost = "localhost";
         int redisPort = 6379;
