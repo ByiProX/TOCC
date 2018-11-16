@@ -153,7 +153,7 @@ public class RedisIO {
             IllegalAccessException, InstantiationException {
 
         //1. 将txt数据导入redis
-        RedisIO.parseTXT2Redis("localhost",6379,"./valuefull.txt");
+        RedisIO.parseTXT2Redis("localhost",6379,"./value.txt");
         Jedis jedis = connectRedisDB("localhost", 6379);
         String fileName = "data.json";
 

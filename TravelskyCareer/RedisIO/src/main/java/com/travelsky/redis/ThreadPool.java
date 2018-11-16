@@ -16,12 +16,16 @@ import java.util.List;
 public class ThreadPool implements Metric {
     private String ip;
     private String metric;
+    private String server;
+    private int port;
     private List<ThreadPoolValue> threadPoolValues = new ArrayList<>();
 
     public ThreadPool(Object redisKey, List<String> redisValue) {
         String[] argList = redisKey.toString().split("[|]");
         ip = argList[0];
         metric = argList[1];
+        server = argList[2];
+        port = Integer.parseInt(argList[3]);
         for (String value : redisValue) {
             String[] valueList = value.split("[|]");
 
@@ -68,6 +72,22 @@ public class ThreadPool implements Metric {
     @Override
     public void setMetric(String metric) {
         this.metric = metric;
+    }
+
+    public String getServer() {
+        return server;
+    }
+
+    public void setServer(String server) {
+        this.server = server;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 }
 

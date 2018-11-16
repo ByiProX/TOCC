@@ -15,13 +15,17 @@ import java.util.List;
 public class JdbcPool implements Metric{
     private String ip;
     private String metric;
+    private String server;
+    private String sourcesPath;
     private List<JdbcPoolValue> jdbcPoolValues = new ArrayList<>();
 
     public JdbcPool(Object redisKey, List<String> redisValue){
-        String[] argList = redisKey.toString().split("[|]", 2);
+        String[] argList = redisKey.toString().split("[|]");
 
         ip = argList[0];
         metric = argList[1];
+        server = argList[2];
+        sourcesPath = argList[3];
         for (String value: redisValue) {
             String[] valueList = value.split("[|]");
 
@@ -68,6 +72,22 @@ public class JdbcPool implements Metric{
     @Override
     public void setMetric(String metric) {
         this.metric = metric;
+    }
+
+    public String getServer() {
+        return server;
+    }
+
+    public void setServer(String server) {
+        this.server = server;
+    }
+
+    public String getSourcesPath() {
+        return sourcesPath;
+    }
+
+    public void setSourcesPath(String sourcesPath) {
+        this.sourcesPath = sourcesPath;
     }
 }
 
