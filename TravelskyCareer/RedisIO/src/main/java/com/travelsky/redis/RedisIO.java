@@ -77,7 +77,11 @@ public class RedisIO {
 
         String metricMapKey = redisKey.toString().trim().split("[|]")[1];
 
+        System.out.println(metricMapKey);
         String clsName = getTrueClsName(metricMapKey);
+
+        System.out.println(clsName);
+
         Class cls = Class.forName(Config.PACKAGE_NAME + clsName);
         Constructor<?> constructor = cls.getDeclaredConstructor(Object.class, List.class);
 //        System.out.println("i am in now ....");
@@ -99,6 +103,8 @@ public class RedisIO {
                 return "IbeLog";
             case "iops":
                 return "IOps";
+            case "ipcq":
+                return "Ipcq";
             case "jboss_tcp":
                 return "JbossTcp";
             case "jdbcpool":
@@ -146,74 +152,13 @@ public class RedisIO {
             NoSuchMethodException, InvocationTargetException,
             IllegalAccessException, InstantiationException {
 
-//        Jedis jedis = connectRedisDB("localhost", 6379);
-//        String redisKey = "10.5.72.5|network";
-//        List<String> values =  jedis.lrange(redisKey, 0, -1);
-//        System.out.println(values);
-//
-//        Metric metric = RedisIO.createMetricInstance(redisKey, values);
-//
-//        String jsonString = JSON.toJSONString(metric);
-//        System.out.println(jsonString);
-//
-//        String test = "20180517-01:10:12||50|0|50|0.000000|100.000000";
-//        for (String a : test.split("[|]"))
-//            System.out.println(a);
-//
-//
-//        String m = test.split("[|]")[1];
-//        System.out.println(Double.parseDouble(m));
-
-
-
-
-
-
-
-
-
         //1. 将txt数据导入redis
-//        RedisIO.parseTXT2Redis("localhost",6379,"./value.txt");
+        RedisIO.parseTXT2Redis("localhost",6379,"./valuefull.txt");
         Jedis jedis = connectRedisDB("localhost", 6379);
         String fileName = "data.json";
 
         RedisIO.parseRedis2Json(jedis, fileName);
 
-
-//        Map<String, Metric> metricMap = new HashMap<>();
-//
-//        String netstring = "10.5.72.5|network   20180517-00:02:01|tr730z53-tod|7974.95|6728.77";
-//
-//        String[] parseList = netstring.trim().split("[ \t]+");
-//
-//        System.out.println(parseList[1]);
-//
-//        Network network = new Network();
-//        NetworkValue networkValue = new NetworkValue();
-//
-//        String ip = parseList[0].trim().split("[|]")[0];
-//        String cmd = parseList[0].trim().split("[|]")[1];
-//        String time = parseList[1].trim().split("[|]")[0];
-//        String hostname = parseList[1].trim().split("[|]")[1];
-//        String rxre = parseList[1].trim().split("[|]")[2];
-//        String txre = parseList[1].trim().split("[|]")[3];
-//
-//        network.setIp(ip);
-//        network.setMetric(cmd);
-//        networkValue.setTime(time);
-//        networkValue.setHostname(hostname);
-//        networkValue.setRxre(Double.parseDouble(rxre));
-//        networkValue.setTxre(Double.parseDouble(txre));
-//        network.addValue(networkValue);
-//
-//
-//        Map<String, Metric> metricMap = new HashMap<>();
-//        metricMap.put("network", network);
-//
-//
-//        String jsonString = JSON.toJSONString(metricMap);
-//
-//        System.out.println(jsonString);
 
 
 
