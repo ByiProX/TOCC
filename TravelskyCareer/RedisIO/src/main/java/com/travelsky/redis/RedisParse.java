@@ -12,28 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class RedisIO {
-
-    private static void parseTXT2Redis(String host, int port, String pathOfValueFile) {
-        In in;
-        in = new In(pathOfValueFile);
-        try (Jedis jedis = connectRedisDB(host, port)) {
-            while (!in.isEmpty()) {
-                String line = in.readLine();
-                if (!isCorrectLineFormat(line)) {
-                    //此处可以打印错误日志
-                    System.out.println("本条记录存在错误：" + line);
-                } else {
-                    Map kv = getKV(line);
-                    jedis.rpush(kv.get("key").toString(), kv.get("value").toString());
-                }
-
-            }
-        } catch (Exception e) {
-            System.out.println(">>>>>" + e);
-        }
-
-    }
+public class RedisParse {
 
     private static Map<String, Object> createRedisMetricMap(String redisHost, int redisPort) throws
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
@@ -156,19 +135,6 @@ public class RedisIO {
     }
 
 
-    private static boolean isCorrectLineFormat(String line) {
-        String[] parseList = line.trim().split("[ \t]+");
-        return parseList.length == 2;
-    }
-
-    private static Map getKV(String line) {
-        String[] parseList = line.trim().split("[ \t]+");
-        Map<String, String> hashMap = new HashMap<>();
-        hashMap.put("key", parseList[0]);
-        hashMap.put("value", parseList[1]);
-        return hashMap;
-    }
-
     private static Jedis connectRedisDB(String host, int port) {
         return new Jedis(host, port);
     }
@@ -178,17 +144,14 @@ public class RedisIO {
             NoSuchMethodException, InvocationTargetException,
             IllegalAccessException, InstantiationException {
 
-//        Jedis jedis = connectRedisDB(redisHost, redisPort);
-        //1. 将txt数据导入redis
-//        RedisIO.parseTXT2Redis("localhost",6379,"./value.txt");
 
         String redisHost = "localhost";
         int redisPort = 6379;
         String fileName = "data.json";
 
-        RedisIO.parseRedis2JsonFile(redisHost, redisPort, fileName);
+        RedisParse.parseRedis2JsonFile(redisHost, redisPort, fileName);
 
-        System.out.println(RedisIO.parseRedis2JsonString(redisHost, redisPort));
+        System.out.println(RedisParse.parseRedis2JsonString(redisHost, redisPort));
         System.out.println(">>>>>>>>>>>>>");
 //        System.out.println(RedisIO.parseRedis2JsonObj(redisHost, redisPort));
 
