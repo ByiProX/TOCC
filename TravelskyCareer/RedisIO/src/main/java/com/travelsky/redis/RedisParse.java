@@ -4,6 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import redis.clients.jedis.Jedis;
 
+import javax.sound.midi.Soundbank;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -14,7 +17,21 @@ import java.util.Set;
 
 public class RedisParse {
 
-    private static void saveRedisValueOffset2Local(Jedis jedis, Set redisKeys){
+    private static void saveRedisValueOffset2Local(Jedis jedis, Set redisKeys) {
+        JSONObject json = JSONObject.parseObject("{}");
+
+        for (Object redisKey : redisKeys) {
+            String realRedisKey = redisKey.toString().split("[|]")[1];
+            json.put(realRedisKey, jedis.llen(redisKey.toString()));
+        }
+        String fileName = "./redisValueOffsetRecord.db";
+        Out out = new Out(fileName);
+
+        String jsonString = JSON.toJSONString(json);
+        out.println(jsonString);
+
+        out.close();
+
 
     }
 
@@ -37,6 +54,7 @@ public class RedisParse {
 
         Jedis jedis = connectRedisDB(redisHost, redisPort);
         Set redisKeys = jedis.keys("*");
+        saveRedisValueOffset2Local(jedis, redisKeys);
         Map<String, Metric> metricMap = new HashMap<>();
 
         for (Object redisKey : redisKeys) {
@@ -146,7 +164,7 @@ public class RedisParse {
 
     public static void main(String[] args) throws ClassNotFoundException,
             NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException, InstantiationException {
+            IllegalAccessException, InstantiationException, IOException {
 
 
         String redisHost = "127.0.0.1";
@@ -159,35 +177,70 @@ public class RedisParse {
         System.out.println(">>>>>>>>>>>>>");
 //        System.out.println(RedisIO.parseRedis2JsonObj(redisHost, redisPort));
 
-        String str = "{\"redisHost\":\"127.0.0.1\",\"redisPort\":6379,}";
+        String str = "{\"redisPort\":6379,\"redis_Host\":\"127.0.0.1\"}";
         JSONObject json = JSONObject.parseObject(str);
-        ToObj o = JSON.toJavaObject(json,ToObj.class);
+        JSONObject json1 = JSONObject.parseObject("{}");
+        json1.put("a", 1);
+        System.out.println(json1);
+        ToObj o = JSON.toJavaObject(json, ToObj.class);
         System.out.println(o.getRedisHost());
-        System.out.println(o.getRedisPort());
+        System.out.println(o.getRedisPortrrrrrrrrrr());
 
+//        In read = new In("./redisValueOffsetRecord.db");
+//        String jsonString = read.readAll();
+//        System.out.println(jsonString);
+//
+//        JSONObject jsonObject = JSONObject.parseObject(jsonString);
+//
+//        System.out.println(jsonObject.containsKey("jboss_tcp"));
+
+//
+//        RedisOffsetRecorder ob = JSON.toJavaObject(jsonObject, RedisOffsetRecorder.class);
+//        System.out.println(ob.getApacheLogOffset());
+//        System.out.println(ob.getIopsOffset());
+//        System.out.println(ob.getThreadPoolOffset());
+//
+//
+//        System.out.println(ob.getCpuInfoOffset());
+
+
+
+//        String separator = File.separator;
+//        String dir = "." + separator + "temp02";
+//        String fileNameName = "hello.txt";
+//        File file = new File(fileNameName);
+//        if (file.exists()) {
+//            System.out.println(file.getAbsolutePath());
+//            System.out.println(file.getName());
+//            System.out.println(file.length());
+//        }
+//        else {
+//            System.out.println(file.getAbsolutePath());
+//
+//        }
     }
 
 
 }
 
-class ToObj{
-    private String redisHost;
+class ToObj {
+    private String redisHostyy;
     private String redisPort;
 
 
     public String getRedisHost() {
-        return redisHost;
+        return redisHostyy;
     }
 
     public void setRedisHost(String redisHost) {
-        this.redisHost = redisHost;
+        this.redisHostyy = redisHost;
     }
 
-    public String getRedisPort() {
+    public String getRedisPortrrrrrrrrrr() {
         return redisPort;
     }
 
-    public void setRedisPort(String redisPort) {
+    public void setRedisPortrrrrrrrrrr(String redisPort) {
         this.redisPort = redisPort;
     }
 }

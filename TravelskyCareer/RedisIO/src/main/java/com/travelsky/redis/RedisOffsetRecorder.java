@@ -1,131 +1,133 @@
 package com.travelsky.redis;
 
 public class RedisOffsetRecorder {
-    private Long apacheLogOffset;
-    private Long appachePortOffset;
-    private Long cpuInfoOffset;
-    private Long ibeLogOffset;
-    private Long iopsOffset;
-    private Long ipcqOffset;
-    private Long jbossOffset;
-    private Long jdbcOffset;
-    private Long memInfoOffset;
-    private Long networkOffset;
-    private Long swapInfoOffset;
-    private Long threadPoolOffset;
-    private Long todtpsOffset;
-    private Long tuxserCallOffset;
+    private Long apacheLog;
+    private Long appachePort;
+    private Long cpuInfo;
+    private Long ibeLog;
+    private Long iops;
+    private Long ipcq;
+    private Long jboss;
+    private Long jbosstcp;
+    private Long jdbc;
+    private Long memInfo;
+    private Long network;
+    private Long swapInfo;
+    private Long threadPool;
+    private Long todtps;
+    private Long tuxserCall;
 
 
     public Long getApacheLogOffset() {
-        return apacheLogOffset;
+        return apacheLog;
     }
 
-    public void setApacheLogOffset(Long apacheLogOffset) {
-        this.apacheLogOffset = apacheLogOffset;
+    public void setApacheLog(Long apacheLog) {
+        this.apacheLog = apacheLog;
     }
 
     public Long getAppachePortOffset() {
-        return appachePortOffset;
+        return appachePort;
     }
 
-    public void setAppachePortOffset(Long appachePortOffset) {
-        this.appachePortOffset = appachePortOffset;
+    public void setAppachePort(Long appachePort) {
+        this.appachePort = appachePort;
     }
 
     public Long getCpuInfoOffset() {
-        return cpuInfoOffset;
+        return cpuInfo;
     }
 
-    public void setCpuInfoOffset(Long cpuInfoOffset) {
-        this.cpuInfoOffset = cpuInfoOffset;
+    public void setCpuInfo(Long cpuInfo) {
+        this.cpuInfo = cpuInfo;
     }
 
     public Long getIbeLogOffset() {
-        return ibeLogOffset;
+        return ibeLog;
     }
 
-    public void setIbeLogOffset(Long ibeLogOffset) {
-        this.ibeLogOffset = ibeLogOffset;
+    public void setIbeLog(Long ibeLog) {
+        this.ibeLog = ibeLog;
     }
 
     public Long getIopsOffset() {
-        return iopsOffset;
+        return iops;
     }
 
-    public void setIopsOffset(Long iopsOffset) {
-        this.iopsOffset = iopsOffset;
+    public void setIops(Long iops) {
+        this.iops = iops;
     }
 
     public Long getIpcqOffset() {
-        return ipcqOffset;
+        return ipcq;
     }
 
-    public void setIpcqOffset(Long ipcqOffset) {
-        this.ipcqOffset = ipcqOffset;
+    public void setIpcq(Long ipcq) {
+        this.ipcq = ipcq;
     }
 
     public Long getJbossOffset() {
-        return jbossOffset;
+        return jboss;
     }
 
-    public void setJbossOffset(Long jbossOffset) {
-        this.jbossOffset = jbossOffset;
+    public void setJboss(Long jboss) {
+        this.jboss = jboss;
     }
 
     public Long getJdbcOffset() {
-        return jdbcOffset;
+        return jdbc;
     }
 
-    public void setJdbcOffset(Long jdbcOffset) {
-        this.jdbcOffset = jdbcOffset;
+    public void setJdbc(Long jdbc) {
+        this.jdbc = jdbc;
     }
 
     public Long getMemInfoOffset() {
-        return memInfoOffset;
+        return memInfo;
     }
 
-    public void setMemInfoOffset(Long memInfoOffset) {
-        this.memInfoOffset = memInfoOffset;
+    public void setMemInfo(Long memInfo) {
+        this.memInfo = memInfo;
     }
 
     public Long getNetworkOffset() {
-        return networkOffset;
+        return network;
     }
 
-    public void setNetworkOffset(Long networkOffset) {
-        this.networkOffset = networkOffset;
+    public void setNetwork(Long network) {
+        this.network = network;
     }
 
     public Long getSwapInfoOffset() {
-        return swapInfoOffset;
+        return swapInfo;
     }
 
-    public void setSwapInfoOffset(Long swapInfoOffset) {
-        this.swapInfoOffset = swapInfoOffset;
+    public void setSwapInfo(Long swapInfo) {
+        this.swapInfo = swapInfo;
     }
 
     public Long getThreadPoolOffset() {
-        return threadPoolOffset;
+        return threadPool;
     }
 
-    public void setThreadPoolOffset(Long threadPoolOffset) {
-        this.threadPoolOffset = threadPoolOffset;
+    public void setThreadPool(Long threadPool) {
+        this.threadPool = threadPool;
     }
 
     public Long getTodtpsOffset() {
-        return todtpsOffset;
+        return todtps;
     }
 
-    public void setTodtpsOffset(Long todtpsOffset) {
-        this.todtpsOffset = todtpsOffset;
+    public void setTodtps(Long todtps) {
+        this.todtps = todtps;
     }
 
     public Long getTuxserCallOffset() {
-        return tuxserCallOffset;
+        return tuxserCall;
     }
 
-    public void setTuxserCallOffset(Long tuxserCallOffset) {
-        this.tuxserCallOffset = tuxserCallOffset;
+    public void setTuxserCall(Long tuxserCall) {
+        this.tuxserCall = tuxserCall;
     }
+
 }
