@@ -35,6 +35,19 @@ public class RedisIO {
 
     }
 
+    private static Map<String, Object> createRedisMetricMap(String redisHost, int redisPort) throws
+            ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
+            InstantiationException, IllegalAccessException {
+
+        Map<String, Metric> metricMap = createMetricMap(redisHost, redisPort);
+        HashMap<String, Object> redisMetricMap = new HashMap<>();
+        redisMetricMap.put("redisHost", redisHost);
+        redisMetricMap.put("redisPort", redisPort);
+        redisMetricMap.put("msgData", metricMap);
+
+        return redisMetricMap;
+    }
+
     private static Map<String, Metric> createMetricMap(String redisHost, int redisPort) throws
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
             InstantiationException, IllegalAccessException {
@@ -52,39 +65,6 @@ public class RedisIO {
         return metricMap;
     }
 
-    private static void parseRedis2JsonFile(String redisHost, int redisPort, String fileName) throws
-            IllegalAccessException, InstantiationException,
-            ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
-
-        Map<String, Metric> metricMap = createMetricMap(redisHost, redisPort);
-
-        Out out = new Out(fileName);
-
-        String jsonString = JSON.toJSONString(metricMap);
-        out.println(jsonString);
-
-        out.close();
-
-    }
-
-    private static String parseRedis2JsonString(String redisHost, int redisPort) throws
-            ClassNotFoundException, NoSuchMethodException, InstantiationException,
-            IllegalAccessException, InvocationTargetException {
-
-        Map<String, Metric> metricMap = createMetricMap(redisHost, redisPort);
-        return JSON.toJSONString(metricMap);
-    }
-
-
-    private static JSON parseRedis2JsonObj(String redisHost, int redisPort) throws
-            IllegalAccessException, InstantiationException,
-            ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
-
-        Map<String, Metric> metricMap = createMetricMap(redisHost, redisPort);
-
-        return (JSON) JSON.toJSON(metricMap);
-    }
-
     private static Metric createMetricInstance(Object redisKey, List<String> redisValue) throws ClassNotFoundException,
             IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 
@@ -100,6 +80,41 @@ public class RedisIO {
         return (Metric) constructor.newInstance(redisKey, redisValue);
 
     }
+
+
+    private static void parseRedis2JsonFile(String redisHost, int redisPort, String fileName) throws
+            IllegalAccessException, InstantiationException,
+            ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
+
+        Map<String, Object> metricMap = createRedisMetricMap(redisHost, redisPort);
+
+        Out out = new Out(fileName);
+
+        String jsonString = JSON.toJSONString(metricMap);
+        out.println(jsonString);
+
+        out.close();
+
+    }
+
+    private static String parseRedis2JsonString(String redisHost, int redisPort) throws
+            ClassNotFoundException, NoSuchMethodException, InstantiationException,
+            IllegalAccessException, InvocationTargetException {
+
+        Map<String, Object> metricMap = createRedisMetricMap(redisHost, redisPort);
+        return JSON.toJSONString(metricMap);
+    }
+
+
+    private static JSON parseRedis2JsonObj(String redisHost, int redisPort) throws
+            IllegalAccessException, InstantiationException,
+            ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
+
+        Map<String, Object> metricMap = createRedisMetricMap(redisHost, redisPort);
+
+        return (JSON) JSON.toJSON(metricMap);
+    }
+
 
     private static String getTrueClsName(String metricMapKey) {
         switch (metricMapKey) {
@@ -173,12 +188,13 @@ public class RedisIO {
 
         RedisIO.parseRedis2JsonFile(redisHost, redisPort, fileName);
 
-//        System.out.println(RedisIO.parseRedis2JsonString(redisHost, redisPort));
+        System.out.println(RedisIO.parseRedis2JsonString(redisHost, redisPort));
         System.out.println(">>>>>>>>>>>>>");
-        System.out.println(RedisIO.parseRedis2JsonObj(redisHost, redisPort));
+//        System.out.println(RedisIO.parseRedis2JsonObj(redisHost, redisPort));
 
 
     }
 
 
 }
+
