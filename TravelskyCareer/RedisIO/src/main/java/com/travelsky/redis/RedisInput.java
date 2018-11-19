@@ -7,6 +7,14 @@ import java.util.Map;
 
 public class RedisInput {
 
+    public static void main(String[] args) {
+
+        String redisHost = "localhost";
+        int redisPort = 6379;
+        String pathOfValueFile = "./value.txt";
+        RedisInput.parseTXT2Redis(redisHost,redisPort,pathOfValueFile);
+    }
+
     private static void parseTXT2Redis(String host, int port, String pathOfValueFile) {
         In in;
         in = new In(pathOfValueFile);
@@ -46,14 +54,5 @@ public class RedisInput {
 
     private static Jedis connectRedisDB(String host, int port) {
         return new Jedis(host, port);
-    }
-
-    public static void main(String[] args) {
-
-        String redisHost = "localhost";
-        int redisPort = 6379;
-        String pathOfValueFile = "./value.txt";
-        Jedis jedis = connectRedisDB(redisHost, redisPort);
-        RedisInput.parseTXT2Redis(redisHost,redisPort,pathOfValueFile);
     }
 }

@@ -1,8 +1,8 @@
 package com.travelsky.redis;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import redis.clients.jedis.Jedis;
-
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -13,6 +13,10 @@ import java.util.Set;
 
 
 public class RedisParse {
+
+    private static void saveRedisValueOffset2Local(Jedis jedis, Set redisKeys){
+
+    }
 
     private static Map<String, Object> createRedisMetricMap(String redisHost, int redisPort) throws
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
@@ -145,7 +149,7 @@ public class RedisParse {
             IllegalAccessException, InstantiationException {
 
 
-        String redisHost = "localhost";
+        String redisHost = "127.0.0.1";
         int redisPort = 6379;
         String fileName = "data.json";
 
@@ -155,9 +159,37 @@ public class RedisParse {
         System.out.println(">>>>>>>>>>>>>");
 //        System.out.println(RedisIO.parseRedis2JsonObj(redisHost, redisPort));
 
+        String str = "{\"redisHost\":\"127.0.0.1\",\"redisPort\":6379,}";
+        JSONObject json = JSONObject.parseObject(str);
+        ToObj o = JSON.toJavaObject(json,ToObj.class);
+        System.out.println(o.getRedisHost());
+        System.out.println(o.getRedisPort());
 
     }
 
 
 }
+
+class ToObj{
+    private String redisHost;
+    private String redisPort;
+
+
+    public String getRedisHost() {
+        return redisHost;
+    }
+
+    public void setRedisHost(String redisHost) {
+        this.redisHost = redisHost;
+    }
+
+    public String getRedisPort() {
+        return redisPort;
+    }
+
+    public void setRedisPort(String redisPort) {
+        this.redisPort = redisPort;
+    }
+}
+
 
