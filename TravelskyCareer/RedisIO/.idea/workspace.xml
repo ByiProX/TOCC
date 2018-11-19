@@ -13,15 +13,29 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="RedisIO.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="RedisIO.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisIO.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="245">
-              <caret line="40" column="8" selection-start-line="40" selection-start-column="8" selection-end-line="40" selection-end-column="8" />
+            <state relative-caret-position="-1155">
+              <caret line="15" selection-start-line="15" selection-end-line="15" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#4558#4559#0" expanded="true" />
-                <element signature="e#4602#4603#0" expanded="true" />
+                <element signature="e#5230#5231#0" expanded="true" />
+                <element signature="e#5274#5275#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="RedisInput.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisInput.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="641">
+              <caret line="53" column="29" lean-forward="true" selection-start-line="53" selection-start-column="29" selection-end-line="53" selection-end-column="29" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#1362#1363#0" expanded="true" />
+                <element signature="e#1406#1407#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -80,13 +94,13 @@
       <file leaf-file-name="dataCopy.json" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/dataCopy.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="57">
-              <caret line="99" column="22" selection-start-line="99" selection-start-column="22" selection-end-line="99" selection-end-column="22" />
+            <state relative-caret-position="228">
+              <caret line="583" column="16" selection-start-line="583" selection-start-column="16" selection-end-line="583" selection-end-column="16" />
               <folding>
                 <element signature="n#!!block;n#ApacheLog#0;n#!!block;n#msgData#0;n#!!top" />
                 <element signature="n#!!block;n#TUXSerCall#0;n#!!block;n#msgData#0;n#!!top" />
                 <element signature="n#!!block;n#Threadpool#0;n#!!block;n#msgData#0;n#!!top" />
-                <element signature="n#!!block;n#apache_port#0;n#!!block;n#msgData#0;n#!!top" />
+                <element signature="e#12042#13826#0" />
                 <element signature="n#!!block;n#cpuinfo#0;n#!!block;n#msgData#0;n#!!top" />
                 <element signature="n#!!block;n#ibelog#0;n#!!block;n#msgData#0;n#!!top" />
                 <element signature="n#!!block;n#iops#0;n#!!block;n#msgData#0;n#!!top" />
@@ -115,66 +129,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="133">
               <caret line="9" selection-start-line="9" selection-end-line="9" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="JdbcPool.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/JdbcPool.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="513">
-              <caret line="27" column="33" selection-start-line="27" selection-start-column="33" selection-end-line="27" selection-end-column="33" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#830#831#0" expanded="true" />
-                <element signature="e#893#894#0" expanded="true" />
-                <element signature="e#947#948#0" expanded="true" />
-                <element signature="e#984#985#0" expanded="true" />
-                <element signature="e#1013#1014#0" expanded="true" />
-                <element signature="e#1038#1039#0" expanded="true" />
-                <element signature="e#1088#1089#0" expanded="true" />
-                <element signature="e#1116#1117#0" expanded="true" />
-                <element signature="e#1149#1150#0" expanded="true" />
-                <element signature="e#1178#1179#0" expanded="true" />
-                <element signature="e#1236#1237#0" expanded="true" />
-                <element signature="e#1272#1273#0" expanded="true" />
-                <element signature="e#2254#2255#0" expanded="true" />
-                <element signature="e#2283#2284#0" expanded="true" />
-                <element signature="e#2327#2328#0" expanded="true" />
-                <element signature="e#2363#2364#0" expanded="true" />
-                <element signature="e#2403#2404#0" expanded="true" />
-                <element signature="e#2437#2438#0" expanded="true" />
-                <element signature="e#2491#2492#0" expanded="true" />
-                <element signature="e#2537#2538#0" expanded="true" />
-                <element signature="e#1543#1544#0" expanded="true" />
-                <element signature="e#1570#1571#0" expanded="true" />
-                <element signature="e#1624#1625#0" expanded="true" />
-                <element signature="e#1656#1657#0" expanded="true" />
-                <element signature="e#1691#1692#0" expanded="true" />
-                <element signature="e#1722#1723#0" expanded="true" />
-                <element signature="e#1784#1785#0" expanded="true" />
-                <element signature="e#1824#1825#0" expanded="true" />
-                <element signature="e#1857#1858#0" expanded="true" />
-                <element signature="e#1888#1889#0" expanded="true" />
-                <element signature="e#1934#1935#0" expanded="true" />
-                <element signature="e#1974#1975#0" expanded="true" />
-                <element signature="e#2004#2005#0" expanded="true" />
-                <element signature="e#2032#2033#0" expanded="true" />
-                <element signature="e#2072#2073#0" expanded="true" />
-                <element signature="e#2106#2107#0" expanded="true" />
-                <element signature="e#2135#2136#0" expanded="true" />
-                <element signature="e#2162#2163#0" expanded="true" />
-                <element signature="e#2200#2201#0" expanded="true" />
-                <element signature="e#2232#2233#0" expanded="true" />
-                <element signature="e#2269#2270#0" expanded="true" />
-                <element signature="e#2302#2303#0" expanded="true" />
-                <element signature="e#2354#2355#0" expanded="true" />
-                <element signature="e#2398#2399#0" expanded="true" />
-                <element signature="e#2437#2438#0" expanded="true" />
-                <element signature="e#2472#2473#0" expanded="true" />
-                <element signature="e#2528#2529#0" expanded="true" />
-                <element signature="e#2576#2577#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -225,6 +179,7 @@
       <find>port</find>
       <find>jdbc</find>
       <find>createMetricMap</find>
+      <find>getKV</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -256,6 +211,7 @@
         <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/ThreadPool.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/Config.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisIO.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisInput.java" />
       </list>
     </option>
   </component>
@@ -386,7 +342,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.RedisIO">
+  <component name="RunManager" selected="Application.RedisParse">
     <configuration name="Config" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.travelsky.redis.Config" />
       <module name="redisInOut" />
@@ -420,8 +376,8 @@
         </pattern>
       </extension>
     </configuration>
-    <configuration name="RedisIO" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.travelsky.redis.RedisIO" />
+    <configuration name="RedisParse" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.travelsky.redis.RedisParse" />
       <module name="redisInOut" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <extension name="coverage">
@@ -474,14 +430,14 @@
       <listeners />
     </configuration>
     <list>
-      <item itemvalue="Application.RedisIO" />
+      <item itemvalue="Application.RedisParse" />
       <item itemvalue="Application.Network" />
       <item itemvalue="Application.JsonDemo" />
       <item itemvalue="Application.Config" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.RedisIO" />
+        <item itemvalue="Application.RedisParse" />
         <item itemvalue="Application.Config" />
         <item itemvalue="Application.JsonDemo" />
         <item itemvalue="Application.Network" />
@@ -503,12 +459,12 @@
       <updated>1541987795270</updated>
       <workItem from="1541987799618" duration="22785000" />
       <workItem from="1542027510884" duration="48870000" />
-      <workItem from="1542277052360" duration="25428000" />
+      <workItem from="1542277052360" duration="26523000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="97083000" />
+    <option name="totallyTimeSpent" value="98178000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1920" height="1013" extended-state="6" />
@@ -528,7 +484,7 @@
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.66921395" />
       <window_info id="Capture Tool" order="6" />
       <window_info id="Designer" order="3" />
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.41210374" visible="true" weight="0.15814696" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.41210374" visible="true" weight="0.15814696" />
       <window_info anchor="right" id="Database" order="6" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32751092" />
       <window_info id="Structure" order="1" sideWeight="0.58848923" side_tool="true" weight="0.15814696" />
@@ -554,17 +510,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_172.jdk/Contents/Home/src.zip!/java/util/HashMap.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
-          <caret line="1060" column="13" selection-start-line="1060" selection-start-column="13" selection-end-line="1060" selection-end-column="13" />
-          <folding>
-            <element signature="e#42126#42127#0" expanded="true" />
-            <element signature="e#42190#42191#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/In.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="247">
@@ -1181,13 +1126,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/dataCopy.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="57">
-          <caret line="99" column="22" selection-start-line="99" selection-start-column="22" selection-end-line="99" selection-end-column="22" />
+        <state relative-caret-position="228">
+          <caret line="583" column="16" selection-start-line="583" selection-start-column="16" selection-end-line="583" selection-end-column="16" />
           <folding>
             <element signature="n#!!block;n#ApacheLog#0;n#!!block;n#msgData#0;n#!!top" />
             <element signature="n#!!block;n#TUXSerCall#0;n#!!block;n#msgData#0;n#!!top" />
             <element signature="n#!!block;n#Threadpool#0;n#!!block;n#msgData#0;n#!!top" />
-            <element signature="n#!!block;n#apache_port#0;n#!!block;n#msgData#0;n#!!top" />
+            <element signature="e#12042#13826#0" />
             <element signature="n#!!block;n#cpuinfo#0;n#!!block;n#msgData#0;n#!!top" />
             <element signature="n#!!block;n#ibelog#0;n#!!block;n#msgData#0;n#!!top" />
             <element signature="n#!!block;n#iops#0;n#!!block;n#msgData#0;n#!!top" />
@@ -1203,12 +1148,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisIO.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="245">
-          <caret line="40" column="8" selection-start-line="40" selection-start-column="8" selection-end-line="40" selection-end-column="8" />
+        <state relative-caret-position="-1155">
+          <caret line="15" selection-start-line="15" selection-end-line="15" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#4558#4559#0" expanded="true" />
-            <element signature="e#4602#4603#0" expanded="true" />
+            <element signature="e#5230#5231#0" expanded="true" />
+            <element signature="e#5274#5275#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisInput.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="641">
+          <caret line="53" column="29" lean-forward="true" selection-start-line="53" selection-start-column="29" selection-end-line="53" selection-end-column="29" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1362#1363#0" expanded="true" />
+            <element signature="e#1406#1407#0" expanded="true" />
           </folding>
         </state>
       </provider>
