@@ -1,7 +1,6 @@
 package com.travelsky.redis;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import redis.clients.jedis.Jedis;
 
 
@@ -15,7 +14,6 @@ import java.util.Set;
 
 
 public class RedisParse {
-
 
     //外层添加Redis ip
     private static Map<String, Object> createRedisMetricMap(String redisHost, int redisPort) throws
@@ -52,6 +50,8 @@ public class RedisParse {
 //            System.out.println(">>>>>>>>>>>>>>>>>>>>>   " + redisKey.toString().trim().split("[|]")[1] + "  " + offset);
 
             List<String> redisValue = jedis.lrange(redisKey.toString(), offset, -1);
+
+            System.out.println(">>>>>" + "listSize " + redisValue.size());
             Metric metricObj = createMetricInstance(redisKey, redisValue);
             metricMap.put(redisKey.toString().trim().split("[|]")[1], metricObj);
         }
@@ -175,9 +175,6 @@ public class RedisParse {
 
 //        RedisOffsetRecorder redisOffsetRecorder = RedisParse.loadRedisValueOffset();
 //        System.out.println(redisOffsetRecorder.getJbosstcpOffset());
-
-
-
 
 
     }

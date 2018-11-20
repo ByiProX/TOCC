@@ -4,7 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import redis.clients.jedis.Jedis;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Set;
+
+import static com.travelsky.redis.Config.LOCALDB_PATH;
 
 public class RedisOffsetRecorder {
 
@@ -23,9 +29,9 @@ public class RedisOffsetRecorder {
     private long todtps;
     private long tuxserCall;
 
-
     static RedisOffsetRecorder loadRedisValueOffset() {
-        In read = new In("./redisValueOffsetRecord.db");
+        System.out.println(LOCALDB_PATH);
+        In read = new In(LOCALDB_PATH);
         String jsonString = read.readAll();
         read.close();
 
@@ -44,10 +50,9 @@ public class RedisOffsetRecorder {
             String realRedisKey = redisKey.toString().split("[|]")[1];
             json.put(realRedisKey, jedis.llen(redisKey.toString()));
         }
-        String fileName = "./redisValueOffsetRecord.db";
 
 //        try {
-//            File f = new File(fileName);
+//            File f = new File(LOCALDB_PATH);
 //            FileOutputStream fileOutputStream = new FileOutputStream(f);
 //            OutputStreamWriter writer = new OutputStreamWriter(fileOutputStream);
 //            String jsonString = JSON.toJSONString(json);
@@ -61,7 +66,7 @@ public class RedisOffsetRecorder {
 //        }
 
 
-        Out out = new Out(fileName);
+        Out out = new Out(LOCALDB_PATH);
 
         out.print(json);
 

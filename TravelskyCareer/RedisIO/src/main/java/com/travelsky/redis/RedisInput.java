@@ -11,7 +11,7 @@ public class RedisInput {
 
         String redisHost = "localhost";
         int redisPort = 6379;
-        String pathOfValueFile = "./value.txt";
+        String pathOfValueFile = "value.txt";
         RedisInput.parseTXT2Redis(redisHost,redisPort,pathOfValueFile);
     }
 
