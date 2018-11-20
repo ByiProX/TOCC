@@ -4,9 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import redis.clients.jedis.Jedis;
 
-import javax.sound.midi.Soundbank;
-import java.io.File;
-import java.io.IOException;
+
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -17,9 +16,10 @@ import java.util.Set;
 
 public class RedisParse {
 
-    private static RedisOffsetRecorder loadRedisValueOffset(){
+    private static RedisOffsetRecorder loadRedisValueOffset() {
         In read = new In("./redisValueOffsetRecord.db");
         String jsonString = read.readAll();
+        read.close();
 
         JSONObject jsonObject = JSONObject.parseObject(jsonString);
 
@@ -34,10 +34,27 @@ public class RedisParse {
             json.put(realRedisKey, jedis.llen(redisKey.toString()));
         }
         String fileName = "./redisValueOffsetRecord.db";
+
+//        try {
+//            File f = new File(fileName);
+//            FileOutputStream fileOutputStream = new FileOutputStream(f);
+//            OutputStreamWriter writer = new OutputStreamWriter(fileOutputStream);
+//            String jsonString = JSON.toJSONString(json);
+//            writer.write(jsonString);
+//
+//            fileOutputStream.close();
+//
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+
         Out out = new Out(fileName);
 
-        String jsonString = JSON.toJSONString(json);
-        out.println(jsonString);
+//        String jsonString = JSON.toJSONString(json);
+//        out.println(jsonString);
+        out.print(json);
 
         out.close();
 
@@ -50,7 +67,6 @@ public class RedisParse {
     private static Map<String, Object> createRedisMetricMap(String redisHost, int redisPort) throws
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
             InstantiationException, IllegalAccessException {
-
 
 
         Map<String, Metric> metricMap = createMetricMap(redisHost, redisPort);
@@ -67,20 +83,25 @@ public class RedisParse {
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
             InstantiationException, IllegalAccessException {
 
+        //loadRedisValueOffset
+        RedisOffsetRecorder redisOffsetRecorder = RedisParse.loadRedisValueOffset();
+
         Jedis jedis = connectRedisDB(redisHost, redisPort);
         Set redisKeys = jedis.keys("*");
-        saveRedisValueOffset2Local(jedis, redisKeys);
         Map<String, Metric> metricMap = new HashMap<>();
 
-        RedisOffsetRecorder redisOffsetRecorder = RedisParse.loadRedisValueOffset();
 
         for (Object redisKey : redisKeys) {
 
             long offset = redisOffsetRecorder.getValueOffset(redisKey.toString().trim().split("[|]")[1]);
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>   " + redisKey.toString().trim().split("[|]")[1] + "  " + offset);
             List<String> redisValue = jedis.lrange(redisKey.toString(), offset, -1);
             Metric metricObj = createMetricInstance(redisKey, redisValue);
             metricMap.put(redisKey.toString().trim().split("[|]")[1], metricObj);
         }
+        //saveRedisValueOffset2Local
+        RedisParse.saveRedisValueOffset2Local(jedis, redisKeys);
+
         jedis.close();
         return metricMap;
     }
@@ -136,7 +157,7 @@ public class RedisParse {
     }
 
 
-    private static String getTrueClsName(String metricMapKey) {
+    private static String getTrueClsName(String metricMapKey) throws ClassNotFoundException {
         switch (metricMapKey) {
             case "ApacheLog":
                 return "ApacheLog";
@@ -171,7 +192,7 @@ public class RedisParse {
 
             default:
                 System.out.println("么有匹配到类对象的名字");
-                return null;
+                throw new ClassNotFoundException("么有匹配到类对象的名字");
         }
     }
 
@@ -190,28 +211,19 @@ public class RedisParse {
         int redisPort = 6379;
         String fileName = "data.json";
 
-        RedisParse.parseRedis2JsonFile(redisHost, redisPort, fileName);
+//        RedisParse.parseRedis2JsonFile(redisHost, redisPort, fileName);
 
         System.out.println(RedisParse.parseRedis2JsonString(redisHost, redisPort));
 //        System.out.println(RedisIO.parseRedis2JsonObj(redisHost, redisPort));
 
 
+//        RedisOffsetRecorder redisOffsetRecorder = RedisParse.loadRedisValueOffset();
+//        System.out.println(redisOffsetRecorder.getJbosstcpOffset());
 
 
 
-//        String separator = File.separator;
-//        String dir = "." + separator + "temp02";
-//        String fileNameName = "hello.txt";
-//        File file = new File(fileNameName);
-//        if (file.exists()) {
-//            System.out.println(file.getAbsolutePath());
-//            System.out.println(file.getName());
-//            System.out.println(file.length());
-//        }
-//        else {
-//            System.out.println(file.getAbsolutePath());
-//
-//        }
+
+
     }
 
 

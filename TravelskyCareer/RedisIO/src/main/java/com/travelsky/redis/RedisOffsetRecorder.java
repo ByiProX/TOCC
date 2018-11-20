@@ -1,20 +1,20 @@
 package com.travelsky.redis;
 
 public class RedisOffsetRecorder {
-    private Long apacheLog;
-    private Long apachePort;
-    private Long cpuInfo;
-    private Long ibeLog;
-    private Long iops;
-    private Long ipcq;
-    private Long jbosstcp;
-    private Long jdbc;
-    private Long memInfo;
-    private Long network;
-    private Long swapInfo;
-    private Long threadPool;
-    private Long todtps;
-    private Long tuxserCall;
+    private long apacheLog;
+    private long apachePort;
+    private long cpuInfo;
+    private long ibeLog;
+    private long iops;
+    private long ipcq;
+    private long jbosstcp;
+    private long jdbc;
+    private long memInfo;
+    private long network;
+    private long swapInfo;
+    private long threadPool;
+    private long todtps;
+    private long tuxserCall;
 
 
     public long getValueOffset(String metricMapKey) {

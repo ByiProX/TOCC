@@ -1,1 +1,1 @@
-{"jboss_tcp":35,"jdbc":70,"apache_port":35,"ApacheLog":35,"network":35,"swapinfo":35,"meminfo":35,"todtps":35,"iops":35,"ibelog":35,"TUXSerCall":35,"Threadpool":70,"cpuinfo":35}
+{"jboss_tcp":30,"jdbc":60,"apache_port":30,"ApacheLog":30,"network":30,"swapinfo":30,"meminfo":30,"todtps":30,"iops":30,"ibelog":30,"TUXSerCall":30,"Threadpool":60,"cpuinfo":30}
