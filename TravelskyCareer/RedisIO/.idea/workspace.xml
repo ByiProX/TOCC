@@ -25,11 +25,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="RedisParse.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="RedisParse.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisParse.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1426">
-              <caret line="110" lean-forward="true" selection-start-line="110" selection-end-line="110" />
+            <state relative-caret-position="-145">
+              <caret line="17" lean-forward="true" selection-start-line="17" selection-end-line="17" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#5828#5829#0" expanded="true" />
@@ -39,53 +39,34 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="redisValueOffsetRecord1111111.db" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/redisValueOffsetRecord1111111.db">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file leaf-file-name="Jedis.java" pinned="false" current-in-tab="false">
-        <entry file="jar://$MAVEN_REPOSITORY$/redis/clients/jedis/2.9.0/jedis-2.9.0-sources.jar!/redis/clients/jedis/Jedis.java">
+      <file leaf-file-name="RedisOffsetRecorderSingleton.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisOffsetRecorderSingleton.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="224">
-              <caret line="933" column="16" selection-start-line="933" selection-start-column="16" selection-end-line="933" selection-end-column="16" />
+            <state relative-caret-position="152">
+              <caret line="10" column="5" lean-forward="true" selection-start-line="3" selection-start-column="4" selection-end-line="10" selection-end-column="5" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Client.java" pinned="false" current-in-tab="false">
-        <entry file="jar://$MAVEN_REPOSITORY$/redis/clients/jedis/2.9.0/jedis-2.9.0-sources.jar!/redis/clients/jedis/Client.java">
+      <file leaf-file-name="App.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/App.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="186">
-              <caret line="237" column="8" lean-forward="true" selection-start-line="237" selection-start-column="8" selection-end-line="237" selection-end-column="8" />
+            <state relative-caret-position="451">
+              <caret line="34" column="83" selection-start-line="34" selection-start-column="83" selection-end-line="34" selection-end-column="83" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="BinaryClient.java" pinned="false" current-in-tab="false">
-        <entry file="jar://$MAVEN_REPOSITORY$/redis/clients/jedis/2.9.0/jedis-2.9.0-sources.jar!/redis/clients/jedis/BinaryClient.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="202">
-              <caret line="308" column="18" selection-start-line="308" selection-start-column="18" selection-end-line="308" selection-end-column="18" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="data.json" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/data.json">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="19">
-              <caret line="1" selection-start-line="1" selection-end-line="1" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="RedisOffsetRecorder.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="RedisOffsetRecorder.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisOffsetRecorder.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="342">
-              <caret line="18" lean-forward="true" selection-start-line="18" selection-end-line="18" />
+            <state relative-caret-position="152">
+              <caret line="8" column="34" selection-start-line="8" selection-start-column="34" selection-end-line="8" selection-end-column="34" />
               <folding>
+                <element signature="imports" expanded="true" />
                 <element signature="e#1651#1652#0" expanded="true" />
                 <element signature="e#1683#1684#0" expanded="true" />
                 <element signature="e#1731#1732#0" expanded="true" />
@@ -147,6 +128,15 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="data.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/data.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="19">
+              <caret line="1" selection-start-line="1" selection-end-line="1" />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="ApacheLog.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/ApacheLog.java">
           <provider selected="true" editor-type-id="text-editor">
@@ -177,6 +167,7 @@
       <list>
         <option value="Interface" />
         <option value="Class" />
+        <option value="Singleton" />
       </list>
     </option>
   </component>
@@ -234,10 +225,11 @@
         <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisInput.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/QuartzTest.java" />
         <option value="$PROJECT_DIR$/pom.xml" />
-        <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/App.java" />
         <option value="$PROJECT_DIR$/redisValueOffsetRecord.db" />
-        <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisOffsetRecorder.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisOffsetRecorderSingleton.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/App.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisParse.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisOffsetRecorder.java" />
       </list>
     </option>
   </component>
@@ -365,17 +357,6 @@
         </pattern>
       </extension>
     </configuration>
-    <configuration name="Config" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.travelsky.redis.Config" />
-      <module name="redisInOut" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.travelsky.redis.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-    </configuration>
     <configuration name="QuartzTest" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.travelsky.redis.QuartzTest" />
       <module name="redisInOut" />
@@ -389,6 +370,17 @@
     </configuration>
     <configuration name="RedisInput" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.travelsky.redis.RedisInput" />
+      <module name="redisInOut" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.travelsky.redis.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+    </configuration>
+    <configuration name="RedisOffsetRecorderSingleton" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.travelsky.redis.RedisOffsetRecorderSingleton" />
       <module name="redisInOut" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <extension name="coverage">
@@ -453,18 +445,18 @@
     </configuration>
     <list>
       <item itemvalue="Application.RedisParse" />
-      <item itemvalue="Application.Config" />
       <item itemvalue="Application.QuartzTest" />
       <item itemvalue="Application.RedisInput" />
       <item itemvalue="Application.App" />
+      <item itemvalue="Application.RedisOffsetRecorderSingleton" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Application.RedisParse" />
         <item itemvalue="Application.RedisInput" />
+        <item itemvalue="Application.RedisOffsetRecorderSingleton" />
         <item itemvalue="Application.App" />
         <item itemvalue="Application.QuartzTest" />
-        <item itemvalue="Application.Config" />
       </list>
     </recent_temporary>
   </component>
@@ -486,12 +478,12 @@
       <workItem from="1542277052360" duration="31594000" />
       <workItem from="1542625992533" duration="3381000" />
       <workItem from="1542630034237" duration="10759000" />
-      <workItem from="1542676896507" duration="16985000" />
+      <workItem from="1542676896507" duration="19803000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="134374000" />
+    <option name="totallyTimeSpent" value="137192000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1920" height="1013" extended-state="6" />
@@ -499,7 +491,7 @@
     <layout>
       <window_info anchor="right" id="Palette" order="3" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Messages" order="11" weight="0.32496077" />
+      <window_info anchor="bottom" id="Messages" order="11" weight="0.3242358" />
       <window_info anchor="right" id="Palette&#9;" order="8" />
       <window_info id="Image Layers" order="2" />
       <window_info anchor="right" id="Capture Analysis" order="4" />
@@ -537,28 +529,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/IOps.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="18" column="26" lean-forward="true" selection-start-line="18" selection-start-column="26" selection-end-line="18" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ans.txt" />
-    <entry file="file://$PROJECT_DIR$/ans.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="19">
-          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/JbossTcp.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="627">
-          <caret line="33" column="46" selection-start-line="33" selection-start-column="46" selection-end-line="33" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/MemInfo.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="646">
@@ -940,16 +910,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/App.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="627">
-          <caret line="33" column="5" lean-forward="true" selection-start-line="33" selection-start-column="5" selection-end-line="33" selection-end-column="5" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_172.jdk/Contents/Home/src.zip!/java/io/PrintWriter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="704">
@@ -1010,11 +970,89 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/redisValueOffsetRecord1111111.db">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="19">
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/redisValueOffsetRecord.db">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="177" selection-start-column="177" selection-end-column="177" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/StdOut.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-4242">
+          <caret line="63" column="19" selection-start-line="63" selection-start-column="19" selection-end-line="63" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/SingleTon.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="38">
+          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/SingletonOfRedisOffsetRecorder.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="38">
+          <caret line="2" column="43" selection-start-line="2" selection-start-column="24" selection-end-line="2" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisInput.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="826">
+          <caret line="56" column="5" lean-forward="true" selection-start-line="56" selection-start-column="5" selection-end-line="56" selection-end-column="5" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/App.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="451">
+          <caret line="34" column="83" selection-start-line="34" selection-start-column="83" selection-end-line="34" selection-end-column="83" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisOffsetRecorderSingleton.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="152">
+          <caret line="10" column="5" lean-forward="true" selection-start-line="3" selection-start-column="4" selection-end-line="10" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisParse.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-145">
+          <caret line="17" lean-forward="true" selection-start-line="17" selection-end-line="17" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#5828#5829#0" expanded="true" />
+            <element signature="e#5872#5873#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisOffsetRecorder.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="18" lean-forward="true" selection-start-line="18" selection-end-line="18" />
+        <state relative-caret-position="152">
+          <caret line="8" column="34" selection-start-line="8" selection-start-column="34" selection-end-line="8" selection-end-column="34" />
           <folding>
+            <element signature="imports" expanded="true" />
             <element signature="e#1651#1652#0" expanded="true" />
             <element signature="e#1683#1684#0" expanded="true" />
             <element signature="e#1731#1732#0" expanded="true" />
@@ -1071,45 +1109,6 @@
             <element signature="e#3629#3630#0" expanded="true" />
             <element signature="e#3679#3680#0" expanded="true" />
             <element signature="e#3723#3724#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/redisValueOffsetRecord1111111.db">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisInput.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="826">
-          <caret line="56" column="5" lean-forward="true" selection-start-line="56" selection-start-column="5" selection-end-line="56" selection-end-column="5" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/data.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="19">
-          <caret line="1" selection-start-line="1" selection-end-line="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/redisValueOffsetRecord.db">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="177" selection-start-column="177" selection-end-column="177" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/travelsky/redis/RedisParse.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1426">
-          <caret line="110" lean-forward="true" selection-start-line="110" selection-end-line="110" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#5828#5829#0" expanded="true" />
-            <element signature="e#5872#5873#0" expanded="true" />
           </folding>
         </state>
       </provider>

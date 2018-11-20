@@ -1,6 +1,13 @@
 package com.travelsky.redis;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import redis.clients.jedis.Jedis;
+
+import java.util.Set;
+
 public class RedisOffsetRecorder {
+
     private long apacheLog;
     private long apachePort;
     private long cpuInfo;
@@ -15,6 +22,54 @@ public class RedisOffsetRecorder {
     private long threadPool;
     private long todtps;
     private long tuxserCall;
+
+
+    static RedisOffsetRecorder loadRedisValueOffset() {
+        In read = new In("./redisValueOffsetRecord.db");
+        String jsonString = read.readAll();
+        read.close();
+
+        JSONObject jsonObject = JSONObject.parseObject(jsonString);
+
+//        System.out.println(JSON.toJavaObject(jsonObject, RedisOffsetRecorder.class));
+//        System.out.println(JSON.toJavaObject(jsonObject, RedisOffsetRecorder.class));
+
+        return JSON.toJavaObject(jsonObject, RedisOffsetRecorder.class);
+    }
+
+    static void saveRedisValueOffset2Local(Jedis jedis, Set redisKeys) {
+        JSONObject json = JSONObject.parseObject("{}");
+
+        for (Object redisKey : redisKeys) {
+            String realRedisKey = redisKey.toString().split("[|]")[1];
+            json.put(realRedisKey, jedis.llen(redisKey.toString()));
+        }
+        String fileName = "./redisValueOffsetRecord.db";
+
+//        try {
+//            File f = new File(fileName);
+//            FileOutputStream fileOutputStream = new FileOutputStream(f);
+//            OutputStreamWriter writer = new OutputStreamWriter(fileOutputStream);
+//            String jsonString = JSON.toJSONString(json);
+//            writer.write(jsonString);
+//
+//            fileOutputStream.close();
+//
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+
+        Out out = new Out(fileName);
+
+        out.print(json);
+
+        out.close();
+
+
+    }
+
 
 
     public long getValueOffset(String metricMapKey) {

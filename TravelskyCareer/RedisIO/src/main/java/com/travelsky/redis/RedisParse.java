@@ -16,54 +16,8 @@ import java.util.Set;
 
 public class RedisParse {
 
-    private static RedisOffsetRecorder loadRedisValueOffset() {
-        In read = new In("./redisValueOffsetRecord.db");
-        String jsonString = read.readAll();
-        read.close();
 
-        JSONObject jsonObject = JSONObject.parseObject(jsonString);
-
-        return JSON.toJavaObject(jsonObject, RedisOffsetRecorder.class);
-    }
-
-    private static void saveRedisValueOffset2Local(Jedis jedis, Set redisKeys) {
-        JSONObject json = JSONObject.parseObject("{}");
-
-        for (Object redisKey : redisKeys) {
-            String realRedisKey = redisKey.toString().split("[|]")[1];
-            json.put(realRedisKey, jedis.llen(redisKey.toString()));
-        }
-        String fileName = "./redisValueOffsetRecord.db";
-
-//        try {
-//            File f = new File(fileName);
-//            FileOutputStream fileOutputStream = new FileOutputStream(f);
-//            OutputStreamWriter writer = new OutputStreamWriter(fileOutputStream);
-//            String jsonString = JSON.toJSONString(json);
-//            writer.write(jsonString);
-//
-//            fileOutputStream.close();
-//
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-
-        Out out = new Out(fileName);
-
-//        String jsonString = JSON.toJSONString(json);
-//        out.println(jsonString);
-        out.print(json);
-
-        out.close();
-
-
-    }
-
-    //外层添加Re
-
-
+    //外层添加Redis ip
     private static Map<String, Object> createRedisMetricMap(String redisHost, int redisPort) throws
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
             InstantiationException, IllegalAccessException {
@@ -84,7 +38,7 @@ public class RedisParse {
             InstantiationException, IllegalAccessException {
 
         //loadRedisValueOffset
-        RedisOffsetRecorder redisOffsetRecorder = RedisParse.loadRedisValueOffset();
+        RedisOffsetRecorder redisOffsetRecorder = RedisOffsetRecorder.loadRedisValueOffset();
 
         Jedis jedis = connectRedisDB(redisHost, redisPort);
         Set redisKeys = jedis.keys("*");
@@ -94,13 +48,15 @@ public class RedisParse {
         for (Object redisKey : redisKeys) {
 
             long offset = redisOffsetRecorder.getValueOffset(redisKey.toString().trim().split("[|]")[1]);
-            System.out.println(">>>>>>>>>>>>>>>>>>>>>   " + redisKey.toString().trim().split("[|]")[1] + "  " + offset);
+
+//            System.out.println(">>>>>>>>>>>>>>>>>>>>>   " + redisKey.toString().trim().split("[|]")[1] + "  " + offset);
+
             List<String> redisValue = jedis.lrange(redisKey.toString(), offset, -1);
             Metric metricObj = createMetricInstance(redisKey, redisValue);
             metricMap.put(redisKey.toString().trim().split("[|]")[1], metricObj);
         }
         //saveRedisValueOffset2Local
-        RedisParse.saveRedisValueOffset2Local(jedis, redisKeys);
+        RedisOffsetRecorder.saveRedisValueOffset2Local(jedis, redisKeys);
 
         jedis.close();
         return metricMap;
