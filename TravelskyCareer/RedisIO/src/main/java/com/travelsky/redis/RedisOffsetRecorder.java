@@ -2,12 +2,11 @@ package com.travelsky.redis;
 
 public class RedisOffsetRecorder {
     private Long apacheLog;
-    private Long appachePort;
+    private Long apachePort;
     private Long cpuInfo;
     private Long ibeLog;
     private Long iops;
     private Long ipcq;
-    private Long jboss;
     private Long jbosstcp;
     private Long jdbc;
     private Long memInfo;
@@ -18,6 +17,46 @@ public class RedisOffsetRecorder {
     private Long tuxserCall;
 
 
+    public long getValueOffset(String metricMapKey) {
+        switch (metricMapKey) {
+            case "ApacheLog":
+                return getApacheLogOffset();
+            case "apache_port":
+                return getApachePortOffset();
+            case "cpuinfo":
+                return getCpuInfoOffset();
+            case "ibelog":
+                return getIbeLogOffset();
+            case "iops":
+                return getIopsOffset();
+            case "ipcq":
+                return getIpcqOffset();
+            case "jboss_tcp":
+                return getJbosstcpOffset();
+            case "jdbcpool":
+                return getJdbcOffset();
+            case "jdbc":
+                return getJdbcOffset();
+            case "meminfo":
+                return getMemInfoOffset();
+            case "network":
+                return getNetworkOffset();
+            case "swapinfo":
+                return getSwapInfoOffset();
+            case "Threadpool":
+                return getThreadPoolOffset();
+            case "todtps":
+                return getTodtpsOffset();
+            case "TUXSerCall":
+                return getTuxserCallOffset();
+
+            default:
+                System.out.println("么有匹配到类对象的名字");
+                return Long.parseLong(null);
+        }
+    }
+
+
     public Long getApacheLogOffset() {
         return apacheLog;
     }
@@ -26,12 +65,12 @@ public class RedisOffsetRecorder {
         this.apacheLog = apacheLog;
     }
 
-    public Long getAppachePortOffset() {
-        return appachePort;
+    public Long getApachePortOffset() {
+        return apachePort;
     }
 
-    public void setAppachePort(Long appachePort) {
-        this.appachePort = appachePort;
+    public void setApachePort(Long apachePort) {
+        this.apachePort = apachePort;
     }
 
     public Long getCpuInfoOffset() {
@@ -66,12 +105,12 @@ public class RedisOffsetRecorder {
         this.ipcq = ipcq;
     }
 
-    public Long getJbossOffset() {
-        return jboss;
+    public Long getJbosstcpOffset() {
+        return jbosstcp;
     }
 
-    public void setJboss(Long jboss) {
-        this.jboss = jboss;
+    public void setJbosstcp(Long jbosstcp) {
+        this.jbosstcp = jbosstcp;
     }
 
     public Long getJdbcOffset() {

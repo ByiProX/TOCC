@@ -1,0 +1,15 @@
+{
+    "ApacheLog": 5,
+    "TUXSerCall": 5,
+    "Threadpool": 10,
+    "apache_port": 5,
+    "cpuinfo": 5,
+    "ibelog": 5,
+    "iops": 5,
+    "jboss_tcp": 5,
+    "jdbc": 10,
+    "meminfo": 5,
+    "network": 5,
+    "swapinfo": 5,
+    "todtps": 5
+}

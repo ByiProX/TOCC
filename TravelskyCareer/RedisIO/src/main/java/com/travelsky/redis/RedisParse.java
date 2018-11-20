@@ -17,6 +17,15 @@ import java.util.Set;
 
 public class RedisParse {
 
+    private static RedisOffsetRecorder loadRedisValueOffset(){
+        In read = new In("./redisValueOffsetRecord.db");
+        String jsonString = read.readAll();
+
+        JSONObject jsonObject = JSONObject.parseObject(jsonString);
+
+        return JSON.toJavaObject(jsonObject, RedisOffsetRecorder.class);
+    }
+
     private static void saveRedisValueOffset2Local(Jedis jedis, Set redisKeys) {
         JSONObject json = JSONObject.parseObject("{}");
 
@@ -35,9 +44,14 @@ public class RedisParse {
 
     }
 
+    //外层添加Re
+
+
     private static Map<String, Object> createRedisMetricMap(String redisHost, int redisPort) throws
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
             InstantiationException, IllegalAccessException {
+
+
 
         Map<String, Metric> metricMap = createMetricMap(redisHost, redisPort);
         HashMap<String, Object> redisMetricMap = new HashMap<>();
@@ -48,6 +62,7 @@ public class RedisParse {
         return redisMetricMap;
     }
 
+
     private static Map<String, Metric> createMetricMap(String redisHost, int redisPort) throws
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
             InstantiationException, IllegalAccessException {
@@ -57,8 +72,12 @@ public class RedisParse {
         saveRedisValueOffset2Local(jedis, redisKeys);
         Map<String, Metric> metricMap = new HashMap<>();
 
+        RedisOffsetRecorder redisOffsetRecorder = RedisParse.loadRedisValueOffset();
+
         for (Object redisKey : redisKeys) {
-            List<String> redisValue = jedis.lrange(redisKey.toString(), 0, -1);
+
+            long offset = redisOffsetRecorder.getValueOffset(redisKey.toString().trim().split("[|]")[1]);
+            List<String> redisValue = jedis.lrange(redisKey.toString(), offset, -1);
             Metric metricObj = createMetricInstance(redisKey, redisValue);
             metricMap.put(redisKey.toString().trim().split("[|]")[1], metricObj);
         }
@@ -174,34 +193,9 @@ public class RedisParse {
         RedisParse.parseRedis2JsonFile(redisHost, redisPort, fileName);
 
         System.out.println(RedisParse.parseRedis2JsonString(redisHost, redisPort));
-        System.out.println(">>>>>>>>>>>>>");
 //        System.out.println(RedisIO.parseRedis2JsonObj(redisHost, redisPort));
 
-        String str = "{\"redisPort\":6379,\"redis_Host\":\"127.0.0.1\"}";
-        JSONObject json = JSONObject.parseObject(str);
-        JSONObject json1 = JSONObject.parseObject("{}");
-        json1.put("a", 1);
-        System.out.println(json1);
-        ToObj o = JSON.toJavaObject(json, ToObj.class);
-        System.out.println(o.getRedisHost());
-        System.out.println(o.getRedisPortrrrrrrrrrr());
 
-//        In read = new In("./redisValueOffsetRecord.db");
-//        String jsonString = read.readAll();
-//        System.out.println(jsonString);
-//
-//        JSONObject jsonObject = JSONObject.parseObject(jsonString);
-//
-//        System.out.println(jsonObject.containsKey("jboss_tcp"));
-
-//
-//        RedisOffsetRecorder ob = JSON.toJavaObject(jsonObject, RedisOffsetRecorder.class);
-//        System.out.println(ob.getApacheLogOffset());
-//        System.out.println(ob.getIopsOffset());
-//        System.out.println(ob.getThreadPoolOffset());
-//
-//
-//        System.out.println(ob.getCpuInfoOffset());
 
 
 
@@ -223,26 +217,5 @@ public class RedisParse {
 
 }
 
-class ToObj {
-    private String redisHostyy;
-    private String redisPort;
-
-
-    public String getRedisHost() {
-        return redisHostyy;
-    }
-
-    public void setRedisHost(String redisHost) {
-        this.redisHostyy = redisHost;
-    }
-
-    public String getRedisPortrrrrrrrrrr() {
-        return redisPort;
-    }
-
-    public void setRedisPortrrrrrrrrrr(String redisPort) {
-        this.redisPort = redisPort;
-    }
-}
 
 
