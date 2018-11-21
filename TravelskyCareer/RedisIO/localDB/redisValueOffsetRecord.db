@@ -1,1 +1,1 @@
-{}
+{"jboss_tcp":10,"jdbc":20,"apache_port":10,"ApacheLog":10,"network":10,"swapinfo":10,"meminfo":10,"todtps":10,"iops":10,"ibelog":10,"TUXSerCall":10,"Threadpool":20,"cpuinfo":10}

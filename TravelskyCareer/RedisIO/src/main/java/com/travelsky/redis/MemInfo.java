@@ -8,35 +8,36 @@ import java.util.List;
  * value:时间|主机名|总量|使用|剩余|使用率|剩余率
  * 10.5.72.5|meminfo 20180517-23:40:01|tr730z53-tod|128948|61874|67074|47.98|52.02
  * 10.5.72.5|meminfo   20180517-23:42:01|tr730z53-tod|128949|61875|67074|47.98|52.02
- * */
+ */
 
-public class MemInfo implements Metric{
+public class MemInfo implements Metric {
 
     private String ip;
     private String metric;
     private List<MemInfoValue> memInfoValues = new ArrayList<>();
 
-    public MemInfo(Object redisKey, List<String> redisValue){
+    public MemInfo(Object redisKey, List<String> redisValue) {
         String[] argList = redisKey.toString().split("[|]");
         ip = argList[0];
         metric = argList[1];
-        for (String value: redisValue) {
+        for (String value : redisValue) {
             String[] valueList = value.split("[|]");
 
-           MemInfoValue memInfoValue = new MemInfoValue();
-           memInfoValue.setTime(valueList[0]);
-           memInfoValue.setHostname(valueList[1]);
-           memInfoValue.setTotalNum(Integer.parseInt(valueList[2]));
-           memInfoValue.setUsage(Integer.parseInt(valueList[3]));
-           memInfoValue.setFree(Integer.parseInt(valueList[4]));
-           memInfoValue.setUsageRatio(Double.parseDouble(valueList[5]));
-           memInfoValue.setSurplusRatio(Double.parseDouble(valueList[6]));
+            MemInfoValue memInfoValue = new MemInfoValue();
+            memInfoValue.setTime(valueList[0]);
+            memInfoValue.setHostname(valueList[1]);
+            memInfoValue.setTotalNum(Integer.parseInt(valueList[2]));
+            memInfoValue.setUsage(Integer.parseInt(valueList[3]));
+            memInfoValue.setFree(Integer.parseInt(valueList[4]));
+            memInfoValue.setUsageRatio(Double.parseDouble(valueList[5]));
+            memInfoValue.setSurplusRatio(Double.parseDouble(valueList[6]));
 
-           memInfoValues.add(memInfoValue);
+            memInfoValues.add(memInfoValue);
         }
     }
 
-    public MemInfo(){}
+    public MemInfo() {
+    }
 
 
     @Override
@@ -69,7 +70,7 @@ public class MemInfo implements Metric{
     }
 }
 
-class MemInfoValue implements MetricValue{
+class MemInfoValue implements MetricValue {
     /**
      * value:时间|主机名|总量|使用|剩余|使用率|剩余率
      * 20180517-23:40:01|tr730z53-tod|128948|61874|67074|47.98|52.02

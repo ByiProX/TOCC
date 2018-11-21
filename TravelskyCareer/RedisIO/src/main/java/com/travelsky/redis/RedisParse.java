@@ -15,6 +15,8 @@ import java.util.Set;
 
 public class RedisParse {
 
+    private RedisParse(){}
+
     //外层添加Redis ip
     private static Map<String, Object> createRedisMetricMap(String redisHost, int redisPort) throws
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException,

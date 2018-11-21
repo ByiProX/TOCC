@@ -11,16 +11,16 @@ import java.util.List;
  * 122.119.180.82|apache_port   20180517-23:50:08|vm-vmw97020-apc|133
  */
 
-public class ApachePort implements Metric{
+public class ApachePort implements Metric {
     private String ip;
     private String metric;
     private List<ApachePortValue> apachePortValues = new ArrayList<>();
 
-    public ApachePort(Object redisKey, List<String> redisValue){
+    public ApachePort(Object redisKey, List<String> redisValue) {
         String[] argList = redisKey.toString().split("[|]");
         ip = argList[0];
         metric = argList[1];
-        for (String value: redisValue){
+        for (String value : redisValue) {
             String[] valueList = value.split("[|]");
 
             ApachePortValue apachePortValue = new ApachePortValue();
@@ -32,7 +32,8 @@ public class ApachePort implements Metric{
         }
     }
 
-    public ApachePort(){}
+    public ApachePort() {
+    }
 
 
     @Override
@@ -63,7 +64,7 @@ public class ApachePort implements Metric{
     }
 }
 
-class ApachePortValue implements MetricValue{
+class ApachePortValue implements MetricValue {
     private String time;
     private String hostname;
     private String connectNum;

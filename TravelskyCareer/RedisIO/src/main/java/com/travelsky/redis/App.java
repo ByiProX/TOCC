@@ -1,8 +1,15 @@
 package com.travelsky.redis;
 
-import org.apache.commons.io.FileUtils;
+import com.sun.org.apache.xerces.internal.dom.PSVIAttrNSImpl;
+import com.sun.prism.ReadbackRenderTarget;
+import sun.tools.java.Scanner;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 
 /**
  * Hello world!
@@ -12,28 +19,20 @@ public class App
 {
     public static void main( String[] args )
     {
-//        System.out.println( "Hello World!" );
-//        String sep = File.separator;
-//
-//        System.out.println(sep);
-//        System.out.println(File.separatorChar);
-//        System.out.println(File.pathSeparatorChar);
-//
-//        String separator = File.separator;
-//        String dir = "." + separator + "testtest";
-//        String fileName = dir + "hello.txt";
-////        File file = new File(fileName);
-//
-//        File f = new File("./helloooooooo.txt");
-//        try {
-//            InputStream out = new FileInputStream(f);
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
+        System.out.println( "Hello World!" );
+        String sep = File.separator;
 
 
+//
+        System.out.println(9>>>1);
 
+        int[] a = {1,2,3};
+        System.out.println(Arrays.toString(a));
+
+        String b = Arrays.toString(a);
+        System.out.println(b);
 
 
     }
+
 }
