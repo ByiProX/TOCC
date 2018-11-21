@@ -94,7 +94,7 @@ public class RedisParse {
 
     }
 
-    private static String parseRedis2JsonString(String redisHost, int redisPort) throws
+    static String parseRedis2JsonString(String redisHost, int redisPort) throws
             ClassNotFoundException, NoSuchMethodException, InstantiationException,
             IllegalAccessException, InvocationTargetException {
 
