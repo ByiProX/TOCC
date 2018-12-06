@@ -169,7 +169,7 @@ public class RedisParse {
         int redisPort = 6379;
         String fileName = "data.json";
 
-//        RedisParse.parseRedis2JsonFile(redisHost, redisPort, fileName);
+        RedisParse.parseRedis2JsonFile(redisHost, redisPort, fileName);
 
         System.out.println(RedisParse.parseRedis2JsonString(redisHost, redisPort));
 //        System.out.println(RedisIO.parseRedis2JsonObj(redisHost, redisPort));

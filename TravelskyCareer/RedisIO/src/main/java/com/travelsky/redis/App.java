@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -22,15 +23,6 @@ public class App
         System.out.println( "Hello World!" );
         String sep = File.separator;
 
-
-//
-        System.out.println(9>>>1);
-
-        int[] a = {1,2,3};
-        System.out.println(Arrays.toString(a));
-
-        String b = Arrays.toString(a);
-        System.out.println(b);
 
 
     }
